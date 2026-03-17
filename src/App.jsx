@@ -128,22 +128,48 @@ const fileToBase64 = (slot, file) => new Promise((resolve, reject) => {
   reader.readAsDataURL(file);
 });
 
-// Send form data + files to Google Apps Script, returns { success, studentId }
+// Send form data + files to Google Apps Script using hidden form + iframe (bypasses CORS)
 const submitToAppsScript = async (formData, fileMap) => {
   try {
     const files = [];
     for (const [slot, file] of Object.entries(fileMap)) {
       if (file) files.push(await fileToBase64(slot, file));
     }
-    const res = await fetch(APPS_SCRIPT_URL, { method: "POST", redirect: "follow", headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ ...formData, files }) });
-    try {
-      const json = await res.json();
-      return { success: true, studentId: json.studentId || null, ref: json.ref || null };
-    } catch (_) {
-      // If response can't be parsed (CORS redirect), data was still sent
-      return { success: true, studentId: null };
-    }
-  } catch (err) { console.error("Apps Script submit error:", err); return { success: false, studentId: null }; }
+    const payload = JSON.stringify({ ...formData, files });
+
+    // Create hidden iframe + form to bypass CORS redirect issues
+    const iframeName = "cts_submit_" + Date.now();
+    const iframe = document.createElement("iframe");
+    iframe.name = iframeName;
+    iframe.style.display = "none";
+    document.body.appendChild(iframe);
+
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = APPS_SCRIPT_URL;
+    form.target = iframeName;
+    form.style.display = "none";
+
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = "payload";
+    input.value = payload;
+    form.appendChild(input);
+
+    document.body.appendChild(form);
+    form.submit();
+
+    // Clean up after 10 seconds
+    setTimeout(() => {
+      try { document.body.removeChild(iframe); } catch(_) {}
+      try { document.body.removeChild(form); } catch(_) {}
+    }, 10000);
+
+    return { success: true };
+  } catch (err) {
+    console.error("Apps Script submit error:", err);
+    return { success: false };
+  }
 };
 
 function Container({ children, style }) {
@@ -942,19 +968,16 @@ function ApplyPage({ setPage }) {
             Thank you, <strong>{form.firstName}</strong>. Your application has been received and is now under review by the CTS ETS Admissions Team.
           </p>
 
-          {/* Student ID + Application Ref */}
+          {/* Application Ref + Student ID note */}
           <div style={{ display: "inline-flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
-            {studentId && (
-              <div style={{ padding: "18px 40px", borderRadius: 12, background: S.gold, boxShadow: "0 8px 32px rgba(196,145,18,0.3)" }}>
-                <div style={{ fontSize: 10, color: S.navy, fontFamily: S.body, letterSpacing: 3, textTransform: "uppercase", marginBottom: 6 }}>Your Student ID</div>
-                <div style={{ fontFamily: S.heading, fontSize: 24, fontWeight: 800, color: S.navy, letterSpacing: 1 }}>{studentId}</div>
-                <div style={{ fontSize: 11, color: "rgba(1,30,64,0.6)", fontFamily: S.body, marginTop: 4 }}>This is your permanent ID — keep it safe</div>
-              </div>
-            )}
-            <div style={{ padding: "16px 40px", borderRadius: 12, background: S.navy, boxShadow: "0 8px 32px rgba(1,30,64,0.2)" }}>
+            <div style={{ padding: "18px 40px", borderRadius: 12, background: S.navy, boxShadow: "0 8px 32px rgba(1,30,64,0.2)" }}>
               <div style={{ fontSize: 10, color: S.gold, fontFamily: S.body, letterSpacing: 3, textTransform: "uppercase", marginBottom: 6 }}>Application Reference</div>
-              <div style={{ fontFamily: S.heading, fontSize: 20, fontWeight: 800, color: "#fff", letterSpacing: 2 }}>{savedRef}</div>
+              <div style={{ fontFamily: S.heading, fontSize: 24, fontWeight: 800, color: "#fff", letterSpacing: 2 }}>{savedRef}</div>
               <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", fontFamily: S.body, marginTop: 4 }}>Use this to track your application status</div>
+            </div>
+            <div style={{ padding: "14px 24px", borderRadius: 10, background: "rgba(196,145,18,0.08)", border: "1px solid rgba(196,145,18,0.2)" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 4 }}>Your Permanent Student ID</div>
+              <div style={{ fontSize: 12, color: "#4A5568", fontFamily: S.body, lineHeight: 1.6 }}>Your unique Student ID (CTSETS-XXXX-XX-XXXX) has been generated and will be sent to <strong>{form.email}</strong> with your acceptance notification.</div>
             </div>
           </div>
 
@@ -971,11 +994,14 @@ function ApplyPage({ setPage }) {
               </div>
             ))}
           </div>
-          <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, marginBottom: 24 }}>
+          <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, marginBottom: 16 }}>
             Questions? Email <strong>info@ctsetsjm.com</strong> or call <strong>876-525-6802</strong> (Flow) / <strong>876-381-9771</strong> (Digicel)
           </p>
+          <div style={{ padding: "14px 24px", borderRadius: 10, background: "rgba(46,125,50,0.06)", border: "1px solid rgba(46,125,50,0.15)", marginBottom: 24, maxWidth: 500, margin: "0 auto 24px" }}>
+            <div style={{ fontSize: 13, color: "#2E7D32", fontFamily: S.body, lineHeight: 1.6, textAlign: "center" }}>📧 A confirmation email with your <strong>Student ID</strong> and application details has been sent to <strong>{form.email}</strong></div>
+          </div>
           <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
-            <Btn primary onClick={() => setPage("Financial")} style={{ color: S.navy }}>Proceed to Payment Centre</Btn>
+            <Btn primary onClick={() => { setActiveTab("payment"); setSubmitted(false); }} style={{ color: S.navy }}>Proceed to Payment Centre</Btn>
             <Btn onClick={() => { setActiveTab("status"); setStatusEmail(form.email); setSubmitted(false); }} style={{ color: S.navy }}>Track My Application</Btn>
           </div>
         </Container>
@@ -1709,8 +1735,13 @@ export default function CTSApp() {
   // Load EmailJS SDK
   useEffect(() => {
     if (!document.getElementById("emailjs-sdk")) {
-      const s = document.createElement("script"); s.id = "emailjs-sdk"; s.src = "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js";
-      s.onload = () => { if (window.emailjs) window.emailjs.init("FwxOgZox_rfUze7Dd"); };
+      const s = document.createElement("script"); s.id = "emailjs-sdk";
+      s.src = "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js";
+      s.onload = () => {
+        if (window.emailjs) {
+          try { window.emailjs.init({ publicKey: "FwxOgZox_rfUze7Dd" }); } catch(_) { window.emailjs.init("FwxOgZox_rfUze7Dd"); }
+        }
+      };
       document.head.appendChild(s);
     }
   }, []);
