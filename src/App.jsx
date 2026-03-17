@@ -47,7 +47,7 @@ const PROGRAMMES = {
 };
 
 const REG_FEE = 5000;
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjNgf8xavxbMQtbYpmrHrJXwDYuTUFnSms88QtL9oDeUb1MLj20RBmdqRleBI-QEjd1w/exec"; // Replace with your deployed Google Apps Script URL
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxDzchxbJi7zOIHjZc5yq6wOSvDu7NzsNzMRhgYVtTBplyF_BS_F7adQPZyU1PQrbW8hQ/exec"; // Replace with your deployed Google Apps Script URL
 const CALC_DATA = [
   { level: "Job Certificate", name: "Data Entry / ICT Proficiency", tuition: 8000, goldOnly: true },
   { level: "Job Certificate", name: "Digital Literacy / CSR / Admin Asst.", tuition: 10000, goldOnly: true },
@@ -128,48 +128,45 @@ const fileToBase64 = (slot, file) => new Promise((resolve, reject) => {
   reader.readAsDataURL(file);
 });
 
-// Send form data + files to Google Apps Script using hidden form + iframe (bypasses CORS)
+// Send form data + files to Google Apps Script
 const submitToAppsScript = async (formData, fileMap) => {
   try {
     const files = [];
     for (const [slot, file] of Object.entries(fileMap)) {
-      if (file) files.push(await fileToBase64(slot, file));
+      if (file) {
+        try { files.push(await fileToBase64(slot, file)); } catch (_) {}
+      }
     }
     const payload = JSON.stringify({ ...formData, files });
 
-    // Create hidden iframe + form to bypass CORS redirect issues
-    const iframeName = "cts_submit_" + Date.now();
-    const iframe = document.createElement("iframe");
-    iframe.name = iframeName;
-    iframe.style.display = "none";
-    document.body.appendChild(iframe);
+    // Method 1: Standard fetch (Google Apps Script supports CORS on "Anyone" deployments)
+    try {
+      const res = await fetch(APPS_SCRIPT_URL, { method: "POST", body: payload });
+      if (res.ok) return { success: true };
+    } catch (_) {}
 
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.action = APPS_SCRIPT_URL;
-    form.target = iframeName;
-    form.style.display = "none";
+    // Method 2: no-cors fallback (fire and forget — data still sent)
+    try {
+      await fetch(APPS_SCRIPT_URL, { method: "POST", body: payload, mode: "no-cors" });
+      return { success: true };
+    } catch (_) {}
 
-    const input = document.createElement("input");
-    input.type = "hidden";
-    input.name = "payload";
-    input.value = payload;
-    form.appendChild(input);
+    // Method 3: Form POST via hidden iframe (last resort)
+    try {
+      var iframe = document.createElement("iframe");
+      iframe.name = "cts_" + Date.now(); iframe.style.display = "none";
+      document.body.appendChild(iframe);
+      var form = document.createElement("form");
+      form.method = "POST"; form.action = APPS_SCRIPT_URL; form.target = iframe.name; form.style.display = "none";
+      var inp = document.createElement("textarea");
+      inp.name = "payload"; inp.value = payload;
+      form.appendChild(inp); document.body.appendChild(form); form.submit();
+      setTimeout(() => { try { document.body.removeChild(iframe); document.body.removeChild(form); } catch(_){} }, 15000);
+      return { success: true };
+    } catch (_) {}
 
-    document.body.appendChild(form);
-    form.submit();
-
-    // Clean up after 10 seconds
-    setTimeout(() => {
-      try { document.body.removeChild(iframe); } catch(_) {}
-      try { document.body.removeChild(form); } catch(_) {}
-    }, 10000);
-
-    return { success: true };
-  } catch (err) {
-    console.error("Apps Script submit error:", err);
     return { success: false };
-  }
+  } catch (err) { console.error("Submit error:", err); return { success: false }; }
 };
 
 function Container({ children, style }) {
@@ -900,7 +897,7 @@ function ApplyPage({ setPage }) {
   const [formErrors, setFormErrors] = useState({});
 
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const validatePhone = (phone) => /^[\d\s\-+()]{7,15}$/.test(phone);
+  const validatePhone = (phone) => { const digits = phone.replace(/\D/g, ""); return digits.length === 10; };
 
   const submitApplication = async () => {
     const errors = {};
@@ -908,10 +905,15 @@ function ApplyPage({ setPage }) {
     if (!form.lastName.trim()) errors.lastName = "Last name is required";
     if (!form.email.trim()) errors.email = "Email is required";
     else if (!validateEmail(form.email)) errors.email = "Please enter a valid email";
-    if (!form.phone.trim()) errors.phone = "Phone number is required";
-    else if (!validatePhone(form.phone)) errors.phone = "Please enter a valid phone number";
+    if (!form.phone.trim()) errors.phone = "Phone number is required (10 digits)";
+    else if (!validatePhone(form.phone)) errors.phone = "Phone must be exactly 10 digits (e.g. 8765256802)";
+    if (!form.gender) errors.gender = "Gender is required";
+    if (!form.address.trim()) errors.address = "Residential address is required";
     if (!form.level) errors.level = "Please select a level";
     if (!form.programme) errors.programme = "Please select a programme";
+    if (!form.emergencyRelation) errors.emergencyRelation = "Relationship is required";
+    if (!form.education) errors.education = "Highest qualification is required";
+    if (!form.lastSchool.trim()) errors.lastSchool = "Last school attended is required";
     setFormErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
@@ -1042,20 +1044,20 @@ function ApplyPage({ setPage }) {
                   <div><label style={labelStyle}>First Name(s) {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.firstName ? "#C62828" : undefined }} value={form.firstName} onChange={e => u("firstName", e.target.value)} placeholder="First name(s)" />{errMsg("firstName")}</div>
                   <div><label style={labelStyle}>Middle Name</label><input style={inputStyle} value={form.middleName} onChange={e => u("middleName", e.target.value)} placeholder="Middle name (if any)" /></div>
                   <div><label style={labelStyle}>Last Name {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.lastName ? "#C62828" : undefined }} value={form.lastName} onChange={e => u("lastName", e.target.value)} placeholder="Last name" />{errMsg("lastName")}</div>
-                  <div><label style={labelStyle}>Gender</label><select style={inputStyle} value={form.gender} onChange={e => u("gender", e.target.value)}><option value="">Select</option><option>Male</option><option>Female</option><option>Other / Prefer not to say</option></select></div>
+                  <div><label style={labelStyle}>Gender {reqDot}</label><select style={{ ...inputStyle, borderColor: formErrors.gender ? "#C62828" : undefined }} value={form.gender} onChange={e => u("gender", e.target.value)}><option value="">Select</option><option>Male</option><option>Female</option><option>Other / Prefer not to say</option></select>{errMsg("gender")}</div>
                   <div><label style={labelStyle}>Date of Birth {reqDot}</label><input type="date" style={inputStyle} value={form.dob} onChange={e => u("dob", e.target.value)} /></div>
                   <div><label style={labelStyle}>Nationality</label><input style={inputStyle} value={form.nationality} onChange={e => u("nationality", e.target.value)} placeholder="e.g. Jamaican" /></div>
                   <div><label style={labelStyle}>TRN {reqDot}</label><input style={inputStyle} value={form.trn} onChange={e => u("trn", e.target.value)} placeholder="Tax Registration Number" /></div>
                   <div><label style={labelStyle}>Marital Status</label><select style={inputStyle} value={form.maritalStatus} onChange={e => u("maritalStatus", e.target.value)}><option value="">Select</option><option>Single</option><option>Married</option><option>Common Law</option><option>Widowed</option><option>Divorced</option></select></div>
                   <div><label style={labelStyle}>Email Address {reqDot}</label><input type="email" style={{ ...inputStyle, borderColor: formErrors.email ? "#C62828" : undefined }} value={form.email} onChange={e => u("email", e.target.value)} placeholder="your@email.com" />{errMsg("email")}</div>
-                  <div><label style={labelStyle}>Mobile Number {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.phone ? "#C62828" : undefined }} value={form.phone} onChange={e => u("phone", e.target.value)} placeholder="876-XXX-XXXX" />{errMsg("phone")}</div>
+                  <div><label style={labelStyle}>Mobile Number {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.phone ? "#C62828" : undefined }} value={form.phone} onChange={e => u("phone", e.target.value)} placeholder="8765256802 (10 digits)" />{errMsg("phone")}</div>
                   <div><label style={labelStyle}>Parish of Residence</label><select style={inputStyle} value={form.parish} onChange={e => u("parish", e.target.value)}><option value="">Select parish</option>{["Kingston","St. Andrew","St. Thomas","Portland","St. Mary","St. Ann","Trelawny","St. James","Hanover","Westmoreland","St. Elizabeth","Manchester","Clarendon","St. Catherine"].map(p => <option key={p}>{p}</option>)}</select></div>
                   <div><label style={labelStyle}>Special Needs</label><select style={inputStyle} value={form.specialNeeds} onChange={e => u("specialNeeds", e.target.value)}><option>No</option><option>Yes</option></select></div>
                 </div>
                 {form.specialNeeds === "Yes" && (
                   <div style={{ marginBottom: 14 }}><label style={labelStyle}>Type of Special Need</label><select style={inputStyle} value={form.specialNeedsType} onChange={e => u("specialNeedsType", e.target.value)}><option value="">Select type</option><option>Physical</option><option>Emotional / Behavioural</option><option>Developmental / Learning</option><option>Sensory-Impaired</option><option>Other</option></select></div>
                 )}
-                <div><label style={labelStyle}>Residential Address</label><input style={inputStyle} value={form.address} onChange={e => u("address", e.target.value)} placeholder="Street address, community, parish" /></div>
+                <div><label style={labelStyle}>Residential Address {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.address ? "#C62828" : undefined }} value={form.address} onChange={e => u("address", e.target.value)} placeholder="Street address, community, parish" />{errMsg("address")}</div>
               </SectionBlock>
 
               {/* SECTION B */}
@@ -1063,7 +1065,7 @@ function ApplyPage({ setPage }) {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }} className="resp-grid-2">
                   <div><label style={labelStyle}>Contact Full Name {reqDot}</label><input style={inputStyle} value={form.emergencyName} onChange={e => u("emergencyName", e.target.value)} placeholder="Full name" /></div>
                   <div><label style={labelStyle}>Contact Number {reqDot}</label><input style={inputStyle} value={form.emergencyPhone} onChange={e => u("emergencyPhone", e.target.value)} placeholder="876-XXX-XXXX" /></div>
-                  <div><label style={labelStyle}>Relationship to Applicant</label><select style={inputStyle} value={form.emergencyRelation} onChange={e => u("emergencyRelation", e.target.value)}><option value="">Select</option><option>Parent</option><option>Guardian</option><option>Spouse / Partner</option><option>Sibling</option><option>Relative</option><option>Friend</option></select></div>
+                  <div><label style={labelStyle}>Relationship to Applicant {reqDot}</label><select style={{ ...inputStyle, borderColor: formErrors.emergencyRelation ? "#C62828" : undefined }} value={form.emergencyRelation} onChange={e => u("emergencyRelation", e.target.value)}><option value="">Select</option><option>Parent</option><option>Guardian</option><option>Spouse / Partner</option><option>Sibling</option><option>Relative</option><option>Friend</option></select>{errMsg("emergencyRelation")}</div>
                 </div>
               </SectionBlock>
 
@@ -1081,8 +1083,8 @@ function ApplyPage({ setPage }) {
               {/* SECTION D */}
               <SectionBlock num="D" title="Educational Background" desc="Indicate your highest level of academic or vocational qualification.">
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }} className="resp-grid-2">
-                  <div><label style={labelStyle}>Highest Qualification Attained</label><select style={inputStyle} value={form.education} onChange={e => u("education", e.target.value)}><option value="">Select</option>{["No formal qualifications","CXC/CSEC (1–4 subjects)","CXC/CSEC (5+ subjects)","CAPE","NVQ-J Level 1 / Job Certificate","NVQ-J Level 2","NVQ-J Level 3 Diploma","Associate Degree","Bachelor's Degree","Postgraduate / Master's","Other"].map(e => <option key={e}>{e}</option>)}</select></div>
-                  <div><label style={labelStyle}>Last School / Institution Attended</label><input style={inputStyle} value={form.lastSchool} onChange={e => u("lastSchool", e.target.value)} placeholder="Name of school or institution" /></div>
+                  <div><label style={labelStyle}>Highest Qualification Attained {reqDot}</label><select style={{ ...inputStyle, borderColor: formErrors.education ? "#C62828" : undefined }} value={form.education} onChange={e => u("education", e.target.value)}><option value="">Select</option>{["No formal qualifications","CXC/CSEC (1–4 subjects)","CXC/CSEC (5+ subjects)","CAPE","NVQ-J Level 1 / Job Certificate","NVQ-J Level 2","NVQ-J Level 3 Diploma","Associate Degree","Bachelor's Degree","Postgraduate / Master's","Other"].map(e => <option key={e}>{e}</option>)}</select>{errMsg("education")}</div>
+                  <div><label style={labelStyle}>Last School / Institution Attended {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.lastSchool ? "#C62828" : undefined }} value={form.lastSchool} onChange={e => u("lastSchool", e.target.value)} placeholder="Name of school or institution" />{errMsg("lastSchool")}</div>
                 </div>
               </SectionBlock>
 
