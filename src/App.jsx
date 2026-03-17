@@ -47,7 +47,7 @@ const PROGRAMMES = {
 };
 
 const REG_FEE = 5000;
-const APPS_SCRIPT_URL = "https://script.google.com/a/macros/ctsetsjm.com/s/AKfycbxGclRg8UK3rmC2pqLMhRSsa5vw6SjGNXNSqyAhFPBV7FjRlPbxoSrZ6fcpsCecGNJ9/exec"; // Replace with your deployed Google Apps Script URL
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjNgf8xavxbMQtbYpmrHrJXwDYuTUFnSms88QtL9oDeUb1MLj20RBmdqRleBI-QEjd1w/exec"; // Replace with your deployed Google Apps Script URL
 const CALC_DATA = [
   { level: "Job Certificate", name: "Data Entry / ICT Proficiency", tuition: 8000, goldOnly: true },
   { level: "Job Certificate", name: "Digital Literacy / CSR / Admin Asst.", tuition: 10000, goldOnly: true },
@@ -872,7 +872,6 @@ function ApplyPage({ setPage }) {
   const [files, setFiles] = useState({ heartForm: null, trn: null, photo: null, qualifications: null, nationalId: null, birthCert: null, paymentProof: null });
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [studentId, setStudentId] = useState(null);
   const [statusEmail, setStatusEmail] = useState("");
   const [statusResult, setStatusResult] = useState(null);
   const [payRef, setPayRef] = useState("");
@@ -927,8 +926,8 @@ function ApplyPage({ setPage }) {
     });
     localStorage.setItem("cts_applications", JSON.stringify(apps));
 
-    // Send to Google Apps Script (files + data) — returns Student ID
-    const result = await submitToAppsScript({
+    // Send to Google Apps Script (files + data)
+    await submitToAppsScript({
       form_type: "New Application", ref,
       firstName: form.firstName, middleName: form.middleName, lastName: form.lastName,
       email: form.email, phone: form.phone,
@@ -940,8 +939,6 @@ function ApplyPage({ setPage }) {
       emergencyName: form.emergencyName, emergencyPhone: form.emergencyPhone, emergencyRelation: form.emergencyRelation,
       education: form.education, lastSchool: form.lastSchool, message: form.message,
     }, { heartForm: files.heartForm, trn: files.trn, photo: files.photo, qualifications: files.qualifications, nationalId: files.nationalId, birthCert: files.birthCert });
-
-    if (result.studentId) setStudentId(result.studentId);
 
     // Send email notification via EmailJS (backup)
     if (window.emailjs) {
@@ -968,16 +965,15 @@ function ApplyPage({ setPage }) {
             Thank you, <strong>{form.firstName}</strong>. Your application has been received and is now under review by the CTS ETS Admissions Team.
           </p>
 
-          {/* Application Ref + Student ID note */}
+          {/* Application Ref */}
           <div style={{ display: "inline-flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
             <div style={{ padding: "18px 40px", borderRadius: 12, background: S.navy, boxShadow: "0 8px 32px rgba(1,30,64,0.2)" }}>
               <div style={{ fontSize: 10, color: S.gold, fontFamily: S.body, letterSpacing: 3, textTransform: "uppercase", marginBottom: 6 }}>Application Reference</div>
               <div style={{ fontFamily: S.heading, fontSize: 24, fontWeight: 800, color: "#fff", letterSpacing: 2 }}>{savedRef}</div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", fontFamily: S.body, marginTop: 4 }}>Use this to track your application status</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", fontFamily: S.body, marginTop: 4 }}>Save this number — use it to track your application</div>
             </div>
-            <div style={{ padding: "14px 24px", borderRadius: 10, background: "rgba(196,145,18,0.08)", border: "1px solid rgba(196,145,18,0.2)" }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 4 }}>Your Permanent Student ID</div>
-              <div style={{ fontSize: 12, color: "#4A5568", fontFamily: S.body, lineHeight: 1.6 }}>Your unique Student ID (CTSETS-XXXX-XX-XXXX) has been generated and will be sent to <strong>{form.email}</strong> with your acceptance notification.</div>
+            <div style={{ padding: "14px 24px", borderRadius: 10, background: "rgba(46,125,50,0.06)", border: "1px solid rgba(46,125,50,0.15)" }}>
+              <div style={{ fontSize: 12, color: "#2E7D32", fontFamily: S.body, lineHeight: 1.6, textAlign: "center" }}>📧 A confirmation email has been sent to <strong>{form.email}</strong>. Your permanent Student ID will be issued upon acceptance.</div>
             </div>
           </div>
 
