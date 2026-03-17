@@ -172,6 +172,23 @@ function Btn({ children, primary, onClick, style }) {
   );
 }
 
+function SectionBlock({ num, title, desc, children }) {
+  return (
+    <div style={{ marginBottom: 32 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: desc ? 6 : 16, paddingBottom: 14, borderBottom: "2px solid rgba(1,30,64,0.06)" }}>
+        <div style={{ width: 34, height: 34, borderRadius: "50%", background: S.navy, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <span style={{ fontFamily: S.heading, fontSize: 13, fontWeight: 800, color: S.gold }}>{num}</span>
+        </div>
+        <div>
+          <div style={{ fontFamily: S.heading, fontSize: 17, fontWeight: 700, color: S.navy }}>{title}</div>
+          {desc && <div style={{ fontSize: 12, color: S.gray, fontFamily: S.body, marginTop: 2 }}>{desc}</div>}
+        </div>
+      </div>
+      {children}
+    </div>
+  );
+}
+
 function PartnerLogos() {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 32, flexWrap: "wrap", padding: "24px 0" }}>
@@ -841,22 +858,6 @@ function ApplyPage({ setPage }) {
   const labelStyle = { fontSize: 11, color: "#4A5568", fontWeight: 700, fontFamily: S.body, display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.5 };
   const reqDot = <span style={{ color: "#C62828", marginLeft: 2 }}>*</span>;
   const errMsg = (field) => formErrors[field] ? <div style={{ fontSize: 11, color: "#C62828", fontFamily: S.body, marginTop: 3 }}>{formErrors[field]}</div> : null;
-
-  // Section header component used inside form
-  const SectionBlock = ({ num, title, desc, children }) => (
-    <div style={{ marginBottom: 32 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: desc ? 6 : 16, paddingBottom: 14, borderBottom: "2px solid rgba(1,30,64,0.06)" }}>
-        <div style={{ width: 34, height: 34, borderRadius: "50%", background: S.navy, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <span style={{ fontFamily: S.heading, fontSize: 13, fontWeight: 800, color: S.gold }}>{num}</span>
-        </div>
-        <div>
-          <div style={{ fontFamily: S.heading, fontSize: 17, fontWeight: 700, color: S.navy }}>{title}</div>
-          {desc && <div style={{ fontSize: 12, color: S.gray, fontFamily: S.body, marginTop: 2 }}>{desc}</div>}
-        </div>
-      </div>
-      {children}
-    </div>
-  );
 
   const checkStatus = () => {
     if (!statusEmail) return;
