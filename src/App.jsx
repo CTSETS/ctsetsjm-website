@@ -576,7 +576,7 @@ function FeesPage({ setPage }) {
                   <div style={{ fontSize: 12, fontWeight: 700, color: act ? planColors[plan] : S.gray, fontFamily: S.body }}>{plan}</div>
                   <div style={{ fontSize: 10, color: S.gray, fontFamily: S.body }}>{plan === "Gold" ? "0%" : plan === "Silver" ? "+5%" : "+8%"}</div>
                 </button>
-              ); }}
+              ); })}
             </div>
             <button onClick={() => setIsGroup(!isGroup)} style={{ width: "100%", padding: "12px 14px", borderRadius: 6, border: "2px solid " + (isGroup ? "#2E7D32" : "rgba(10,35,66,0.08)"), background: isGroup ? "rgba(46,125,50,0.05)" : "#fff", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{ width: 20, height: 20, borderRadius: 3, border: "2px solid " + (isGroup ? "#2E7D32" : "#ccc"), background: isGroup ? "#2E7D32" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{isGroup && <span style={{ color: "#fff", fontSize: 12 }}>✓</span>}</div>
