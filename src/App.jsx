@@ -117,26 +117,26 @@ const fmt = (n) => "$" + Math.round(n).toLocaleString();
 const S = { heading: "'Playfair Display', Georgia, serif", body: "'DM Sans', sans-serif", navy: "#011E40", gold: "#C49112", gray: "#4A5568", lightBg: "#FAFAF7", darkBg: "#011E40" };
 
 function Container({ children, style }) {
-  return <div style={ maxWidth: 1100, margin: "0 auto", padding: "0 clamp(16px,3vw,48px)", ...style }>{children}</div>;
+  return <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 clamp(16px,3vw,48px)", ...style }}>{children}</div>;
 }
 
 function PageWrapper({ children, bg = "#fff" }) {
-  return <div style={ minHeight: "calc(100vh - 72px)", background: bg, padding: "0 0 60px" }>{children}</div>;
+  return <div style={{ minHeight: "calc(100vh - 72px)", background: bg, padding: "0 0 60px" }}>{children}</div>;
 }
 
 function SectionHeader({ tag, title, desc, light = false }) {
   return (
-    <div style={ textAlign: "center", marginBottom: 48, padding: "48px 24px 0" }>
-      <span style={ fontSize: 11, color: S.gold, letterSpacing: 3, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600 }>{tag}</span>
-      <h2 style={ fontFamily: S.heading, fontSize: "clamp(26px, 4vw, 40px)", color: light ? "#fff" : S.navy, margin: "10px 0 0", fontWeight: 700 }>{title}</h2>
-      {desc && <p style={ fontFamily: S.body, fontSize: 15, color: light ? "rgba(255,255,255,0.7)" : S.gray, marginTop: 14, maxWidth: 600, marginLeft: "auto", marginRight: "auto", lineHeight: 1.65 }>{desc}</p>}
+    <div style={{ textAlign: "center", marginBottom: 48, padding: "48px 24px 0" }}>
+      <span style={{ fontSize: 11, color: S.gold, letterSpacing: 3, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600 }}>{tag}</span>
+      <h2 style={{ fontFamily: S.heading, fontSize: "clamp(26px, 4vw, 40px)", color: light ? "#fff" : S.navy, margin: "10px 0 0", fontWeight: 700 }}>{title}</h2>
+      {desc && <p style={{ fontFamily: S.body, fontSize: 15, color: light ? "rgba(255,255,255,0.7)" : S.gray, marginTop: 14, maxWidth: 600, marginLeft: "auto", marginRight: "auto", lineHeight: 1.65 }}>{desc}</p>}
     </div>
   );
 }
 
 function Btn({ children, primary, onClick, style }) {
   return (
-    <button onClick={onClick} style={ padding: primary ? "14px 32px" : "12px 28px", borderRadius: 8, border: primary ? "none" : "2px solid " + S.navy, background: primary ? S.gold : "transparent", color: primary ? S.navy : S.navy, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body, letterSpacing: 0.5, transition: "all 0.2s", ...style }>
+    <button onClick={onClick} style={{ padding: primary ? "14px 32px" : "12px 28px", borderRadius: 8, border: primary ? "none" : "2px solid " + S.navy, background: primary ? S.gold : "transparent", color: primary ? S.navy : S.navy, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body, letterSpacing: 0.5, transition: "all 0.2s", ...style }}>
       {children}
     </button>
   );
@@ -144,13 +144,13 @@ function Btn({ children, primary, onClick, style }) {
 
 function PartnerLogos() {
   return (
-    <div style={ display: "flex", alignItems: "center", justifyContent: "center", gap: 32, flexWrap: "wrap", padding: "24px 0" }>
-      <div style={ textAlign: "center" }>
-        <div style={ fontSize: 10, color: S.gray, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, marginBottom: 8 }>Aligned To</div>
-        <div style={ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap", justifyContent: "center" }>
-          <img src={NCTVET_LOGO} alt="NCTVET" style={ height: 44, objectFit: "contain" } />
-          <img src={CG_LOGO} alt="City and Guilds" style={ height: 44, objectFit: "contain" } />
-          <img src={HEART_LOGO} alt="HEART NSTA" style={ height: 44, objectFit: "contain" } />
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 32, flexWrap: "wrap", padding: "24px 0" }}>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: 10, color: S.gray, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, marginBottom: 8 }}>Aligned To</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap", justifyContent: "center" }}>
+          <img src={NCTVET_LOGO} alt="NCTVET" style={{ height: 44, objectFit: "contain" }} />
+          <img src={CG_LOGO} alt="City and Guilds" style={{ height: 44, objectFit: "contain" }} />
+          <img src={HEART_LOGO} alt="HEART NSTA" style={{ height: 44, objectFit: "contain" }} />
         </div>
       </div>
     </div>
@@ -161,28 +161,28 @@ function PartnerLogos() {
 function Navbar({ page, setPage }) {
   const [open, setOpen] = useState(false);
   return (
-    <nav style={ background: S.navy, borderBottom: "3px solid " + S.gold, position: "sticky", top: 0, zIndex: 1000, boxShadow: "0 2px 12px rgba(0,0,0,0.18)" }>
-      <div style={ maxWidth: 1200, margin: "0 auto", padding: "0 20px", display: "flex", alignItems: "center", height: 72, justifyContent: "space-between" }>
-        <div style={ display: "flex", alignItems: "center", gap: 14, cursor: "pointer" } onClick={() => setPage("Home")}>
-          <img src={NAV_LOGO} alt="CTS ETS" style={ width: 52, height: 58, objectFit: "contain", borderRadius: 4 } />
+    <nav style={{ background: S.navy, borderBottom: "3px solid " + S.gold, position: "sticky", top: 0, zIndex: 1000, boxShadow: "0 2px 12px rgba(0,0,0,0.18)" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 20px", display: "flex", alignItems: "center", height: 72, justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, cursor: "pointer" }} onClick={() => setPage("Home")}>
+          <img src={NAV_LOGO} alt="CTS ETS" style={{ width: 52, height: 58, objectFit: "contain", borderRadius: 4 }} />
           <div className="nav-brand-text">
-            <div style={ fontFamily: S.heading, fontSize: 17, fontWeight: 700, color: "#fff", lineHeight: 1.2 }>CTS Empowerment &amp; Training Solutions</div>
-            <div style={ fontSize: 10, color: S.gold, fontFamily: S.body, letterSpacing: 1.5, marginTop: 2 }>CALLED TO SERVE — COMMITTED TO EXCELLENCE</div>
+            <div style={{ fontFamily: S.heading, fontSize: 17, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>CTS Empowerment &amp; Training Solutions</div>
+            <div style={{ fontSize: 10, color: S.gold, fontFamily: S.body, letterSpacing: 1.5, marginTop: 2 }}>CALLED TO SERVE — COMMITTED TO EXCELLENCE</div>
           </div>
         </div>
-        <div className="desktop-nav" style={ display: "flex", gap: 4, alignItems: "center" }>
+        <div className="desktop-nav" style={{ display: "flex", gap: 4, alignItems: "center" }}>
           {PAGES.map(p => (
-            <button key={p} onClick={() => setPage(p)} style={ padding: "8px 11px", borderRadius: 6, border: "none", background: page === p ? S.gold : "transparent", color: page === p ? S.navy : "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: page === p ? 700 : 500, cursor: "pointer", fontFamily: S.body, transition: "all 0.2s", whiteSpace: "nowrap" }>{p}</button>
+            <button key={p} onClick={() => setPage(p)} style={{ padding: "8px 11px", borderRadius: 6, border: "none", background: page === p ? S.gold : "transparent", color: page === p ? S.navy : "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: page === p ? 700 : 500, cursor: "pointer", fontFamily: S.body, transition: "all 0.2s", whiteSpace: "nowrap" }}>{p}</button>
           ))}
         </div>
-        <button className="mobile-menu-btn" onClick={() => setOpen(!open)} style={ display: "none", flexDirection: "column", gap: 4, background: "none", border: "none", cursor: "pointer", padding: 8 }>
-          {[0,1,2].map(i => <div key={i} style={ width: 22, height: 2, background: "#fff", borderRadius: 2 } />)}
+        <button className="mobile-menu-btn" onClick={() => setOpen(!open)} style={{ display: "none", flexDirection: "column", gap: 4, background: "none", border: "none", cursor: "pointer", padding: 8 }}>
+          {[0,1,2].map(i => <div key={i} style={{ width: 22, height: 2, background: "#fff", borderRadius: 2 }} />)}
         </button>
       </div>
       {open && (
-        <div style={ background: S.navy, borderTop: "1px solid rgba(255,255,255,0.08)", padding: "8px 0 16px" }>
+        <div style={{ background: S.navy, borderTop: "1px solid rgba(255,255,255,0.08)", padding: "8px 0 16px" }}>
           {PAGES.map(p => (
-            <button key={p} onClick={() => { setPage(p); setOpen(false); }} style={ display: "block", width: "100%", padding: "12px 24px", border: "none", background: page === p ? "rgba(196,164,75,0.12)" : "transparent", color: page === p ? S.gold : "rgba(255,255,255,0.85)", fontSize: 14, fontWeight: page === p ? 700 : 400, cursor: "pointer", fontFamily: S.body, textAlign: "left", borderLeft: page === p ? "3px solid " + S.gold : "3px solid transparent" }>{p}</button>
+            <button key={p} onClick={() => { setPage(p); setOpen(false); }} style={{ display: "block", width: "100%", padding: "12px 24px", border: "none", background: page === p ? "rgba(196,164,75,0.12)" : "transparent", color: page === p ? S.gold : "rgba(255,255,255,0.85)", fontSize: 14, fontWeight: page === p ? 700 : 400, cursor: "pointer", fontFamily: S.body, textAlign: "left", borderLeft: page === p ? "3px solid " + S.gold : "3px solid transparent" }}>{p}</button>
           ))}
         </div>
       )}
@@ -195,39 +195,39 @@ function HomePage({ setPage }) {
   return (
     <div>
       {/* Hero */}
-      <section style={ background: S.navy, color: "#fff", padding: "0", position: "relative", overflow: "hidden", minHeight: "88vh", display: "flex", alignItems: "center" }>
-        <div style={ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 70% 50%, rgba(196,145,18,0.07) 0%, transparent 65%)" } />
-        <Container style={ position: "relative", zIndex: 2, display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(32px,5vw,80px)", alignItems: "center", padding: "clamp(40px,6vw,80px) clamp(16px,3vw,48px)" } className="resp-grid-2">
+      <section style={{ background: S.navy, color: "#fff", padding: "0", position: "relative", overflow: "hidden", minHeight: "88vh", display: "flex", alignItems: "center" }}>
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 70% 50%, rgba(196,145,18,0.07) 0%, transparent 65%)" }} />
+        <Container style={{ position: "relative", zIndex: 2, display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(32px,5vw,80px)", alignItems: "center", padding: "clamp(40px,6vw,80px) clamp(16px,3vw,48px)" }} className="resp-grid-2">
           <div>
-            <div style={ display: "flex", alignItems: "center", gap: 20, marginBottom: 32, flexWrap: "wrap" }>
-              <img src={NAV_LOGO} alt="CTS ETS" style={ width: 88, height: 98, objectFit: "contain" } />
+            <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 32, flexWrap: "wrap" }}>
+              <img src={NAV_LOGO} alt="CTS ETS" style={{ width: 88, height: 98, objectFit: "contain" }} />
               <div>
-                <div style={ fontFamily: S.heading, fontSize: "clamp(22px,3vw,32px)", fontWeight: 700, color: "#fff", lineHeight: 1.2 }>CTS Empowerment &amp;<br />Training Solutions</div>
-                <div style={ fontSize: 11, color: S.gold, letterSpacing: 2, fontFamily: S.body, marginTop: 6, textTransform: "uppercase" }>Called To Serve — Committed to Excellence</div>
+                <div style={{ fontFamily: S.heading, fontSize: "clamp(22px,3vw,32px)", fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>CTS Empowerment &amp;<br />Training Solutions</div>
+                <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, fontFamily: S.body, marginTop: 6, textTransform: "uppercase" }}>Called To Serve — Committed to Excellence</div>
               </div>
             </div>
-            <div style={ display: "inline-flex", alignItems: "center", gap: 10, background: "rgba(196,145,18,0.12)", border: "1px solid rgba(196,145,18,0.3)", borderRadius: 30, padding: "8px 20px", marginBottom: 28 }>
-              <div style={ width: 8, height: 8, borderRadius: "50%", background: S.gold, animation: "pulse 2s infinite" } />
-              <span style={ fontSize: 12, color: S.gold, fontFamily: S.body, fontWeight: 600, letterSpacing: 1 }>APRIL 2026 INTAKE — NOW OPEN</span>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "rgba(196,145,18,0.12)", border: "1px solid rgba(196,145,18,0.3)", borderRadius: 30, padding: "8px 20px", marginBottom: 28 }}>
+              <div style={{ width: 8, height: 8, borderRadius: "50%", background: S.gold, animation: "pulse 2s infinite" }} />
+              <span style={{ fontSize: 12, color: S.gold, fontFamily: S.body, fontWeight: 600, letterSpacing: 1 }}>APRIL 2026 INTAKE — NOW OPEN</span>
             </div>
-            <h1 style={ fontFamily: S.heading, fontSize: "clamp(28px,4.5vw,52px)", fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: 20 }>
-              Build Real Skills.<br /><span style={ color: S.gold }>Earn Recognised</span><br />Qualifications.
+            <h1 style={{ fontFamily: S.heading, fontSize: "clamp(28px,4.5vw,52px)", fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: 20 }}>
+              Build Real Skills.<br /><span style={{ color: S.gold }}>Earn Recognised</span><br />Qualifications.
             </h1>
-            <p style={ fontFamily: S.body, fontSize: "clamp(14px,1.5vw,17px)", color: "rgba(255,255,255,0.75)", lineHeight: 1.7, marginBottom: 32, maxWidth: 480 }>
+            <p style={{ fontFamily: S.body, fontSize: "clamp(14px,1.5vw,17px)", color: "rgba(255,255,255,0.75)", lineHeight: 1.7, marginBottom: 32, maxWidth: 480 }}>
               25 programmes from Job Certificate to Bachelor's Equivalent — aligned to NCTVET &amp; City &amp; Guilds. Study online, at your pace, on your schedule.
             </p>
-            <div style={ display: "flex", gap: 14, flexWrap: "wrap" }>
-              <Btn primary onClick={() => setPage("Apply")} style={ fontSize: 15, padding: "16px 36px", color: S.navy }>Apply Now</Btn>
-              <Btn onClick={() => setPage("Programmes")} style={ border: "2px solid rgba(255,255,255,0.3)", color: "#fff", fontSize: 14 }>View Programmes</Btn>
+            <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+              <Btn primary onClick={() => setPage("Apply")} style={{ fontSize: 15, padding: "16px 36px", color: S.navy }}>Apply Now</Btn>
+              <Btn onClick={() => setPage("Programmes")} style={{ border: "2px solid rgba(255,255,255,0.3)", color: "#fff", fontSize: 14 }}>View Programmes</Btn>
             </div>
           </div>
-          <div style={ display: "flex", flexDirection: "column", gap: 16 }>
-            <img src={HERO_LOGO} alt="CTS ETS" style={ width: "100%", maxWidth: 420, margin: "0 auto", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.4)", display: "block" } />
-            <div style={ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <img src={HERO_LOGO} alt="CTS ETS" style={{ width: "100%", maxWidth: 420, margin: "0 auto", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.4)", display: "block" }} />
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               {[["25", "Programmes"], ["5", "Levels"], ["3", "Payment Plans"], ["15%", "Group Discount"]].map(([v, l]) => (
-                <div key={l} style={ background: "rgba(255,255,255,0.05)", borderRadius: 10, padding: "16px 14px", textAlign: "center", border: "1px solid rgba(255,255,255,0.08)" }>
-                  <div style={ fontFamily: S.heading, fontSize: "clamp(22px,3vw,30px)", fontWeight: 800, color: S.gold }>{v}</div>
-                  <div style={ fontSize: 11, color: "rgba(255,255,255,0.6)", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", marginTop: 4 }>{l}</div>
+                <div key={l} style={{ background: "rgba(255,255,255,0.05)", borderRadius: 10, padding: "16px 14px", textAlign: "center", border: "1px solid rgba(255,255,255,0.08)" }}>
+                  <div style={{ fontFamily: S.heading, fontSize: "clamp(22px,3vw,30px)", fontWeight: 800, color: S.gold }}>{v}</div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", marginTop: 4 }}>{l}</div>
                 </div>
               ))}
             </div>
@@ -236,31 +236,31 @@ function HomePage({ setPage }) {
       </section>
 
       {/* Partner logos */}
-      <section style={ background: S.lightBg, borderBottom: "1px solid rgba(10,35,66,0.06)" }>
-        <Container style={ padding: "32px clamp(16px,3vw,48px)" }>
+      <section style={{ background: S.lightBg, borderBottom: "1px solid rgba(10,35,66,0.06)" }}>
+        <Container style={{ padding: "32px clamp(16px,3vw,48px)" }}>
           <PartnerLogos />
         </Container>
       </section>
 
       {/* Testimonials */}
-      <section style={ background: "#fff", padding: "60px 0" }>
+      <section style={{ background: "#fff", padding: "60px 0" }}>
         <SectionHeader tag="What Our Learners Say" title="Success Stories" desc="Real results from real learners across Jamaica." />
         <Container>
-          <div style={ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 20 } className="resp-grid-2">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 20 }} className="resp-grid-2">
             {TESTIMONIALS.map((t, i) => (
-              <div key={i} style={ background: S.lightBg, borderRadius: 14, padding: "28px 24px", border: "1px solid rgba(10,35,66,0.06)", position: "relative" }>
-                <div style={ fontSize: 32, color: S.gold, fontFamily: S.heading, lineHeight: 1, marginBottom: 12, opacity: 0.4 }>"</div>
-                <p style={ fontFamily: S.body, fontSize: 15, color: "#2D3748", lineHeight: 1.7, marginBottom: 18, fontStyle: "italic" }>{t.quote}</p>
-                <div style={ borderTop: "1px solid rgba(10,35,66,0.06)", paddingTop: 14 }>
-                  <div style={ fontFamily: S.body, fontSize: 14, fontWeight: 700, color: S.navy }>{t.name}</div>
-                  <div style={ fontSize: 12, color: S.gold, fontFamily: S.body, marginTop: 2 }>{t.level}</div>
-                  <div style={ fontSize: 11, color: S.gray, fontFamily: S.body, marginTop: 2 }>📍 {t.parish}, Jamaica</div>
+              <div key={i} style={{ background: S.lightBg, borderRadius: 14, padding: "28px 24px", border: "1px solid rgba(10,35,66,0.06)", position: "relative" }}>
+                <div style={{ fontSize: 32, color: S.gold, fontFamily: S.heading, lineHeight: 1, marginBottom: 12, opacity: 0.4 }}>"</div>
+                <p style={{ fontFamily: S.body, fontSize: 15, color: "#2D3748", lineHeight: 1.7, marginBottom: 18, fontStyle: "italic" }}>{t.quote}</p>
+                <div style={{ borderTop: "1px solid rgba(10,35,66,0.06)", paddingTop: 14 }}>
+                  <div style={{ fontFamily: S.body, fontSize: 14, fontWeight: 700, color: S.navy }}>{t.name}</div>
+                  <div style={{ fontSize: 12, color: S.gold, fontFamily: S.body, marginTop: 2 }}>{t.level}</div>
+                  <div style={{ fontSize: 11, color: S.gray, fontFamily: S.body, marginTop: 2 }}>📍 {t.parish}, Jamaica</div>
                 </div>
               </div>
             ))}
           </div>
-          <div style={ textAlign: "center", marginTop: 40 }>
-            <Btn primary onClick={() => setPage("Apply")} style={ color: S.navy }>Join Our Learners — Apply Now</Btn>
+          <div style={{ textAlign: "center", marginTop: 40 }}>
+            <Btn primary onClick={() => setPage("Apply")} style={{ color: S.navy }}>Join Our Learners — Apply Now</Btn>
           </div>
         </Container>
       </section>
@@ -274,30 +274,30 @@ function AboutPage() {
     <PageWrapper bg={S.lightBg}>
       <SectionHeader tag="Our Story" title="Why We Started" desc="CTS Empowerment and Training Solutions was founded on a simple but powerful belief: access to quality training can change lives." />
       <Container>
-        <div style={ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "start" } className="resp-grid-2">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "start" }} className="resp-grid-2">
           <div>
-            <p style={ fontFamily: S.body, fontSize: 16, lineHeight: 1.8, color: "#2D3748", marginBottom: 18 }>We saw that many individuals are ready to grow, ready to work, and ready to move forward — but too often the right opportunities are not easily accessible. We recognized that gap and established CTS ETS to help bridge it.</p>
-            <p style={ fontFamily: S.body, fontSize: 16, lineHeight: 1.8, color: "#2D3748", marginBottom: 18 }>Our goal was never just to offer courses. It was to create a professional learning environment where individuals could build real skills, grow in confidence, and prepare for meaningful progress in education, employment, and life.</p>
-            <p style={ fontFamily: S.body, fontSize: 16, lineHeight: 1.8, color: "#2D3748" }>We believe that when people are equipped with the right knowledge, the right support, and the right opportunities, they are better positioned to transform their own futures.</p>
+            <p style={{ fontFamily: S.body, fontSize: 16, lineHeight: 1.8, color: "#2D3748", marginBottom: 18 }}>We saw that many individuals are ready to grow, ready to work, and ready to move forward — but too often the right opportunities are not easily accessible. We recognized that gap and established CTS ETS to help bridge it.</p>
+            <p style={{ fontFamily: S.body, fontSize: 16, lineHeight: 1.8, color: "#2D3748", marginBottom: 18 }}>Our goal was never just to offer courses. It was to create a professional learning environment where individuals could build real skills, grow in confidence, and prepare for meaningful progress in education, employment, and life.</p>
+            <p style={{ fontFamily: S.body, fontSize: 16, lineHeight: 1.8, color: "#2D3748" }}>We believe that when people are equipped with the right knowledge, the right support, and the right opportunities, they are better positioned to transform their own futures.</p>
           </div>
-          <div style={ background: S.navy, borderRadius: 16, padding: "clamp(28px,3vw,48px)", position: "relative", overflow: "hidden" }>
-            <div style={ position: "absolute", top: -40, right: -40, width: 160, height: 160, borderRadius: "50%", background: "rgba(196,145,18,0.08)" } />
-            <div style={ position: "relative", zIndex: 2 }>
-              <div style={ width: 48, height: 3, background: S.gold, marginBottom: 24, borderRadius: 2 } />
-              <h3 style={ fontFamily: S.heading, fontSize: 22, color: "#fff", marginBottom: 24, lineHeight: 1.4 }>Our Core Values</h3>
+          <div style={{ background: S.navy, borderRadius: 16, padding: "clamp(28px,3vw,48px)", position: "relative", overflow: "hidden" }}>
+            <div style={{ position: "absolute", top: -40, right: -40, width: 160, height: 160, borderRadius: "50%", background: "rgba(196,145,18,0.08)" }} />
+            <div style={{ position: "relative", zIndex: 2 }}>
+              <div style={{ width: 48, height: 3, background: S.gold, marginBottom: 24, borderRadius: 2 }} />
+              <h3 style={{ fontFamily: S.heading, fontSize: 22, color: "#fff", marginBottom: 24, lineHeight: 1.4 }}>Our Core Values</h3>
               {["Excellence", "Integrity", "Empowerment", "Service"].map((v, i) => (
-                <div key={v} style={ display: "flex", alignItems: "center", gap: 14, marginBottom: i < 3 ? 18 : 0 }>
-                  <div style={ width: 32, height: 32, borderRadius: "50%", background: "rgba(196,145,18,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }>
-                    <div style={ width: 8, height: 8, borderRadius: "50%", background: S.gold } />
+                <div key={v} style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: i < 3 ? 18 : 0 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(196,145,18,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: S.gold }} />
                   </div>
-                  <span style={ fontFamily: S.body, fontSize: 16, color: "rgba(255,255,255,0.9)", fontWeight: 500 }>{v}</span>
+                  <span style={{ fontFamily: S.body, fontSize: 16, color: "rgba(255,255,255,0.9)", fontWeight: 500 }}>{v}</span>
                 </div>
               ))}
             </div>
           </div>
         </div>
-        <div style={ textAlign: "center", marginTop: 48, padding: "24px 0", borderTop: "1px solid rgba(10,35,66,0.08)" }>
-          <p style={ fontFamily: S.heading, fontSize: 19, color: S.navy, fontStyle: "italic", opacity: 0.7 }>"Called To Serve — Committed to Excellence"</p>
+        <div style={{ textAlign: "center", marginTop: 48, padding: "24px 0", borderTop: "1px solid rgba(10,35,66,0.08)" }}>
+          <p style={{ fontFamily: S.heading, fontSize: 19, color: S.navy, fontStyle: "italic", opacity: 0.7 }}>"Called To Serve — Committed to Excellence"</p>
         </div>
       </Container>
     </PageWrapper>
@@ -334,57 +334,57 @@ function WhyChoosePage({ setPage }) {
     <PageWrapper>
       <SectionHeader tag="The CTS Difference" title="Why Choose CTS ETS?" desc="A registered post-secondary vocational training institution delivering 25 programmes almost entirely online." />
       <Container>
-        <div style={ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18, marginBottom: 56 } className="resp-grid-3">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18, marginBottom: 56 }} className="resp-grid-3">
           {reasons.map(r => (
-            <div key={r.title} style={ background: S.lightBg, borderRadius: 12, padding: "28px 24px", border: "1px solid rgba(10,35,66,0.05)" }>
-              <div style={ fontSize: 28, marginBottom: 12 }>{r.icon}</div>
-              <h3 style={ fontFamily: S.heading, fontSize: 17, color: S.navy, marginBottom: 8, fontWeight: 700 }>{r.title}</h3>
-              <p style={ fontSize: 14, color: S.gray, fontFamily: S.body, lineHeight: 1.65, margin: 0 }>{r.desc}</p>
+            <div key={r.title} style={{ background: S.lightBg, borderRadius: 12, padding: "28px 24px", border: "1px solid rgba(10,35,66,0.05)" }}>
+              <div style={{ fontSize: 28, marginBottom: 12 }}>{r.icon}</div>
+              <h3 style={{ fontFamily: S.heading, fontSize: 17, color: S.navy, marginBottom: 8, fontWeight: 700 }}>{r.title}</h3>
+              <p style={{ fontSize: 14, color: S.gray, fontFamily: S.body, lineHeight: 1.65, margin: 0 }}>{r.desc}</p>
             </div>
           ))}
         </div>
         {/* Comparison */}
-        <h3 style={ fontFamily: S.heading, fontSize: "clamp(20px,3vw,28px)", color: S.navy, fontWeight: 700, textAlign: "center", marginBottom: 24 }>CTS ETS vs Traditional Training</h3>
-        <div style={ borderRadius: 12, overflow: "hidden", border: "1px solid rgba(10,35,66,0.06)", marginBottom: 56 }>
-          <div style={ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: S.navy } className="compare-row">
-            <div style={ padding: "14px 20px" } /><div style={ padding: "14px 20px", textAlign: "center", borderLeft: "1px solid rgba(255,255,255,0.08)" }><span style={ fontSize: 12, fontWeight: 700, color: S.gold, fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase" }>CTS ETS</span></div><div style={ padding: "14px 20px", textAlign: "center", borderLeft: "1px solid rgba(255,255,255,0.08)" }><span style={ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.5)", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase" }>Traditional</span></div>
+        <h3 style={{ fontFamily: S.heading, fontSize: "clamp(20px,3vw,28px)", color: S.navy, fontWeight: 700, textAlign: "center", marginBottom: 24 }}>CTS ETS vs Traditional Training</h3>
+        <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid rgba(10,35,66,0.06)", marginBottom: 56 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: S.navy }} className="compare-row">
+            <div style={{ padding: "14px 20px" }} /><div style={{ padding: "14px 20px", textAlign: "center", borderLeft: "1px solid rgba(255,255,255,0.08)" }}><span style={{ fontSize: 12, fontWeight: 700, color: S.gold, fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase" }}>CTS ETS</span></div><div style={{ padding: "14px 20px", textAlign: "center", borderLeft: "1px solid rgba(255,255,255,0.08)" }}><span style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.5)", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase" }}>Traditional</span></div>
           </div>
           {comparison.map((r, i) => (
-            <div key={r.c} style={ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: i % 2 === 0 ? "#fff" : S.lightBg, borderTop: "1px solid rgba(10,35,66,0.04)" } className="compare-row">
-              <div style={ padding: "12px 20px", fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body }>{r.c}</div>
-              <div style={ padding: "12px 20px", fontSize: 13, color: S.navy, fontFamily: S.body, textAlign: "center", borderLeft: "1px solid rgba(10,35,66,0.04)", fontWeight: 600, background: "rgba(196,145,18,0.03)" }>{r.cts}</div>
-              <div style={ padding: "12px 20px", fontSize: 13, color: S.gray, fontFamily: S.body, textAlign: "center", borderLeft: "1px solid rgba(10,35,66,0.04)" }>{r.trad}</div>
+            <div key={r.c} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: i % 2 === 0 ? "#fff" : S.lightBg, borderTop: "1px solid rgba(10,35,66,0.04)" }} className="compare-row">
+              <div style={{ padding: "12px 20px", fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body }}>{r.c}</div>
+              <div style={{ padding: "12px 20px", fontSize: 13, color: S.navy, fontFamily: S.body, textAlign: "center", borderLeft: "1px solid rgba(10,35,66,0.04)", fontWeight: 600, background: "rgba(196,145,18,0.03)" }}>{r.cts}</div>
+              <div style={{ padding: "12px 20px", fontSize: 13, color: S.gray, fontFamily: S.body, textAlign: "center", borderLeft: "1px solid rgba(10,35,66,0.04)" }}>{r.trad}</div>
             </div>
           ))}
         </div>
         {/* Who is it for */}
-        <div style={ background: S.navy, borderRadius: 16, padding: "clamp(28px,3vw,48px)", marginBottom: 40 }>
-          <div style={ textAlign: "center", marginBottom: 28 }>
-            <span style={ fontSize: 11, color: S.gold, letterSpacing: 3, textTransform: "uppercase", fontFamily: S.body }>Built For You</span>
-            <h3 style={ fontFamily: S.heading, fontSize: "clamp(20px,3vw,28px)", color: "#fff", margin: "8px 0 0", fontWeight: 700 }>Who Is CTS ETS For?</h3>
+        <div style={{ background: S.navy, borderRadius: 16, padding: "clamp(28px,3vw,48px)", marginBottom: 40 }}>
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
+            <span style={{ fontSize: 11, color: S.gold, letterSpacing: 3, textTransform: "uppercase", fontFamily: S.body }}>Built For You</span>
+            <h3 style={{ fontFamily: S.heading, fontSize: "clamp(20px,3vw,28px)", color: "#fff", margin: "8px 0 0", fontWeight: 700 }}>Who Is CTS ETS For?</h3>
           </div>
-          <div style={ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14 } className="resp-grid-2">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14 }} className="resp-grid-2">
             {audiences.map((a, i) => (
-              <div key={i} style={ display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 18px", background: "rgba(255,255,255,0.04)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.05)" }>
-                <span style={ fontSize: 20, flexShrink: 0 }>{a.icon}</span>
-                <span style={ fontSize: 14, color: "rgba(255,255,255,0.9)", fontFamily: S.body, lineHeight: 1.55 }>{a.text}</span>
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 18px", background: "rgba(255,255,255,0.04)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.05)" }}>
+                <span style={{ fontSize: 20, flexShrink: 0 }}>{a.icon}</span>
+                <span style={{ fontSize: 14, color: "rgba(255,255,255,0.9)", fontFamily: S.body, lineHeight: 1.55 }}>{a.text}</span>
               </div>
             ))}
           </div>
         </div>
         {/* What you get */}
-        <div style={ padding: "24px 28px", borderRadius: 12, background: S.lightBg, border: "1px solid rgba(10,35,66,0.06)" }>
-          <h4 style={ fontFamily: S.heading, fontSize: 17, color: S.navy, marginBottom: 14, fontWeight: 700 }>What Every Programme Includes</h4>
-          <div style={ display: "flex", flexWrap: "wrap", gap: 10 }>
+        <div style={{ padding: "24px 28px", borderRadius: 12, background: S.lightBg, border: "1px solid rgba(10,35,66,0.06)" }}>
+          <h4 style={{ fontFamily: S.heading, fontSize: 17, color: S.navy, marginBottom: 14, fontWeight: 700 }}>What Every Programme Includes</h4>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
             {["Online learning platform", "Learner guides for every unit", "Internal cluster assessments", "Personalised feedback", "Email & WhatsApp support", "Monthly group Q&A sessions (when required)"].map(item => (
-              <div key={item} style={ display: "flex", alignItems: "center", gap: 7, padding: "7px 14px", borderRadius: 6, background: "#fff", border: "1px solid rgba(10,35,66,0.06)", fontSize: 13, color: "#2D3748", fontFamily: S.body }>
-                <div style={ width: 5, height: 5, borderRadius: "50%", background: S.gold, flexShrink: 0 } />{item}
+              <div key={item} style={{ display: "flex", alignItems: "center", gap: 7, padding: "7px 14px", borderRadius: 6, background: "#fff", border: "1px solid rgba(10,35,66,0.06)", fontSize: 13, color: "#2D3748", fontFamily: S.body }}>
+                <div style={{ width: 5, height: 5, borderRadius: "50%", background: S.gold, flexShrink: 0 }} />{item}
               </div>
             ))}
           </div>
         </div>
-        <div style={ textAlign: "center", marginTop: 40 }>
-          <Btn primary onClick={() => setPage("Apply")} style={ color: S.navy }>Start Your Application</Btn>
+        <div style={{ textAlign: "center", marginTop: 40 }}>
+          <Btn primary onClick={() => setPage("Apply")} style={{ color: S.navy }}>Start Your Application</Btn>
         </div>
       </Container>
     </PageWrapper>
@@ -405,64 +405,64 @@ function ProgrammesPage({ setPage }) {
     <PageWrapper>
       <SectionHeader tag="25 Programmes" title="Our Programmes" desc="All aligned to NCTVET and City & Guilds standards, from Job Certificate to Bachelor's Equivalent (Level 5)." />
       <Container>
-        <div style={ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginBottom: 32 }>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginBottom: 32 }}>
           {Object.keys(PROGRAMMES).map(level => (
-            <button key={level} onClick={() => setActiveLevel(level)} style={ padding: "9px 18px", borderRadius: 6, border: "1px solid", borderColor: activeLevel === level ? S.gold : "rgba(10,35,66,0.1)", background: activeLevel === level ? S.gold : "transparent", color: activeLevel === level ? S.navy : "#2D3748", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: S.body, transition: "all 0.25s", whiteSpace: "nowrap" }>{level}</button>
+            <button key={level} onClick={() => setActiveLevel(level)} style={{ padding: "9px 18px", borderRadius: 6, border: "1px solid", borderColor: activeLevel === level ? S.gold : "rgba(10,35,66,0.1)", background: activeLevel === level ? S.gold : "transparent", color: activeLevel === level ? S.navy : "#2D3748", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: S.body, transition: "all 0.25s", whiteSpace: "nowrap" }}>{level}</button>
           ))}
         </div>
-        <div style={ background: S.lightBg, borderRadius: 12, overflow: "hidden", border: "1px solid rgba(10,35,66,0.06)" }>
-          <div style={ display: "grid", gridTemplateColumns: "1fr 100px 100px 100px", padding: "14px 24px", background: S.navy, gap: 10 } className="prog-row">
+        <div style={{ background: S.lightBg, borderRadius: 12, overflow: "hidden", border: "1px solid rgba(10,35,66,0.06)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 100px 100px 100px", padding: "14px 24px", background: S.navy, gap: 10 }} className="prog-row">
             {["Programme", "Duration", "Tuition", "Total*"].map((h, i) => (
-              <span key={h} style={ fontSize: 11, color: "rgba(255,255,255,0.65)", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", fontWeight: 600, textAlign: i > 0 ? "center" : "left" }>{h}</span>
+              <span key={h} style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", fontWeight: 600, textAlign: i > 0 ? "center" : "left" }}>{h}</span>
             ))}
           </div>
           {PROGRAMMES[activeLevel].map((p, i) => (
-            <div key={p.name} style={ display: "grid", gridTemplateColumns: "1fr 100px 100px 100px", padding: "14px 24px", background: i % 2 === 0 ? "#fff" : S.lightBg, borderBottom: "1px solid rgba(10,35,66,0.03)", gap: 10 } className="prog-row">
-              <span style={ fontSize: 14, color: S.navy, fontFamily: S.body, fontWeight: 500 }>{p.name}</span>
-              <span style={ fontSize: 13, color: S.gray, fontFamily: S.body, textAlign: "center" }>{p.duration}</span>
-              <span style={ fontSize: 13, color: S.gray, fontFamily: S.body, textAlign: "center" }>{p.tuition}</span>
-              <span style={ fontSize: 14, color: S.navy, fontFamily: S.body, fontWeight: 700, textAlign: "center" }>{p.total}</span>
+            <div key={p.name} style={{ display: "grid", gridTemplateColumns: "1fr 100px 100px 100px", padding: "14px 24px", background: i % 2 === 0 ? "#fff" : S.lightBg, borderBottom: "1px solid rgba(10,35,66,0.03)", gap: 10 }} className="prog-row">
+              <span style={{ fontSize: 14, color: S.navy, fontFamily: S.body, fontWeight: 500 }}>{p.name}</span>
+              <span style={{ fontSize: 13, color: S.gray, fontFamily: S.body, textAlign: "center" }}>{p.duration}</span>
+              <span style={{ fontSize: 13, color: S.gray, fontFamily: S.body, textAlign: "center" }}>{p.tuition}</span>
+              <span style={{ fontSize: 14, color: S.navy, fontFamily: S.body, fontWeight: 700, textAlign: "center" }}>{p.total}</span>
             </div>
           ))}
-          <div style={ padding: "14px 24px", background: "rgba(196,145,18,0.06)", fontSize: 12, color: "#2D3748", fontFamily: S.body, lineHeight: 1.55 }>
+          <div style={{ padding: "14px 24px", background: "rgba(196,145,18,0.06)", fontSize: 12, color: "#2D3748", fontFamily: S.body, lineHeight: 1.55 }}>
             <strong>* Total = Tuition + $5,000 Registration Fee (non-refundable).</strong> All fees in JMD. Includes cluster assessments. NCTVET external fees separate.
           </div>
         </div>
 
-        <div style={ marginTop: 56 }>
-          <div style={ textAlign: "center", marginBottom: 32 }>
-            <span style={ fontSize: 11, color: S.gold, letterSpacing: 3, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600 }>What You Need</span>
-            <h3 style={ fontFamily: S.heading, fontSize: "clamp(22px,3vw,32px)", color: S.navy, margin: "8px 0 0", fontWeight: 700 }>Entry Requirements by Level</h3>
-            <p style={ fontFamily: S.body, fontSize: 14, color: S.gray, marginTop: 10, maxWidth: 560, marginLeft: "auto", marginRight: "auto", lineHeight: 1.6 }>Each level builds on the one before. Levels 4 and 5 require prior qualifications in a related business area.</p>
+        <div style={{ marginTop: 56 }}>
+          <div style={{ textAlign: "center", marginBottom: 32 }}>
+            <span style={{ fontSize: 11, color: S.gold, letterSpacing: 3, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600 }}>What You Need</span>
+            <h3 style={{ fontFamily: S.heading, fontSize: "clamp(22px,3vw,32px)", color: S.navy, margin: "8px 0 0", fontWeight: 700 }}>Entry Requirements by Level</h3>
+            <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, marginTop: 10, maxWidth: 560, marginLeft: "auto", marginRight: "auto", lineHeight: 1.6 }}>Each level builds on the one before. Levels 4 and 5 require prior qualifications in a related business area.</p>
           </div>
-          <div style={ position: "relative" }>
-            <div style={ position: "absolute", left: 28, top: 40, bottom: 40, width: 2, background: "rgba(10,35,66,0.08)", zIndex: 0 } className="req-line" />
+          <div style={{ position: "relative" }}>
+            <div style={{ position: "absolute", left: 28, top: 40, bottom: 40, width: 2, background: "rgba(10,35,66,0.08)", zIndex: 0 }} className="req-line" />
             {REQUIREMENTS.map((r, i) => (
-              <div key={r.level} style={ display: "flex", gap: 20, marginBottom: i < REQUIREMENTS.length - 1 ? 16 : 0, position: "relative", zIndex: 1 } className="req-row">
-                <div style={ width: 58, display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0, paddingTop: 20 }>
-                  <div style={ width: 40, height: 40, borderRadius: "50%", background: r.color + "15", border: "2px solid " + r.color + "40", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }>{r.icon}</div>
+              <div key={r.level} style={{ display: "flex", gap: 20, marginBottom: i < REQUIREMENTS.length - 1 ? 16 : 0, position: "relative", zIndex: 1 }} className="req-row">
+                <div style={{ width: 58, display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0, paddingTop: 20 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: "50%", background: r.color + "15", border: "2px solid " + r.color + "40", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>{r.icon}</div>
                 </div>
-                <div style={ flex: 1, background: "#fff", borderRadius: 12, padding: "20px 24px", border: "1px solid rgba(10,35,66,0.06)", borderLeft: "3px solid " + r.color }>
-                  <div style={ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8, marginBottom: 8 }>
-                    <h4 style={ fontFamily: S.heading, fontSize: 17, color: S.navy, fontWeight: 700, margin: 0 }>{r.level}</h4>
-                    <span style={ fontSize: 11, fontWeight: 700, color: r.color, fontFamily: S.body, letterSpacing: 0.5, background: r.color + "10", padding: "4px 12px", borderRadius: 20, whiteSpace: "nowrap" }>{r.req}</span>
+                <div style={{ flex: 1, background: "#fff", borderRadius: 12, padding: "20px 24px", border: "1px solid rgba(10,35,66,0.06)", borderLeft: "3px solid " + r.color }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
+                    <h4 style={{ fontFamily: S.heading, fontSize: 17, color: S.navy, fontWeight: 700, margin: 0 }}>{r.level}</h4>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: r.color, fontFamily: S.body, letterSpacing: 0.5, background: r.color + "10", padding: "4px 12px", borderRadius: 20, whiteSpace: "nowrap" }}>{r.req}</span>
                   </div>
-                  <p style={ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.6, margin: 0 }>{r.detail}</p>
+                  <p style={{ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.6, margin: 0 }}>{r.detail}</p>
                 </div>
               </div>
             ))}
           </div>
-          <div style={ marginTop: 28, padding: "18px 24px", borderRadius: 10, background: "rgba(196,145,18,0.05)", border: "1px solid rgba(196,145,18,0.15)", display: "flex", gap: 12, alignItems: "flex-start" } className="cert-note">
-            <span style={ fontSize: 18, flexShrink: 0, marginTop: 1 }>💡</span>
+          <div style={{ marginTop: 28, padding: "18px 24px", borderRadius: 10, background: "rgba(196,145,18,0.05)", border: "1px solid rgba(196,145,18,0.15)", display: "flex", gap: 12, alignItems: "flex-start" }} className="cert-note">
+            <span style={{ fontSize: 18, flexShrink: 0, marginTop: 1 }}>💡</span>
             <div>
-              <div style={ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 4 }>Prior Learning &amp; Experience</div>
-              <p style={ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.6, margin: 0 }>Applicants who do not meet the standard entry requirements but have significant work experience in a related field may be considered through our Recognition of Prior Learning (RPL) process. Contact us to discuss your eligibility.</p>
+              <div style={{ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 4 }}>Prior Learning &amp; Experience</div>
+              <p style={{ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.6, margin: 0 }}>Applicants who do not meet the standard entry requirements but have significant work experience in a related field may be considered through our Recognition of Prior Learning (RPL) process. Contact us to discuss your eligibility.</p>
             </div>
           </div>
         </div>
-        <div style={ display: "flex", justifyContent: "center", gap: 16, marginTop: 40, flexWrap: "wrap" }>
-          <Btn primary onClick={() => setPage("Fees & Calculator")} style={ color: S.navy }>View Fees &amp; Calculator</Btn>
-          <Btn primary onClick={() => setPage("Apply")} style={ color: S.navy }>Apply Now</Btn>
+        <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: 40, flexWrap: "wrap" }}>
+          <Btn primary onClick={() => setPage("Fees & Calculator")} style={{ color: S.navy }}>View Fees &amp; Calculator</Btn>
+          <Btn primary onClick={() => setPage("Apply")} style={{ color: S.navy }}>Apply Now</Btn>
         </div>
       </Container>
     </PageWrapper>
@@ -481,34 +481,34 @@ function CertificationPage() {
       <SectionHeader tag="Your Pathway" title="Certification & Assessment" desc="All programmes are aligned to both NCTVET and City & Guilds standards with a clear, structured assessment pathway." />
       <Container>
         {/* Partner Logos */}
-        <div style={ background: "#fff", borderRadius: 12, padding: "24px", marginBottom: 40, border: "1px solid rgba(10,35,66,0.06)" }>
+        <div style={{ background: "#fff", borderRadius: 12, padding: "24px", marginBottom: 40, border: "1px solid rgba(10,35,66,0.06)" }}>
           <PartnerLogos />
         </div>
-        <div style={ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 } className="resp-grid-3">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }} className="resp-grid-3">
           {steps.map(s => (
-            <div key={s.num} style={ background: "#fff", borderRadius: 14, padding: "32px 28px", border: "1px solid rgba(10,35,66,0.06)", position: "relative", overflow: "hidden" }>
-              <div style={ position: "absolute", top: -8, right: 12, fontSize: 72, fontWeight: 800, color: "rgba(10,35,66,0.03)", fontFamily: S.heading }>{s.num}</div>
-              <div style={ position: "relative", zIndex: 2 }>
-                <div style={ fontSize: 28, marginBottom: 14 }>{s.icon}</div>
-                <div style={ fontSize: 10, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 6 }>Step {s.num}</div>
-                <h3 style={ fontFamily: S.heading, fontSize: 18, color: S.navy, marginBottom: 12, fontWeight: 700 }>{s.title}</h3>
-                <p style={ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.6, marginBottom: 16 }>{s.desc}</p>
-                <div style={ width: "100%", height: 1, background: "rgba(10,35,66,0.06)", marginBottom: 14 } />
+            <div key={s.num} style={{ background: "#fff", borderRadius: 14, padding: "32px 28px", border: "1px solid rgba(10,35,66,0.06)", position: "relative", overflow: "hidden" }}>
+              <div style={{ position: "absolute", top: -8, right: 12, fontSize: 72, fontWeight: 800, color: "rgba(10,35,66,0.03)", fontFamily: S.heading }}>{s.num}</div>
+              <div style={{ position: "relative", zIndex: 2 }}>
+                <div style={{ fontSize: 28, marginBottom: 14 }}>{s.icon}</div>
+                <div style={{ fontSize: 10, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 6 }}>Step {s.num}</div>
+                <h3 style={{ fontFamily: S.heading, fontSize: 18, color: S.navy, marginBottom: 12, fontWeight: 700 }}>{s.title}</h3>
+                <p style={{ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.6, marginBottom: 16 }}>{s.desc}</p>
+                <div style={{ width: "100%", height: 1, background: "rgba(10,35,66,0.06)", marginBottom: 14 }} />
                 {s.items.map((item, j) => (
-                  <div key={j} style={ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: j < s.items.length - 1 ? 8 : 0 }>
-                    <div style={ width: 5, height: 5, borderRadius: "50%", background: S.gold, marginTop: 5, flexShrink: 0 } />
-                    <span style={ fontSize: 12, color: "#2D3748", fontFamily: S.body, lineHeight: 1.45 }>{item}</span>
+                  <div key={j} style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: j < s.items.length - 1 ? 8 : 0 }}>
+                    <div style={{ width: 5, height: 5, borderRadius: "50%", background: S.gold, marginTop: 5, flexShrink: 0 }} />
+                    <span style={{ fontSize: 12, color: "#2D3748", fontFamily: S.body, lineHeight: 1.45 }}>{item}</span>
                   </div>
                 ))}
               </div>
             </div>
           ))}
         </div>
-        <div style={ marginTop: 32, padding: "20px 28px", borderRadius: 10, background: "#fff", border: "1px solid rgba(196,145,18,0.2)", display: "flex", gap: 14, alignItems: "flex-start" } className="cert-note">
-          <div style={ width: 36, height: 36, borderRadius: 8, background: "rgba(196,145,18,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }><span style={ fontSize: 16, color: S.gold }>ℹ</span></div>
+        <div style={{ marginTop: 32, padding: "20px 28px", borderRadius: 10, background: "#fff", border: "1px solid rgba(196,145,18,0.2)", display: "flex", gap: 14, alignItems: "flex-start" }} className="cert-note">
+          <div style={{ width: 36, height: 36, borderRadius: 8, background: "rgba(196,145,18,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><span style={{ fontSize: 16, color: S.gold }}>ℹ</span></div>
           <div>
-            <div style={ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 4 }>External Assessment Fees</div>
-            <p style={ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.6, margin: 0 }>NCTVET external assessment and certification fees are not included in tuition and are payable directly to the NCTVET. Learners will be advised of applicable fees prior to registration.</p>
+            <div style={{ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 4 }}>External Assessment Fees</div>
+            <p style={{ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.6, margin: 0 }}>NCTVET external assessment and certification fees are not included in tuition and are payable directly to the NCTVET. Learners will be advised of applicable fees prior to registration.</p>
           </div>
         </div>
       </Container>
@@ -545,68 +545,68 @@ function FeesPage({ setPage }) {
     <PageWrapper>
       <SectionHeader tag="Plan Your Investment" title="Fees & Payment Calculator" desc="Select your programme and plan to see exactly what you'll pay and when." />
       <Container>
-        <div style={ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18, marginBottom: 48 } className="resp-grid-3">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18, marginBottom: 48 }} className="resp-grid-3">
           {[{ n: "Gold", f: "0%", d: "Full payment at enrolment. Best value." }, { n: "Silver", f: "+5%", d: "50% at enrolment, 50% at mid-point." }, { n: "Bronze", f: "+8%", d: "20% deposit, then equal monthly payments." }].map(p => (
-            <div key={p.n} style={ background: p.n === "Gold" ? "rgba(196,145,18,0.06)" : S.lightBg, borderRadius: 12, padding: "24px 20px", border: "1px solid " + (p.n === "Gold" ? "rgba(196,145,18,0.2)" : "rgba(10,35,66,0.06)"), textAlign: "center" }>
-              <div style={ fontSize: 13, fontWeight: 700, color: planColors[p.n], fontFamily: S.body, letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }>{p.n}</div>
-              <div style={ fontSize: 28, fontWeight: 700, color: S.navy, fontFamily: S.heading }>{p.f}</div>
-              <div style={ fontSize: 12, color: S.gray, fontFamily: S.body, marginTop: 8, lineHeight: 1.5 }>{p.d}</div>
+            <div key={p.n} style={{ background: p.n === "Gold" ? "rgba(196,145,18,0.06)" : S.lightBg, borderRadius: 12, padding: "24px 20px", border: "1px solid " + (p.n === "Gold" ? "rgba(196,145,18,0.2)" : "rgba(10,35,66,0.06)"), textAlign: "center" }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: planColors[p.n], fontFamily: S.body, letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>{p.n}</div>
+              <div style={{ fontSize: 28, fontWeight: 700, color: S.navy, fontFamily: S.heading }}>{p.f}</div>
+              <div style={{ fontSize: 12, color: S.gray, fontFamily: S.body, marginTop: 8, lineHeight: 1.5 }}>{p.d}</div>
             </div>
           ))}
         </div>
-        <div style={ display: "grid", gridTemplateColumns: "360px 1fr", gap: 28, alignItems: "start" } className="resp-grid-calc">
-          <div style={ background: S.lightBg, borderRadius: 14, padding: "28px 24px", border: "1px solid rgba(10,35,66,0.06)" }>
-            <label style={ fontSize: 10, color: S.gray, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600, display: "block", marginBottom: 8 }>1. Level</label>
-            <select value={selLevel} onChange={e => setSelLevel(e.target.value)} style={ width: "100%", padding: "12px 14px", borderRadius: 6, border: "2px solid rgba(10,35,66,0.1)", background: "#fff", fontSize: 13, fontFamily: S.body, color: S.navy, fontWeight: 600, cursor: "pointer", marginBottom: 20, appearance: "none" }>
+        <div style={{ display: "grid", gridTemplateColumns: "360px 1fr", gap: 28, alignItems: "start" }} className="resp-grid-calc">
+          <div style={{ background: S.lightBg, borderRadius: 14, padding: "28px 24px", border: "1px solid rgba(10,35,66,0.06)" }}>
+            <label style={{ fontSize: 10, color: S.gray, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600, display: "block", marginBottom: 8 }}>1. Level</label>
+            <select value={selLevel} onChange={e => setSelLevel(e.target.value)} style={{ width: "100%", padding: "12px 14px", borderRadius: 6, border: "2px solid rgba(10,35,66,0.1)", background: "#fff", fontSize: 13, fontFamily: S.body, color: S.navy, fontWeight: 600, cursor: "pointer", marginBottom: 20, appearance: "none" }}>
               {levels.map(l => <option key={l} value={l}>{l}</option>)}
             </select>
-            <label style={ fontSize: 10, color: S.gray, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600, display: "block", marginBottom: 8 }>2. Programme</label>
-            <div style={ display: "flex", flexDirection: "column", gap: 6, marginBottom: 20 }>
+            <label style={{ fontSize: 10, color: S.gray, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600, display: "block", marginBottom: 8 }}>2. Programme</label>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 20 }}>
               {progsForLevel.map(p => (
-                <button key={p.name} onClick={() => setSelProg(p)} style={ padding: "10px 14px", borderRadius: 6, border: "2px solid " + (prog?.name === p.name ? S.gold : "rgba(10,35,66,0.08)"), background: prog?.name === p.name ? "rgba(196,145,18,0.06)" : "#fff", color: S.navy, fontSize: 13, fontWeight: prog?.name === p.name ? 700 : 500, cursor: "pointer", fontFamily: S.body, textAlign: "left" }>
-                  <div>{p.name}</div><div style={ fontSize: 11, color: S.gray, marginTop: 2 }>Tuition: {fmt(p.tuition)}</div>
+                <button key={p.name} onClick={() => setSelProg(p)} style={{ padding: "10px 14px", borderRadius: 6, border: "2px solid " + (prog?.name === p.name ? S.gold : "rgba(10,35,66,0.08)"), background: prog?.name === p.name ? "rgba(196,145,18,0.06)" : "#fff", color: S.navy, fontSize: 13, fontWeight: prog?.name === p.name ? 700 : 500, cursor: "pointer", fontFamily: S.body, textAlign: "left" }}>
+                  <div>{p.name}</div><div style={{ fontSize: 11, color: S.gray, marginTop: 2 }}>Tuition: {fmt(p.tuition)}</div>
                 </button>
               ))}
             </div>
-            <label style={ fontSize: 10, color: S.gray, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600, display: "block", marginBottom: 8 }>3. Payment Plan</label>
-            {isGoldOnly && <div style={ fontSize: 11, color: S.gold, fontFamily: S.body, marginBottom: 8, padding: "6px 10px", background: "rgba(196,145,18,0.08)", borderRadius: 4 }>JC &amp; Level 2: Full payment (Gold) only.</div>}
-            <div style={ display: "flex", gap: 6, marginBottom: 18 }>
+            <label style={{ fontSize: 10, color: S.gray, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600, display: "block", marginBottom: 8 }}>3. Payment Plan</label>
+            {isGoldOnly && <div style={{ fontSize: 11, color: S.gold, fontFamily: S.body, marginBottom: 8, padding: "6px 10px", background: "rgba(196,145,18,0.08)", borderRadius: 4 }}>JC &amp; Level 2: Full payment (Gold) only.</div>}
+            <div style={{ display: "flex", gap: 6, marginBottom: 18 }}>
               {["Gold","Silver","Bronze"].map(plan => { const dis = isGoldOnly && plan !== "Gold"; const act = selPlan === plan; return (
-                <button key={plan} onClick={() => !dis && setSelPlan(plan)} style={ flex: 1, padding: "12px 8px", borderRadius: 6, border: "2px solid " + (act ? planColors[plan] : "rgba(10,35,66,0.08)"), background: act ? planColors[plan] + "12" : "#fff", cursor: dis ? "not-allowed" : "pointer", opacity: dis ? 0.3 : 1, textAlign: "center" }>
-                  <div style={ fontSize: 12, fontWeight: 700, color: act ? planColors[plan] : S.gray, fontFamily: S.body }>{plan}</div>
-                  <div style={ fontSize: 10, color: S.gray, fontFamily: S.body }>{plan === "Gold" ? "0%" : plan === "Silver" ? "+5%" : "+8%"}</div>
+                <button key={plan} onClick={() => !dis && setSelPlan(plan)} style={{ flex: 1, padding: "12px 8px", borderRadius: 6, border: "2px solid " + (act ? planColors[plan] : "rgba(10,35,66,0.08)"), background: act ? planColors[plan] + "12" : "#fff", cursor: dis ? "not-allowed" : "pointer", opacity: dis ? 0.3 : 1, textAlign: "center" }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: act ? planColors[plan] : S.gray, fontFamily: S.body }}>{plan}</div>
+                  <div style={{ fontSize: 10, color: S.gray, fontFamily: S.body }}>{plan === "Gold" ? "0%" : plan === "Silver" ? "+5%" : "+8%"}</div>
                 </button>
               ); }}
             </div>
-            <button onClick={() => setIsGroup(!isGroup)} style={ width: "100%", padding: "12px 14px", borderRadius: 6, border: "2px solid " + (isGroup ? "#2E7D32" : "rgba(10,35,66,0.08)"), background: isGroup ? "rgba(46,125,50,0.05)" : "#fff", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }>
-              <div style={ width: 20, height: 20, borderRadius: 3, border: "2px solid " + (isGroup ? "#2E7D32" : "#ccc"), background: isGroup ? "#2E7D32" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }>{isGroup && <span style={ color: "#fff", fontSize: 12 }>✓</span>}</div>
-              <div style={ textAlign: "left" }><div style={ fontSize: 12, fontWeight: 600, color: S.navy, fontFamily: S.body }>Group (8+ learners)</div><div style={ fontSize: 10, color: S.gray, fontFamily: S.body }>15% discount</div></div>
+            <button onClick={() => setIsGroup(!isGroup)} style={{ width: "100%", padding: "12px 14px", borderRadius: 6, border: "2px solid " + (isGroup ? "#2E7D32" : "rgba(10,35,66,0.08)"), background: isGroup ? "rgba(46,125,50,0.05)" : "#fff", cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 20, height: 20, borderRadius: 3, border: "2px solid " + (isGroup ? "#2E7D32" : "#ccc"), background: isGroup ? "#2E7D32" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{isGroup && <span style={{ color: "#fff", fontSize: 12 }}>✓</span>}</div>
+              <div style={{ textAlign: "left" }}><div style={{ fontSize: 12, fontWeight: 600, color: S.navy, fontFamily: S.body }}>Group (8+ learners)</div><div style={{ fontSize: 10, color: S.gray, fontFamily: S.body }}>15% discount</div></div>
             </button>
           </div>
           {result && (
-            <div style={ background: S.navy, borderRadius: 14, padding: "clamp(24px,3vw,36px)", position: "relative", overflow: "hidden" }>
-              <div style={ position: "absolute", top: -50, right: -50, width: 180, height: 180, borderRadius: "50%", background: "radial-gradient(circle, rgba(196,145,18,0.07) 0%, transparent 70%)" } />
-              <div style={ position: "relative", zIndex: 2 }>
-                <div style={ fontSize: 10, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 6 }>Your Payment Schedule</div>
-                <div style={ fontSize: 13, color: "rgba(255,255,255,0.6)", fontFamily: S.body, marginBottom: 20 }>{prog?.name} — {result.plan} Plan</div>
+            <div style={{ background: S.navy, borderRadius: 14, padding: "clamp(24px,3vw,36px)", position: "relative", overflow: "hidden" }}>
+              <div style={{ position: "absolute", top: -50, right: -50, width: 180, height: 180, borderRadius: "50%", background: "radial-gradient(circle, rgba(196,145,18,0.07) 0%, transparent 70%)" }} />
+              <div style={{ position: "relative", zIndex: 2 }}>
+                <div style={{ fontSize: 10, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 6 }}>Your Payment Schedule</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", fontFamily: S.body, marginBottom: 20 }}>{prog?.name} — {result.plan} Plan</div>
                 {result.steps.map((step, i) => (
-                  <div key={i} style={ padding: "18px 0", borderBottom: i < result.steps.length - 1 ? "1px solid rgba(255,255,255,0.08)" : "none" }>
-                    <div style={ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }>
-                      <span style={ fontSize: 13, color: "rgba(255,255,255,0.7)", fontFamily: S.body }>{step.label}</span>
-                      <span style={ fontSize: 22, fontWeight: 700, color: S.gold, fontFamily: S.heading }>{step.amount}</span>
+                  <div key={i} style={{ padding: "18px 0", borderBottom: i < result.steps.length - 1 ? "1px solid rgba(255,255,255,0.08)" : "none" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+                      <span style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", fontFamily: S.body }}>{step.label}</span>
+                      <span style={{ fontSize: 22, fontWeight: 700, color: S.gold, fontFamily: S.heading }}>{step.amount}</span>
                     </div>
-                    <div style={ fontSize: 11, color: "rgba(255,255,255,0.4)", fontFamily: S.body }>{step.detail}</div>
+                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontFamily: S.body }}>{step.detail}</div>
                   </div>
                 ))}
-                <div style={ marginTop: 24, padding: "16px 0", borderTop: "1px solid rgba(255,255,255,0.1)" }>
-                  <div style={ display: "flex", justifyContent: "space-between", alignItems: "center" }>
-                    <span style={ fontSize: 13, color: "rgba(255,255,255,0.6)", fontFamily: S.body }>Total Cost</span>
-                    <span style={ fontSize: 26, fontWeight: 800, color: "#fff", fontFamily: S.heading }>{result.grandTotal}</span>
+                <div style={{ marginTop: 24, padding: "16px 0", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", fontFamily: S.body }}>Total Cost</span>
+                    <span style={{ fontSize: 26, fontWeight: 800, color: "#fff", fontFamily: S.heading }}>{result.grandTotal}</span>
                   </div>
-                  {result.savings && <div style={ fontSize: 12, color: "#81C784", fontFamily: S.body, marginTop: 8, textAlign: "right" }>Group discount saves {result.savings}</div>}
+                  {result.savings && <div style={{ fontSize: 12, color: "#81C784", fontFamily: S.body, marginTop: 8, textAlign: "right" }}>Group discount saves {result.savings}</div>}
                 </div>
                 {result.plan !== "Gold" && (
-                  <div style={ marginTop: 16, padding: "12px 16px", borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", fontSize: 11, color: "rgba(255,255,255,0.45)", fontFamily: S.body, lineHeight: 1.5 }>
+                  <div style={{ marginTop: 16, padding: "12px 16px", borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", fontSize: 11, color: "rgba(255,255,255,0.45)", fontFamily: S.body, lineHeight: 1.5 }}>
                     Silver &amp; Bronze plans include a processing fee (+5% or +8%). Gold plan (full payment) has no surcharge.
                   </div>
                 )}
@@ -614,7 +614,7 @@ function FeesPage({ setPage }) {
             </div>
           )}
         </div>
-        <div style={ marginTop: 24, padding: "14px 20px", borderRadius: 8, background: "rgba(196,145,18,0.04)", border: "1px solid rgba(196,145,18,0.1)", fontSize: 12, color: S.gray, fontFamily: S.body, lineHeight: 1.6 }>
+        <div style={{ marginTop: 24, padding: "14px 20px", borderRadius: 8, background: "rgba(196,145,18,0.04)", border: "1px solid rgba(196,145,18,0.1)", fontSize: 12, color: S.gray, fontFamily: S.body, lineHeight: 1.6 }}>
           ⚠️ <strong>Price Fluctuation Disclaimer:</strong> All fees shown are current as of April 2026 and are subject to change. CTS ETS reserves the right to adjust fees with reasonable notice. Confirmed enrolments will be honoured at the rate agreed at the time of registration.
         </div>
       </Container>
@@ -630,37 +630,37 @@ function EmployersPage({ setPage }) {
     <PageWrapper>
       <SectionHeader tag="Corporate Training" title="For Employers" desc="Invest in your team with a 15% group discount on all programmes for 8 or more learners." />
       <Container>
-        <div style={ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18, marginBottom: 48 } className="resp-grid-3">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18, marginBottom: 48 }} className="resp-grid-3">
           {[["💰", "15% Group Discount", "8 or more learners qualify automatically."], ["📋", "25 Programmes", "From data entry to management — cover every role."], ["🎓", "Certified Workforce", "NCTVET & City & Guilds recognised qualifications."]].map(([icon, title, desc]) => (
-            <div key={title} style={ background: S.lightBg, borderRadius: 12, padding: "28px 24px", border: "1px solid rgba(10,35,66,0.05)", textAlign: "center" }>
-              <div style={ fontSize: 32, marginBottom: 12 }>{icon}</div>
-              <h3 style={ fontFamily: S.heading, fontSize: 17, color: S.navy, marginBottom: 8, fontWeight: 700 }>{title}</h3>
-              <p style={ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.6, margin: 0 }>{desc}</p>
+            <div key={title} style={{ background: S.lightBg, borderRadius: 12, padding: "28px 24px", border: "1px solid rgba(10,35,66,0.05)", textAlign: "center" }}>
+              <div style={{ fontSize: 32, marginBottom: 12 }}>{icon}</div>
+              <h3 style={{ fontFamily: S.heading, fontSize: 17, color: S.navy, marginBottom: 8, fontWeight: 700 }}>{title}</h3>
+              <p style={{ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.6, margin: 0 }}>{desc}</p>
             </div>
           ))}
         </div>
-        <h3 style={ fontFamily: S.heading, fontSize: "clamp(20px,3vw,26px)", color: S.navy, fontWeight: 700, marginBottom: 20 }>Group Savings Table</h3>
-        <div style={ background: "#fff", borderRadius: 12, overflow: "hidden", border: "1px solid rgba(10,35,66,0.06)" }>
-          <div style={ display: "grid", gridTemplateColumns: "1fr 110px 110px 110px", padding: "14px 24px", background: S.navy, gap: 8 } className="group-row">
+        <h3 style={{ fontFamily: S.heading, fontSize: "clamp(20px,3vw,26px)", color: S.navy, fontWeight: 700, marginBottom: 20 }}>Group Savings Table</h3>
+        <div style={{ background: "#fff", borderRadius: 12, overflow: "hidden", border: "1px solid rgba(10,35,66,0.06)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 110px 110px 110px", padding: "14px 24px", background: S.navy, gap: 8 }} className="group-row">
             {["Programme", "Standard", "Group Rate", "You Save"].map((h, i) => (
-              <span key={h} style={ fontSize: 11, color: "rgba(255,255,255,0.65)", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", fontWeight: 600, textAlign: i > 0 ? "center" : "left" }>{h}</span>
+              <span key={h} style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", fontWeight: 600, textAlign: i > 0 ? "center" : "left" }}>{h}</span>
             ))}
           </div>
           {displayed.map((r, i) => (
-            <div key={r.level} style={ display: "grid", gridTemplateColumns: "1fr 110px 110px 110px", padding: "12px 24px", background: i % 2 === 0 ? "#fff" : S.lightBg, borderBottom: "1px solid rgba(10,35,66,0.03)", gap: 8 } className="group-row">
-              <span style={ fontSize: 13, color: S.navy, fontFamily: S.body, fontWeight: 500 }>{r.level}</span>
-              <span style={ fontSize: 13, color: S.gray, fontFamily: S.body, textAlign: "center" }>{r.standard}</span>
-              <span style={ fontSize: 13, color: S.navy, fontFamily: S.body, textAlign: "center", fontWeight: 600 }>{r.group}</span>
-              <span style={ fontSize: 13, color: "#2E7D32", fontFamily: S.body, textAlign: "center", fontWeight: 700 }>{r.saving}</span>
+            <div key={r.level} style={{ display: "grid", gridTemplateColumns: "1fr 110px 110px 110px", padding: "12px 24px", background: i % 2 === 0 ? "#fff" : S.lightBg, borderBottom: "1px solid rgba(10,35,66,0.03)", gap: 8 }} className="group-row">
+              <span style={{ fontSize: 13, color: S.navy, fontFamily: S.body, fontWeight: 500 }}>{r.level}</span>
+              <span style={{ fontSize: 13, color: S.gray, fontFamily: S.body, textAlign: "center" }}>{r.standard}</span>
+              <span style={{ fontSize: 13, color: S.navy, fontFamily: S.body, textAlign: "center", fontWeight: 600 }}>{r.group}</span>
+              <span style={{ fontSize: 13, color: "#2E7D32", fontFamily: S.body, textAlign: "center", fontWeight: 700 }}>{r.saving}</span>
             </div>
           ))}
         </div>
         {GROUP_DISCOUNTS.length > 8 && (
-          <div style={ textAlign: "center", marginTop: 18 }>
-            <button onClick={() => setShowAll(!showAll)} style={ background: "none", border: "1px solid rgba(10,35,66,0.15)", borderRadius: 6, padding: "9px 24px", fontSize: 12, fontWeight: 600, color: S.navy, cursor: "pointer", fontFamily: S.body }>{showAll ? "Show Less" : "View All 25 Programmes"}</button>
+          <div style={{ textAlign: "center", marginTop: 18 }}>
+            <button onClick={() => setShowAll(!showAll)} style={{ background: "none", border: "1px solid rgba(10,35,66,0.15)", borderRadius: 6, padding: "9px 24px", fontSize: 12, fontWeight: 600, color: S.navy, cursor: "pointer", fontFamily: S.body }}>{showAll ? "Show Less" : "View All 25 Programmes"}</button>
           </div>
         )}
-        <div style={ textAlign: "center", marginTop: 36 }><Btn primary onClick={() => setPage("Apply")} style={ color: S.navy }>Enrol Your Team</Btn></div>
+        <div style={{ textAlign: "center", marginTop: 36 }}><Btn primary onClick={() => setPage("Apply")} style={{ color: S.navy }}>Enrol Your Team</Btn></div>
       </Container>
     </PageWrapper>
   );
@@ -685,7 +685,7 @@ function ApplyPage({ setPage }) {
 
   const inputStyle = { width: "100%", padding: "12px 14px", borderRadius: 6, border: "2px solid rgba(10,35,66,0.1)", background: "#fff", fontSize: 14, fontFamily: S.body, color: S.navy, outline: "none", boxSizing: "border-box" };
   const labelStyle = { fontSize: 12, color: S.navy, fontWeight: 700, fontFamily: S.body, display: "block", marginBottom: 6 };
-  const reqDot = <span style={ color: "#C62828", marginLeft: 2 }>*</span>;
+  const reqDot = <span style={{ color: "#C62828", marginLeft: 2 }}>*</span>;
 
   const checkStatus = () => {
     if (!statusEmail) return;
@@ -693,22 +693,22 @@ function ApplyPage({ setPage }) {
   };
 
   if (submitted) return (
-    <PageWrapper><Container style={ paddingTop: 80, textAlign: "center" }>
-      <div style={ fontSize: 64, marginBottom: 20 }>✅</div>
-      <h2 style={ fontFamily: S.heading, fontSize: 28, color: S.navy, marginBottom: 12 }>Application Submitted!</h2>
-      <p style={ fontFamily: S.body, fontSize: 16, color: "#2D3748", maxWidth: 520, margin: "0 auto 16px", lineHeight: 1.7 }>
+    <PageWrapper><Container style={{ paddingTop: 80, textAlign: "center" }}>
+      <div style={{ fontSize: 64, marginBottom: 20 }}>✅</div>
+      <h2 style={{ fontFamily: S.heading, fontSize: 28, color: S.navy, marginBottom: 12 }}>Application Submitted!</h2>
+      <p style={{ fontFamily: S.body, fontSize: 16, color: "#2D3748", maxWidth: 520, margin: "0 auto 16px", lineHeight: 1.7 }}>
         Thank you for your application. Our team will review your documents and contact you within 48 hours.
       </p>
-      <div style={ padding: "20px 28px", borderRadius: 12, background: "rgba(196,145,18,0.06)", border: "1px solid rgba(196,145,18,0.2)", maxWidth: 520, margin: "0 auto 28px", textAlign: "left" }>
-        <div style={ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 8 }>📧 What Happens Next?</div>
-        <p style={ fontSize: 13, color: "#2D3748", fontFamily: S.body, lineHeight: 1.7, margin: 0 }>
+      <div style={{ padding: "20px 28px", borderRadius: 12, background: "rgba(196,145,18,0.06)", border: "1px solid rgba(196,145,18,0.2)", maxWidth: 520, margin: "0 auto 28px", textAlign: "left" }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 8 }}>📧 What Happens Next?</div>
+        <p style={{ fontSize: 13, color: "#2D3748", fontFamily: S.body, lineHeight: 1.7, margin: 0 }}>
           Once your application and all required documents have been reviewed and accepted, <strong>payment information will be sent to you via email</strong>. You will then need to make payment and upload your evidence of payment on the <strong>Financial</strong> page.
         </p>
       </div>
-      <p style={ fontFamily: S.body, fontSize: 14, color: S.gray }>📧 info@ctsetsjm.com &nbsp;|&nbsp; 📞 876-525-6802</p>
-      <div style={ display: "flex", gap: 14, justifyContent: "center", marginTop: 24, flexWrap: "wrap" }>
-        <Btn primary onClick={() => setPage("Financial")} style={ color: S.navy }>Go to Financial Page</Btn>
-        <Btn onClick={() => setSubmitted(false)} style={ color: S.navy }>Submit Another</Btn>
+      <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray }}>📧 info@ctsetsjm.com &nbsp;|&nbsp; 📞 876-525-6802</p>
+      <div style={{ display: "flex", gap: 14, justifyContent: "center", marginTop: 24, flexWrap: "wrap" }}>
+        <Btn primary onClick={() => setPage("Financial")} style={{ color: S.navy }}>Go to Financial Page</Btn>
+        <Btn onClick={() => setSubmitted(false)} style={{ color: S.navy }}>Submit Another</Btn>
       </div>
     </Container></PageWrapper>
   );
@@ -718,127 +718,127 @@ function ApplyPage({ setPage }) {
       <SectionHeader tag="Get Started" title="Apply to CTS ETS" desc="Download the official HEART/NSTA form, complete it, and upload it with your documents." />
       <Container>
         {/* Tab selector */}
-        <div style={ display: "flex", gap: 8, justifyContent: "center", marginBottom: 36, flexWrap: "wrap" }>
+        <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 36, flexWrap: "wrap" }}>
           {[["download", "📥 Download HEART Form"], ["upload", "📤 Apply & Upload"], ["status", "🔍 Check Status"]].map(([v, l]) => (
-            <button key={v} onClick={() => setActiveTab(v)} style={ padding: "14px 28px", borderRadius: 8, border: "2px solid " + (activeTab === v ? S.gold : "rgba(10,35,66,0.1)"), background: activeTab === v ? "rgba(196,145,18,0.08)" : "#fff", color: activeTab === v ? S.navy : S.gray, fontSize: 14, fontWeight: activeTab === v ? 700 : 500, cursor: "pointer", fontFamily: S.body }>{l}</button>
+            <button key={v} onClick={() => setActiveTab(v)} style={{ padding: "14px 28px", borderRadius: 8, border: "2px solid " + (activeTab === v ? S.gold : "rgba(10,35,66,0.1)"), background: activeTab === v ? "rgba(196,145,18,0.08)" : "#fff", color: activeTab === v ? S.navy : S.gray, fontSize: 14, fontWeight: activeTab === v ? 700 : 500, cursor: "pointer", fontFamily: S.body }}>{l}</button>
           ))}
         </div>
 
         {/* ─── TAB: DOWNLOAD ─── */}
         {activeTab === "download" && (
-          <div style={ maxWidth: 680, margin: "0 auto" }>
-            <div style={ background: S.lightBg, borderRadius: 16, padding: "clamp(28px,3vw,48px)", border: "1px solid rgba(10,35,66,0.06)", textAlign: "center" }>
-              <img src={HEART_LOGO} alt="HEART NSTA" style={ height: 60, objectFit: "contain", marginBottom: 16 } />
-              <h3 style={ fontFamily: S.heading, fontSize: 22, color: S.navy, marginBottom: 12 }>Official HEART/NSTA Application Form</h3>
-              <p style={ fontFamily: S.body, fontSize: 14, color: "#2D3748", lineHeight: 1.6, maxWidth: 480, margin: "0 auto 24px" }>
+          <div style={{ maxWidth: 680, margin: "0 auto" }}>
+            <div style={{ background: S.lightBg, borderRadius: 16, padding: "clamp(28px,3vw,48px)", border: "1px solid rgba(10,35,66,0.06)", textAlign: "center" }}>
+              <img src={HEART_LOGO} alt="HEART NSTA" style={{ height: 60, objectFit: "contain", marginBottom: 16 }} />
+              <h3 style={{ fontFamily: S.heading, fontSize: 22, color: S.navy, marginBottom: 12 }}>Official HEART/NSTA Application Form</h3>
+              <p style={{ fontFamily: S.body, fontSize: 14, color: "#2D3748", lineHeight: 1.6, maxWidth: 480, margin: "0 auto 24px" }}>
                 CTS ETS uses the official HEART/NSTA Trust Application for Admission Form. Download it from the HEART/NSTA website, complete it in BLOCK LETTERS, and upload it with your required documents.
               </p>
-              <a href="https://www.heart-nsta.org" target="_blank" rel="noopener noreferrer" style={ display: "inline-block", padding: "16px 40px", borderRadius: 8, background: S.gold, color: S.navy, border: "none", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", textDecoration: "none", marginBottom: 24 }>Download from HEART/NSTA Website ↗</a>
-              <div style={ width: "100%", height: 1, background: "rgba(10,35,66,0.08)", margin: "24px 0" } />
-              <h4 style={ fontFamily: S.heading, fontSize: 17, color: S.navy, marginBottom: 16 }>Required Documents Checklist</h4>
-              <div style={ textAlign: "left", maxWidth: 420, margin: "0 auto" }>
+              <a href="https://www.heart-nsta.org" target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", padding: "16px 40px", borderRadius: 8, background: S.gold, color: S.navy, border: "none", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", textDecoration: "none", marginBottom: 24 }}>Download from HEART/NSTA Website ↗</a>
+              <div style={{ width: "100%", height: 1, background: "rgba(10,35,66,0.08)", margin: "24px 0" }} />
+              <h4 style={{ fontFamily: S.heading, fontSize: 17, color: S.navy, marginBottom: 16 }}>Required Documents Checklist</h4>
+              <div style={{ textAlign: "left", maxWidth: 420, margin: "0 auto" }}>
                 {[["📋", "Completed HEART/NSTA Application Form (signed)"], ["🔢", "TRN (Tax Registration Number) card or letter"], ["📷", "Passport-Size Photo (colour, recent, clear background)"], ["📜", "Birth Certificate"], ["🎓", "Qualifications (CXC, CAPE, or other certificates)"], ["🪪", "National ID (Passport, Driver's Licence, or National ID card)"]].map(([icon, label]) => (
-                  <div key={label} style={ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: "1px solid rgba(10,35,66,0.05)" }>
-                    <span style={ fontSize: 18 }>{icon}</span>
-                    <span style={ fontSize: 14, color: S.navy, fontFamily: S.body, fontWeight: 500 }>{label}</span>
+                  <div key={label} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: "1px solid rgba(10,35,66,0.05)" }}>
+                    <span style={{ fontSize: 18 }}>{icon}</span>
+                    <span style={{ fontSize: 14, color: S.navy, fontFamily: S.body, fontWeight: 500 }}>{label}</span>
                   </div>
                 ))}
               </div>
-              <p style={ fontFamily: S.body, fontSize: 13, color: S.gray, marginTop: 20, lineHeight: 1.5 }>After completing the form, return to the <strong>Apply &amp; Upload</strong> tab to submit everything.</p>
-              <button onClick={() => setActiveTab("upload")} style={ marginTop: 16, padding: "12px 28px", borderRadius: 8, border: "2px solid " + S.navy, background: "transparent", color: S.navy, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body }>Go to Apply &amp; Upload →</button>
+              <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, marginTop: 20, lineHeight: 1.5 }}>After completing the form, return to the <strong>Apply &amp; Upload</strong> tab to submit everything.</p>
+              <button onClick={() => setActiveTab("upload")} style={{ marginTop: 16, padding: "12px 28px", borderRadius: 8, border: "2px solid " + S.navy, background: "transparent", color: S.navy, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>Go to Apply &amp; Upload →</button>
             </div>
           </div>
         )}
 
         {/* ─── TAB: UPLOAD / APPLY ─── */}
         {activeTab === "upload" && (
-          <div style={ maxWidth: 720, margin: "0 auto" }>
-            <div style={ background: S.lightBg, borderRadius: 16, padding: "clamp(24px,3vw,40px)", border: "1px solid rgba(10,35,66,0.06)" }>
+          <div style={{ maxWidth: 720, margin: "0 auto" }}>
+            <div style={{ background: S.lightBg, borderRadius: 16, padding: "clamp(24px,3vw,40px)", border: "1px solid rgba(10,35,66,0.06)" }}>
               {/* Section A: Personal */}
-              <h3 style={ fontFamily: S.heading, fontSize: 20, color: S.navy, marginBottom: 20 }>Section A: Personal Information</h3>
-              <div style={ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 } className="resp-grid-2">
-                <div><label style={labelStyle}>First Name(s) {reqDot}</label><input style={inputStyle} value={form.firstName} onChange={e => u("firstName", e.target.value)} placeholder="First name(s)" /></div>
-                <div><label style={labelStyle}>Last Name {reqDot}</label><input style={inputStyle} value={form.lastName} onChange={e => u("lastName", e.target.value)} placeholder="Last name" /></div>
-                <div><label style={labelStyle}>Email Address {reqDot}</label><input type="email" style={inputStyle} value={form.email} onChange={e => u("email", e.target.value)} placeholder="your@email.com" /></div>
-                <div><label style={labelStyle}>Phone Number {reqDot}</label><input style={inputStyle} value={form.phone} onChange={e => u("phone", e.target.value)} placeholder="876-XXX-XXXX" /></div>
-                <div><label style={labelStyle}>Date of Birth {reqDot}</label><input type="date" style={inputStyle} value={form.dob} onChange={e => u("dob", e.target.value)} /></div>
-                <div><label style={labelStyle}>Gender</label><select style={inputStyle} value={form.gender} onChange={e => u("gender", e.target.value)}><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
-                <div><label style={labelStyle}>TRN {reqDot}</label><input style={inputStyle} value={form.trn} onChange={e => u("trn", e.target.value)} placeholder="Tax Registration Number" /></div>
-                <div><label style={labelStyle}>Parish</label><select style={inputStyle} value={form.parish} onChange={e => u("parish", e.target.value)}><option value="">Select parish</option>{["Kingston","St. Andrew","St. Thomas","Portland","St. Mary","St. Ann","Trelawny","St. James","Hanover","Westmoreland","St. Elizabeth","Manchester","Clarendon","St. Catherine"].map(p => <option key={p} value={p}>{p}</option>)}</select></div>
+              <h3 style={{ fontFamily: S.heading, fontSize: 20, color: S.navy, marginBottom: 20 }}>Section A: Personal Information</h3>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }} className="resp-grid-2">
+                <div><label style={{labelStyle}}>First Name(s) {reqDot}</label><input style={{inputStyle}} value={form.firstName} onChange={e => u("firstName", e.target.value)} placeholder="First name(s)" /></div>
+                <div><label style={{labelStyle}}>Last Name {reqDot}</label><input style={{inputStyle}} value={form.lastName} onChange={e => u("lastName", e.target.value)} placeholder="Last name" /></div>
+                <div><label style={{labelStyle}}>Email Address {reqDot}</label><input type="email" style={{inputStyle}} value={form.email} onChange={e => u("email", e.target.value)} placeholder="your@email.com" /></div>
+                <div><label style={{labelStyle}}>Phone Number {reqDot}</label><input style={{inputStyle}} value={form.phone} onChange={e => u("phone", e.target.value)} placeholder="876-XXX-XXXX" /></div>
+                <div><label style={{labelStyle}}>Date of Birth {reqDot}</label><input type="date" style={{inputStyle}} value={form.dob} onChange={e => u("dob", e.target.value)} /></div>
+                <div><label style={{labelStyle}}>Gender</label><select style={{inputStyle}} value={form.gender} onChange={e => u("gender", e.target.value)}><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+                <div><label style={{labelStyle}}>TRN {reqDot}</label><input style={{inputStyle}} value={form.trn} onChange={e => u("trn", e.target.value)} placeholder="Tax Registration Number" /></div>
+                <div><label style={{labelStyle}}>Parish</label><select style={{inputStyle}} value={form.parish} onChange={e => u("parish", e.target.value)}><option value="">Select parish</option>{["Kingston","St. Andrew","St. Thomas","Portland","St. Mary","St. Ann","Trelawny","St. James","Hanover","Westmoreland","St. Elizabeth","Manchester","Clarendon","St. Catherine"].map(p => <option key={p} value={p}>{p}</option>)}</select></div>
               </div>
-              <div style={ marginBottom: 20 }><label style={labelStyle}>Address</label><input style={inputStyle} value={form.address} onChange={e => u("address", e.target.value)} placeholder="Street address, district, parish" /></div>
+              <div style={{ marginBottom: 20 }}><label style={{labelStyle}}>Address</label><input style={{inputStyle}} value={form.address} onChange={e => u("address", e.target.value)} placeholder="Street address, district, parish" /></div>
 
               {/* Section B: Emergency Contact */}
-              <h3 style={ fontFamily: S.heading, fontSize: 20, color: S.navy, marginBottom: 16, marginTop: 28 }>Section B: Emergency Contact</h3>
-              <div style={ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 } className="resp-grid-2">
-                <div><label style={labelStyle}>Contact Name {reqDot}</label><input style={inputStyle} value={form.emergencyName} onChange={e => u("emergencyName", e.target.value)} placeholder="Full name" /></div>
-                <div><label style={labelStyle}>Contact Phone {reqDot}</label><input style={inputStyle} value={form.emergencyPhone} onChange={e => u("emergencyPhone", e.target.value)} placeholder="876-XXX-XXXX" /></div>
-                <div><label style={labelStyle}>Relationship</label><select style={inputStyle} value={form.emergencyRelation} onChange={e => u("emergencyRelation", e.target.value)}><option value="">Select</option><option>Parent</option><option>Guardian</option><option>Spouse</option><option>Relative</option><option>Friend</option></select></div>
+              <h3 style={{ fontFamily: S.heading, fontSize: 20, color: S.navy, marginBottom: 16, marginTop: 28 }}>Section B: Emergency Contact</h3>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }} className="resp-grid-2">
+                <div><label style={{labelStyle}}>Contact Name {reqDot}</label><input style={{inputStyle}} value={form.emergencyName} onChange={e => u("emergencyName", e.target.value)} placeholder="Full name" /></div>
+                <div><label style={{labelStyle}}>Contact Phone {reqDot}</label><input style={{inputStyle}} value={form.emergencyPhone} onChange={e => u("emergencyPhone", e.target.value)} placeholder="876-XXX-XXXX" /></div>
+                <div><label style={{labelStyle}}>Relationship</label><select style={{inputStyle}} value={form.emergencyRelation} onChange={e => u("emergencyRelation", e.target.value)}><option value="">Select</option><option>Parent</option><option>Guardian</option><option>Spouse</option><option>Relative</option><option>Friend</option></select></div>
               </div>
 
               {/* Section C: Programme Selection */}
-              <h3 style={ fontFamily: S.heading, fontSize: 20, color: S.navy, marginBottom: 16, marginTop: 28 }>Section C: Programme Selection</h3>
-              <div style={ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 } className="resp-grid-2">
-                <div><label style={labelStyle}>Programme Level {reqDot}</label><select style={inputStyle} value={form.level} onChange={e => u("level", e.target.value)}><option value="">Select level</option>{Object.keys(PROGRAMMES).map(l => <option key={l} value={l}>{l}</option>)}</select></div>
-                <div><label style={labelStyle}>Programme {reqDot}</label><select style={inputStyle} value={form.programme} onChange={e => u("programme", e.target.value)}><option value="">Select programme</option>{(PROGRAMMES[form.level] || []).map(p => <option key={p.name} value={p.name}>{p.name}</option>)}</select></div>
+              <h3 style={{ fontFamily: S.heading, fontSize: 20, color: S.navy, marginBottom: 16, marginTop: 28 }}>Section C: Programme Selection</h3>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }} className="resp-grid-2">
+                <div><label style={{labelStyle}}>Programme Level {reqDot}</label><select style={{inputStyle}} value={form.level} onChange={e => u("level", e.target.value)}><option value="">Select level</option>{Object.keys(PROGRAMMES).map(l => <option key={l} value={l}>{l}</option>)}</select></div>
+                <div><label style={{labelStyle}}>Programme {reqDot}</label><select style={{inputStyle}} value={form.programme} onChange={e => u("programme", e.target.value)}><option value="">Select programme</option>{(PROGRAMMES[form.level] || []).map(p => <option key={p.name} value={p.name}>{p.name}</option>)}</select></div>
               </div>
               {form.level && !form.level.includes("Job") && !form.level.includes("Level 2") && (
-                <div style={ marginBottom: 20 }><label style={labelStyle}>Preferred Payment Plan</label><select style={inputStyle} value={form.paymentPlan} onChange={e => u("paymentPlan", e.target.value)}><option value="">Select plan</option><option>Gold — Full payment (0%)</option><option>Silver — 50/50 (+5%)</option><option>Bronze — 20% deposit + monthly (+8%)</option></select></div>
+                <div style={{ marginBottom: 20 }}><label style={{labelStyle}}>Preferred Payment Plan</label><select style={{inputStyle}} value={form.paymentPlan} onChange={e => u("paymentPlan", e.target.value)}><option value="">Select plan</option><option>Gold — Full payment (0%)</option><option>Silver — 50/50 (+5%)</option><option>Bronze — 20% deposit + monthly (+8%)</option></select></div>
               )}
 
               {/* Section D: Education */}
-              <h3 style={ fontFamily: S.heading, fontSize: 20, color: S.navy, marginBottom: 16, marginTop: 28 }>Section D: Educational Background</h3>
-              <div style={ marginBottom: 20 }><label style={labelStyle}>Highest Qualification</label><select style={inputStyle} value={form.education} onChange={e => u("education", e.target.value)}><option value="">Select</option>{["No formal qualifications","CXC/CSEC","CAPE","NVQ-J Level 1/Job Certificate","Associate Degree","Bachelor's Degree","Other"].map(e => <option key={e} value={e}>{e}</option>)}</select></div>
+              <h3 style={{ fontFamily: S.heading, fontSize: 20, color: S.navy, marginBottom: 16, marginTop: 28 }}>Section D: Educational Background</h3>
+              <div style={{ marginBottom: 20 }}><label style={{labelStyle}}>Highest Qualification</label><select style={{inputStyle}} value={form.education} onChange={e => u("education", e.target.value)}><option value="">Select</option>{["No formal qualifications","CXC/CSEC","CAPE","NVQ-J Level 1/Job Certificate","Associate Degree","Bachelor's Degree","Other"].map(e => <option key={e} value={e}>{e}</option>)}</select></div>
 
               {/* Section E: Employment */}
-              <h3 style={ fontFamily: S.heading, fontSize: 20, color: S.navy, marginBottom: 8, marginTop: 28 }>Section E: Employment Information</h3>
-              <p style={ fontSize: 13, color: S.gray, fontFamily: S.body, marginBottom: 16 }>Please select your employment status below.</p>
+              <h3 style={{ fontFamily: S.heading, fontSize: 20, color: S.navy, marginBottom: 8, marginTop: 28 }}>Section E: Employment Information</h3>
+              <p style={{ fontSize: 13, color: S.gray, fontFamily: S.body, marginBottom: 16 }}>Please select your employment status below.</p>
 
               {/* JCF/JDF toggle */}
-              <div style={ marginBottom: 16 }>
-                <label style={labelStyle}>Are you a member of the JCF or JDF? {reqDot}</label>
-                <div style={ display: "flex", gap: 10, marginTop: 8 }>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{labelStyle}}>Are you a member of the JCF or JDF? {reqDot}</label>
+                <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
                   {[["yes","✅ Yes — I am a JCF/JDF Member"], ["no","❌ No — I am not a member"]].map(([v, l]) => (
-                    <button key={v} onClick={() => { setIsJCFJDF(v === "yes"); setEmpStatus(""); }} style={ flex: 1, padding: "12px 14px", borderRadius: 8, border: "2px solid " + (isJCFJDF === (v === "yes") ? S.gold : "rgba(10,35,66,0.1)"), background: isJCFJDF === (v === "yes") ? "rgba(196,145,18,0.06)" : "#fff", color: S.navy, fontSize: 13, fontWeight: isJCFJDF === (v === "yes") ? 700 : 500, cursor: "pointer", fontFamily: S.body, textAlign: "center" }>{l}</button>
+                    <button key={v} onClick={() => { setIsJCFJDF(v === "yes"); setEmpStatus(""); }} style={{ flex: 1, padding: "12px 14px", borderRadius: 8, border: "2px solid " + (isJCFJDF === (v === "yes") ? S.gold : "rgba(10,35,66,0.1)"), background: isJCFJDF === (v === "yes") ? "rgba(196,145,18,0.06)" : "#fff", color: S.navy, fontSize: 13, fontWeight: isJCFJDF === (v === "yes") ? 700 : 500, cursor: "pointer", fontFamily: S.body, textAlign: "center" }}>{l}</button>
                   ))}
                 </div>
               </div>
 
               {/* JCF/JDF fields */}
               {isJCFJDF === true && (
-                <div style={ padding: "20px", borderRadius: 10, background: "rgba(196,145,18,0.04)", border: "1px solid rgba(196,145,18,0.15)", marginBottom: 20 }>
-                  <div style={ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 14 }>JCF / JDF Details</div>
-                  <div style={ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 } className="resp-grid-2">
-                    <div><label style={labelStyle}>Division {reqDot}</label><input style={inputStyle} value={form.jcfDivision} onChange={e => u("jcfDivision", e.target.value)} placeholder="e.g. Kingston Central Division" /></div>
-                    <div><label style={labelStyle}>Station {reqDot}</label><input style={inputStyle} value={form.jcfStation} onChange={e => u("jcfStation", e.target.value)} placeholder="e.g. Half Way Tree Police Station" /></div>
+                <div style={{ padding: "20px", borderRadius: 10, background: "rgba(196,145,18,0.04)", border: "1px solid rgba(196,145,18,0.15)", marginBottom: 20 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 14 }}>JCF / JDF Details</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }} className="resp-grid-2">
+                    <div><label style={{labelStyle}}>Division {reqDot}</label><input style={{inputStyle}} value={form.jcfDivision} onChange={e => u("jcfDivision", e.target.value)} placeholder="e.g. Kingston Central Division" /></div>
+                    <div><label style={{labelStyle}}>Station {reqDot}</label><input style={{inputStyle}} value={form.jcfStation} onChange={e => u("jcfStation", e.target.value)} placeholder="e.g. Half Way Tree Police Station" /></div>
                   </div>
                 </div>
               )}
 
               {/* Non-member employment status */}
               {isJCFJDF === false && (
-                <div style={ marginBottom: 20 }>
-                  <label style={labelStyle}>Employment Status {reqDot}</label>
-                  <div style={ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 10, marginTop: 8 } className="resp-grid-2">
+                <div style={{ marginBottom: 20 }}>
+                  <label style={{labelStyle}}>Employment Status {reqDot}</label>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 10, marginTop: 8 }} className="resp-grid-2">
                     {[["employed","💼 Employed Full-Time"], ["part-time","🕐 Employed Part-Time"], ["student","📚 Student"], ["unemployed","🔍 Not Employed"]].map(([v, l]) => (
-                      <button key={v} onClick={() => setEmpStatus(v)} style={ padding: "12px 14px", borderRadius: 8, border: "2px solid " + (empStatus === v ? S.gold : "rgba(10,35,66,0.1)"), background: empStatus === v ? "rgba(196,145,18,0.06)" : "#fff", color: S.navy, fontSize: 13, fontWeight: empStatus === v ? 700 : 500, cursor: "pointer", fontFamily: S.body, textAlign: "center" }>{l}</button>
+                      <button key={v} onClick={() => setEmpStatus(v)} style={{ padding: "12px 14px", borderRadius: 8, border: "2px solid " + (empStatus === v ? S.gold : "rgba(10,35,66,0.1)"), background: empStatus === v ? "rgba(196,145,18,0.06)" : "#fff", color: S.navy, fontSize: 13, fontWeight: empStatus === v ? 700 : 500, cursor: "pointer", fontFamily: S.body, textAlign: "center" }}>{l}</button>
                     ))}
                   </div>
                   {(empStatus === "employed" || empStatus === "part-time") && (
-                    <div style={ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 16 } className="resp-grid-2">
-                      <div><label style={labelStyle}>Workplace / Employer</label><input style={inputStyle} value={form.workplace} onChange={e => u("workplace", e.target.value)} placeholder="Company or organisation name" /></div>
-                      <div><label style={labelStyle}>Position / Job Title</label><input style={inputStyle} value={form.position} onChange={e => u("position", e.target.value)} placeholder="Your current job title" /></div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 16 }} className="resp-grid-2">
+                      <div><label style={{labelStyle}}>Workplace / Employer</label><input style={{inputStyle}} value={form.workplace} onChange={e => u("workplace", e.target.value)} placeholder="Company or organisation name" /></div>
+                      <div><label style={{labelStyle}}>Position / Job Title</label><input style={{inputStyle}} value={form.position} onChange={e => u("position", e.target.value)} placeholder="Your current job title" /></div>
                     </div>
                   )}
                 </div>
               )}
 
               {/* Section F: Document Uploads */}
-              <h3 style={ fontFamily: S.heading, fontSize: 20, color: S.navy, marginBottom: 8, marginTop: 28 }>Section F: Document Upload</h3>
-              <p style={ fontSize: 13, color: "#2D3748", fontFamily: S.body, marginBottom: 16, lineHeight: 1.6 }>
+              <h3 style={{ fontFamily: S.heading, fontSize: 20, color: S.navy, marginBottom: 8, marginTop: 28 }}>Section F: Document Upload</h3>
+              <p style={{ fontSize: 13, color: "#2D3748", fontFamily: S.body, marginBottom: 16, lineHeight: 1.6 }}>
                 Upload the following documents (PDF, JPG, PNG — max 5MB each). All documents are required to process your application.
               </p>
-              <div style={ display: "grid", gridTemplateColumns: "1fr", gap: 10, marginBottom: 20 }>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 10, marginBottom: 20 }}>
                 {[
                   ["heartForm", "📋", "Completed HEART/NSTA Application Form", "Download from the Download tab, complete and upload"],
                   ["trn", "🔢", "TRN Card or TRN Letter", "Tax Registration Number document"],
@@ -847,60 +847,60 @@ function ApplyPage({ setPage }) {
                   ["qualifications", "🎓", "Qualifications", "CXC results, CAPE, or other certificates"],
                   ["nationalId", "🪪", "National ID", "Passport, Driver's Licence, or National ID card"],
                 ].map(([key, icon, label, hint]) => (
-                  <div key={key} style={ display: "flex", alignItems: "center", gap: 14, padding: "16px 18px", borderRadius: 10, border: "2px solid " + (files[key] ? "#2E7D3240" : "rgba(10,35,66,0.1)"), background: files[key] ? "rgba(46,125,50,0.03)" : "#fff" }>
-                    <span style={ fontSize: 22, flexShrink: 0 }>{files[key] ? "✅" : icon}</span>
-                    <div style={ flex: 1 }>
-                      <div style={ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.body }>{label} {reqDot}</div>
-                      <div style={ fontSize: 11, color: files[key] ? "#2E7D32" : S.gray, fontFamily: S.body }>{files[key] ? files[key].name : hint}</div>
+                  <div key={key} style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 18px", borderRadius: 10, border: "2px solid " + (files[key] ? "#2E7D3240" : "rgba(10,35,66,0.1)"), background: files[key] ? "rgba(46,125,50,0.03)" : "#fff" }}>
+                    <span style={{ fontSize: 22, flexShrink: 0 }}>{files[key] ? "✅" : icon}</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.body }}>{label} {reqDot}</div>
+                      <div style={{ fontSize: 11, color: files[key] ? "#2E7D32" : S.gray, fontFamily: S.body }}>{files[key] ? files[key].name : hint}</div>
                     </div>
-                    <label style={ padding: "8px 16px", borderRadius: 6, background: files[key] ? "rgba(46,125,50,0.08)" : S.lightBg, border: "1px solid rgba(10,35,66,0.08)", fontSize: 12, fontWeight: 700, color: S.navy, cursor: "pointer", fontFamily: S.body, whiteSpace: "nowrap" }>
+                    <label style={{ padding: "8px 16px", borderRadius: 6, background: files[key] ? "rgba(46,125,50,0.08)" : S.lightBg, border: "1px solid rgba(10,35,66,0.08)", fontSize: 12, fontWeight: 700, color: S.navy, cursor: "pointer", fontFamily: S.body, whiteSpace: "nowrap" }}>
                       {files[key] ? "Change" : "Choose File"}
-                      <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setFiles({ ...files, [key]: e.target.files[0] })} style={ display: "none" } />
+                      <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setFiles({ ...files, [key]: e.target.files[0] })} style={{ display: "none" }} />
                     </label>
                   </div>
                 ))}
               </div>
 
               {/* Additional info */}
-              <div style={ marginBottom: 20 }><label style={labelStyle}>Additional Information</label><textarea style={ ...inputStyle, minHeight: 70, resize: "vertical" } value={form.message} onChange={e => u("message", e.target.value)} placeholder="Any questions, special requirements, or relevant work experience..." /></div>
+              <div style={{ marginBottom: 20 }}><label style={{labelStyle}}>Additional Information</label><textarea style={{ ...inputStyle, minHeight: 70, resize: "vertical" }} value={form.message} onChange={e => u("message", e.target.value)} placeholder="Any questions, special requirements, or relevant work experience..." /></div>
 
               {/* Declaration */}
-              <div style={ padding: "16px 20px", borderRadius: 8, background: "rgba(10,35,66,0.03)", border: "1px solid rgba(10,35,66,0.06)", marginBottom: 24 }>
-                <p style={ fontSize: 12, color: "#2D3748", fontFamily: S.body, lineHeight: 1.7, margin: 0 }>
+              <div style={{ padding: "16px 20px", borderRadius: 8, background: "rgba(10,35,66,0.03)", border: "1px solid rgba(10,35,66,0.06)", marginBottom: 24 }}>
+                <p style={{ fontSize: 12, color: "#2D3748", fontFamily: S.body, lineHeight: 1.7, margin: 0 }}>
                   By submitting this form, I declare that the information provided is true and complete. I understand that providing false information may result in withdrawal of enrolment. I agree to abide by the policies of CTS Empowerment &amp; Training Solutions.
                 </p>
               </div>
 
               {/* Payment notice */}
-              <div style={ padding: "16px 20px", borderRadius: 8, background: "rgba(196,145,18,0.06)", border: "1px solid rgba(196,145,18,0.2)", marginBottom: 24 }>
-                <div style={ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 6 }>💳 Payment Process</div>
-                <p style={ fontSize: 13, color: "#2D3748", fontFamily: S.body, lineHeight: 1.6, margin: 0 }>Once your completed application and all required documents have been submitted and reviewed, <strong>payment information will be sent to you via email</strong>. You will then need to upload evidence of payment on the <strong>Financial</strong> page to complete your enrolment.
+              <div style={{ padding: "16px 20px", borderRadius: 8, background: "rgba(196,145,18,0.06)", border: "1px solid rgba(196,145,18,0.2)", marginBottom: 24 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 6 }}>💳 Payment Process</div>
+                <p style={{ fontSize: 13, color: "#2D3748", fontFamily: S.body, lineHeight: 1.6, margin: 0 }}>Once your completed application and all required documents have been submitted and reviewed, <strong>payment information will be sent to you via email</strong>. You will then need to upload evidence of payment on the <strong>Financial</strong> page to complete your enrolment.
                 </p>
               </div>
 
               <button onClick={() => {
                 if (form.firstName && form.lastName && form.email && form.phone && form.level && form.programme && isJCFJDF !== null) setSubmitted(true);
                 else alert("Please fill in all required fields marked with *");
-              }} style={ width: "100%", padding: "16px", borderRadius: 8, background: S.gold, color: S.navy, border: "none", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase" }>Submit Application</button>
+              }} style={{ width: "100%", padding: "16px", borderRadius: 8, background: S.gold, color: S.navy, border: "none", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase" }}>Submit Application</button>
             </div>
           </div>
         )}
 
         {/* ─── TAB: STATUS ─── */}
         {activeTab === "status" && (
-          <div style={ maxWidth: 520, margin: "0 auto" }>
-            <div style={ background: S.lightBg, borderRadius: 16, padding: "clamp(28px,3vw,48px)", border: "1px solid rgba(10,35,66,0.06)", textAlign: "center" }>
-              <div style={ fontSize: 48, marginBottom: 16 }>🔍</div>
-              <h3 style={ fontFamily: S.heading, fontSize: 22, color: S.navy, marginBottom: 12 }>Check Application Status</h3>
-              <p style={ fontFamily: S.body, fontSize: 14, color: "#2D3748", lineHeight: 1.6, marginBottom: 24 }>Enter the email address you used on your application to check its status.</p>
-              <div style={ marginBottom: 16 }>
+          <div style={{ maxWidth: 520, margin: "0 auto" }}>
+            <div style={{ background: S.lightBg, borderRadius: 16, padding: "clamp(28px,3vw,48px)", border: "1px solid rgba(10,35,66,0.06)", textAlign: "center" }}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
+              <h3 style={{ fontFamily: S.heading, fontSize: 22, color: S.navy, marginBottom: 12 }}>Check Application Status</h3>
+              <p style={{ fontFamily: S.body, fontSize: 14, color: "#2D3748", lineHeight: 1.6, marginBottom: 24 }}>Enter the email address you used on your application to check its status.</p>
+              <div style={{ marginBottom: 16 }}>
                 <input style={{ ...inputStyle, textAlign: "center" }} value={statusEmail} onChange={e => setStatusEmail(e.target.value)} placeholder="your@email.com" type="email" />
               </div>
-              <button onClick={checkStatus} style={ width: "100%", padding: "14px", borderRadius: 8, background: S.gold, color: S.navy, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body, textTransform: "uppercase", letterSpacing: 1 }>Check Status</button>
+              <button onClick={checkStatus} style={{ width: "100%", padding: "14px", borderRadius: 8, background: S.gold, color: S.navy, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body, textTransform: "uppercase", letterSpacing: 1 }}>Check Status</button>
               {statusResult === "pending" && (
-                <div style={ marginTop: 24, padding: "16px 20px", borderRadius: 10, background: "#fff", border: "1px solid rgba(10,35,66,0.08)", textAlign: "left" }>
-                  <div style={ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 6 }>📋 Application Status</div>
-                  <div style={ fontSize: 13, color: "#2D3748", fontFamily: S.body, lineHeight: 1.6 }>
+                <div style={{ marginTop: 24, padding: "16px 20px", borderRadius: 10, background: "#fff", border: "1px solid rgba(10,35,66,0.08)", textAlign: "left" }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 6 }}>📋 Application Status</div>
+                  <div style={{ fontSize: 13, color: "#2D3748", fontFamily: S.body, lineHeight: 1.6 }}>
                     Your application is being reviewed. You will receive an update at <strong>{statusEmail}</strong> within 48 hours. If you have not heard from us, please contact us at <strong>info@ctsetsjm.com</strong> or call <strong>876-525-6802</strong>.
                   </div>
                 </div>
@@ -924,11 +924,11 @@ function FinancialPage() {
   const labelStyle = { fontSize: 12, color: S.navy, fontWeight: 700, fontFamily: S.body, display: "block", marginBottom: 6 };
 
   if (submitted) return (
-    <PageWrapper><Container style={ paddingTop: 80, textAlign: "center" }>
-      <div style={ fontSize: 64, marginBottom: 20 }>💳</div>
-      <h2 style={ fontFamily: S.heading, fontSize: 28, color: S.navy, marginBottom: 12 }>Payment Evidence Received!</h2>
-      <p style={ fontFamily: S.body, fontSize: 15, color: "#2D3748", maxWidth: 480, margin: "0 auto 20px", lineHeight: 1.7 }>Thank you. We have received your payment evidence and will confirm your enrolment within 48 hours.</p>
-      <p style={ fontFamily: S.body, fontSize: 13, color: S.gray }>📧 info@ctsetsjm.com &nbsp;|&nbsp; 📞 876-525-6802</p>
+    <PageWrapper><Container style={{ paddingTop: 80, textAlign: "center" }}>
+      <div style={{ fontSize: 64, marginBottom: 20 }}>💳</div>
+      <h2 style={{ fontFamily: S.heading, fontSize: 28, color: S.navy, marginBottom: 12 }}>Payment Evidence Received!</h2>
+      <p style={{ fontFamily: S.body, fontSize: 15, color: "#2D3748", maxWidth: 480, margin: "0 auto 20px", lineHeight: 1.7 }}>Thank you. We have received your payment evidence and will confirm your enrolment within 48 hours.</p>
+      <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray }}>📧 info@ctsetsjm.com &nbsp;|&nbsp; 📞 876-525-6802</p>
     </Container></PageWrapper>
   );
 
@@ -936,55 +936,55 @@ function FinancialPage() {
     <PageWrapper>
       <SectionHeader tag="Payment" title="Financial — Payment Centre" desc="Upload your evidence of payment here to complete your enrolment. Payment details are sent via email after your application is reviewed." />
       <Container>
-        <div style={ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28, marginBottom: 48 } className="resp-grid-2">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28, marginBottom: 48 }} className="resp-grid-2">
           {[["Gold — Full Payment", "0% surcharge. Pay everything at enrolment. Best value.", S.gold], ["Silver — Two Instalments", "+5% surcharge. 50% at enrolment, 50% at mid-point.", "#8A96A8"], ["Bronze — Monthly", "+8% surcharge. 20% deposit, then monthly instalments.", "#CD7F32"]].map(([name, desc, color]) => (
-            <div key={name} style={ background: S.lightBg, borderRadius: 12, padding: "24px 20px", border: "1px solid rgba(10,35,66,0.06)" }>
-              <div style={ fontSize: 12, fontWeight: 700, color, fontFamily: S.body, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 }>{name.split(" — ")[0]}</div>
-              <div style={ fontSize: 14, fontWeight: 600, color: S.navy, fontFamily: S.body, marginBottom: 6 }>{name.split(" — ")[1]}</div>
-              <p style={ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.55, margin: 0 }>{desc}</p>
+            <div key={name} style={{ background: S.lightBg, borderRadius: 12, padding: "24px 20px", border: "1px solid rgba(10,35,66,0.06)" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color, fontFamily: S.body, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 }}>{name.split(" — ")[0]}</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: S.navy, fontFamily: S.body, marginBottom: 6 }}>{name.split(" — ")[1]}</div>
+              <p style={{ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.55, margin: 0 }}>{desc}</p>
             </div>
           ))}
         </div>
 
         {/* 48hr reminder */}
-        <div style={ padding: "18px 24px", borderRadius: 10, background: "rgba(196,145,18,0.06)", border: "1px solid rgba(196,145,18,0.2)", display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 36 }>
-          <span style={ fontSize: 20, flexShrink: 0, marginTop: 2 }>⏱️</span>
+        <div style={{ padding: "18px 24px", borderRadius: 10, background: "rgba(196,145,18,0.06)", border: "1px solid rgba(196,145,18,0.2)", display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 36 }}>
+          <span style={{ fontSize: 20, flexShrink: 0, marginTop: 2 }}>⏱️</span>
           <div>
-            <div style={ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 4 }>48-Hour Payment Window</div>
-            <p style={ fontSize: 13, color: "#2D3748", fontFamily: S.body, lineHeight: 1.6, margin: 0 }>Once you receive your payment information via email, please complete payment and upload your evidence <strong>within 48 hours</strong> to secure your place in the programme. Late submissions may result in your spot being released.</p>
+            <div style={{ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 4 }}>48-Hour Payment Window</div>
+            <p style={{ fontSize: 13, color: "#2D3748", fontFamily: S.body, lineHeight: 1.6, margin: 0 }}>Once you receive your payment information via email, please complete payment and upload your evidence <strong>within 48 hours</strong> to secure your place in the programme. Late submissions may result in your spot being released.</p>
           </div>
         </div>
 
         {/* Upload form */}
-        <div style={ maxWidth: 600, margin: "0 auto" }>
-          <div style={ background: S.lightBg, borderRadius: 16, padding: "clamp(24px,3vw,40px)", border: "1px solid rgba(10,35,66,0.06)" }>
-            <h3 style={ fontFamily: S.heading, fontSize: 20, color: S.navy, marginBottom: 20 }>Upload Payment Evidence</h3>
-            <div style={ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 } className="resp-grid-2">
-              <div><label style={labelStyle}>Your Email Address <span style={ color: "#C62828", marginLeft: 2 }>*</span></label><input type="email" style={inputStyle} value={payEmail} onChange={e => setPayEmail(e.target.value)} placeholder="your@email.com" /></div>
-              <div><label style={labelStyle}>Payment Reference / Receipt No.</label><input style={inputStyle} value={payRef} onChange={e => setPayRef(e.target.value)} placeholder="e.g. TXN-123456" /></div>
+        <div style={{ maxWidth: 600, margin: "0 auto" }}>
+          <div style={{ background: S.lightBg, borderRadius: 16, padding: "clamp(24px,3vw,40px)", border: "1px solid rgba(10,35,66,0.06)" }}>
+            <h3 style={{ fontFamily: S.heading, fontSize: 20, color: S.navy, marginBottom: 20 }}>Upload Payment Evidence</h3>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }} className="resp-grid-2">
+              <div><label style={{labelStyle}}>Your Email Address <span style={{ color: "#C62828", marginLeft: 2 }}>*</span></label><input type="email" style={{inputStyle}} value={payEmail} onChange={e => setPayEmail(e.target.value)} placeholder="your@email.com" /></div>
+              <div><label style={{labelStyle}}>Payment Reference / Receipt No.</label><input style={{inputStyle}} value={payRef} onChange={e => setPayRef(e.target.value)} placeholder="e.g. TXN-123456" /></div>
             </div>
 
             {/* File upload */}
-            <div style={ display: "flex", alignItems: "center", gap: 14, padding: "20px 18px", borderRadius: 10, border: "2px solid " + (files.paymentProof ? "#2E7D3240" : "rgba(10,35,66,0.1)"), background: files.paymentProof ? "rgba(46,125,50,0.03)" : "#fff", marginBottom: 24 }>
-              <span style={ fontSize: 28, flexShrink: 0 }>{files.paymentProof ? "✅" : "💳"}</span>
-              <div style={ flex: 1 }>
-                <div style={ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.body }>Proof of Payment <span style={ color: "#C62828", marginLeft: 2 }>*</span></div>
-                <div style={ fontSize: 12, color: files.paymentProof ? "#2E7D32" : S.gray, fontFamily: S.body }>{files.paymentProof ? files.paymentProof.name : "Bank receipt, transfer confirmation, or deposit slip (PDF, JPG, PNG)"}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "20px 18px", borderRadius: 10, border: "2px solid " + (files.paymentProof ? "#2E7D3240" : "rgba(10,35,66,0.1)"), background: files.paymentProof ? "rgba(46,125,50,0.03)" : "#fff", marginBottom: 24 }}>
+              <span style={{ fontSize: 28, flexShrink: 0 }}>{files.paymentProof ? "✅" : "💳"}</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.body }}>Proof of Payment <span style={{ color: "#C62828", marginLeft: 2 }}>*</span></div>
+                <div style={{ fontSize: 12, color: files.paymentProof ? "#2E7D32" : S.gray, fontFamily: S.body }}>{files.paymentProof ? files.paymentProof.name : "Bank receipt, transfer confirmation, or deposit slip (PDF, JPG, PNG)"}</div>
               </div>
-              <label style={ padding: "10px 18px", borderRadius: 6, background: files.paymentProof ? "rgba(46,125,50,0.08)" : S.lightBg, border: "1px solid rgba(10,35,66,0.08)", fontSize: 13, fontWeight: 700, color: S.navy, cursor: "pointer", fontFamily: S.body, whiteSpace: "nowrap" }>
+              <label style={{ padding: "10px 18px", borderRadius: 6, background: files.paymentProof ? "rgba(46,125,50,0.08)" : S.lightBg, border: "1px solid rgba(10,35,66,0.08)", fontSize: 13, fontWeight: 700, color: S.navy, cursor: "pointer", fontFamily: S.body, whiteSpace: "nowrap" }}>
                 {files.paymentProof ? "Change" : "Choose File"}
-                <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setFiles({ ...files, paymentProof: e.target.files[0] })} style={ display: "none" } />
+                <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setFiles({ ...files, paymentProof: e.target.files[0] })} style={{ display: "none" }} />
               </label>
             </div>
 
-            <div style={ padding: "14px 18px", borderRadius: 8, background: "rgba(10,35,66,0.03)", border: "1px solid rgba(10,35,66,0.06)", marginBottom: 24, fontSize: 12, color: "#2D3748", fontFamily: S.body, lineHeight: 1.65 }>
+            <div style={{ padding: "14px 18px", borderRadius: 8, background: "rgba(10,35,66,0.03)", border: "1px solid rgba(10,35,66,0.06)", marginBottom: 24, fontSize: 12, color: "#2D3748", fontFamily: S.body, lineHeight: 1.65 }}>
               Accepted: bank transfer receipts, NCB/Scotiabank/JN/Sagicor transaction confirmations, Western Union receipts, or cash deposit slips. Make payments payable to <strong>CTS Empowerment &amp; Training Solutions</strong>. Payment details will be provided in your acceptance email.
             </div>
 
             <button onClick={() => {
               if (payEmail && files.paymentProof) setSubmitted(true);
               else alert("Please provide your email and upload proof of payment.");
-            }} style={ width: "100%", padding: "16px", borderRadius: 8, background: S.gold, color: S.navy, border: "none", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase" }>Submit Payment Evidence</button>
+            }} style={{ width: "100%", padding: "16px", borderRadius: 8, background: S.gold, color: S.navy, border: "none", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase" }}>Submit Payment Evidence</button>
           </div>
         </div>
       </Container>
@@ -999,35 +999,35 @@ function ContactPage({ setPage }) {
     <PageWrapper>
       <SectionHeader tag="Get In Touch" title="Contact Us" desc="Whether you're an individual or an employer, we're here to help you get started." />
       <Container>
-        <div style={ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20, marginBottom: 40 } className="resp-grid-3">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20, marginBottom: 40 }} className="resp-grid-3">
           {[["📧","Email","info@ctsetsjm.com","mailto:info@ctsetsjm.com"], ["📞","Call / WhatsApp","876-525-6802","tel:8765256802"], ["📞","Also Reach Us","876-381-9771","tel:8763819771"]].map(([icon, label, value, href]) => (
-            <a key={label} href={href} style={ textDecoration: "none" }>
-              <div style={ background: S.lightBg, borderRadius: 10, padding: "28px 20px", textAlign: "center", border: "1px solid rgba(10,35,66,0.06)" }>
-                <div style={ fontSize: 28, marginBottom: 10 }>{icon}</div>
-                <div style={ fontSize: 10, color: S.gray, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, marginBottom: 6 }>{label}</div>
-                <div style={ fontSize: 15, color: S.navy, fontWeight: 700, fontFamily: S.body }>{value}</div>
+            <a key={label} href={href} style={{ textDecoration: "none" }}>
+              <div style={{ background: S.lightBg, borderRadius: 10, padding: "28px 20px", textAlign: "center", border: "1px solid rgba(10,35,66,0.06)" }}>
+                <div style={{ fontSize: 28, marginBottom: 10 }}>{icon}</div>
+                <div style={{ fontSize: 10, color: S.gray, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, marginBottom: 6 }}>{label}</div>
+                <div style={{ fontSize: 15, color: S.navy, fontWeight: 700, fontFamily: S.body }}>{value}</div>
               </div>
             </a>
           ))}
         </div>
-        <div style={ textAlign: "center", marginBottom: 56 }>
-          <Btn primary onClick={() => setPage("Apply")} style={ color: S.navy }>Start Your Application</Btn>
+        <div style={{ textAlign: "center", marginBottom: 56 }}>
+          <Btn primary onClick={() => setPage("Apply")} style={{ color: S.navy }}>Start Your Application</Btn>
         </div>
 
         {/* FAQ */}
-        <div style={ textAlign: "center", marginBottom: 32 }>
-          <span style={ fontSize: 11, color: S.gold, letterSpacing: 3, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600 }>Common Questions</span>
-          <h3 style={ fontFamily: S.heading, fontSize: "clamp(22px,3vw,32px)", color: S.navy, margin: "8px 0 0", fontWeight: 700 }>Frequently Asked Questions</h3>
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <span style={{ fontSize: 11, color: S.gold, letterSpacing: 3, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600 }}>Common Questions</span>
+          <h3 style={{ fontFamily: S.heading, fontSize: "clamp(22px,3vw,32px)", color: S.navy, margin: "8px 0 0", fontWeight: 700 }}>Frequently Asked Questions</h3>
         </div>
-        <div style={ maxWidth: 760, margin: "0 auto" }>
+        <div style={{ maxWidth: 760, margin: "0 auto" }}>
           {FAQS.map((faq, i) => (
-            <div key={i} style={ borderRadius: 10, border: "1px solid rgba(10,35,66,0.06)", marginBottom: 10, overflow: "hidden" }>
-              <button onClick={() => setOpenFaq(openFaq === i ? null : i)} style={ width: "100%", padding: "18px 24px", background: openFaq === i ? S.navy : "#fff", border: "none", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16 }>
-                <span style={ fontSize: 14, fontWeight: 700, color: openFaq === i ? "#fff" : S.navy, fontFamily: S.body, textAlign: "left" }>{faq.q}</span>
-                <span style={ fontSize: 18, color: openFaq === i ? S.gold : S.gray, flexShrink: 0 }>{openFaq === i ? "−" : "+"}</span>
+            <div key={i} style={{ borderRadius: 10, border: "1px solid rgba(10,35,66,0.06)", marginBottom: 10, overflow: "hidden" }}>
+              <button onClick={() => setOpenFaq(openFaq === i ? null : i)} style={{ width: "100%", padding: "18px 24px", background: openFaq === i ? S.navy : "#fff", border: "none", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16 }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: openFaq === i ? "#fff" : S.navy, fontFamily: S.body, textAlign: "left" }}>{faq.q}</span>
+                <span style={{ fontSize: 18, color: openFaq === i ? S.gold : S.gray, flexShrink: 0 }}>{openFaq === i ? "−" : "+"}</span>
               </button>
               {openFaq === i && (
-                <div style={ padding: "18px 24px", background: S.lightBg, fontSize: 14, color: "#2D3748", fontFamily: S.body, lineHeight: 1.7 }>{faq.a}</div>
+                <div style={{ padding: "18px 24px", background: S.lightBg, fontSize: 14, color: "#2D3748", fontFamily: S.body, lineHeight: 1.7 }}>{faq.a}</div>
               )}
             </div>
           ))}
@@ -1040,49 +1040,49 @@ function ContactPage({ setPage }) {
 // ─── FOOTER ──────────────────────────────────────────────────────────
 function Footer({ setPage }) {
   return (
-    <footer style={ background: S.navy, padding: "40px 20px 28px", borderTop: "3px solid " + S.gold }>
-      <div style={ maxWidth: 1100, margin: "0 auto" }>
-        <div style={ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 32, marginBottom: 32 } className="resp-grid-3">
+    <footer style={{ background: S.navy, padding: "40px 20px 28px", borderTop: "3px solid " + S.gold }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 32, marginBottom: 32 }} className="resp-grid-3">
           {/* Brand */}
           <div>
-            <div style={ display: "flex", alignItems: "center", gap: 12, cursor: "pointer", marginBottom: 16 } onClick={() => setPage("Home")}>
-              <img src={NAV_LOGO} alt="CTS ETS" style={ width: 44, height: 48, objectFit: "contain", borderRadius: 4 } />
+            <div style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer", marginBottom: 16 }} onClick={() => setPage("Home")}>
+              <img src={NAV_LOGO} alt="CTS ETS" style={{ width: 44, height: 48, objectFit: "contain", borderRadius: 4 }} />
               <div>
-                <div style={ fontFamily: S.heading, fontSize: 14, fontWeight: 700, color: "#fff" }>CTS Empowerment &amp; Training Solutions</div>
-                <div style={ fontSize: 10, color: S.gold, fontFamily: S.body, marginTop: 2, letterSpacing: 1 }>Called To Serve — Committed to Excellence</div>
+                <div style={{ fontFamily: S.heading, fontSize: 14, fontWeight: 700, color: "#fff" }}>CTS Empowerment &amp; Training Solutions</div>
+                <div style={{ fontSize: 10, color: S.gold, fontFamily: S.body, marginTop: 2, letterSpacing: 1 }}>Called To Serve — Committed to Excellence</div>
               </div>
             </div>
-            <p style={ fontSize: 12, color: "rgba(255,255,255,0.5)", fontFamily: S.body, lineHeight: 1.6 }>A registered post-secondary vocational training institution in Jamaica. 25 programmes aligned to NCTVET &amp; City &amp; Guilds.</p>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", fontFamily: S.body, lineHeight: 1.6 }}>A registered post-secondary vocational training institution in Jamaica. 25 programmes aligned to NCTVET &amp; City &amp; Guilds.</p>
           </div>
           {/* Quick Links */}
           <div>
-            <div style={ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600, marginBottom: 16 }>Quick Links</div>
+            <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600, marginBottom: 16 }}>Quick Links</div>
             {["About","Programmes","Fees & Calculator","Certification","Apply","Contact"].map(p => (
-              <button key={p} onClick={() => setPage(p)} style={ display: "block", background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 13, fontFamily: S.body, cursor: "pointer", padding: "4px 0", textAlign: "left" }>{p}</button>
+              <button key={p} onClick={() => setPage(p)} style={{ display: "block", background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 13, fontFamily: S.body, cursor: "pointer", padding: "4px 0", textAlign: "left" }}>{p}</button>
             ))}
           </div>
           {/* Partners */}
           <div>
-            <div style={ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600, marginBottom: 16 }>Our Partners</div>
-            <div style={ display: "flex", flexDirection: "column", gap: 12 }>
-              <div style={ display: "flex", alignItems: "center", gap: 12 }>
-                <img src={NCTVET_LOGO} alt="NCTVET" style={ height: 32, objectFit: "contain", background: "#fff", borderRadius: 4, padding: "2px 4px" } />
-                <span style={ fontSize: 12, color: "rgba(255,255,255,0.5)", fontFamily: S.body }>NCTVET — National Standards</span>
+            <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600, marginBottom: 16 }}>Our Partners</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <img src={NCTVET_LOGO} alt="NCTVET" style={{ height: 32, objectFit: "contain", background: "#fff", borderRadius: 4, padding: "2px 4px" }} />
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", fontFamily: S.body }}>NCTVET — National Standards</span>
               </div>
-              <div style={ display: "flex", alignItems: "center", gap: 12 }>
-                <img src={CG_LOGO} alt="City and Guilds" style={ height: 32, objectFit: "contain", background: "#fff", borderRadius: 4, padding: "2px 4px" } />
-                <span style={ fontSize: 12, color: "rgba(255,255,255,0.5)", fontFamily: S.body }>City &amp; Guilds — International</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <img src={CG_LOGO} alt="City and Guilds" style={{ height: 32, objectFit: "contain", background: "#fff", borderRadius: 4, padding: "2px 4px" }} />
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", fontFamily: S.body }}>City &amp; Guilds — International</span>
               </div>
-              <div style={ display: "flex", alignItems: "center", gap: 12 }>
-                <img src={HEART_LOGO} alt="HEART NSTA" style={ height: 32, objectFit: "contain", background: "#fff", borderRadius: 4, padding: "2px 4px" } />
-                <span style={ fontSize: 12, color: "rgba(255,255,255,0.5)", fontFamily: S.body }>HEART/NSTA Trust</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <img src={HEART_LOGO} alt="HEART NSTA" style={{ height: 32, objectFit: "contain", background: "#fff", borderRadius: 4, padding: "2px 4px" }} />
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", fontFamily: S.body }}>HEART/NSTA Trust</span>
               </div>
             </div>
           </div>
         </div>
-        <div style={ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 20, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }>
-          <p style={ fontSize: 11, color: "rgba(255,255,255,0.35)", fontFamily: S.body }>© 2026 CTS Empowerment &amp; Training Solutions. All Rights Reserved. &nbsp;|&nbsp; ctsetsjm.com &nbsp;|&nbsp; info@ctsetsjm.com</p>
-          <p style={ fontSize: 11, color: "rgba(255,255,255,0.25)", fontFamily: S.body }>Registered Post-Secondary Vocational Training Institution, Jamaica</p>
+        <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 20, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+          <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontFamily: S.body }}>© 2026 CTS Empowerment &amp; Training Solutions. All Rights Reserved. &nbsp;|&nbsp; ctsetsjm.com &nbsp;|&nbsp; info@ctsetsjm.com</p>
+          <p style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", fontFamily: S.body }}>Registered Post-Secondary Vocational Training Institution, Jamaica</p>
         </div>
       </div>
     </footer>
@@ -1094,11 +1094,11 @@ function CookieBanner() {
   const [visible, setVisible] = useState(true);
   if (!visible) return null;
   return (
-    <div style={ position: "fixed", bottom: 0, left: 0, right: 0, background: S.navy, borderTop: "2px solid " + S.gold, padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap", zIndex: 9998 }>
-      <p style={ fontSize: 12, color: "rgba(255,255,255,0.75)", fontFamily: S.body, margin: 0, flex: 1 }>We use cookies to improve your experience. By continuing to use this site, you agree to our use of cookies. <a href="#" style={ color: S.gold }>Learn more</a></p>
-      <div style={ display: "flex", gap: 10, flexShrink: 0 }>
-        <button onClick={() => setVisible(false)} style={ padding: "8px 20px", borderRadius: 6, background: S.gold, color: S.navy, border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: S.body }>Accept</button>
-        <button onClick={() => setVisible(false)} style={ padding: "8px 16px", borderRadius: 6, background: "transparent", color: "rgba(255,255,255,0.6)", border: "1px solid rgba(255,255,255,0.2)", fontSize: 12, cursor: "pointer", fontFamily: S.body }>Decline</button>
+    <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: S.navy, borderTop: "2px solid " + S.gold, padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap", zIndex: 9998 }}>
+      <p style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", fontFamily: S.body, margin: 0, flex: 1 }}>We use cookies to improve your experience. By continuing to use this site, you agree to our use of cookies. <a href="#" style={{ color: S.gold }}>Learn more</a></p>
+      <div style={{ display: "flex", gap: 10, flexShrink: 0 }}>
+        <button onClick={() => setVisible(false)} style={{ padding: "8px 20px", borderRadius: 6, background: S.gold, color: S.navy, border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>Accept</button>
+        <button onClick={() => setVisible(false)} style={{ padding: "8px 16px", borderRadius: 6, background: "transparent", color: "rgba(255,255,255,0.6)", border: "1px solid rgba(255,255,255,0.2)", fontSize: 12, cursor: "pointer", fontFamily: S.body }}>Decline</button>
       </div>
     </div>
   );
@@ -1108,7 +1108,7 @@ function CookieBanner() {
 function WhatsAppBtn() {
   return (
     <a href="https://wa.me/8765256802?text=Hello%20CTS%20ETS%2C%20I%20am%20interested%20in%20your%20programmes." target="_blank" rel="noopener noreferrer"
-      style={ position: "fixed", bottom: 80, right: 24, width: 56, height: 56, borderRadius: "50%", background: "#25D366", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 20px rgba(37,211,102,0.4)", zIndex: 9997, textDecoration: "none" }>
+      style={{ position: "fixed", bottom: 80, right: 24, width: 56, height: 56, borderRadius: "50%", background: "#25D366", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 20px rgba(37,211,102,0.4)", zIndex: 9997, textDecoration: "none" }}>
       <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff">
         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
       </svg>
@@ -1138,7 +1138,7 @@ export default function CTSApp() {
   };
 
   return (
-    <div style={ fontFamily: S.body, WebkitFontSmoothing: "antialiased" }>
+    <div style={{ fontFamily: S.body, WebkitFontSmoothing: "antialiased" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
