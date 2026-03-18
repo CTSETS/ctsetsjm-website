@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, useCallback, Component, useMemo } from "react";
 
-const NAV_LOGO = "/nav-logo.jpg";
-const HERO_LOGO = "/hero-logo.jpg";
-const HEART_LOGO = "/heart-logo.jpg";
-const NCTVET_LOGO = "/nctvet-logo.jpg";
-const CG_LOGO = "/cg-logo.jpg";
-const FOUNDER_PHOTO = "/founder-photo.jpg";
+const NAV_LOGO = "/logo.jpg";
+const HERO_LOGO = "/logo.jpg";
+const HEART_LOGO = "/HEART%20Logo.jpg";
+const NCTVET_LOGO = "/NCTVET%20Logo.jpg";
+const CG_LOGO = "/City%26Guilds%20Logo.jpg";
+const FOUNDER_PHOTO = "/Lead%20Facilitator.jpg";
 
 // ─── DATA ────────────────────────────────────────────────────────────
 const PROGRAMMES = {
