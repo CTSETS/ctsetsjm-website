@@ -195,17 +195,26 @@ function Btn({ children, primary, onClick, style }) {
   );
 }
 
-function SectionBlock({ num, title, desc, children }) {
+function SectionBlock({ num, title, desc, children, locked, complete }) {
   return (
-    <div style={{ marginBottom: 32 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: desc ? 6 : 16, paddingBottom: 14, borderBottom: "2px solid rgba(1,30,64,0.06)" }}>
-        <div style={{ width: 34, height: 34, borderRadius: "50%", background: S.navy, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <span style={{ fontFamily: S.heading, fontSize: 13, fontWeight: 800, color: S.gold }}>{num}</span>
+    <div style={{ marginBottom: 32, position: "relative", opacity: locked ? 0.45 : 1, transition: "opacity 0.3s", pointerEvents: locked ? "none" : "auto" }}>
+      {locked && (
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 2, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 12, background: "rgba(248,249,250,0.6)", backdropFilter: "blur(2px)" }}>
+          <div style={{ padding: "10px 20px", borderRadius: 8, background: "#fff", border: "1.5px solid rgba(1,30,64,0.1)", boxShadow: "0 2px 12px rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 16 }}>🔒</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: S.navy, fontFamily: S.body }}>Complete Section {String.fromCharCode(num.charCodeAt(0) - 1)} above to unlock</span>
+          </div>
         </div>
-        <div>
+      )}
+      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: desc ? 6 : 16, paddingBottom: 14, borderBottom: "2px solid " + (complete ? "rgba(46,125,50,0.25)" : "rgba(1,30,64,0.06)") }}>
+        <div style={{ width: 34, height: 34, borderRadius: "50%", background: complete ? "#2E7D32" : S.navy, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.3s" }}>
+          <span style={{ fontFamily: S.heading, fontSize: 13, fontWeight: 800, color: complete ? "#fff" : S.gold }}>{complete ? "✓" : num}</span>
+        </div>
+        <div style={{ flex: 1 }}>
           <div style={{ fontFamily: S.heading, fontSize: 17, fontWeight: 700, color: S.navy }}>{title}</div>
           {desc && <div style={{ fontSize: 12, color: S.gray, fontFamily: S.body, marginTop: 2 }}>{desc}</div>}
         </div>
+        {complete && <div style={{ fontSize: 11, fontWeight: 700, color: "#2E7D32", fontFamily: S.body, letterSpacing: 0.5, whiteSpace: "nowrap" }}>✓ Complete</div>}
       </div>
       {children}
     </div>
@@ -871,9 +880,12 @@ function ApplyPage({ setPage }) {
   const [submitting, setSubmitting] = useState(false);
   const [statusEmail, setStatusEmail] = useState("");
   const [statusResult, setStatusResult] = useState(null);
+  const [statusLoading, setStatusLoading] = useState(false);
   const [payRef, setPayRef] = useState("");
   const [payEmail, setPayEmail] = useState("");
   const [paySubmitted, setPaySubmitted] = useState(false);
+  const [paySubmitting, setPaySubmitting] = useState(false);
+  const [declareChecked, setDeclareChecked] = useState(false);
   const u = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   const inputStyle = { width: "100%", padding: "11px 14px", borderRadius: 8, border: "1.5px solid rgba(1,30,64,0.15)", background: "#fff", fontSize: 14, fontFamily: S.body, color: S.navy, outline: "none", boxSizing: "border-box", transition: "border-color 0.2s" };
@@ -881,11 +893,39 @@ function ApplyPage({ setPage }) {
   const reqDot = <span style={{ color: "#C62828", marginLeft: 2 }}>*</span>;
   const errMsg = (field) => formErrors[field] ? <div style={{ fontSize: 11, color: "#C62828", fontFamily: S.body, marginTop: 3 }}>{formErrors[field]}</div> : null;
 
-  const checkStatus = () => {
+  const checkStatus = async () => {
     if (!statusEmail) return;
-    const apps = JSON.parse(localStorage.getItem("cts_applications") || "[]");
-    const match = apps.find(a => a.email.toLowerCase() === statusEmail.toLowerCase());
-    setStatusResult(match ? match : "notfound");
+    setStatusLoading(true);
+    setStatusResult(null);
+    try {
+      // Try fetching live status from Google Sheet via Apps Script
+      const url = APPS_SCRIPT_URL + "?action=lookup&email=" + encodeURIComponent(statusEmail.trim());
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.found) {
+          setStatusResult(data);
+        } else {
+          // Fallback: check localStorage for very recent applications not yet synced
+          const apps = JSON.parse(localStorage.getItem("cts_applications") || "[]");
+          const match = apps.find(a => a.email.toLowerCase() === statusEmail.toLowerCase().trim());
+          setStatusResult(match ? match : "notfound");
+        }
+      } else {
+        // If Apps Script fetch fails, fall back to localStorage
+        const apps = JSON.parse(localStorage.getItem("cts_applications") || "[]");
+        const match = apps.find(a => a.email.toLowerCase() === statusEmail.toLowerCase().trim());
+        setStatusResult(match ? match : "notfound");
+      }
+    } catch (err) {
+      console.error("Status check error:", err);
+      // Fallback to localStorage
+      const apps = JSON.parse(localStorage.getItem("cts_applications") || "[]");
+      const match = apps.find(a => a.email.toLowerCase() === statusEmail.toLowerCase().trim());
+      setStatusResult(match ? match : "notfound");
+    } finally {
+      setStatusLoading(false);
+    }
   };
 
   const generateRef = () => {
@@ -898,6 +938,16 @@ function ApplyPage({ setPage }) {
 
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const validatePhone = (phone) => { const digits = phone.replace(/\D/g, ""); return digits.length === 10; };
+  const validateTRN = (trn) => { const digits = trn.replace(/\D/g, ""); return digits.length === 9; };
+
+  // ── Section completion checks (cascading unlock) ──
+  const secA = !!(form.firstName.trim() && form.lastName.trim() && form.email.trim() && validateEmail(form.email) && form.phone.trim() && validatePhone(form.phone) && form.gender && form.parish && form.maritalStatus && form.address.trim() && form.trn.trim() && validateTRN(form.trn));
+  const secB = !!(secA && form.emergencyName.trim() && form.emergencyPhone.trim() && validatePhone(form.emergencyPhone) && form.emergencyRelation);
+  const secC = !!(secB && form.level && form.programme);
+  const secD = !!(secC && form.education && form.lastSchool.trim());
+  const secE = !!(secD && sector);
+  const secF = !!(secE && files.heartForm);
+  const secDeclare = secF;
 
   const submitApplication = async () => {
     const errors = {};
@@ -905,18 +955,27 @@ function ApplyPage({ setPage }) {
     if (!form.lastName.trim()) errors.lastName = "Last name is required";
     if (!form.email.trim()) errors.email = "Email is required";
     else if (!validateEmail(form.email)) errors.email = "Please enter a valid email";
-    if (!form.phone.trim()) errors.phone = "Phone number is required (10 digits)";
+    if (!form.phone.trim()) errors.phone = "Phone number is required (10 digits, no dashes)";
     else if (!validatePhone(form.phone)) errors.phone = "Phone must be exactly 10 digits (e.g. 8765256802)";
+    if (!form.trn.trim()) errors.trn = "TRN is required";
+    else if (!validateTRN(form.trn)) errors.trn = "TRN must be exactly 9 digits";
     if (!form.gender) errors.gender = "Gender is required";
+    if (!form.parish) errors.parish = "Parish of residence is required";
+    if (!form.maritalStatus) errors.maritalStatus = "Marital status is required";
     if (!form.address.trim()) errors.address = "Residential address is required";
+    if (!form.emergencyName.trim()) errors.emergencyName = "Emergency contact name is required";
+    if (!form.emergencyPhone.trim()) errors.emergencyPhone = "Emergency contact number is required (10 digits)";
+    else if (!validatePhone(form.emergencyPhone)) errors.emergencyPhone = "Contact number must be exactly 10 digits";
+    if (!form.emergencyRelation) errors.emergencyRelation = "Relationship is required";
     if (!form.level) errors.level = "Please select a level";
     if (!form.programme) errors.programme = "Please select a programme";
-    if (!form.emergencyRelation) errors.emergencyRelation = "Relationship is required";
     if (!form.education) errors.education = "Highest qualification is required";
     if (!form.lastSchool.trim()) errors.lastSchool = "Last school attended is required";
     setFormErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
+    setSubmitting(true);
+    try {
     const ref = generateRef();
     const apps = JSON.parse(localStorage.getItem("cts_applications") || "[]");
     apps.push({
@@ -954,6 +1013,12 @@ function ApplyPage({ setPage }) {
     }
 
     setSubmitted(true);
+    } catch (err) {
+      console.error("Submit error:", err);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -1023,15 +1088,15 @@ function ApplyPage({ setPage }) {
           <div style={{ maxWidth: 740, margin: "0 auto" }}>
             {/* Progress indicator */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0, marginBottom: 36 }}>
-              {["Personal", "Emergency", "Programme", "Education", "Employment", "Documents"].map((step, i) => (
+              {[["A", "Personal", secA], ["B", "Emergency", secB], ["C", "Programme", secC], ["D", "Education", secD], ["E", "Employment", secE], ["F", "Documents", secF]].map(([letter, step, done], i) => (
                 <div key={step} style={{ display: "flex", alignItems: "center" }}>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: S.navy, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <span style={{ fontSize: 11, fontWeight: 800, color: S.gold }}>{i + 1}</span>
+                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: done ? "#2E7D32" : S.navy, display: "flex", alignItems: "center", justifyContent: "center", transition: "background 0.3s", boxShadow: done ? "0 0 0 3px rgba(46,125,50,0.2)" : "none" }}>
+                      <span style={{ fontSize: 11, fontWeight: 800, color: done ? "#fff" : S.gold }}>{done ? "✓" : letter}</span>
                     </div>
-                    <span style={{ fontSize: 9, color: S.gray, fontFamily: S.body, marginTop: 4, whiteSpace: "nowrap" }} className="hide-xs">{step}</span>
+                    <span style={{ fontSize: 9, color: done ? "#2E7D32" : S.gray, fontFamily: S.body, marginTop: 4, whiteSpace: "nowrap", fontWeight: done ? 700 : 400 }} className="hide-xs">{step}</span>
                   </div>
-                  {i < 5 && <div style={{ width: "clamp(16px,4vw,40px)", height: 2, background: "rgba(1,30,64,0.1)", margin: "0 2px 16px" }} />}
+                  {i < 5 && <div style={{ width: "clamp(16px,4vw,40px)", height: 2, background: done ? "#2E7D32" : "rgba(1,30,64,0.1)", margin: "0 2px 16px", transition: "background 0.3s" }} />}
                 </div>
               ))}
             </div>
@@ -1039,7 +1104,7 @@ function ApplyPage({ setPage }) {
             <div style={{ background: "#fff", borderRadius: 16, padding: "clamp(24px,4vw,48px)", boxShadow: "0 4px 24px rgba(1,30,64,0.06)", border: "1px solid rgba(1,30,64,0.05)" }}>
 
               {/* SECTION A */}
-              <SectionBlock num="A" title="Personal Information" desc="Please provide your personal details exactly as they appear on your official identification.">
+              <SectionBlock num="A" title="Personal Information" desc="Please provide your personal details exactly as they appear on your official identification." complete={secA}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }} className="resp-grid-2">
                   <div><label style={labelStyle}>First Name(s) {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.firstName ? "#C62828" : undefined }} value={form.firstName} onChange={e => u("firstName", e.target.value)} placeholder="First name(s)" />{errMsg("firstName")}</div>
                   <div><label style={labelStyle}>Middle Name</label><input style={inputStyle} value={form.middleName} onChange={e => u("middleName", e.target.value)} placeholder="Middle name (if any)" /></div>
@@ -1047,11 +1112,11 @@ function ApplyPage({ setPage }) {
                   <div><label style={labelStyle}>Gender {reqDot}</label><select style={{ ...inputStyle, borderColor: formErrors.gender ? "#C62828" : undefined }} value={form.gender} onChange={e => u("gender", e.target.value)}><option value="">Select</option><option>Male</option><option>Female</option><option>Other / Prefer not to say</option></select>{errMsg("gender")}</div>
                   <div><label style={labelStyle}>Date of Birth {reqDot}</label><input type="date" style={inputStyle} value={form.dob} onChange={e => u("dob", e.target.value)} /></div>
                   <div><label style={labelStyle}>Nationality</label><input style={inputStyle} value={form.nationality} onChange={e => u("nationality", e.target.value)} placeholder="e.g. Jamaican" /></div>
-                  <div><label style={labelStyle}>TRN {reqDot}</label><input style={inputStyle} value={form.trn} onChange={e => u("trn", e.target.value)} placeholder="Tax Registration Number" /></div>
-                  <div><label style={labelStyle}>Marital Status</label><select style={inputStyle} value={form.maritalStatus} onChange={e => u("maritalStatus", e.target.value)}><option value="">Select</option><option>Single</option><option>Married</option><option>Common Law</option><option>Widowed</option><option>Divorced</option></select></div>
+                  <div><label style={labelStyle}>TRN {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.trn ? "#C62828" : undefined }} value={form.trn} onChange={e => u("trn", e.target.value)} placeholder="9-digit Tax Registration Number" maxLength={9} />{errMsg("trn")}</div>
+                  <div><label style={labelStyle}>Marital Status {reqDot}</label><select style={{ ...inputStyle, borderColor: formErrors.maritalStatus ? "#C62828" : undefined }} value={form.maritalStatus} onChange={e => u("maritalStatus", e.target.value)}><option value="">Select</option><option>Single</option><option>Married</option><option>Common Law</option><option>Widowed</option><option>Divorced</option></select>{errMsg("maritalStatus")}</div>
                   <div><label style={labelStyle}>Email Address {reqDot}</label><input type="email" style={{ ...inputStyle, borderColor: formErrors.email ? "#C62828" : undefined }} value={form.email} onChange={e => u("email", e.target.value)} placeholder="your@email.com" />{errMsg("email")}</div>
-                  <div><label style={labelStyle}>Mobile Number {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.phone ? "#C62828" : undefined }} value={form.phone} onChange={e => u("phone", e.target.value)} placeholder="8765256802 (10 digits)" />{errMsg("phone")}</div>
-                  <div><label style={labelStyle}>Parish of Residence</label><select style={inputStyle} value={form.parish} onChange={e => u("parish", e.target.value)}><option value="">Select parish</option>{["Kingston","St. Andrew","St. Thomas","Portland","St. Mary","St. Ann","Trelawny","St. James","Hanover","Westmoreland","St. Elizabeth","Manchester","Clarendon","St. Catherine"].map(p => <option key={p}>{p}</option>)}</select></div>
+                  <div><label style={labelStyle}>Mobile Number {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.phone ? "#C62828" : undefined }} value={form.phone} onChange={e => u("phone", e.target.value)} placeholder="8765256802 (10 digits, no dashes)" maxLength={10} />{errMsg("phone")}</div>
+                  <div><label style={labelStyle}>Parish of Residence {reqDot}</label><select style={{ ...inputStyle, borderColor: formErrors.parish ? "#C62828" : undefined }} value={form.parish} onChange={e => u("parish", e.target.value)}><option value="">Select parish</option>{["Kingston","St. Andrew","St. Thomas","Portland","St. Mary","St. Ann","Trelawny","St. James","Hanover","Westmoreland","St. Elizabeth","Manchester","Clarendon","St. Catherine"].map(p => <option key={p}>{p}</option>)}</select>{errMsg("parish")}</div>
                   <div><label style={labelStyle}>Special Needs</label><select style={inputStyle} value={form.specialNeeds} onChange={e => u("specialNeeds", e.target.value)}><option>No</option><option>Yes</option></select></div>
                 </div>
                 {form.specialNeeds === "Yes" && (
@@ -1061,16 +1126,16 @@ function ApplyPage({ setPage }) {
               </SectionBlock>
 
               {/* SECTION B */}
-              <SectionBlock num="B" title="Emergency Contact" desc="Provide the details of a person we can contact in the event of an emergency.">
+              <SectionBlock num="B" title="Emergency Contact" desc="Provide the details of a person we can contact in the event of an emergency." locked={!secA} complete={secB}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }} className="resp-grid-2">
-                  <div><label style={labelStyle}>Contact Full Name {reqDot}</label><input style={inputStyle} value={form.emergencyName} onChange={e => u("emergencyName", e.target.value)} placeholder="Full name" /></div>
-                  <div><label style={labelStyle}>Contact Number {reqDot}</label><input style={inputStyle} value={form.emergencyPhone} onChange={e => u("emergencyPhone", e.target.value)} placeholder="876-XXX-XXXX" /></div>
+                  <div><label style={labelStyle}>Contact Full Name {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.emergencyName ? "#C62828" : undefined }} value={form.emergencyName} onChange={e => u("emergencyName", e.target.value)} placeholder="Full name" />{errMsg("emergencyName")}</div>
+                  <div><label style={labelStyle}>Contact Number {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.emergencyPhone ? "#C62828" : undefined }} value={form.emergencyPhone} onChange={e => u("emergencyPhone", e.target.value)} placeholder="8761234567 (10 digits, no dashes)" maxLength={10} />{errMsg("emergencyPhone")}</div>
                   <div><label style={labelStyle}>Relationship to Applicant {reqDot}</label><select style={{ ...inputStyle, borderColor: formErrors.emergencyRelation ? "#C62828" : undefined }} value={form.emergencyRelation} onChange={e => u("emergencyRelation", e.target.value)}><option value="">Select</option><option>Parent</option><option>Guardian</option><option>Spouse / Partner</option><option>Sibling</option><option>Relative</option><option>Friend</option></select>{errMsg("emergencyRelation")}</div>
                 </div>
               </SectionBlock>
 
               {/* SECTION C */}
-              <SectionBlock num="C" title="Programme Selection" desc="Select the level and programme you wish to enrol in.">
+              <SectionBlock num="C" title="Programme Selection" desc="Select the level and programme you wish to enrol in." locked={!secB} complete={secC}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }} className="resp-grid-2">
                   <div><label style={labelStyle}>Qualification Level {reqDot}</label><select style={{ ...inputStyle, borderColor: formErrors.level ? "#C62828" : undefined }} value={form.level} onChange={e => u("level", e.target.value)}><option value="">Select level</option>{Object.keys(PROGRAMMES).map(l => <option key={l}>{l}</option>)}</select>{errMsg("level")}</div>
                   <div><label style={labelStyle}>Programme {reqDot}</label><select style={{ ...inputStyle, borderColor: formErrors.programme ? "#C62828" : undefined }} value={form.programme} onChange={e => u("programme", e.target.value)}><option value="">Select programme</option>{(PROGRAMMES[form.level] || []).map(p => <option key={p.name}>{p.name}</option>)}</select>{errMsg("programme")}</div>
@@ -1081,7 +1146,7 @@ function ApplyPage({ setPage }) {
               </SectionBlock>
 
               {/* SECTION D */}
-              <SectionBlock num="D" title="Educational Background" desc="Indicate your highest level of academic or vocational qualification.">
+              <SectionBlock num="D" title="Educational Background" desc="Indicate your highest level of academic or vocational qualification." locked={!secC} complete={secD}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }} className="resp-grid-2">
                   <div><label style={labelStyle}>Highest Qualification Attained {reqDot}</label><select style={{ ...inputStyle, borderColor: formErrors.education ? "#C62828" : undefined }} value={form.education} onChange={e => u("education", e.target.value)}><option value="">Select</option>{["No formal qualifications","CXC/CSEC (1–4 subjects)","CXC/CSEC (5+ subjects)","CAPE","NVQ-J Level 1 / Job Certificate","NVQ-J Level 2","NVQ-J Level 3 Diploma","Associate Degree","Bachelor's Degree","Postgraduate / Master's","Other"].map(e => <option key={e}>{e}</option>)}</select>{errMsg("education")}</div>
                   <div><label style={labelStyle}>Last School / Institution Attended {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.lastSchool ? "#C62828" : undefined }} value={form.lastSchool} onChange={e => u("lastSchool", e.target.value)} placeholder="Name of school or institution" />{errMsg("lastSchool")}</div>
@@ -1089,7 +1154,7 @@ function ApplyPage({ setPage }) {
               </SectionBlock>
 
               {/* SECTION E — Employment */}
-              <SectionBlock num="E" title="Employment Information" desc="This helps us tailor your learning pathway and confirm group rate eligibility where applicable.">
+              <SectionBlock num="E" title="Employment Information" desc="This helps us tailor your learning pathway and confirm group rate eligibility where applicable." locked={!secD} complete={secE}>
 
                 {/* Step 1: Sector */}
                 <label style={{ ...labelStyle, marginBottom: 8 }}>Employment Sector {reqDot}</label>
@@ -1165,7 +1230,7 @@ function ApplyPage({ setPage }) {
               </SectionBlock>
 
               {/* SECTION F: Documents */}
-              <SectionBlock num="F" title="Document Upload" desc="Upload the following required documents. Accepted formats: PDF, JPG, PNG (max 5MB each).">
+              <SectionBlock num="F" title="Document Upload" desc="Upload the following required documents. Accepted formats: PDF, JPG, PNG (max 5MB each)." locked={!secE} complete={secF}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 10, marginBottom: 16 }}>
                   {[
                     ["heartForm", "📋", "Official HEART/NSTA Trust Application Form", "Download from the Official Form tab, complete and upload here"],
@@ -1190,6 +1255,17 @@ function ApplyPage({ setPage }) {
                 </div>
               </SectionBlock>
 
+              {/* Additional notes + Declaration + Submit — locked until all sections complete */}
+              <div style={{ position: "relative", opacity: secF ? 1 : 0.45, transition: "opacity 0.3s", pointerEvents: secF ? "auto" : "none" }}>
+                {!secF && (
+                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 2, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 12, background: "rgba(248,249,250,0.6)", backdropFilter: "blur(2px)" }}>
+                    <div style={{ padding: "10px 20px", borderRadius: 8, background: "#fff", border: "1.5px solid rgba(1,30,64,0.1)", boxShadow: "0 2px 12px rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 16 }}>🔒</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: S.navy, fontFamily: S.body }}>Complete all sections above to unlock</span>
+                    </div>
+                  </div>
+                )}
+
               {/* Additional notes */}
               <div style={{ marginBottom: 24 }}>
                 <label style={labelStyle}>Additional Notes or Special Requirements</label>
@@ -1198,10 +1274,16 @@ function ApplyPage({ setPage }) {
 
               {/* Declaration */}
               <div style={{ padding: "16px 20px", borderRadius: 10, background: "rgba(1,30,64,0.03)", border: "1px solid rgba(1,30,64,0.08)", marginBottom: 16 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 6 }}>Declaration</div>
-                <p style={{ fontSize: 12, color: "#4A5568", fontFamily: S.body, lineHeight: 1.75, margin: 0 }}>
-                  By submitting this application, I declare that all information provided is accurate, truthful, and complete. I understand that any misrepresentation may result in the withdrawal of my enrolment. I agree to the <button onClick={() => setPage("Terms")} style={{ background: "none", border: "none", color: S.gold, fontSize: 12, fontFamily: S.body, cursor: "pointer", textDecoration: "underline", padding: 0 }}>Terms &amp; Conditions</button> and <button onClick={() => setPage("Privacy")} style={{ background: "none", border: "none", color: S.gold, fontSize: 12, fontFamily: S.body, cursor: "pointer", textDecoration: "underline", padding: 0 }}>Privacy Policy</button> of CTS Empowerment &amp; Training Solutions.
+                <div style={{ fontSize: 12, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 10 }}>Declaration</div>
+                <p style={{ fontSize: 12, color: "#4A5568", fontFamily: S.body, lineHeight: 1.75, margin: "0 0 14px 0" }}>
+                  By submitting this application, I declare that all information provided is accurate, truthful, and complete. I understand that any misrepresentation may result in the withdrawal of my enrolment. I have read and understand the <button onClick={() => setPage("Terms")} style={{ background: "none", border: "none", color: S.gold, fontSize: 12, fontFamily: S.body, cursor: "pointer", textDecoration: "underline", padding: 0 }}>Terms &amp; Conditions</button> and <button onClick={() => setPage("Privacy")} style={{ background: "none", border: "none", color: S.gold, fontSize: 12, fontFamily: S.body, cursor: "pointer", textDecoration: "underline", padding: 0 }}>Privacy Policy</button> of CTS Empowerment &amp; Training Solutions.
                 </p>
+                <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", padding: "10px 14px", borderRadius: 8, background: declareChecked ? "rgba(46,125,50,0.06)" : "rgba(1,30,64,0.02)", border: declareChecked ? "1.5px solid rgba(46,125,50,0.3)" : "1.5px solid rgba(1,30,64,0.1)", transition: "all 0.2s" }}>
+                  <input type="checkbox" checked={declareChecked} onChange={e => setDeclareChecked(e.target.checked)} style={{ width: 18, height: 18, marginTop: 1, accentColor: "#2E7D32", cursor: "pointer", flexShrink: 0 }} />
+                  <span style={{ fontSize: 12, color: declareChecked ? "#2E7D32" : "#4A5568", fontFamily: S.body, lineHeight: 1.65, fontWeight: declareChecked ? 600 : 400 }}>
+                    I confirm that I have read, understood, and agree to the Terms &amp; Conditions and Privacy Policy as stated above, and I have no objection to the terms outlined therein.
+                  </span>
+                </label>
               </div>
 
               {/* Payment notice */}
@@ -1212,12 +1294,14 @@ function ApplyPage({ setPage }) {
                 </p>
               </div>
 
-              <button onClick={submitApplication} disabled={submitting} style={{ width: "100%", padding: "17px", borderRadius: 10, background: submitting ? "#4A5568" : S.navy, color: "#fff", border: "none", fontSize: 15, fontWeight: 700, cursor: submitting ? "wait" : "pointer", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", boxShadow: "0 4px 16px rgba(1,30,64,0.25)", transition: "all 0.2s", opacity: submitting ? 0.7 : 1 }}
-                onMouseEnter={e => { if (!submitting) e.currentTarget.style.background = "#001228"; }}
-                onMouseLeave={e => { if (!submitting) e.currentTarget.style.background = S.navy; }}>
-                {submitting ? "Submitting..." : "Submit Application →"}
+              <button onClick={submitApplication} disabled={!declareChecked || submitting} style={{ width: "100%", padding: "17px", borderRadius: 10, background: (!declareChecked || submitting) ? "#4A5568" : S.navy, color: "#fff", border: "none", fontSize: 15, fontWeight: 700, cursor: (!declareChecked || submitting) ? "not-allowed" : "pointer", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", boxShadow: declareChecked && !submitting ? "0 4px 16px rgba(1,30,64,0.25)" : "none", transition: "all 0.2s", opacity: (!declareChecked || submitting) ? 0.5 : 1 }}
+                onMouseEnter={e => { if (declareChecked && !submitting) e.currentTarget.style.background = "#001228"; }}
+                onMouseLeave={e => { if (declareChecked && !submitting) e.currentTarget.style.background = S.navy; }}>
+                {submitting ? "⏳ Submitting Application — Please Wait..." : !declareChecked ? "🔒 Please Accept Declaration Above" : "Submit Application →"}
               </button>
+              {!declareChecked && <p style={{ textAlign: "center", fontSize: 11, color: "#C62828", fontFamily: S.body, marginTop: 8 }}>You must accept the declaration above before submitting your application.</p>}
               <p style={{ textAlign: "center", fontSize: 11, color: S.gray, fontFamily: S.body, marginTop: 12 }}>Your Student ID and reference number will be displayed immediately after submission.</p>
+              </div>{/* end cascading lock wrapper */}
             </div>
           </div>
         )}
@@ -1275,8 +1359,8 @@ function ApplyPage({ setPage }) {
               <div style={{ marginBottom: 16 }}>
                 <label style={labelStyle}>Registered Email Address</label>
                 <div style={{ display: "flex", gap: 10 }}>
-                  <input style={{ ...inputStyle, flex: 1 }} value={statusEmail} onChange={e => setStatusEmail(e.target.value)} placeholder="your@email.com" type="email" onKeyDown={e => e.key === "Enter" && checkStatus()} />
-                  <button onClick={checkStatus} style={{ padding: "12px 22px", borderRadius: 8, background: S.navy, color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: S.body, whiteSpace: "nowrap" }}>Check Status</button>
+                  <input style={{ ...inputStyle, flex: 1 }} value={statusEmail} onChange={e => setStatusEmail(e.target.value)} placeholder="your@email.com" type="email" onKeyDown={e => e.key === "Enter" && !statusLoading && checkStatus()} />
+                  <button onClick={checkStatus} disabled={statusLoading} style={{ padding: "12px 22px", borderRadius: 8, background: statusLoading ? "#4A5568" : S.navy, color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: statusLoading ? "wait" : "pointer", fontFamily: S.body, whiteSpace: "nowrap", opacity: statusLoading ? 0.7 : 1, transition: "all 0.2s", minWidth: 120 }}>{statusLoading ? "⏳ Checking..." : "Check Status"}</button>
                 </div>
               </div>
 
@@ -1293,6 +1377,10 @@ function ApplyPage({ setPage }) {
                     <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", fontFamily: S.body }}>Application on File</div>
                     <div style={{ fontSize: 11, color: S.gold, fontFamily: S.body, fontWeight: 700, letterSpacing: 1 }}>{statusResult.ref}</div>
                   </div>
+                  {statusResult.studentId && <div style={{ background: "rgba(196,145,18,0.08)", padding: "10px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(1,30,64,0.05)" }}>
+                    <span style={{ fontSize: 11, color: S.gray, fontWeight: 700, fontFamily: S.body, letterSpacing: 0.5, textTransform: "uppercase" }}>Student ID</span>
+                    <span style={{ fontSize: 14, color: S.navy, fontWeight: 800, fontFamily: S.heading, letterSpacing: 1 }}>{statusResult.studentId}</span>
+                  </div>}
                   <div style={{ padding: "20px" }}>
                     {[["Applicant Name", statusResult.name], ["Programme", statusResult.level + " — " + statusResult.programme], ["Date Submitted", statusResult.submittedAt]].map(([label, val]) => (
                       <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "9px 0", borderBottom: "1px solid rgba(1,30,64,0.05)", fontSize: 13, fontFamily: S.body }}>
@@ -1300,12 +1388,13 @@ function ApplyPage({ setPage }) {
                         <span style={{ color: S.navy, fontWeight: 600, textAlign: "right", maxWidth: "60%" }}>{val}</span>
                       </div>
                     ))}
-                    <div style={{ marginTop: 14, padding: "14px 16px", borderRadius: 8, background: "rgba(196,145,18,0.06)", border: "1px solid rgba(196,145,18,0.15)" }}>
+                    <div style={{ marginTop: 14, padding: "14px 16px", borderRadius: 8, background: ({"Accepted":"rgba(46,125,50,0.06)","Enrolled":"rgba(13,71,161,0.06)","Completed":"rgba(1,30,64,0.06)","Rejected":"rgba(183,28,28,0.06)","Withdrawn":"rgba(97,97,97,0.06)","Deferred":"rgba(106,27,154,0.06)","Documents Needed":"rgba(230,81,0,0.06)"}[statusResult.status] || "rgba(196,145,18,0.06)"), border: "1px solid " + ({"Accepted":"rgba(46,125,50,0.2)","Enrolled":"rgba(13,71,161,0.2)","Completed":"rgba(1,30,64,0.2)","Rejected":"rgba(183,28,28,0.2)","Withdrawn":"rgba(97,97,97,0.2)","Deferred":"rgba(106,27,154,0.2)","Documents Needed":"rgba(230,81,0,0.2)"}[statusResult.status] || "rgba(196,145,18,0.15)") }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                        <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#F59E0B", flexShrink: 0 }} />
+                        <div style={{ width: 10, height: 10, borderRadius: "50%", background: ({"Under Review":"#F59E0B","Documents Needed":"#E65100","Accepted":"#2E7D32","Enrolled":"#0D47A1","Deferred":"#6A1B9A","Withdrawn":"#616161","Completed":"#C49112","Rejected":"#B71C1C"}[statusResult.status] || "#F59E0B"), flexShrink: 0 }} />
                         <span style={{ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body }}>Status: {statusResult.status}</span>
                       </div>
-                      <p style={{ fontSize: 12, color: "#4A5568", fontFamily: S.body, lineHeight: 1.65, margin: 0 }}>{statusResult.notes}</p>
+                      {statusResult.payStatus && <div style={{ fontSize: 12, color: "#4A5568", fontFamily: S.body, marginBottom: 6 }}>Payment: <strong>{statusResult.payStatus}</strong></div>}
+                      {statusResult.notes && <p style={{ fontSize: 12, color: "#4A5568", fontFamily: S.body, lineHeight: 1.65, margin: 0 }}>{statusResult.notes}</p>}
                     </div>
                     <div style={{ marginTop: 14, fontSize: 12, color: S.gray, fontFamily: S.body, lineHeight: 1.6, textAlign: "center" }}>
                       For urgent queries: <strong>info@ctsetsjm.com</strong> | <strong>876-525-6802</strong> (Flow) | <strong>876-381-9771</strong> (Digicel)
@@ -1374,10 +1463,12 @@ function ApplyPage({ setPage }) {
                     Accepted: bank transfer receipts, NCB/Scotiabank/JN/Sagicor transaction confirmations, Western Union receipts, or cash deposit slips. Make payments payable to <strong>CTS Empowerment &amp; Training Solutions</strong>. Payment details will be provided in your acceptance email.
                   </div>
 
-                  <button onClick={() => {
+                  <button onClick={async () => {
                     if (!payEmail || !files.paymentProof) { alert("Please provide your email and upload proof of payment."); return; }
+                    setPaySubmitting(true);
+                    try {
                     // Send to Google Apps Script
-                    submitToAppsScript({
+                    await submitToAppsScript({
                       form_type: "Payment Evidence", email: payEmail, paymentRef: payRef || "Not provided",
                     }, { paymentProof: files.paymentProof });
                     // EmailJS backup notification
@@ -1390,7 +1481,13 @@ function ApplyPage({ setPage }) {
                       }).catch(err => console.error("EmailJS error:", err));
                     }
                     setPaySubmitted(true);
-                  }} style={{ width: "100%", padding: "16px", borderRadius: 8, background: S.gold, color: S.navy, border: "none", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase" }}>Submit Payment Evidence</button>
+                    } catch (err) {
+                      console.error("Payment submit error:", err);
+                      alert("Something went wrong. Please try again.");
+                    } finally {
+                      setPaySubmitting(false);
+                    }
+                  }} disabled={paySubmitting} style={{ width: "100%", padding: "16px", borderRadius: 8, background: paySubmitting ? "#4A5568" : S.gold, color: S.navy, border: "none", fontSize: 15, fontWeight: 700, cursor: paySubmitting ? "wait" : "pointer", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", opacity: paySubmitting ? 0.7 : 1, transition: "all 0.2s" }}>{paySubmitting ? "⏳ Submitting..." : "Submit Payment Evidence"}</button>
                 </div>
               </div>
             </div>
