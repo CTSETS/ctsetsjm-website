@@ -1061,7 +1061,7 @@ function EmployersPage({ setPage }) {
             <button onClick={() => setShowAll(!showAll)} style={{ background: "none", border: "1px solid rgba(10,35,66,0.15)", borderRadius: 6, padding: "9px 24px", fontSize: 12, fontWeight: 600, color: S.navy, cursor: "pointer", fontFamily: S.body }}>{showAll ? "Show Less" : "View All 25 Programmes"}</button>
           </div>
         )}
-        <div style={{ textAlign: "center", marginTop: 36 }}><Btn primary onClick={() => setPage("Apply")} style={{ color: S.navy }}>Enrol Your Team</Btn></div>
+        <div style={{ textAlign: "center", marginTop: 36 }}><Btn primary onClick={() => { sessionStorage.setItem("cts_apply_tab", "group"); setPage("Apply"); }} style={{ color: S.navy }}>Enrol Your Team</Btn></div>
       </Container>
     </PageWrapper>
   );
@@ -1070,7 +1070,10 @@ function EmployersPage({ setPage }) {
 
 // ─── APPLY PAGE ──────────────────────────────────────────────────────
 function ApplyPage({ setPage }) {
-  const [activeTab, setActiveTab] = useState("apply");
+  const [activeTab, setActiveTab] = useState(() => {
+    try { const t = sessionStorage.getItem("cts_apply_tab"); if (t) { sessionStorage.removeItem("cts_apply_tab"); return t; } } catch(_){}
+    return "apply";
+  });
   const [sector, setSector] = useState("");
   const [publicType, setPublicType] = useState("");
   const [empStatus, setEmpStatus] = useState("");
@@ -1102,6 +1105,10 @@ function ApplyPage({ setPage }) {
   const [emailSuggestion, setEmailSuggestion] = useState(null);
   const [uploadProgress, setUploadProgress] = useState({});
   const submitGuardRef = useRef(false);
+  const [groupForm, setGroupForm] = useState({ companyName: "", contactName: "", contactEmail: "", contactPhone: "", numLearners: "", programmes: "", message: "" });
+  const [groupSubmitted, setGroupSubmitted] = useState(false);
+  const [groupSubmitting, setGroupSubmitting] = useState(false);
+  const ug = (k, v) => setGroupForm(f => ({ ...f, [k]: v }));
   const u = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   // Auto-save form to sessionStorage
@@ -1378,9 +1385,9 @@ function ApplyPage({ setPage }) {
       <SectionHeader tag="Admissions" title="Apply to CTS ETS" desc="Complete the application form below and upload your required documents. Our admissions team will review your submission within 24–48 hours." />
       <Container>
         {/* Tabs */}
-        <div style={{ display: "flex", gap: 0, justifyContent: "center", marginBottom: 40, background: "#fff", borderRadius: 10, padding: 4, maxWidth: 480, margin: "0 auto 40px", boxShadow: "0 2px 8px rgba(1,30,64,0.06)", border: "1px solid rgba(1,30,64,0.08)" }}>
-          {[["apply", "📝  Apply Now"], ["download", "📥  HEART Form"], ["status", "🔍  Check Status"], ["payment", "💳  Payment Centre"]].map(([v, l]) => (
-            <button key={v} onClick={() => setActiveTab(v)} style={{ flex: 1, padding: "11px 10px", borderRadius: 8, border: "none", background: activeTab === v ? S.navy : "transparent", color: activeTab === v ? "#fff" : S.gray, fontSize: 13, fontWeight: activeTab === v ? 700 : 500, cursor: "pointer", fontFamily: S.body, transition: "all 0.2s", whiteSpace: "nowrap" }}>{l}</button>
+        <div style={{ display: "flex", gap: 0, justifyContent: "center", marginBottom: 40, background: "#fff", borderRadius: 10, padding: 4, maxWidth: 600, margin: "0 auto 40px", boxShadow: "0 2px 8px rgba(1,30,64,0.06)", border: "1px solid rgba(1,30,64,0.08)" }}>
+          {[["apply", "📝  Apply Now"], ["group", "👥  Group Enrol"], ["download", "📥  HEART Form"], ["status", "🔍  Check Status"], ["payment", "💳  Payment Centre"]].map(([v, l]) => (
+            <button key={v} onClick={() => setActiveTab(v)} style={{ flex: 1, padding: "11px 8px", borderRadius: 8, border: "none", background: activeTab === v ? S.navy : "transparent", color: activeTab === v ? "#fff" : S.gray, fontSize: 12, fontWeight: activeTab === v ? 700 : 500, cursor: "pointer", fontFamily: S.body, transition: "all 0.2s", whiteSpace: "nowrap" }}>{l}</button>
           ))}
         </div>
 
@@ -1634,6 +1641,100 @@ function ApplyPage({ setPage }) {
           </div>
         )}
 
+        {/* ─── TAB: GROUP ENROLMENT ─── */}
+        {activeTab === "group" && (
+          groupSubmitted ? (
+            <div style={{ maxWidth: 560, margin: "0 auto", textAlign: "center", paddingTop: 40 }}>
+              <div style={{ fontSize: 64, marginBottom: 20 }}>✅</div>
+              <h2 style={{ fontFamily: S.heading, fontSize: 28, color: S.navy, marginBottom: 12 }}>Group Enquiry Submitted!</h2>
+              <p style={{ fontFamily: S.body, fontSize: 15, color: "#2D3748", maxWidth: 480, margin: "0 auto 20px", lineHeight: 1.7 }}>
+                Thank you, <strong>{groupForm.contactName}</strong>. Our team will prepare a group quotation for <strong>{groupForm.companyName}</strong> and contact you within 24–48 hours.
+              </p>
+              <div style={{ padding: "16px 24px", borderRadius: 10, background: "rgba(46,125,50,0.06)", border: "1px solid rgba(46,125,50,0.15)", maxWidth: 420, margin: "0 auto 24px" }}>
+                <div style={{ fontSize: 13, color: "#2E7D32", fontFamily: S.body, lineHeight: 1.6 }}>📧 A confirmation has been sent to <strong>{groupForm.contactEmail}</strong></div>
+              </div>
+              <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray }}>📧 info@ctsetsjm.com &nbsp;|&nbsp; 📞 876-525-6802</p>
+            </div>
+          ) : (
+            <div style={{ maxWidth: 640, margin: "0 auto" }}>
+              <div style={{ background: "#fff", borderRadius: 16, padding: "clamp(28px,4vw,48px)", boxShadow: "0 4px 24px rgba(1,30,64,0.06)", border: "1px solid rgba(1,30,64,0.05)" }}>
+                <div style={{ textAlign: "center", marginBottom: 28 }}>
+                  <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(196,145,18,0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px", fontSize: 28 }}>👥</div>
+                  <h3 style={{ fontFamily: S.heading, fontSize: 22, color: S.navy, marginBottom: 8 }}>Group / Employer Enrolment</h3>
+                  <p style={{ fontFamily: S.body, fontSize: 14, color: "#4A5568", lineHeight: 1.6 }}>Enrolling 8 or more learners? Complete this form and our team will prepare a group quotation with your <strong>15% discount</strong> applied.</p>
+                </div>
+
+                <div style={{ padding: "14px 18px", borderRadius: 8, background: "rgba(46,125,50,0.04)", border: "1px solid rgba(46,125,50,0.12)", marginBottom: 28, display: "flex", gap: 10, alignItems: "center" }}>
+                  <span style={{ fontSize: 18, flexShrink: 0 }}>💰</span>
+                  <div style={{ fontSize: 13, color: "#2E7D32", fontFamily: S.body, lineHeight: 1.5 }}><strong>15% group discount</strong> applies automatically for 8+ learners in a single programme intake.</div>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }} className="resp-grid-2">
+                  <div><label style={labelStyle}>Company / Organisation Name {reqDot}</label><input style={inputStyle} value={groupForm.companyName} onChange={e => ug("companyName", e.target.value)} placeholder="e.g. Ministry of Finance" /></div>
+                  <div><label style={labelStyle}>Contact Person (Full Name) {reqDot}</label><input style={inputStyle} value={groupForm.contactName} onChange={e => ug("contactName", e.target.value)} placeholder="e.g. John Smith" /></div>
+                  <div><label style={labelStyle}>Contact Email {reqDot}</label><input type="email" style={inputStyle} value={groupForm.contactEmail} onChange={e => ug("contactEmail", e.target.value)} placeholder="john@company.com" /></div>
+                  <div><label style={labelStyle}>Contact Phone {reqDot}</label><input style={inputStyle} value={groupForm.contactPhone} onChange={e => ug("contactPhone", groupForm.contactPhone.length < e.target.value.length ? e.target.value.replace(/\D/g, "").slice(0, 10) : e.target.value.replace(/\D/g, "").slice(0, 10))} placeholder="8765256802" maxLength={10} /></div>
+                  <div><label style={labelStyle}>Number of Learners {reqDot}</label><input type="number" min="1" style={inputStyle} value={groupForm.numLearners} onChange={e => ug("numLearners", e.target.value)} placeholder="e.g. 12" /></div>
+                  <div><label style={labelStyle}>Programme(s) of Interest {reqDot}</label><select style={inputStyle} value={groupForm.programmes} onChange={e => ug("programmes", e.target.value)}>
+                    <option value="">Select programme(s)</option>
+                    {Object.entries(PROGRAMMES).map(([level, progs]) => (
+                      <optgroup key={level} label={level}>
+                        {progs.map(p => <option key={p.name} value={level + " — " + p.name}>{p.name}</option>)}
+                      </optgroup>
+                    ))}
+                    <option value="Multiple — To be discussed">Multiple programmes — to be discussed</option>
+                  </select></div>
+                </div>
+
+                <div style={{ marginBottom: 24 }}>
+                  <label style={labelStyle}>Additional Details</label>
+                  <textarea style={{ ...inputStyle, minHeight: 90, resize: "vertical" }} value={groupForm.message} onChange={e => ug("message", e.target.value)} placeholder="Any specific requirements, preferred start date, billing arrangements, or questions for our team..." />
+                </div>
+
+                <button onClick={async () => {
+                  if (!groupForm.companyName || !groupForm.contactName || !groupForm.contactEmail || !groupForm.contactPhone || !groupForm.numLearners || !groupForm.programmes) {
+                    alert("Please complete all required fields."); return;
+                  }
+                  setGroupSubmitting(true);
+                  try {
+                    await submitToAppsScript({
+                      form_type: "Group Enrolment Enquiry",
+                      companyName: groupForm.companyName,
+                      contactName: groupForm.contactName,
+                      email: groupForm.contactEmail,
+                      phone: groupForm.contactPhone,
+                      numLearners: groupForm.numLearners,
+                      programmes: groupForm.programmes,
+                      message: groupForm.message || "No additional details provided",
+                    }, {});
+                    if (window.emailjs) {
+                      window.emailjs.send("service_05xj674", "template_rvn4485", {
+                        form_type: "Group Enrolment Enquiry",
+                        from_name: groupForm.contactName + " (" + groupForm.companyName + ")",
+                        email: groupForm.contactEmail,
+                        phone: groupForm.contactPhone,
+                        message: "Company: " + groupForm.companyName + "\nLearners: " + groupForm.numLearners + "\nProgramme(s): " + groupForm.programmes + "\n\n" + (groupForm.message || ""),
+                      }).catch(err => console.error("EmailJS error:", err));
+                    }
+                    setGroupSubmitted(true);
+                  } catch (err) {
+                    console.error("Group submit error:", err);
+                    alert("Something went wrong. Please try again.");
+                  } finally {
+                    setGroupSubmitting(false);
+                  }
+                }} disabled={groupSubmitting} style={{ width: "100%", padding: "16px", borderRadius: 10, background: groupSubmitting ? "#4A5568" : S.navy, color: "#fff", border: "none", fontSize: 15, fontWeight: 700, cursor: groupSubmitting ? "wait" : "pointer", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", opacity: groupSubmitting ? 0.7 : 1, transition: "all 0.2s" }}>
+                  {groupSubmitting ? "⏳ Submitting Enquiry..." : "Submit Group Enquiry →"}
+                </button>
+
+                <div style={{ marginTop: 20, padding: "14px 16px", borderRadius: 8, background: "rgba(1,30,64,0.03)", border: "1px solid rgba(1,30,64,0.06)", fontSize: 12, color: S.gray, fontFamily: S.body, lineHeight: 1.6, textAlign: "center" }}>
+                  💡 Need to apply individually? Use the <strong>Apply Now</strong> tab. Group enquiries are processed separately — our team will contact you with a quotation and bulk application instructions.
+                </div>
+              </div>
+            </div>
+          )
+        )}
+
 
         {/* ─── TAB: DOWNLOAD ─── */}
         {activeTab === "download" && (
@@ -1829,6 +1930,46 @@ function ApplyPage({ setPage }) {
 // ─── CONTACT PAGE ────────────────────────────────────────────────────
 function ContactPage({ setPage }) {
   const [openFaq, setOpenFaq] = useState(null);
+  const [cForm, setCForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
+  const [cSent, setCSent] = useState(false);
+  const [cSending, setCSending] = useState(false);
+  const cu = (k, v) => setCForm(f => ({ ...f, [k]: v }));
+
+  const sendEnquiry = async () => {
+    if (!cForm.name.trim() || !cForm.email.trim() || !cForm.message.trim()) { alert("Please fill in your name, email, and message."); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cForm.email)) { alert("Please enter a valid email address."); return; }
+    setCSending(true);
+    try {
+      await submitToAppsScript({
+        form_type: "Contact Enquiry",
+        contactName: cForm.name,
+        email: cForm.email,
+        phone: cForm.phone || "Not provided",
+        subject: cForm.subject || "General Enquiry",
+        message: cForm.message,
+      }, {});
+      if (window.emailjs) {
+        window.emailjs.send("service_05xj674", "template_rvn4485", {
+          form_type: "Contact Enquiry",
+          from_name: cForm.name,
+          email: cForm.email,
+          phone: cForm.phone || "N/A",
+          message: "Subject: " + (cForm.subject || "General Enquiry") + "\n\n" + cForm.message,
+        }).catch(err => console.error("EmailJS error:", err));
+      }
+      setCSent(true);
+    } catch (err) {
+      console.error("Contact form error:", err);
+      alert("Something went wrong. Please try again or email us directly at info@ctsetsjm.com.");
+    } finally {
+      setCSending(false);
+    }
+  };
+
+  const inputStyle = { width: "100%", padding: "11px 14px", borderRadius: 8, border: "1.5px solid rgba(1,30,64,0.15)", background: "#fff", fontSize: 14, fontFamily: S.body, color: S.navy, outline: "none", boxSizing: "border-box", transition: "border-color 0.2s" };
+  const labelStyle = { fontSize: 11, color: "#4A5568", fontWeight: 700, fontFamily: S.body, display: "block", marginBottom: 5, textTransform: "uppercase", letterSpacing: 0.5 };
+  const reqDot = <span style={{ color: "#C62828", marginLeft: 2 }}>*</span>;
+
   return (
     <PageWrapper>
       <SectionHeader tag="Get In Touch" title="Contact Us" desc="Whether you're an individual or an employer, we're here to help you get started." />
@@ -1844,6 +1985,55 @@ function ContactPage({ setPage }) {
             </a>
           ))}
         </div>
+
+        {/* ─── CONTACT FORM ─── */}
+        <div style={{ maxWidth: 640, margin: "0 auto 56px" }}>
+          <div style={{ textAlign: "center", marginBottom: 24 }}>
+            <span style={{ fontSize: 11, color: S.gold, letterSpacing: 3, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600 }}>Send Us a Message</span>
+            <h3 style={{ fontFamily: S.heading, fontSize: "clamp(20px,3vw,28px)", color: S.navy, margin: "8px 0 0", fontWeight: 700 }}>Have a Question or Enquiry?</h3>
+            <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, marginTop: 10, lineHeight: 1.6 }}>Fill out the form below and our team will respond within 24–48 hours.</p>
+          </div>
+
+          {cSent ? (
+            <div style={{ background: "#fff", borderRadius: 16, padding: "48px 32px", boxShadow: "0 4px 24px rgba(1,30,64,0.06)", border: "1px solid rgba(1,30,64,0.05)", textAlign: "center" }}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
+              <h3 style={{ fontFamily: S.heading, fontSize: 22, color: S.navy, marginBottom: 10 }}>Message Sent!</h3>
+              <p style={{ fontFamily: S.body, fontSize: 14, color: "#4A5568", lineHeight: 1.7, maxWidth: 400, margin: "0 auto 20px" }}>
+                Thank you, <strong>{cForm.name}</strong>. We've received your enquiry and will get back to you at <strong>{cForm.email}</strong> within 24–48 hours.
+              </p>
+              <Btn primary onClick={() => { setCSent(false); setCForm({ name: "", email: "", phone: "", subject: "", message: "" }); }} style={{ color: S.navy }}>Send Another Message</Btn>
+            </div>
+          ) : (
+            <div style={{ background: "#fff", borderRadius: 16, padding: "clamp(24px,4vw,40px)", boxShadow: "0 4px 24px rgba(1,30,64,0.06)", border: "1px solid rgba(1,30,64,0.05)" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }} className="resp-grid-2">
+                <div><label style={labelStyle}>Full Name {reqDot}</label><input style={inputStyle} value={cForm.name} onChange={e => cu("name", e.target.value)} placeholder="Your full name" /></div>
+                <div><label style={labelStyle}>Email Address {reqDot}</label><input type="email" style={inputStyle} value={cForm.email} onChange={e => cu("email", e.target.value)} placeholder="your@email.com" /></div>
+                <div><label style={labelStyle}>Phone Number</label><input style={inputStyle} value={cForm.phone} onChange={e => cu("phone", e.target.value.replace(/\D/g, "").slice(0, 10))} placeholder="8765256802 (optional)" maxLength={10} /></div>
+                <div><label style={labelStyle}>Subject</label><select style={inputStyle} value={cForm.subject} onChange={e => cu("subject", e.target.value)}>
+                  <option value="">Select a topic</option>
+                  <option>General Enquiry</option>
+                  <option>Programme Information</option>
+                  <option>Fees & Payment Plans</option>
+                  <option>Application Help</option>
+                  <option>Employer / Group Enrolment</option>
+                  <option>Certification & Assessment</option>
+                  <option>Technical Issue</option>
+                  <option>Feedback / Suggestion</option>
+                  <option>Other</option>
+                </select></div>
+              </div>
+              <div style={{ marginBottom: 20 }}>
+                <label style={labelStyle}>Your Message {reqDot}</label>
+                <textarea style={{ ...inputStyle, minHeight: 120, resize: "vertical" }} value={cForm.message} onChange={e => cu("message", e.target.value)} placeholder="Tell us how we can help you..." />
+              </div>
+              <button onClick={sendEnquiry} disabled={cSending} style={{ width: "100%", padding: "16px", borderRadius: 10, background: cSending ? "#4A5568" : S.navy, color: "#fff", border: "none", fontSize: 15, fontWeight: 700, cursor: cSending ? "wait" : "pointer", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", opacity: cSending ? 0.7 : 1, transition: "all 0.2s" }}>
+                {cSending ? "⏳ Sending..." : "Send Message →"}
+              </button>
+              <p style={{ textAlign: "center", fontSize: 11, color: S.gray, fontFamily: S.body, marginTop: 10, lineHeight: 1.5 }}>Or email us directly at <strong>info@ctsetsjm.com</strong></p>
+            </div>
+          )}
+        </div>
+
         <div style={{ textAlign: "center", marginBottom: 56 }}>
           <Btn primary onClick={() => setPage("Apply")} style={{ color: S.navy }}>Start Your Application</Btn>
         </div>
