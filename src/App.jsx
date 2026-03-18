@@ -107,6 +107,9 @@ const GROUP_DISCOUNTS = [
 
 const PAGES = ["Home","About","Why Choose","Programmes","Certification","Fees & Calculator","For Employers","Apply","Contact"];
 
+// Canvas LMS — Update this URL after registering at canvas.instructure.com
+const CANVAS_URL = "https://canvas.instructure.com"; // CTS ETS Learning Portal
+
 const FAQS = [
   { q: "What qualifications do I need to enrol?", a: "Entry requirements vary by level. Job Certificates are open entry (no qualifications needed). Level 2 requires a Job Certificate or 2 CXCs. Level 3 needs Level 2 or 3 CXCs. Levels 4 and 5 require the previous level diploma in a related area." },
   { q: "Are your programmes 100% online?", a: "Yes — almost entirely. Delivery is online and self-paced. Some practical assessments may be conducted in person. You can study at your own pace, mornings, evenings, or weekends." },
@@ -436,6 +439,7 @@ function Navbar({ page, setPage }) {
           {PAGES.map(p => (
             <button key={p} onClick={() => setPage(p)} role="menuitem" aria-current={page === p ? "page" : undefined} style={{ padding: "8px 11px", borderRadius: 6, border: "none", background: page === p ? S.gold : "transparent", color: page === p ? S.navy : "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: page === p ? 700 : 500, cursor: "pointer", fontFamily: S.body, transition: "all 0.2s", whiteSpace: "nowrap" }}>{p}</button>
           ))}
+          <a href={CANVAS_URL} target="_blank" rel="noopener noreferrer" style={{ padding: "8px 14px", borderRadius: 6, background: "#2E7D32", color: "#fff", fontSize: 11, fontWeight: 700, fontFamily: S.body, textDecoration: "none", whiteSpace: "nowrap", letterSpacing: 0.5, display: "flex", alignItems: "center", gap: 5, transition: "opacity 0.2s" }} onMouseEnter={e => e.currentTarget.style.opacity = "0.85"} onMouseLeave={e => e.currentTarget.style.opacity = "1"}>📚 Learning Portal</a>
         </div>
         <button className="mobile-menu-btn" onClick={() => setOpen(!open)} aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} style={{ display: "none", flexDirection: "column", gap: 4, background: "none", border: "none", cursor: "pointer", padding: 8 }}>
           {[0,1,2].map(i => <div key={i} style={{ width: 22, height: 2, background: "#fff", borderRadius: 2 }} />)}
@@ -446,6 +450,7 @@ function Navbar({ page, setPage }) {
           {PAGES.map(p => (
             <button key={p} onClick={() => { setPage(p); setOpen(false); }} role="menuitem" style={{ display: "block", width: "100%", padding: "12px 24px", border: "none", background: page === p ? "rgba(196,164,75,0.12)" : "transparent", color: page === p ? S.gold : "rgba(255,255,255,0.85)", fontSize: 14, fontWeight: page === p ? 700 : 400, cursor: "pointer", fontFamily: S.body, textAlign: "left", borderLeft: page === p ? "3px solid " + S.gold : "3px solid transparent" }}>{p}</button>
           ))}
+          <a href={CANVAS_URL} target="_blank" rel="noopener noreferrer" style={{ display: "block", width: "100%", padding: "12px 24px", color: "#81C784", fontSize: 14, fontWeight: 700, fontFamily: S.body, textDecoration: "none", textAlign: "left", borderLeft: "3px solid #2E7D32" }}>📚 Learning Portal</a>
         </div>
       )}
     </nav>
@@ -537,6 +542,29 @@ function HomePage({ setPage }) {
           <p style={{ textAlign: "center", fontSize: 11, color: S.gray, fontFamily: S.body, marginTop: 18, fontStyle: "italic", opacity: 0.7 }}>Testimonials shown are representative examples. Names and details have been adjusted to protect privacy.</p>
           <div style={{ textAlign: "center", marginTop: 28 }}>
             <Btn primary onClick={() => setPage("Apply")} style={{ color: S.navy }}>Join Our Learners — Apply Now</Btn>
+          </div>
+        </Container>
+      </section>
+
+      {/* Learning Portal CTA */}
+      <section style={{ background: "#fff", padding: "48px 0", borderTop: "1px solid rgba(10,35,66,0.06)" }}>
+        <Container>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 32, flexWrap: "wrap", padding: "32px clamp(24px,4vw,48px)", background: S.lightBg, borderRadius: 16, border: "1px solid rgba(10,35,66,0.06)" }}>
+            <div style={{ flex: 1, minWidth: 280 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 10, background: "rgba(46,125,50,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>📚</div>
+                <div>
+                  <div style={{ fontSize: 10, color: "#2E7D32", letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700 }}>Now Available</div>
+                  <h3 style={{ fontFamily: S.heading, fontSize: 20, color: S.navy, margin: 0, fontWeight: 700 }}>CTS ETS Learning Portal</h3>
+                </div>
+              </div>
+              <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, lineHeight: 1.7, margin: 0 }}>
+                Access your course materials, submit assessments, track your progress, and connect with facilitators — all from one place. Available on desktop and the Canvas Student mobile app.
+              </p>
+            </div>
+            <a href={CANVAS_URL} target="_blank" rel="noopener noreferrer" style={{ padding: "14px 32px", borderRadius: 8, background: "#2E7D32", color: "#fff", fontSize: 14, fontWeight: 700, fontFamily: S.body, textDecoration: "none", whiteSpace: "nowrap", boxShadow: "0 4px 16px rgba(46,125,50,0.2)", transition: "opacity 0.2s", display: "inline-flex", alignItems: "center", gap: 8 }} onMouseEnter={e => e.currentTarget.style.opacity = "0.85"} onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+              Access Learning Portal →
+            </a>
           </div>
         </Container>
       </section>
@@ -1484,6 +1512,17 @@ function ApplyPage({ setPage }) {
             <button onClick={() => generateReceiptPDF(savedRef, declareTimestamp || new Date().toISOString())} style={{ padding: "8px 18px", borderRadius: 6, background: S.lightBg, border: "1px solid rgba(10,35,66,0.1)", fontSize: 12, fontWeight: 600, color: S.navy, cursor: "pointer", fontFamily: S.body }}>🖨️ Download Receipt</button>
             <WhatsAppShare text={shareMsg} label="Share on WhatsApp" />
           </div>
+
+          {/* Learning Portal note */}
+          <div style={{ marginTop: 28, padding: "16px 24px", borderRadius: 10, background: "rgba(46,125,50,0.04)", border: "1px solid rgba(46,125,50,0.12)", maxWidth: 520, margin: "28px auto 0" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 20, flexShrink: 0 }}>📚</span>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#2E7D32", fontFamily: S.body }}>Learning Portal</div>
+                <p style={{ fontSize: 12, color: "#4A5568", fontFamily: S.body, lineHeight: 1.6, margin: "4px 0 0" }}>Once enrolled, you'll access your course materials, assessments, and progress tracker through our <a href={CANVAS_URL} target="_blank" rel="noopener noreferrer" style={{ color: S.gold, fontWeight: 700 }}>Learning Portal</a>. Download the <strong>Canvas Student</strong> app on your phone to study on the go.</p>
+              </div>
+            </div>
+          </div>
         </Container>
       </PageWrapper>
     );
@@ -2016,7 +2055,7 @@ function ApplyPage({ setPage }) {
               <p style={{ fontFamily: S.body, fontSize: 14, color: "#4A5568", lineHeight: 1.7, maxWidth: 460, margin: "0 auto 28px" }}>
                 CTS ETS uses the official HEART/NSTA Trust Application for Admission Form. Download it below, complete all sections in <strong>BLOCK LETTERS</strong>, sign the declaration, then return to the <strong>Apply Now</strong> tab to submit it with your documents.
               </p>
-              <a href="/HEART_Application_for_Admission_Form.pdf" download="HEART_Application_for_Admission_Form.pdf"
+              <a href="/HEART%20Application%20for%20Admission%20Form.pdf" download="HEART_Application_for_Admission_Form.pdf"
                 style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "15px 36px", borderRadius: 10, background: S.navy, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body, textDecoration: "none", marginBottom: 28, boxShadow: "0 4px 16px rgba(1,30,64,0.2)" }}>
                 <img src={HEART_LOGO} alt="" style={{ height: 20, objectFit: "contain" }} />
                 Download HEART Application Form (PDF)
@@ -2931,6 +2970,7 @@ function Footer({ setPage }) {
             {["About","Programmes","Fees & Calculator","Certification","Apply","Contact"].map(p => (
               <button key={p} onClick={() => setPage(p)} style={{ display: "block", background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 13, fontFamily: S.body, cursor: "pointer", padding: "4px 0", textAlign: "left" }}>{p}</button>
             ))}
+            <a href={CANVAS_URL} target="_blank" rel="noopener noreferrer" style={{ display: "block", color: "#81C784", fontSize: 13, fontFamily: S.body, padding: "4px 0", textDecoration: "none", fontWeight: 600 }}>📚 Learning Portal</a>
           </div>
           {/* Partners */}
           <div>
