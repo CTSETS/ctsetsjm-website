@@ -942,7 +942,7 @@ function FeesPage({ setPage }) {
   const printResult = () => {
     if (!result || !prog) return;
     const w = window.open("", "_blank");
-    w.document.write(`<html><head><title>CTS ETS Fee Breakdown</title><style>body{font-family:sans-serif;padding:40px;max-width:600px;margin:0 auto}h1{color:#011E40;font-size:24px}h2{color:#C49112;font-size:18px}.row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee}.label{color:#666}.amount{font-weight:700;color:#011E40}.total{font-size:22px;font-weight:800}.note{font-size:12px;color:#666;margin-top:20px;line-height:1.6}</style></head><body><h1>CTS Empowerment & Training Solutions</h1><h2>Fee Breakdown — ${result.plan} Plan</h2><p><strong>Programme:</strong> ${prog.name}</p><p><strong>Level:</strong> ${selLevel}</p>${isGroup ? "<p><strong>Group Discount:</strong> 15% applied</p>" : ""}${result.steps.map(s => `<div class="row"><span class="label">${s.label}</span><span class="amount">${s.amount}</span></div><div style="font-size:12px;color:#888;padding-bottom:8px">${s.detail}</div>`).join("")}<div class="row" style="border-top:2px solid #011E40;margin-top:12px;padding-top:16px"><span class="label" style="font-size:16px">Total</span><span class="total">${result.grandTotal}</span></div>${result.savings ? `<p style="color:#2E7D32;font-weight:600">Group discount saves ${result.savings}</p>` : ""}<p class="note">⚠️ Fees shown are current as of April 2026 and are subject to change. NCTVET external assessment fees are separate.</p><p class="note">CTS ETS | ctsetsjm.com | info@ctsetsjm.com | 876-525-6802</p></body></html>`);
+    w.document.write(`<html><head><title>CTS ETS Fee Breakdown</title><style>body{font-family:sans-serif;padding:40px;max-width:600px;margin:0 auto}h1{color:#011E40;font-size:24px}h2{color:#C49112;font-size:18px}.row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee}.label{color:#666}.amount{font-weight:700;color:#011E40}.total{font-size:22px;font-weight:800}.note{font-size:12px;color:#666;margin-top:20px;line-height:1.6}</style></head><body><h1>CTS Empowerment & Training Solutions</h1><h2>Fee Breakdown — ${result.plan} Plan</h2><p><strong>Programme:</strong> ${prog.name}</p><p><strong>Level:</strong> ${selLevel}</p>${isGroup ? "<p><strong>Group Discount:</strong> 15% applied</p>" : ""}${result.steps.map(s => `<div class="row"><span class="label">${s.label}</span><span class="amount">${s.amount}</span></div><div style="font-size:12px;color:#888;padding-bottom:8px">${s.detail}</div>`).join("")}<div class="row" style="border-top:2px solid #011E40;margin-top:12px;padding-top:16px"><span class="label" style="font-size:16px">Total</span><span class="total">${result.grandTotal}</span></div>${result.savings ? `<p style="color:#2E7D32;font-weight:600">Group discount saves ${result.savings}</p>` : ""}<p class="note">⚠️ Fees shown are current as of April 2026 and are subject to change. NCTVET external assessment fees are separate.</p><p class="note">CTS ETS | ctsetsjm.com | finance@ctsetsjm.com | 876-525-6802</p></body></html>`);
     w.document.close();
     w.print();
   };
@@ -1119,6 +1119,95 @@ function ApplyPage({ setPage }) {
   const [payPlan, setPayPlan] = useState("Gold");
   const [payName, setPayName] = useState("");
   const [payConfirm, setPayConfirm] = useState(false);
+  const [payDeclare, setPayDeclare] = useState(false);
+  const [payDeclareTimestamp, setPayDeclareTimestamp] = useState(null);
+  const [payAppRef, setPayAppRef] = useState(""); // Application reference (CTS-2026-XXXXX)
+  const [payStudentId, setPayStudentId] = useState(""); // Only assigned on acceptance
+  const [payIdLoading, setPayIdLoading] = useState(false);
+  const [payLocked, setPayLocked] = useState(false);
+  const [payApplications, setPayApplications] = useState([]); // Multiple applications for same email
+  const payLookupTimer = useRef(null);
+
+  // Helper: match level string from application to CALC_DATA key
+  const matchLevel = (levelStr) => {
+    if (!levelStr) return "";
+    return [...new Set(CALC_DATA.map(d => d.level))].find(l => levelStr.toLowerCase().includes(l.toLowerCase().split(" —")[0])) || "";
+  };
+  const matchProg = (levelKey, progStr) => {
+    if (!levelKey || !progStr) return "";
+    const p = CALC_DATA.filter(d => d.level === levelKey).find(p => progStr.toLowerCase().includes(p.name.toLowerCase().split(" ")[0]));
+    return p ? p.name : "";
+  };
+
+  // Select a specific application from the list
+  const selectPayApplication = (app) => {
+    setPayAppRef(app.ref || "");
+    setPayStudentId(app.studentId || ""); // Only present if accepted
+    if (app.name) setPayName(app.name);
+    const lv = matchLevel(app.level);
+    if (lv) {
+      setPayLevel(lv);
+      setPayProg(matchProg(lv, app.programme));
+      if (CALC_DATA.find(d => d.level === lv)?.goldOnly) setPayPlan("Gold");
+    }
+    setPayLocked(true);
+    setPayDeclare(false);
+    setPayDeclareTimestamp(null);
+    setPayConfirm(false);
+  };
+
+  // Auto-lookup applications when email is entered
+  const handlePayEmail = (email) => {
+    setPayEmail(email);
+    setPayAppRef("");
+    setPayStudentId("");
+    setPayApplications([]);
+    setPayLocked(false);
+    setPayDeclare(false);
+    setPayDeclareTimestamp(null);
+    setPayConfirm(false);
+    setPayLevel("");
+    setPayProg("");
+    setPayName("");
+    if (payLookupTimer.current) clearTimeout(payLookupTimer.current);
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
+    payLookupTimer.current = setTimeout(async () => {
+      setPayIdLoading(true);
+      let foundApps = [];
+      try {
+        const url = APPS_SCRIPT_URL + "?action=lookup&email=" + encodeURIComponent(email.trim());
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.found) {
+            // If API returns multiple applications
+            if (data.applications && Array.isArray(data.applications)) {
+              foundApps = data.applications;
+            } else {
+              // Single result — wrap in array
+              foundApps = [{ ref: data.ref, studentId: data.studentId || "", name: data.name, level: data.level, programme: data.programme, status: data.status }];
+            }
+          }
+        }
+      } catch (_) {}
+      // Also check localStorage for any not yet synced
+      try {
+        const localApps = JSON.parse(localStorage.getItem("cts_applications") || "[]")
+          .filter(a => a.email.toLowerCase() === email.toLowerCase().trim())
+          .map(a => ({ ref: a.ref, studentId: "", name: a.name, level: a.level, programme: a.programme, status: a.status || "Under Review" }));
+        // Merge — add local apps that aren't already in foundApps
+        localApps.forEach(la => {
+          if (!foundApps.find(fa => fa.ref === la.ref)) foundApps.push(la);
+        });
+      } catch (_) {}
+
+      setPayApplications(foundApps);
+      if (foundApps.length === 1) {
+        selectPayApplication(foundApps[0]);
+      }
+      setPayIdLoading(false);
+    }, 800);
+  };
   const [declareChecked, setDeclareChecked] = useState(false);
   const [declareTimestamp, setDeclareTimestamp] = useState(null);
   const [emailSuggestion, setEmailSuggestion] = useState(null);
@@ -1256,7 +1345,7 @@ function ApplyPage({ setPage }) {
     w.document.write(`<div class="row"><span class="label">Sector</span><span class="val">${sector}</span></div>`);
     if (form.orgName) w.document.write(`<div class="row"><span class="label">Organisation</span><span class="val">${form.orgName}</span></div>`);
     w.document.write(`<div class="stamp">✅ Declaration accepted on ${dt}<br/>All information declared accurate and complete.</div>`);
-    w.document.write(`<div class="footer"><strong>CTS Empowerment & Training Solutions</strong><br/>6 Newark Avenue, Kingston 11, Jamaica W.I.<br/>info@ctsetsjm.com | 876-525-6802<br/>ctsetsjm.com | Reg. No. 16007/2025<br/><br/>This receipt confirms submission only. Acceptance and enrolment are subject to document review and payment.</div>`);
+    w.document.write(`<div class="footer"><strong>CTS Empowerment & Training Solutions</strong><br/>6 Newark Avenue, Kingston 11, Jamaica W.I.<br/>finance@ctsetsjm.com | 876-525-6802<br/>ctsetsjm.com | Reg. No. 16007/2025<br/><br/>This receipt confirms submission only. Acceptance and enrolment are subject to document review and payment.</div>`);
     w.document.write(`</body></html>`);
     w.document.close();
     w.print();
@@ -1371,7 +1460,7 @@ function ApplyPage({ setPage }) {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, maxWidth: 620, margin: "0 auto 28px" }} className="resp-grid-3">
             {[
               ["📋", "Step 1", "Application under review by our admissions team (24–48 hrs)"],
-              ["💳", "Step 2", "Payment instructions sent to " + form.email + " upon acceptance"],
+              ["💳", "Step 2", "Payment instructions from Finance Dept sent to " + form.email + " upon acceptance"],
               ["🎓", "Step 3", "Complete payment to confirm enrolment and begin your programme"],
             ].map(([icon, step, desc]) => (
               <div key={step} style={{ padding: "18px 16px", borderRadius: 10, background: "#F8F9FA", border: "1px solid rgba(1,30,64,0.06)", textAlign: "left" }}>
@@ -1646,7 +1735,7 @@ function ApplyPage({ setPage }) {
               <div style={{ padding: "14px 20px", borderRadius: 10, background: "rgba(196,145,18,0.05)", border: "1px solid rgba(196,145,18,0.2)", marginBottom: 28, display: "flex", gap: 12, alignItems: "flex-start" }}>
                 <span style={{ fontSize: 18, flexShrink: 0, marginTop: 1 }}>💳</span>
                 <p style={{ fontSize: 13, color: "#4A5568", fontFamily: S.body, lineHeight: 1.65, margin: 0 }}>
-                  <strong style={{ color: S.navy }}>Next Step — Payment:</strong> Once your application and documents are reviewed and accepted, payment instructions will be sent to your email address. Payment must be completed within 48 hours to secure your place.
+                  <strong style={{ color: S.navy }}>Next Step — Payment:</strong> Once your application and documents are reviewed and accepted, payment instructions will be sent to your email address by the Finance Department (finance@ctsetsjm.com). Payment must be completed within 48 hours to secure your place.
                 </p>
               </div>
 
@@ -1674,7 +1763,7 @@ function ApplyPage({ setPage }) {
               <div style={{ padding: "16px 24px", borderRadius: 10, background: "rgba(46,125,50,0.06)", border: "1px solid rgba(46,125,50,0.15)", maxWidth: 420, margin: "0 auto 24px" }}>
                 <div style={{ fontSize: 13, color: "#2E7D32", fontFamily: S.body, lineHeight: 1.6 }}>📧 A confirmation has been sent to <strong>{groupForm.contactEmail}</strong></div>
               </div>
-              <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray }}>📧 info@ctsetsjm.com &nbsp;|&nbsp; 📞 876-525-6802</p>
+              <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray }}>📧 finance@ctsetsjm.com &nbsp;|&nbsp; 📞 876-525-6802</p>
             </div>
           ) : (() => {
             const groupReqComplete = !!(groupForm.companyName.trim() && groupForm.contactName.trim() && groupForm.contactPosition.trim() && groupForm.contactEmail.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(groupForm.contactEmail) && groupForm.contactPhone.trim() && groupForm.contactPhone.replace(/\D/g,"").length === 10 && groupForm.sector && groupForm.numLearners && parseInt(groupForm.numLearners) >= 1 && groupForm.selectedProgs.length > 0);
@@ -2035,7 +2124,7 @@ function ApplyPage({ setPage }) {
                   ? "Thank you. If your payment was successful, your enrolment will be confirmed within 24–48 hours. Check your email for a receipt from WiPay."
                   : "Thank you. We have received your payment evidence and will confirm your enrolment within 48 hours."}
               </p>
-              <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray }}>📧 info@ctsetsjm.com &nbsp;|&nbsp; 📞 876-525-6802</p>
+              <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray }}>📧 finance@ctsetsjm.com &nbsp;|&nbsp; 📞 876-525-6802</p>
             </div>
           ) : (
             <div>
@@ -2054,7 +2143,7 @@ function ApplyPage({ setPage }) {
                 <span style={{ fontSize: 20, flexShrink: 0, marginTop: 2 }}>⏱️</span>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 4 }}>48-Hour Payment Window</div>
-                  <p style={{ fontSize: 13, color: "#2D3748", fontFamily: S.body, lineHeight: 1.6, margin: 0 }}>Once you receive your payment information via email, please complete payment <strong>within 48 hours</strong> to secure your place. Late submissions may result in your spot being released.</p>
+                  <p style={{ fontSize: 13, color: "#2D3748", fontFamily: S.body, lineHeight: 1.6, margin: 0 }}>Once you receive your payment information from the Finance Department (<strong>finance@ctsetsjm.com</strong>), please complete payment <strong>within 48 hours</strong> to secure your place. Late submissions may result in your spot being released.</p>
                 </div>
               </div>
 
@@ -2062,7 +2151,7 @@ function ApplyPage({ setPage }) {
               <div style={{ display: "flex", justifyContent: "center", marginBottom: 28 }}>
                 <div style={{ display: "flex", background: S.lightBg, borderRadius: 10, padding: 4, border: "1px solid rgba(1,30,64,0.08)" }}>
                   {[["online", "💳  Pay Online"], ["upload", "📤  Upload Evidence"]].map(([v, l]) => (
-                    <button key={v} onClick={() => { setPayMethod(v); setPayConfirm(false); }} style={{ padding: "11px 24px", borderRadius: 8, border: "none", background: payMethod === v ? S.navy : "transparent", color: payMethod === v ? "#fff" : S.gray, fontSize: 13, fontWeight: payMethod === v ? 700 : 500, cursor: "pointer", fontFamily: S.body, transition: "all 0.2s", whiteSpace: "nowrap" }}>{l}</button>
+                    <button key={v} onClick={() => { setPayMethod(v); setPayConfirm(false); setPayDeclare(false); setPayDeclareTimestamp(null); }} style={{ padding: "11px 24px", borderRadius: 8, border: "none", background: payMethod === v ? S.navy : "transparent", color: payMethod === v ? "#fff" : S.gray, fontSize: 13, fontWeight: payMethod === v ? 700 : 500, cursor: "pointer", fontFamily: S.body, transition: "all 0.2s", whiteSpace: "nowrap" }}>{l}</button>
                   ))}
                 </div>
               </div>
@@ -2084,7 +2173,7 @@ function ApplyPage({ setPage }) {
                 })();
 
                 const wipayReady = WIPAY_CONFIG.accountNumber && WIPAY_CONFIG.apiKey;
-                const canPay = !!(payEmail && payName && payLevel && paySelectedProg && payCalcAmount);
+                const canPay = !!(payEmail && payName && payAppRef && payLevel && paySelectedProg && payCalcAmount);
 
                 const initiateWiPay = async () => {
                   if (!canPay) return;
@@ -2093,10 +2182,11 @@ function ApplyPage({ setPage }) {
                     // Log payment attempt to Apps Script
                     await submitToAppsScript({
                       form_type: "Online Payment Initiated",
-                      email: payEmail, name: payName,
+                      email: payEmail, name: payName, applicationRef: payAppRef, studentId: payStudentId || "",
                       level: payLevel, programme: paySelectedProg?.name,
                       plan: payIsGoldOnly ? "Gold" : payPlan,
                       amount: payCalcAmount.amount, currency: "JMD",
+                      declarationTimestamp: payDeclareTimestamp,
                     }, {});
 
                     if (wipayReady) {
@@ -2147,40 +2237,78 @@ function ApplyPage({ setPage }) {
                       ))}
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }} className="resp-grid-2">
-                      <div><label style={labelStyle}>Full Name (as on card) {reqDot}</label><input style={inputStyle} value={payName} onChange={e => setPayName(e.target.value)} placeholder="e.g. John Smith" /></div>
-                      <div><label style={labelStyle}>Email Address {reqDot}</label><input type="email" style={inputStyle} value={payEmail} onChange={e => setPayEmail(e.target.value)} placeholder="your@email.com" /></div>
+                    {/* Email — always editable (triggers lookup) */}
+                    <div style={{ marginBottom: 14 }}>
+                      <label style={labelStyle}>Email Address {reqDot}</label>
+                      <input type="email" style={inputStyle} value={payEmail} onChange={e => handlePayEmail(e.target.value)} placeholder="Enter the email you used to apply" />
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }} className="resp-grid-2">
-                      <div><label style={labelStyle}>Level {reqDot}</label><select style={inputStyle} value={payLevel} onChange={e => { setPayLevel(e.target.value); setPayProg(""); if (CALC_DATA.find(d => d.level === e.target.value)?.goldOnly) setPayPlan("Gold"); }}>
-                        <option value="">Select level</option>
-                        {payCalcLevels.map(l => <option key={l} value={l}>{l}</option>)}
-                      </select></div>
-                      <div><label style={labelStyle}>Programme {reqDot}</label><select style={inputStyle} value={payProg} onChange={e => setPayProg(e.target.value)}>
-                        <option value="">Select programme</option>
-                        {payCalcProgs.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
-                      </select></div>
-                    </div>
+                    {/* Auto-filled fields — shown after lookup */}
+                    {payIdLoading && (
+                      <div style={{ padding: "20px", textAlign: "center", marginBottom: 14 }}>
+                        <div style={{ fontSize: 14 }}>⏳</div>
+                        <div style={{ fontSize: 12, color: S.gray, fontFamily: S.body, marginTop: 6 }}>Looking up your application...</div>
+                      </div>
+                    )}
 
-                    {/* Payment plan selector */}
-                    {payLevel && (
-                      <div style={{ marginBottom: 20 }}>
-                        <label style={labelStyle}>Payment Plan {reqDot}</label>
-                        {payIsGoldOnly && <div style={{ fontSize: 11, color: S.gold, fontFamily: S.body, marginBottom: 8, padding: "6px 10px", background: "rgba(196,145,18,0.08)", borderRadius: 4 }}>Job Certificate &amp; Level 2: Full payment (Gold) only.</div>}
-                        <div style={{ display: "flex", gap: 8 }}>
-                          {["Gold","Silver","Bronze"].map(plan => {
-                            const dis = payIsGoldOnly && plan !== "Gold";
-                            const act = (payIsGoldOnly ? "Gold" : payPlan) === plan;
-                            const planCol = { Gold: S.gold, Silver: "#8A96A8", Bronze: "#CD7F32" };
-                            return (
-                              <button key={plan} onClick={() => !dis && setPayPlan(plan)} style={{ flex: 1, padding: "12px 8px", borderRadius: 8, border: "2px solid " + (act ? planCol[plan] : "rgba(10,35,66,0.08)"), background: act ? planCol[plan] + "12" : "#fff", cursor: dis ? "not-allowed" : "pointer", opacity: dis ? 0.3 : 1, textAlign: "center" }}>
-                                <div style={{ fontSize: 13, fontWeight: 700, color: act ? planCol[plan] : S.gray, fontFamily: S.body }}>{plan}</div>
-                                <div style={{ fontSize: 10, color: S.gray, fontFamily: S.body }}>{plan === "Gold" ? "Full" : plan === "Silver" ? "1st of 2" : "Deposit"}</div>
-                              </button>
-                            );
-                          })}
+                    {/* Multiple applications — let student pick */}
+                    {!payIdLoading && payApplications.length > 1 && !payLocked && (
+                      <div style={{ marginBottom: 20, animation: "fadeIn 0.25s ease" }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 10 }}>Multiple applications found — select the one you are paying for:</div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                          {payApplications.map(app => (
+                            <button key={app.ref} onClick={() => selectPayApplication(app)}
+                              style={{ padding: "14px 18px", borderRadius: 10, border: "2px solid rgba(1,30,64,0.1)", background: "#fff", cursor: "pointer", textAlign: "left", transition: "all 0.2s", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}
+                              onMouseEnter={e => { e.currentTarget.style.borderColor = S.gold; e.currentTarget.style.background = "rgba(196,145,18,0.03)"; }}
+                              onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(1,30,64,0.1)"; e.currentTarget.style.background = "#fff"; }}>
+                              <div>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body }}>{app.programme || "Programme"}</div>
+                                <div style={{ fontSize: 11, color: S.gray, fontFamily: S.body, marginTop: 2 }}>{app.level} · Ref: {app.ref}</div>
+                                {app.studentId && <div style={{ fontSize: 10, color: "#2E7D32", fontFamily: S.body, marginTop: 2 }}>Student ID: {app.studentId}</div>}
+                              </div>
+                              <div style={{ fontSize: 10, fontWeight: 700, color: "#fff", background: ({"Accepted":"#2E7D32","Under Review":"#F59E0B","Enrolled":"#0D47A1"}[app.status] || S.gold), padding: "3px 10px", borderRadius: 20, fontFamily: S.body, whiteSpace: "nowrap" }}>{app.status || "Pending"}</div>
+                            </button>
+                          ))}
                         </div>
+                      </div>
+                    )}
+
+                    {/* Locked detail card — single or selected application */}
+                    {payLocked && payAppRef && !payIdLoading && (
+                      <div style={{ background: "rgba(46,125,50,0.03)", border: "1.5px solid rgba(46,125,50,0.15)", borderRadius: 12, padding: "18px 20px", marginBottom: 20, animation: "fadeIn 0.25s ease" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                          <span style={{ fontSize: 16 }}>✅</span>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#2E7D32", fontFamily: S.body }}>Application found — please confirm your details</div>
+                        </div>
+                        <div style={{ background: "#fff", borderRadius: 8, border: "1px solid rgba(1,30,64,0.06)", overflow: "hidden" }}>
+                          {[
+                            ["Application Reference", payAppRef],
+                            ...(payStudentId ? [["Student ID", payStudentId]] : []),
+                            ["Full Name", payName],
+                            ["Level", payLevel],
+                            ["Programme", paySelectedProg?.name || "—"],
+                            ["Payment Plan", payIsGoldOnly ? "Gold — Full Payment" : payPlan + (payCalcAmount ? " — " + payCalcAmount.label : "")],
+                          ].map(([label, val], i, arr) => (
+                            <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "10px 16px", borderBottom: i < arr.length - 1 ? "1px solid rgba(1,30,64,0.04)" : "none", fontSize: 13, fontFamily: S.body }}>
+                              <span style={{ color: S.gray, fontWeight: 600 }}>{label}</span>
+                              <span style={{ color: label === "Student ID" ? "#2E7D32" : S.navy, fontWeight: 700, textAlign: "right", maxWidth: "60%", letterSpacing: label === "Application Reference" || label === "Student ID" ? 0.5 : 0 }}>{val || "—"}</span>
+                            </div>
+                          ))}
+                        </div>
+                        {payApplications.length > 1 && (
+                          <button onClick={() => { setPayLocked(false); setPayAppRef(""); setPayStudentId(""); setPayDeclare(false); setPayDeclareTimestamp(null); }} style={{ marginTop: 12, padding: "8px 16px", borderRadius: 6, background: "transparent", border: "1.5px solid rgba(1,30,64,0.15)", color: S.navy, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: S.body, marginRight: 8 }}>
+                            ← Select different application
+                          </button>
+                        )}
+                        <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 6, background: "rgba(196,145,18,0.04)", border: "1px solid rgba(196,145,18,0.12)", fontSize: 11, color: S.gray, fontFamily: S.body, lineHeight: 1.6 }}>
+                          Details incorrect? Contact the Finance Department at <a href="mailto:finance@ctsetsjm.com" style={{ color: S.gold, fontWeight: 700 }}>finance@ctsetsjm.com</a> or call <strong>876-525-6802</strong>.
+                        </div>
+                      </div>
+                    )}
+
+                    {!payLocked && !payIdLoading && payEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payEmail) && payApplications.length === 0 && (
+                      <div style={{ padding: "14px 18px", borderRadius: 8, background: "#fff3f3", border: "1px solid #ffcdd2", marginBottom: 14, fontSize: 12, color: "#c62828", fontFamily: S.body, lineHeight: 1.6 }}>
+                        <strong>No application found</strong> for <strong>{payEmail}</strong>. Please check the email address, <button onClick={() => setActiveTab("apply")} style={{ background: "none", border: "none", color: S.gold, fontSize: 12, fontFamily: S.body, cursor: "pointer", textDecoration: "underline", padding: 0 }}>submit an application first</button>, or contact the Finance Department at <a href="mailto:finance@ctsetsjm.com" style={{ color: S.gold, fontWeight: 700 }}>finance@ctsetsjm.com</a>.
                       </div>
                     )}
 
@@ -2227,13 +2355,14 @@ function ApplyPage({ setPage }) {
                             {[
                               ["Full Name", payName],
                               ["Email", payEmail],
+                              ["Application Reference", payAppRef], ...(payStudentId ? [["Student ID", payStudentId]] : []),
                               ["Level", payLevel],
                               ["Programme", paySelectedProg.name],
                               ["Payment Plan", payIsGoldOnly ? "Gold — Full Payment" : payPlan + " — " + payCalcAmount.label],
                               ["Amount Due Now", fmt(payCalcAmount.amount) + " JMD"],
                               ["Breakdown", payCalcAmount.detail],
                             ].map(([label, val], i) => (
-                              <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "10px 16px", borderBottom: i < 6 ? "1px solid rgba(1,30,64,0.04)" : "none", fontSize: 13, fontFamily: S.body }}>
+                              <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "10px 16px", borderBottom: i < 7 ? "1px solid rgba(1,30,64,0.04)" : "none", fontSize: 13, fontFamily: S.body }}>
                                 <span style={{ color: S.gray, fontWeight: 600 }}>{label}</span>
                                 <span style={{ color: label === "Amount Due Now" ? "#2E7D32" : S.navy, fontWeight: label === "Amount Due Now" ? 800 : 600, textAlign: "right", maxWidth: "58%" }}>{val}</span>
                               </div>
@@ -2244,14 +2373,41 @@ function ApplyPage({ setPage }) {
                             ⚠️ By clicking <strong>Confirm &amp; Pay</strong>, you will be redirected to our secure payment partner to complete your transaction. A receipt will be sent to <strong>{payEmail}</strong>.
                           </div>
 
+                          {/* Payment Declaration */}
+                          <div style={{ padding: "14px 18px", borderRadius: 10, background: "rgba(1,30,64,0.03)", border: "1px solid rgba(1,30,64,0.08)", marginBottom: 16 }}>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 10 }}>Payment Declaration</div>
+                            <p style={{ fontSize: 12, color: "#4A5568", fontFamily: S.body, lineHeight: 1.75, margin: "0 0 12px 0" }}>
+                              I confirm the following payment details:
+                            </p>
+                            <div style={{ background: "#fff", borderRadius: 8, border: "1px solid rgba(1,30,64,0.06)", marginBottom: 14, overflow: "hidden" }}>
+                              {[["Application Reference", payAppRef], ...(payStudentId ? [["Student ID", payStudentId]] : []), ["Programme", paySelectedProg.name], ["Level", payLevel], ["Payment Plan", (payIsGoldOnly ? "Gold" : payPlan) + " — " + payCalcAmount.label], ["Amount", fmt(payCalcAmount.amount) + " JMD"]].map(([label, val], i) => (
+                                <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "8px 14px", borderBottom: i < 4 ? "1px solid rgba(1,30,64,0.04)" : "none", fontSize: 12, fontFamily: S.body }}>
+                                  <span style={{ color: S.gray, fontWeight: 600 }}>{label}</span>
+                                  <span style={{ color: label === "Amount" ? "#2E7D32" : S.navy, fontWeight: label === "Amount" ? 800 : 600 }}>{val}</span>
+                                </div>
+                              ))}
+                            </div>
+                            <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", padding: "10px 14px", borderRadius: 8, background: payDeclare ? "rgba(46,125,50,0.06)" : "rgba(1,30,64,0.02)", border: payDeclare ? "1.5px solid rgba(46,125,50,0.3)" : "1.5px solid rgba(1,30,64,0.1)", transition: "all 0.2s" }}>
+                              <input type="checkbox" checked={payDeclare} onChange={e => { setPayDeclare(e.target.checked); if (e.target.checked && !payDeclareTimestamp) setPayDeclareTimestamp(new Date().toISOString()); if (!e.target.checked) setPayDeclareTimestamp(null); }} style={{ width: 18, height: 18, marginTop: 1, accentColor: "#2E7D32", cursor: "pointer", flexShrink: 0 }} />
+                              <span style={{ fontSize: 12, color: payDeclare ? "#2E7D32" : "#4A5568", fontFamily: S.body, lineHeight: 1.65, fontWeight: payDeclare ? 600 : 400 }}>
+                                I confirm that the payment details above are correct and I authorise this transaction of <strong>{fmt(payCalcAmount.amount)} JMD</strong> for <strong>{paySelectedProg.name}</strong> at CTS Empowerment &amp; Training Solutions. I understand that the registration fee is non-refundable and I agree to the <button onClick={() => setPage("Terms")} style={{ background: "none", border: "none", color: S.gold, fontSize: 12, fontFamily: S.body, cursor: "pointer", textDecoration: "underline", padding: 0 }}>Terms &amp; Conditions</button>.
+                              </span>
+                            </label>
+                            {payDeclare && payDeclareTimestamp && (
+                              <div style={{ marginTop: 10, fontSize: 11, color: "#2E7D32", fontFamily: S.body, display: "flex", alignItems: "center", gap: 6 }}>
+                                <span>✅</span> Declaration accepted on {new Date(payDeclareTimestamp).toLocaleString("en-JM", { dateStyle: "long", timeStyle: "short" })}
+                              </div>
+                            )}
+                          </div>
+
                           <div style={{ display: "flex", gap: 10 }}>
-                            <button onClick={() => setPayConfirm(false)} style={{ flex: 1, padding: "14px", borderRadius: 8, background: "transparent", border: "2px solid rgba(1,30,64,0.15)", color: S.navy, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>
+                            <button onClick={() => { setPayConfirm(false); setPayDeclare(false); setPayDeclareTimestamp(null); }} style={{ flex: 1, padding: "14px", borderRadius: 8, background: "transparent", border: "2px solid rgba(1,30,64,0.15)", color: S.navy, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>
                               ← Edit Details
                             </button>
-                            <button onClick={wipayReady ? initiateWiPay : () => { setPayConfirm(false); setPayMethod("upload"); }} disabled={paySubmitting} style={{ flex: 2, padding: "14px", borderRadius: 8, background: paySubmitting ? "#4A5568" : "#2E7D32", color: "#fff", border: "none", fontSize: 14, fontWeight: 700, cursor: paySubmitting ? "wait" : "pointer", fontFamily: S.body, letterSpacing: 0.5, opacity: paySubmitting ? 0.7 : 1, transition: "all 0.2s", boxShadow: !paySubmitting ? "0 4px 16px rgba(46,125,50,0.25)" : "none" }}
-                              onMouseEnter={e => { if (!paySubmitting) e.currentTarget.style.background = "#1B5E20"; }}
-                              onMouseLeave={e => { if (!paySubmitting) e.currentTarget.style.background = "#2E7D32"; }}>
-                              {paySubmitting ? "⏳ Processing..." : wipayReady ? "🔒 Confirm & Pay — " + fmt(payCalcAmount.amount) : "📤 Confirm & Upload Evidence"}
+                            <button onClick={wipayReady ? initiateWiPay : () => { setPayConfirm(false); setPayDeclare(false); setPayDeclareTimestamp(null); setPayMethod("upload"); }} disabled={!payDeclare || paySubmitting} style={{ flex: 2, padding: "14px", borderRadius: 8, background: (!payDeclare || paySubmitting) ? "#4A5568" : "#2E7D32", color: "#fff", border: "none", fontSize: 14, fontWeight: 700, cursor: (!payDeclare || paySubmitting) ? "not-allowed" : "pointer", fontFamily: S.body, letterSpacing: 0.5, opacity: (!payDeclare || paySubmitting) ? 0.5 : 1, transition: "all 0.2s", boxShadow: payDeclare && !paySubmitting ? "0 4px 16px rgba(46,125,50,0.25)" : "none" }}
+                              onMouseEnter={e => { if (payDeclare && !paySubmitting) e.currentTarget.style.background = "#1B5E20"; }}
+                              onMouseLeave={e => { if (payDeclare && !paySubmitting) e.currentTarget.style.background = (!payDeclare || paySubmitting) ? "#4A5568" : "#2E7D32"; }}>
+                              {paySubmitting ? "⏳ Processing..." : !payDeclare ? "🔒 Accept Declaration to Continue" : wipayReady ? "🔒 Confirm & Pay — " + fmt(payCalcAmount.amount) : "📤 Confirm & Upload Evidence"}
                             </button>
                           </div>
                         </div>
@@ -2267,29 +2423,154 @@ function ApplyPage({ setPage }) {
               })()}
 
               {/* ── UPLOAD EVIDENCE ── */}
-              {payMethod === "upload" && (
-              <div style={{ maxWidth: 600, margin: "0 auto" }}>
+              {payMethod === "upload" && (() => {
+                const upCalcLevels = [...new Set(CALC_DATA.map(d => d.level))];
+                const upCalcProgs = CALC_DATA.filter(d => d.level === payLevel);
+                const upSelectedProg = upCalcProgs.find(p => p.name === payProg) || upCalcProgs[0];
+                const upIsGoldOnly = upSelectedProg?.goldOnly;
+                const upCalcAmount = (() => {
+                  if (!upSelectedProg) return null;
+                  const t = upSelectedProg.tuition;
+                  const plan = upIsGoldOnly ? "Gold" : payPlan;
+                  if (plan === "Gold") return { label: "Full Payment", amount: t + REG_FEE, detail: fmt(t) + " tuition + " + fmt(REG_FEE) + " reg" };
+                  if (plan === "Silver") { const st = t * 1.05, h = st / 2; return { label: "1st Instalment (50%)", amount: Math.round(h) + REG_FEE, detail: fmt(Math.round(h)) + " (50%) + " + fmt(REG_FEE) + " reg" }; }
+                  if (plan === "Bronze") { const bt = t * 1.08, dep = bt * 0.2; return { label: "Deposit (20%)", amount: Math.round(dep) + REG_FEE, detail: fmt(Math.round(dep)) + " (20%) + " + fmt(REG_FEE) + " reg" }; }
+                  return null;
+                })();
+                const upReqComplete = !!(payEmail && payAppRef && payLevel && upSelectedProg && upCalcAmount && files.paymentProof);
+
+                return (
+              <div style={{ maxWidth: 620, margin: "0 auto" }}>
                 <div style={{ background: S.lightBg, borderRadius: 16, padding: "clamp(24px,3vw,40px)", border: "1px solid rgba(10,35,66,0.06)" }}>
                   <h3 style={{ fontFamily: S.heading, fontSize: 20, color: S.navy, marginBottom: 20 }}>Upload Payment Evidence</h3>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 20 }} className="resp-grid-2">
-                    <div><label style={labelStyle}>Your Email Address {reqDot}</label><input type="email" style={inputStyle} value={payEmail} onChange={e => setPayEmail(e.target.value)} placeholder="your@email.com" /></div>
-                    <div><label style={labelStyle}>Payment Reference / Receipt No.</label><input style={inputStyle} value={payRef} onChange={e => setPayRef(e.target.value)} placeholder="e.g. TXN-123456" /></div>
+
+                  {/* Email — always editable */}
+                  <div style={{ marginBottom: 14 }}>
+                    <label style={labelStyle}>Your Email Address {reqDot}</label>
+                    <input type="email" style={inputStyle} value={payEmail} onChange={e => handlePayEmail(e.target.value)} placeholder="Enter the email you used to apply" />
                   </div>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "20px 18px", borderRadius: 10, border: "2px solid " + (files.paymentProof ? "#2E7D3240" : "rgba(10,35,66,0.1)"), background: files.paymentProof ? "rgba(46,125,50,0.03)" : "#fff", marginBottom: 24 }}>
+                  {payIdLoading && (
+                    <div style={{ padding: "20px", textAlign: "center", marginBottom: 14 }}>
+                      <div style={{ fontSize: 14 }}>⏳</div>
+                      <div style={{ fontSize: 12, color: S.gray, fontFamily: S.body, marginTop: 6 }}>Looking up your application...</div>
+                    </div>
+                  )}
+
+                  {/* Multiple applications — let student pick */}
+                  {!payIdLoading && payApplications.length > 1 && !payLocked && (
+                    <div style={{ marginBottom: 20, animation: "fadeIn 0.25s ease" }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 10 }}>Multiple applications found — select the one you are paying for:</div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        {payApplications.map(app => (
+                          <button key={app.ref} onClick={() => selectPayApplication(app)}
+                            style={{ padding: "14px 18px", borderRadius: 10, border: "2px solid rgba(1,30,64,0.1)", background: "#fff", cursor: "pointer", textAlign: "left", transition: "all 0.2s", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = S.gold; e.currentTarget.style.background = "rgba(196,145,18,0.03)"; }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(1,30,64,0.1)"; e.currentTarget.style.background = "#fff"; }}>
+                            <div>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body }}>{app.programme || "Programme"}</div>
+                              <div style={{ fontSize: 11, color: S.gray, fontFamily: S.body, marginTop: 2 }}>{app.level} · Ref: {app.ref}</div>
+                              {app.studentId && <div style={{ fontSize: 10, color: "#2E7D32", fontFamily: S.body, marginTop: 2 }}>Student ID: {app.studentId}</div>}
+                            </div>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: "#fff", background: ({"Accepted":"#2E7D32","Under Review":"#F59E0B","Enrolled":"#0D47A1"}[app.status] || S.gold), padding: "3px 10px", borderRadius: 20, fontFamily: S.body, whiteSpace: "nowrap" }}>{app.status || "Pending"}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {payLocked && payAppRef && !payIdLoading && (
+                    <div style={{ background: "rgba(46,125,50,0.03)", border: "1.5px solid rgba(46,125,50,0.15)", borderRadius: 12, padding: "18px 20px", marginBottom: 20, animation: "fadeIn 0.25s ease" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                        <span style={{ fontSize: 16 }}>✅</span>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "#2E7D32", fontFamily: S.body }}>Application found — please confirm your details</div>
+                      </div>
+                      <div style={{ background: "#fff", borderRadius: 8, border: "1px solid rgba(1,30,64,0.06)", overflow: "hidden" }}>
+                        {[
+                          ["Application Reference", payAppRef],
+                          ...(payStudentId ? [["Student ID", payStudentId]] : []),
+                          ["Full Name", payName],
+                          ["Level", payLevel],
+                          ["Programme", upSelectedProg?.name || "—"],
+                          ["Payment Plan", upIsGoldOnly ? "Gold — Full Payment" : payPlan + (upCalcAmount ? " — " + upCalcAmount.label : "")],
+                          ["Amount Due", upCalcAmount ? fmt(upCalcAmount.amount) + " JMD" : "—"],
+                        ].map(([label, val], i, arr) => (
+                          <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "10px 16px", borderBottom: i < arr.length - 1 ? "1px solid rgba(1,30,64,0.04)" : "none", fontSize: 13, fontFamily: S.body }}>
+                            <span style={{ color: S.gray, fontWeight: 600 }}>{label}</span>
+                            <span style={{ color: label === "Amount Due" ? "#2E7D32" : label === "Student ID" ? "#2E7D32" : S.navy, fontWeight: label === "Amount Due" ? 800 : 700, textAlign: "right", maxWidth: "60%" }}>{val || "—"}</span>
+                          </div>
+                        ))}
+                      </div>
+                      {payApplications.length > 1 && (
+                        <button onClick={() => { setPayLocked(false); setPayAppRef(""); setPayStudentId(""); setPayDeclare(false); setPayDeclareTimestamp(null); }} style={{ marginTop: 12, padding: "8px 16px", borderRadius: 6, background: "transparent", border: "1.5px solid rgba(1,30,64,0.15)", color: S.navy, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: S.body, marginRight: 8 }}>
+                          ← Select different application
+                        </button>
+                      )}
+                      <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 6, background: "rgba(196,145,18,0.04)", border: "1px solid rgba(196,145,18,0.12)", fontSize: 11, color: S.gray, fontFamily: S.body, lineHeight: 1.6 }}>
+                        Details incorrect? Contact the Finance Department at <a href="mailto:finance@ctsetsjm.com" style={{ color: S.gold, fontWeight: 700 }}>finance@ctsetsjm.com</a> or call <strong>876-525-6802</strong>.
+                      </div>
+                    </div>
+                  )}
+
+                  {!payLocked && !payIdLoading && payEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payEmail) && payApplications.length === 0 && (
+                    <div style={{ padding: "14px 18px", borderRadius: 8, background: "#fff3f3", border: "1px solid #ffcdd2", marginBottom: 14, fontSize: 12, color: "#c62828", fontFamily: S.body, lineHeight: 1.6 }}>
+                      <strong>No application found</strong> for <strong>{payEmail}</strong>. Please check the email address, <button onClick={() => setActiveTab("apply")} style={{ background: "none", border: "none", color: S.gold, fontSize: 12, fontFamily: S.body, cursor: "pointer", textDecoration: "underline", padding: 0 }}>submit an application first</button>, or contact the Finance Department at <a href="mailto:finance@ctsetsjm.com" style={{ color: S.gold, fontWeight: 700 }}>finance@ctsetsjm.com</a>.
+                    </div>
+                  )}
+
+                  <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "20px 18px", borderRadius: 10, border: "2px solid " + (files.paymentProof ? "#2E7D3240" : "rgba(10,35,66,0.1)"), background: files.paymentProof ? "rgba(46,125,50,0.03)" : "#fff", marginBottom: 20 }}>
                     <span style={{ fontSize: 28, flexShrink: 0 }}>{files.paymentProof ? "✅" : "💳"}</span>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.body }}>Proof of Payment {reqDot}</div>
                       <div style={{ fontSize: 12, color: files.paymentProof ? "#2E7D32" : S.gray, fontFamily: S.body }}>{files.paymentProof ? files.paymentProof.name : "Bank receipt, transfer confirmation, or deposit slip (PDF, JPG, PNG)"}</div>
                     </div>
-                    <label style={{ padding: "10px 18px", borderRadius: 6, background: files.paymentProof ? "rgba(46,125,50,0.08)" : S.lightBg, border: "1px solid rgba(10,35,66,0.08)", fontSize: 13, fontWeight: 700, color: S.navy, cursor: "pointer", fontFamily: S.body, whiteSpace: "nowrap" }}>
+                    <label style={{ padding: "10px 18px", borderRadius: 6, background: files.paymentProof ? "rgba(46,125,50,0.08)" : "#fff", border: "1px solid rgba(10,35,66,0.08)", fontSize: 13, fontWeight: 700, color: S.navy, cursor: "pointer", fontFamily: S.body, whiteSpace: "nowrap" }}>
                       {files.paymentProof ? "Change" : "Choose File"}
                       <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => handleFile("paymentProof", e.target.files[0])} style={{ display: "none" }} />
                     </label>
                   </div>
 
-                  <div style={{ padding: "14px 18px", borderRadius: 8, background: "rgba(10,35,66,0.03)", border: "1px solid rgba(10,35,66,0.06)", marginBottom: 24, fontSize: 12, color: "#2D3748", fontFamily: S.body, lineHeight: 1.65 }}>
-                    Accepted: bank transfer receipts, NCB/Scotiabank/JN/Sagicor transaction confirmations, Western Union receipts, or cash deposit slips. Make payments payable to <strong>CTS Empowerment &amp; Training Solutions</strong>. Payment details will be provided in your acceptance email.
+                  <div style={{ padding: "14px 18px", borderRadius: 8, background: "rgba(10,35,66,0.03)", border: "1px solid rgba(10,35,66,0.06)", marginBottom: 20, fontSize: 12, color: "#2D3748", fontFamily: S.body, lineHeight: 1.65 }}>
+                    Accepted: bank transfer receipts, transaction confirmations from any financial institution, Western Union receipts, cash deposit slips, or any valid proof of payment. Make payments payable to <strong>CTS Empowerment &amp; Training Solutions</strong>. Payment details will be provided in your acceptance email from the Finance Department.
+                  </div>
+
+                  {/* Upload Evidence Declaration — locked until required info complete */}
+                  <div style={{ position: "relative", opacity: upReqComplete ? 1 : 0.45, transition: "opacity 0.3s", pointerEvents: upReqComplete ? "auto" : "none", marginBottom: 20 }}>
+                    {!upReqComplete && (
+                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 2, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 10, background: "rgba(248,249,250,0.6)", backdropFilter: "blur(2px)" }}>
+                        <div style={{ padding: "8px 16px", borderRadius: 6, background: "#fff", border: "1.5px solid rgba(1,30,64,0.1)", boxShadow: "0 2px 12px rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ fontSize: 14 }}>🔒</span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: S.navy, fontFamily: S.body }}>Complete all fields and upload proof above</span>
+                        </div>
+                      </div>
+                    )}
+                    <div style={{ padding: "14px 18px", borderRadius: 10, background: "rgba(1,30,64,0.03)", border: "1px solid rgba(1,30,64,0.08)" }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 10 }}>Payment Declaration</div>
+                      <p style={{ fontSize: 12, color: "#4A5568", fontFamily: S.body, lineHeight: 1.75, margin: "0 0 12px 0" }}>
+                        I confirm the following payment details:
+                      </p>
+                      {upCalcAmount && upSelectedProg && (
+                        <div style={{ background: "#fff", borderRadius: 8, border: "1px solid rgba(1,30,64,0.06)", marginBottom: 14, overflow: "hidden" }}>
+                          {[["Application Reference", payAppRef], ...(payStudentId ? [["Student ID", payStudentId]] : []), ["Programme", upSelectedProg.name], ["Level", payLevel], ["Payment Plan", (upIsGoldOnly ? "Gold" : payPlan) + " — " + upCalcAmount.label], ["Amount", fmt(upCalcAmount.amount) + " JMD"]].map(([label, val], i) => (
+                            <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "8px 14px", borderBottom: i < 4 ? "1px solid rgba(1,30,64,0.04)" : "none", fontSize: 12, fontFamily: S.body }}>
+                              <span style={{ color: S.gray, fontWeight: 600 }}>{label}</span>
+                              <span style={{ color: label === "Amount" ? "#2E7D32" : S.navy, fontWeight: label === "Amount" ? 800 : 600 }}>{val}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", padding: "10px 14px", borderRadius: 8, background: payDeclare ? "rgba(46,125,50,0.06)" : "rgba(1,30,64,0.02)", border: payDeclare ? "1.5px solid rgba(46,125,50,0.3)" : "1.5px solid rgba(1,30,64,0.1)", transition: "all 0.2s" }}>
+                        <input type="checkbox" checked={payDeclare} onChange={e => { setPayDeclare(e.target.checked); if (e.target.checked && !payDeclareTimestamp) setPayDeclareTimestamp(new Date().toISOString()); if (!e.target.checked) setPayDeclareTimestamp(null); }} style={{ width: 18, height: 18, marginTop: 1, accentColor: "#2E7D32", cursor: "pointer", flexShrink: 0 }} />
+                        <span style={{ fontSize: 12, color: payDeclare ? "#2E7D32" : "#4A5568", fontFamily: S.body, lineHeight: 1.65, fontWeight: payDeclare ? 600 : 400 }}>
+                          I confirm that the uploaded payment evidence is genuine, relates to a payment of <strong>{upCalcAmount ? fmt(upCalcAmount.amount) + " JMD" : "the stated amount"}</strong> for <strong>{upSelectedProg ? upSelectedProg.name : "the selected programme"}</strong> at CTS Empowerment &amp; Training Solutions. I understand that providing fraudulent payment evidence may result in the withdrawal of my application and I agree to the <button onClick={() => setPage("Terms")} style={{ background: "none", border: "none", color: S.gold, fontSize: 12, fontFamily: S.body, cursor: "pointer", textDecoration: "underline", padding: 0 }}>Terms &amp; Conditions</button>.
+                        </span>
+                      </label>
+                      {payDeclare && payDeclareTimestamp && (
+                        <div style={{ marginTop: 10, fontSize: 11, color: "#2E7D32", fontFamily: S.body, display: "flex", alignItems: "center", gap: 6 }}>
+                          <span>✅</span> Declaration accepted on {new Date(payDeclareTimestamp).toLocaleString("en-JM", { dateStyle: "long", timeStyle: "short" })}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <button onClick={async () => {
@@ -2297,14 +2578,18 @@ function ApplyPage({ setPage }) {
                     setPaySubmitting(true);
                     try {
                     await submitToAppsScript({
-                      form_type: "Payment Evidence", email: payEmail, paymentRef: payRef || "Not provided",
+                      form_type: "Payment Evidence", email: payEmail, applicationRef: payAppRef, studentId: payStudentId || "Not provided",
+                      level: payLevel, programme: upSelectedProg?.name,
+                      plan: upIsGoldOnly ? "Gold" : payPlan,
+                      amount: upCalcAmount?.amount, currency: "JMD",
+                      declarationTimestamp: payDeclareTimestamp,
                     }, { paymentProof: files.paymentProof });
                     if (window.emailjs) {
                       window.emailjs.send("service_05xj674", "template_rvn4485", {
                         form_type: "Payment Evidence Upload",
                         from_name: payEmail,
                         email: payEmail,
-                        message: "Payment Reference: " + (payRef || "Not provided") + "\nFile uploaded: " + files.paymentProof.name,
+                        message: "Application Ref: " + (payAppRef || "Not provided") + "\nStudent ID: " + (payStudentId || "Not yet assigned") + "\nLevel: " + payLevel + "\nProgramme: " + (upSelectedProg?.name || "N/A") + "\nPlan: " + (upIsGoldOnly ? "Gold" : payPlan) + "\nAmount: " + (upCalcAmount ? fmt(upCalcAmount.amount) : "N/A") + "\nFile: " + files.paymentProof.name + "\nDeclaration: " + (payDeclareTimestamp || "N/A"),
                       }).catch(err => console.error("EmailJS error:", err));
                     }
                     setPaySubmitted(true);
@@ -2314,10 +2599,14 @@ function ApplyPage({ setPage }) {
                     } finally {
                       setPaySubmitting(false);
                     }
-                  }} disabled={paySubmitting} style={{ width: "100%", padding: "16px", borderRadius: 8, background: paySubmitting ? "#4A5568" : S.gold, color: S.navy, border: "none", fontSize: 15, fontWeight: 700, cursor: paySubmitting ? "wait" : "pointer", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", opacity: paySubmitting ? 0.7 : 1, transition: "all 0.2s" }}>{paySubmitting ? "⏳ Submitting..." : "Submit Payment Evidence"}</button>
+                  }} disabled={!payDeclare || paySubmitting} style={{ width: "100%", padding: "16px", borderRadius: 8, background: (!payDeclare || paySubmitting) ? "#4A5568" : S.gold, color: S.navy, border: "none", fontSize: 15, fontWeight: 700, cursor: (!payDeclare || paySubmitting) ? "not-allowed" : "pointer", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", opacity: (!payDeclare || paySubmitting) ? 0.5 : 1, transition: "all 0.2s", boxShadow: payDeclare && !paySubmitting ? "0 4px 16px rgba(196,145,18,0.25)" : "none" }}>
+                    {paySubmitting ? "⏳ Submitting..." : !payDeclare ? "🔒 Accept Declaration to Submit" : "Submit Payment Evidence"}
+                  </button>
+                  {!payDeclare && upReqComplete && <p style={{ textAlign: "center", fontSize: 11, color: "#C62828", fontFamily: S.body, marginTop: 8 }}>You must accept the declaration above before submitting.</p>}
                 </div>
               </div>
-              )}
+                );
+              })()}
             </div>
           )
         )}
@@ -2361,7 +2650,7 @@ function ContactPage({ setPage }) {
       setCSent(true);
     } catch (err) {
       console.error("Contact form error:", err);
-      alert("Something went wrong. Please try again or email us directly at info@ctsetsjm.com.");
+      alert("Something went wrong. Please try again or email us directly at finance@ctsetsjm.com.");
     } finally {
       setCSending(false);
     }
@@ -2376,7 +2665,7 @@ function ContactPage({ setPage }) {
       <SectionHeader tag="Get In Touch" title="Contact Us" desc="Whether you're an individual or an employer, we're here to help you get started." />
       <Container>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 20, marginBottom: 40 }} className="resp-grid-2">
-          {[["📧","Email","info@ctsetsjm.com","mailto:info@ctsetsjm.com"], ["📞","Call / WhatsApp","876-525-6802","tel:8765256802"], ["📞","Also Reach Us","876-381-9771","tel:8763819771"], ["📍","Visit Us (By Appointment)","6 Newark Avenue, Kingston 11, Jamaica W.I.","https://maps.google.com/?q=6+Newark+Avenue+Kingston+11+Jamaica"]].map(([icon, label, value, href]) => (
+          {[["📧","General Enquiries","info@ctsetsjm.com","mailto:info@ctsetsjm.com"], ["💰","Finance Department","finance@ctsetsjm.com","mailto:finance@ctsetsjm.com"], ["📞","Call / WhatsApp","876-525-6802","tel:8765256802"], ["📞","Also Reach Us","876-381-9771","tel:8763819771"], ["📍","Visit Us (By Appointment)","6 Newark Avenue, Kingston 11, Jamaica W.I.","https://maps.google.com/?q=6+Newark+Avenue+Kingston+11+Jamaica"]].map(([icon, label, value, href]) => (
             <a key={label} href={href} style={{ textDecoration: "none" }} target={label === "Visit Us" ? "_blank" : undefined} rel={label === "Visit Us" ? "noopener noreferrer" : undefined}>
               <div style={{ background: S.lightBg, borderRadius: 10, padding: "28px 20px", textAlign: "center", border: "1px solid rgba(10,35,66,0.06)" }}>
                 <div style={{ fontSize: 28, marginBottom: 10 }}>{icon}</div>
@@ -2550,7 +2839,7 @@ function TermsPage() {
 
           <div style={sectionStyle}>
             <h3 style={hStyle}>3. Fees and Payment</h3>
-            <p style={pStyle}>All fees are quoted in Jamaican Dollars (JMD) and are subject to change with reasonable notice. Confirmed enrolments are honoured at the rate agreed at the time of registration. The registration fee of $5,000 JMD is non-refundable. Payment plans (Gold, Silver, Bronze) are subject to the terms described on our Fees &amp; Calculator page. Silver and Bronze plans include a processing fee of 5% and 8% respectively. Job Certificate and Level 2 programmes require full payment (Gold plan only). NCTVET external assessment and certification fees are separate from tuition and are paid directly to NCTVET.</p>
+            <p style={pStyle}>All fees are quoted in Jamaican Dollars (JMD) and are subject to change with reasonable notice. Confirmed enrolments are honoured at the rate agreed at the time of registration. The registration fee of $5,000 JMD is non-refundable. Payment plans (Gold, Silver, Bronze) are subject to the terms described on our Fees &amp; Calculator page. Silver and Bronze plans include a processing fee of 5% and 8% respectively. Job Certificate and Level 2 programmes require full payment (Gold plan only). NCTVET external assessment and certification fees are separate from tuition and are paid directly to NCTVET. For all fee and payment enquiries, contact the Finance Department at finance@ctsetsjm.com.</p>
           </div>
 
           <div style={sectionStyle}>
@@ -2575,7 +2864,7 @@ function TermsPage() {
 
           <div style={sectionStyle}>
             <h3 style={hStyle}>8. Refund Policy</h3>
-            <p style={pStyle}>The registration fee is non-refundable. Tuition refunds are considered on a case-by-case basis. If a student withdraws within the first 14 days of programme commencement and has not accessed more than 20% of course materials, a partial refund (less the registration fee and any processing fees) may be issued. No refunds are provided after 14 days or if more than 20% of course materials have been accessed. Refund requests must be submitted in writing to info@ctsetsjm.com.</p>
+            <p style={pStyle}>The registration fee is non-refundable. Tuition refunds are considered on a case-by-case basis. If a student withdraws within the first 14 days of programme commencement and has not accessed more than 20% of course materials, a partial refund (less the registration fee and any processing fees) may be issued. No refunds are provided after 14 days or if more than 20% of course materials have been accessed. Refund requests must be submitted in writing to finance@ctsetsjm.com.</p>
           </div>
 
           <div style={sectionStyle}>
