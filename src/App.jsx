@@ -3208,7 +3208,28 @@ export default function CTSApp() {
     document.title = titles[page] || "CTS Empowerment & Training Solutions";
   }, [page]);
 
-  // Simple analytics
+  // Google Analytics 4
+  useEffect(() => {
+    const GA_ID = "G-XXXXXXXXXX"; // Replace with your GA4 Measurement ID
+    if (GA_ID === "G-XXXXXXXXXX") return; // Skip until configured
+    if (document.getElementById("ga4-script")) return;
+    const s = document.createElement("script");
+    s.id = "ga4-script";
+    s.async = true;
+    s.src = "https://www.googletagmanager.com/gtag/js?id=" + GA_ID;
+    document.head.appendChild(s);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function(){ window.dataLayer.push(arguments); };
+    window.gtag("js", new Date());
+    window.gtag("config", GA_ID, { send_page_view: false });
+  }, []);
+
+  // Track page views (GA4 + local)
+  useEffect(() => {
+    if (window.gtag) window.gtag("event", "page_view", { page_title: page, page_location: window.location.href, page_path: "/" + page.toLowerCase().replace(/ /g, "-") });
+  }, [page]);
+
+  // Simple local analytics
   useEffect(() => {
     try {
       const views = JSON.parse(localStorage.getItem("cts_page_views") || "{}");
