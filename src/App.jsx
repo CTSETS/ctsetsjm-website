@@ -3162,11 +3162,167 @@ function WhatsAppBtn() {
 }
 
 // ─── MAIN APP ────────────────────────────────────────────────────────
+// ─── ADMIN ANALYTICS PANEL (hidden, access via #admin) ──────────────
+function AdminAnalyticsPanel() {
+  const [auth, setAuth] = useState(false);
+  const [pin, setPin] = useState("");
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const ADMIN_PIN = "2026";
+
+  const fetchData = useCallback(() => {
+    setLoading(true);
+    fetch(APPS_SCRIPT_URL + "?action=analytics&key=ctsadmin2026")
+      .then(r => r.json())
+      .then(d => { setData(d); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { if (auth) fetchData(); }, [auth, fetchData]);
+
+  if (!auth) return (
+    <PageWrapper>
+      <Container>
+        <div style={{ maxWidth: 360, margin: "60px auto", textAlign: "center" }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
+          <h2 style={{ fontFamily: S.heading, fontSize: 22, color: S.navy, marginBottom: 8 }}>Admin Access</h2>
+          <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, marginBottom: 20 }}>Enter your admin PIN to view analytics.</p>
+          <div style={{ display: "flex", gap: 10 }}>
+            <input type="password" value={pin} onChange={e => setPin(e.target.value)} onKeyDown={e => e.key === "Enter" && pin === ADMIN_PIN && setAuth(true)} placeholder="PIN" style={{ flex: 1, padding: "12px 16px", borderRadius: 8, border: "1px solid #E2E8F0", fontSize: 16, textAlign: "center", fontFamily: S.body, letterSpacing: 6 }} maxLength={4} />
+            <button onClick={() => pin === ADMIN_PIN ? setAuth(true) : alert("Incorrect PIN")} style={{ padding: "12px 24px", borderRadius: 8, background: S.navy, color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>Enter</button>
+          </div>
+        </div>
+      </Container>
+    </PageWrapper>
+  );
+
+  const s = data?.summary || {};
+  const pages = data?.pages || {};
+  const daily = data?.daily || {};
+  const devices = data?.devices || {};
+  const referrers = data?.referrers || {};
+
+  const sortedPages = Object.entries(pages).sort((a, b) => b[1] - a[1]);
+  const sortedDaily = Object.entries(daily).sort((a, b) => a[0].localeCompare(b[0]));
+  const sortedDevices = Object.entries(devices).sort((a, b) => b[1] - a[1]);
+  const sortedRefs = Object.entries(referrers).sort((a, b) => b[1] - a[1]);
+  const maxDaily = Math.max(...sortedDaily.map(d => d[1]), 1);
+
+  const MetricCard = ({ label, value, colour }) => (
+    <div style={{ background: colour, borderRadius: 12, padding: "20px 16px", textAlign: "center", flex: 1 }}>
+      <div style={{ fontFamily: S.heading, fontSize: 28, fontWeight: 800, color: "#fff" }}>{value}</div>
+      <div style={{ fontFamily: S.body, fontSize: 10, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: 1.5, marginTop: 4 }}>{label}</div>
+    </div>
+  );
+
+  return (
+    <PageWrapper>
+      <Container>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+          <div>
+            <span style={{ fontSize: 11, color: S.gold, letterSpacing: 3, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600 }}>Admin Dashboard</span>
+            <h2 style={{ fontFamily: S.heading, fontSize: "clamp(22px,3vw,32px)", color: S.navy, margin: "6px 0 0" }}>Website Analytics</h2>
+          </div>
+          <button onClick={fetchData} disabled={loading} style={{ padding: "10px 20px", borderRadius: 8, background: S.navy, color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: S.body, opacity: loading ? 0.6 : 1 }}>{loading ? "⏳ Loading..." : "🔄 Refresh"}</button>
+        </div>
+
+        {loading && !data ? (
+          <div style={{ textAlign: "center", padding: 60, color: S.gray, fontFamily: S.body }}>Loading analytics...</div>
+        ) : (
+          <>
+            {/* Headline cards */}
+            <div style={{ display: "flex", gap: 14, marginBottom: 28, flexWrap: "wrap" }}>
+              <MetricCard label="Today" value={s.today || 0} colour="#2E7D32" />
+              <MetricCard label="This Week" value={s.week || 0} colour="#1565C0" />
+              <MetricCard label="This Month" value={s.month || 0} colour={S.navy} />
+              <MetricCard label="All Time" value={s.total || 0} colour={S.gold} />
+            </div>
+
+            {/* Daily chart */}
+            {sortedDaily.length > 0 && (
+              <div style={{ background: "#fff", borderRadius: 14, padding: "24px 20px", boxShadow: "0 2px 12px rgba(1,30,64,0.04)", border: "1px solid rgba(1,30,64,0.06)", marginBottom: 24 }}>
+                <h3 style={{ fontFamily: S.heading, fontSize: 16, color: S.navy, marginBottom: 16 }}>Daily Visits (Last 7 Days)</h3>
+                <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 140 }}>
+                  {sortedDaily.slice(-7).map(([date, count]) => (
+                    <div key={date} style={{ flex: 1, textAlign: "center" }}>
+                      <div style={{ fontFamily: S.body, fontSize: 11, fontWeight: 700, color: S.navy, marginBottom: 4 }}>{count}</div>
+                      <div style={{ height: Math.max((count / maxDaily) * 100, 4), background: `linear-gradient(to top, ${S.navy}, ${S.gold})`, borderRadius: "4px 4px 0 0", transition: "height 0.3s" }} />
+                      <div style={{ fontFamily: S.body, fontSize: 9, color: S.gray, marginTop: 4 }}>{date.slice(5)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 24 }} className="resp-grid-2">
+              {/* Top pages */}
+              <div style={{ background: "#fff", borderRadius: 14, padding: "20px", boxShadow: "0 2px 12px rgba(1,30,64,0.04)", border: "1px solid rgba(1,30,64,0.06)" }}>
+                <h3 style={{ fontFamily: S.heading, fontSize: 16, color: S.navy, marginBottom: 12 }}>Top Pages</h3>
+                {sortedPages.slice(0, 10).map(([pg, cnt], i) => (
+                  <div key={pg} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: i < sortedPages.length - 1 ? "1px solid rgba(1,30,64,0.05)" : "none" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontFamily: S.body, fontSize: 11, fontWeight: 700, color: S.gold, background: "rgba(196,145,18,0.08)", width: 22, height: 22, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>{i + 1}</span>
+                      <span style={{ fontFamily: S.body, fontSize: 13, color: S.navy, fontWeight: 600 }}>{pg}</span>
+                    </div>
+                    <span style={{ fontFamily: S.body, fontSize: 13, fontWeight: 700, color: S.navy }}>{cnt}</span>
+                  </div>
+                ))}
+                {sortedPages.length === 0 && <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray }}>No data yet</p>}
+              </div>
+
+              {/* Devices + Referrers */}
+              <div>
+                <div style={{ background: "#fff", borderRadius: 14, padding: "20px", boxShadow: "0 2px 12px rgba(1,30,64,0.04)", border: "1px solid rgba(1,30,64,0.06)", marginBottom: 20 }}>
+                  <h3 style={{ fontFamily: S.heading, fontSize: 16, color: S.navy, marginBottom: 12 }}>Devices</h3>
+                  {sortedDevices.map(([dv, cnt]) => {
+                    const total = Object.values(devices).reduce((a, b) => a + b, 0);
+                    const pct = total > 0 ? Math.round((cnt / total) * 100) : 0;
+                    const icon = dv === "mobile" ? "📱" : dv === "tablet" ? "📲" : "💻";
+                    return (
+                      <div key={dv} style={{ marginBottom: 10 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontFamily: S.body, fontSize: 12, marginBottom: 4 }}>
+                          <span>{icon} {dv.charAt(0).toUpperCase() + dv.slice(1)}</span>
+                          <span style={{ fontWeight: 700, color: S.navy }}>{cnt} ({pct}%)</span>
+                        </div>
+                        <div style={{ height: 6, background: "#F0F0F0", borderRadius: 3, overflow: "hidden" }}>
+                          <div style={{ width: pct + "%", height: "100%", background: `linear-gradient(to right, ${S.navy}, ${S.gold})`, borderRadius: 3, transition: "width 0.3s" }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {sortedDevices.length === 0 && <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray }}>No data yet</p>}
+                </div>
+
+                <div style={{ background: "#fff", borderRadius: 14, padding: "20px", boxShadow: "0 2px 12px rgba(1,30,64,0.04)", border: "1px solid rgba(1,30,64,0.06)" }}>
+                  <h3 style={{ fontFamily: S.heading, fontSize: 16, color: S.navy, marginBottom: 12 }}>Traffic Sources</h3>
+                  {sortedRefs.slice(0, 8).map(([rf, cnt], i) => (
+                    <div key={rf} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid rgba(1,30,64,0.05)", fontFamily: S.body, fontSize: 12 }}>
+                      <span style={{ color: S.gray }}>{rf}</span>
+                      <span style={{ fontWeight: 700, color: S.navy }}>{cnt}</span>
+                    </div>
+                  ))}
+                  {sortedRefs.length === 0 && <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray }}>No data yet</p>}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ padding: "14px 16px", borderRadius: 8, background: "rgba(1,30,64,0.03)", border: "1px solid rgba(1,30,64,0.06)", fontSize: 12, color: S.gray, fontFamily: S.body, lineHeight: 1.6, textAlign: "center" }}>
+              Data updates in real-time as visitors browse ctsetsjm.com. For advanced analytics (geography, sessions, bounce rate), visit <a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer" style={{ color: S.gold, fontWeight: 700 }}>Google Analytics</a>.
+              <br />This panel is only accessible via <strong>ctsetsjm.com/#admin</strong> with your PIN.
+            </div>
+          </>
+        )}
+      </Container>
+    </PageWrapper>
+  );
+}
+
 export default function CTSApp() {
   const [page, setPage] = useState(() => {
     // Hash routing: read initial page from URL hash
     const hash = window.location.hash.replace("#", "").replace(/-/g, " ");
     const match = PAGES.find(p => p.toLowerCase() === hash.toLowerCase());
+    if (hash.toLowerCase() === "admin") return "Admin";
     return match || "Home";
   });
   const [loading, setLoading] = useState(true);
@@ -3195,7 +3351,7 @@ export default function CTSApp() {
     const onPop = () => {
       const hash = window.location.hash.replace("#", "").replace(/-/g, " ");
       const match = PAGES.find(p => p.toLowerCase() === hash.toLowerCase());
-      setPage(match || "Home");
+      setPage(hash.toLowerCase() === "admin" ? "Admin" : (match || "Home"));
       window.scrollTo({ top: 0, behavior: "instant" });
     };
     window.addEventListener("popstate", onPop);
@@ -3223,9 +3379,15 @@ export default function CTSApp() {
     window.gtag("config", GA_ID, { send_page_view: false });
   }, []);
 
-  // Track page views (GA4 + local)
+  // Track page views (GA4 + local + CTS backend)
   useEffect(() => {
     if (window.gtag) window.gtag("event", "page_view", { page_title: page, page_location: window.location.href, page_path: "/" + page.toLowerCase().replace(/ /g, "-") });
+    // Ping Apps Script analytics
+    try {
+      const device = window.innerWidth < 768 ? "mobile" : (window.innerWidth < 1100 ? "tablet" : "desktop");
+      const ref = document.referrer ? new URL(document.referrer).hostname : "direct";
+      fetch(APPS_SCRIPT_URL + "?action=track&page=" + encodeURIComponent(page) + "&device=" + device + "&ref=" + encodeURIComponent(ref)).catch(() => {});
+    } catch(_){}
   }, [page]);
 
   // Simple local analytics
@@ -3266,6 +3428,7 @@ export default function CTSApp() {
       case "Contact": return <ContactPage setPage={navigate} />;
       case "Privacy": return <PrivacyPage />;
       case "Terms": return <TermsPage />;
+      case "Admin": return <AdminAnalyticsPanel />;
       default: return <NotFoundPage setPage={navigate} />;
     }
   };
