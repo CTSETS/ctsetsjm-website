@@ -3210,8 +3210,7 @@ export default function CTSApp() {
 
   // Google Analytics 4
   useEffect(() => {
-    const GA_ID = "G-XXXXXXXXXX"; // Replace with your GA4 Measurement ID
-    if (GA_ID === "G-XXXXXXXXXX") return; // Skip until configured
+    const GA_ID = "G-CNTDTP49S4"; // CTS ETS Google Analytics 4
     if (document.getElementById("ga4-script")) return;
     const s = document.createElement("script");
     s.id = "ga4-script";
