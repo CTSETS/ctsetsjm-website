@@ -249,13 +249,52 @@ function PageWrapper({ children, bg = "#fff" }) {
   return <div style={{ minHeight: "calc(100vh - 72px)", background: bg, padding: "0 0 60px" }}>{children}</div>;
 }
 
+// Scroll-reveal wrapper — elements fade/slide in when they enter the viewport
+function Reveal({ children, delay = 0, direction = "up", style = {} }) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setVisible(true); observer.unobserve(el); }
+    }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const transforms = {
+    up: "translateY(24px)",
+    down: "translateY(-24px)",
+    left: "translateX(24px)",
+    right: "translateX(-24px)",
+    scale: "scale(0.95)",
+    none: "none",
+  };
+
+  return (
+    <div ref={ref} style={{
+      opacity: visible ? 1 : 0,
+      transform: visible ? "none" : transforms[direction],
+      transition: `opacity 0.7s cubic-bezier(0.16,1,0.3,1) ${delay}s, transform 0.7s cubic-bezier(0.16,1,0.3,1) ${delay}s`,
+      willChange: "opacity, transform",
+      ...style,
+    }}>
+      {children}
+    </div>
+  );
+}
+
 function SectionHeader({ tag, title, desc, light = false }) {
   return (
-    <div style={{ textAlign: "center", marginBottom: 48, padding: "48px 24px 0" }}>
-      <span style={{ fontSize: 11, color: S.gold, letterSpacing: 3, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600 }}>{tag}</span>
-      <h2 style={{ fontFamily: S.heading, fontSize: "clamp(26px, 4vw, 40px)", color: light ? "#fff" : S.navy, margin: "10px 0 0", fontWeight: 700 }}>{title}</h2>
-      {desc && <p style={{ fontFamily: S.body, fontSize: 15, color: light ? "rgba(255,255,255,0.7)" : S.gray, marginTop: 14, maxWidth: 600, marginLeft: "auto", marginRight: "auto", lineHeight: 1.65 }}>{desc}</p>}
-    </div>
+    <Reveal>
+      <div style={{ textAlign: "center", marginBottom: 48, padding: "48px 24px 0" }}>
+        <span style={{ fontSize: 11, color: S.gold, letterSpacing: 3, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600 }}>{tag}</span>
+        <h2 style={{ fontFamily: S.heading, fontSize: "clamp(26px, 4vw, 40px)", color: light ? "#fff" : S.navy, margin: "10px 0 0", fontWeight: 700 }}>{title}</h2>
+        {desc && <p style={{ fontFamily: S.body, fontSize: 15, color: light ? "rgba(255,255,255,0.7)" : S.gray, marginTop: 14, maxWidth: 600, marginLeft: "auto", marginRight: "auto", lineHeight: 1.65 }}>{desc}</p>}
+      </div>
+    </Reveal>
   );
 }
 
@@ -788,7 +827,8 @@ function HomePage({ setPage }) {
         <Container>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 22 }} className="resp-grid-3">
             {TESTIMONIALS.map((t, i) => (
-              <div key={i} style={{ background: S.lightBg, borderRadius: 16, padding: "28px 24px 24px", border: "1px solid rgba(10,35,66,0.06)", display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
+              <Reveal key={i} delay={i * 0.1}>
+              <div style={{ background: S.lightBg, borderRadius: 16, padding: "28px 24px 24px", border: "1px solid rgba(10,35,66,0.06)", display: "flex", flexDirection: "column", position: "relative", overflow: "hidden", height: "100%" }}>
                 <div style={{ position: "absolute", top: 16, right: 20, fontSize: 56, fontFamily: S.heading, color: S.gold, opacity: 0.12, lineHeight: 1 }}>"</div>
                 <p style={{ fontFamily: S.body, fontSize: 14, color: "#2D3748", lineHeight: 1.75, marginBottom: 22, fontStyle: "italic", flex: 1, position: "relative", zIndex: 1 }}>"{t.quote}"</p>
                 <div style={{ height: 1, background: "rgba(10,35,66,0.07)", marginBottom: 16 }} />
@@ -805,6 +845,7 @@ function HomePage({ setPage }) {
                   <span style={{ fontSize: 11, fontWeight: 700, color: t.color, fontFamily: S.body }}>{t.outcome}</span>
                 </div>
               </div>
+              </Reveal>
             ))}
           </div>
           <p style={{ textAlign: "center", fontSize: 11, color: S.gray, fontFamily: S.body, marginTop: 18, fontStyle: "italic", opacity: 0.7 }}>Testimonials shown are representative examples. Names and details have been adjusted to protect privacy.</p>
@@ -919,6 +960,7 @@ function AboutPage() {
         </div>
 
         {/* ═══ A LETTER FROM OUR FOUNDER ═══ */}
+        <Reveal>
         <div style={{ marginTop: 64, marginBottom: 48 }}>
           {/* Section intro */}
           <div style={{ textAlign: "center", marginBottom: 36 }}>
@@ -1028,6 +1070,7 @@ function AboutPage() {
             </div>
           </div>
         </div>
+        </Reveal>
 
         {/* Mantra */}
         <div style={{ textAlign: "center", padding: "24px 0", borderTop: "1px solid rgba(10,35,66,0.08)" }}>
@@ -1070,12 +1113,14 @@ function WhyChoosePage({ setPage }) {
       <SectionHeader tag="The CTS Difference" title="Why Choose CTS ETS?" desc="A registered post-secondary vocational training institution delivering 25 programmes almost entirely online." />
       <Container>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18, marginBottom: 56 }} className="resp-grid-3">
-          {reasons.map(r => (
-            <div key={r.title} style={{ background: S.lightBg, borderRadius: 12, padding: "28px 24px", border: "1px solid rgba(10,35,66,0.05)" }}>
-              <div style={{ fontSize: 28, marginBottom: 12 }}>{r.icon}</div>
-              <h3 style={{ fontFamily: S.heading, fontSize: 17, color: S.navy, marginBottom: 8, fontWeight: 700 }}>{r.title}</h3>
-              <p style={{ fontSize: 14, color: S.gray, fontFamily: S.body, lineHeight: 1.65, margin: 0 }}>{r.desc}</p>
-            </div>
+          {reasons.map((r, i) => (
+            <Reveal key={r.title} delay={i * 0.08}>
+              <div style={{ background: S.lightBg, borderRadius: 12, padding: "28px 24px", border: "1px solid rgba(10,35,66,0.05)", height: "100%" }}>
+                <div style={{ fontSize: 28, marginBottom: 12 }}>{r.icon}</div>
+                <h3 style={{ fontFamily: S.heading, fontSize: 17, color: S.navy, marginBottom: 8, fontWeight: 700 }}>{r.title}</h3>
+                <p style={{ fontSize: 14, color: S.gray, fontFamily: S.body, lineHeight: 1.65, margin: 0 }}>{r.desc}</p>
+              </div>
+            </Reveal>
           ))}
         </div>
         {/* Who is it for */}
@@ -1210,8 +1255,9 @@ function CertificationPage() {
           <PartnerLogos />
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }} className="resp-grid-3">
-          {steps.map(s => (
-            <div key={s.num} style={{ background: "#fff", borderRadius: 14, padding: "32px 28px", border: "1px solid rgba(10,35,66,0.06)", position: "relative", overflow: "hidden" }}>
+          {steps.map((s, i) => (
+            <Reveal key={s.num} delay={i * 0.12}>
+            <div style={{ background: "#fff", borderRadius: 14, padding: "32px 28px", border: "1px solid rgba(10,35,66,0.06)", position: "relative", overflow: "hidden", height: "100%" }}>
               <div style={{ position: "absolute", top: -8, right: 12, fontSize: 72, fontWeight: 800, color: "rgba(10,35,66,0.03)", fontFamily: S.heading }}>{s.num}</div>
               <div style={{ position: "relative", zIndex: 2 }}>
                 <div style={{ fontSize: 28, marginBottom: 14 }}>{s.icon}</div>
@@ -1227,6 +1273,7 @@ function CertificationPage() {
                 ))}
               </div>
             </div>
+            </Reveal>
           ))}
         </div>
         <div style={{ marginTop: 32, padding: "20px 28px", borderRadius: 10, background: "#fff", border: "1px solid rgba(196,145,18,0.2)", display: "flex", gap: 14, alignItems: "flex-start" }} className="cert-note">
@@ -1449,12 +1496,14 @@ function EmployersPage({ setPage }) {
       <SectionHeader tag="Corporate Training" title="For Employers" desc="Invest in your team with a 15% group discount on all programmes for 8 or more learners." />
       <Container>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18, marginBottom: 48 }} className="resp-grid-3">
-          {[["💰", "15% Group Discount", "8 or more learners qualify automatically."], ["📋", "25 Programmes", "From data entry to management — cover every role."], ["🎓", "Certified Workforce", "NCTVET & City & Guilds recognised qualifications."]].map(([icon, title, desc]) => (
-            <div key={title} style={{ background: S.lightBg, borderRadius: 12, padding: "28px 24px", border: "1px solid rgba(10,35,66,0.05)", textAlign: "center" }}>
+          {[["💰", "15% Group Discount", "8 or more learners qualify automatically."], ["📋", "25 Programmes", "From data entry to management — cover every role."], ["🎓", "Certified Workforce", "NCTVET & City & Guilds recognised qualifications."]].map(([icon, title, desc], i) => (
+            <Reveal key={title} delay={i * 0.1}>
+            <div style={{ background: S.lightBg, borderRadius: 12, padding: "28px 24px", border: "1px solid rgba(10,35,66,0.05)", textAlign: "center", height: "100%" }}>
               <div style={{ fontSize: 32, marginBottom: 12 }}>{icon}</div>
               <h3 style={{ fontFamily: S.heading, fontSize: 17, color: S.navy, marginBottom: 8, fontWeight: 700 }}>{title}</h3>
               <p style={{ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.6, margin: 0 }}>{desc}</p>
             </div>
+            </Reveal>
           ))}
         </div>
         <h3 style={{ fontFamily: S.heading, fontSize: "clamp(20px,3vw,26px)", color: S.navy, fontWeight: 700, marginBottom: 20 }}>Group Savings Table</h3>
@@ -3153,14 +3202,16 @@ function ContactPage({ setPage }) {
       <SectionHeader tag="Get In Touch" title="Contact Us" desc="Whether you're an individual or an employer, we're here to help you get started." />
       <Container>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 20, marginBottom: 40 }} className="resp-grid-2">
-          {[["📧","General Enquiries","info@ctsetsjm.com","mailto:info@ctsetsjm.com"], ["💰","Finance Department","finance@ctsetsjm.com","mailto:finance@ctsetsjm.com"], ["📞","Call / WhatsApp","876-525-6802","tel:8765256802"], ["📞","Also Reach Us","876-381-9771","tel:8763819771"], ["📍","Visit Us (By Appointment)","6 Newark Avenue, Kingston 11, Jamaica W.I.","https://maps.google.com/?q=6+Newark+Avenue+Kingston+11+Jamaica"]].map(([icon, label, value, href]) => (
-            <a key={label} href={href} style={{ textDecoration: "none" }} target={label === "Visit Us" ? "_blank" : undefined} rel={label === "Visit Us" ? "noopener noreferrer" : undefined}>
+          {[["📧","General Enquiries","info@ctsetsjm.com","mailto:info@ctsetsjm.com"], ["💰","Finance Department","finance@ctsetsjm.com","mailto:finance@ctsetsjm.com"], ["📞","Call / WhatsApp","876-525-6802","tel:8765256802"], ["📞","Also Reach Us","876-381-9771","tel:8763819771"], ["📍","Visit Us (By Appointment)","6 Newark Avenue, Kingston 11, Jamaica W.I.","https://maps.google.com/?q=6+Newark+Avenue+Kingston+11+Jamaica"]].map(([icon, label, value, href], i) => (
+            <Reveal key={label} delay={i * 0.06}>
+            <a href={href} style={{ textDecoration: "none", display: "block" }} target={label === "Visit Us" ? "_blank" : undefined} rel={label === "Visit Us" ? "noopener noreferrer" : undefined}>
               <div style={{ background: S.lightBg, borderRadius: 10, padding: "28px 20px", textAlign: "center", border: "1px solid rgba(10,35,66,0.06)" }}>
                 <div style={{ fontSize: 28, marginBottom: 10 }}>{icon}</div>
                 <div style={{ fontSize: 10, color: S.gray, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, marginBottom: 6 }}>{label}</div>
                 <div style={{ fontSize: 15, color: S.navy, fontWeight: 700, fontFamily: S.body }}>{value}</div>
               </div>
             </a>
+            </Reveal>
           ))}
         </div>
 
@@ -3177,8 +3228,9 @@ function ContactPage({ setPage }) {
               { icon: "💳", title: "Payment & Enrolment", desc: "Guidance on payment plans, the Payment Centre, or enrolment steps.", duration: "20 min", who: "Accepted students", url: BOOKING_URLS.payment },
               { icon: "📚", title: "Academic Support", desc: "Help with coursework, assessments, Canvas, or programme content.", duration: "30 min", who: "Enrolled students", url: BOOKING_URLS.academic },
               { icon: "👥", title: "Employer Consultation", desc: "Discuss group enrolment, 15% discount, and training plans for your team.", duration: "30 min", who: "Employers & HR", url: BOOKING_URLS.employer },
-            ].map(apt => (
-              <a key={apt.title} href={apt.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+            ].map((apt, i) => (
+              <Reveal key={apt.title} delay={i * 0.1}>
+              <a href={apt.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", display: "block" }}>
                 <div style={{ background: "#fff", borderRadius: 14, padding: "28px 22px", border: "1px solid rgba(1,30,64,0.06)", boxShadow: "0 2px 12px rgba(1,30,64,0.04)", transition: "all 0.2s", cursor: "pointer" }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = S.gold; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(196,145,18,0.12)"; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(1,30,64,0.06)"; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 12px rgba(1,30,64,0.04)"; }}>
@@ -3194,6 +3246,7 @@ function ContactPage({ setPage }) {
                   </div>
                 </div>
               </a>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -3703,6 +3756,185 @@ function AdminAnalyticsPanel() {
   );
 }
 
+// ─── WEBSITE GUIDED TOUR ────────────────────────────────────────────
+function WebsiteTour({ onClose, onNavigate }) {
+  const [step, setStep] = useState(0);
+  const [fadeIn, setFadeIn] = useState(true);
+
+  const steps = [
+    {
+      title: "Welcome to CTS ETS!",
+      desc: "Let us give you a quick tour of what's here. This will take about 30 seconds.",
+      icon: "👋",
+      page: null,
+      position: "center",
+    },
+    {
+      title: "Our Programmes",
+      desc: "We offer 25 programmes across 5 qualification levels — from Job Certificate to Bachelor's Equivalent. All aligned to NCTVET and City & Guilds.",
+      icon: "📚",
+      page: "Programmes",
+      tip: "Browse programmes by level using the tabs at the top of the table.",
+    },
+    {
+      title: "Fees & Payment Calculator",
+      desc: "Use our interactive calculator to see exact costs. Choose your level, programme, and payment plan — Gold, Silver, or Bronze. Employers get 15% off.",
+      icon: "💰",
+      page: "Fees & Calculator",
+      tip: "Try the calculator now — select a level to see your options.",
+    },
+    {
+      title: "How Certification Works",
+      desc: "Complete internal assessments with us, then take the NCTVET external assessment for your nationally and internationally recognised NVQ-J qualification.",
+      icon: "🎓",
+      page: "Certification",
+      tip: "Your CTS ETS certificate + NCTVET certification = two powerful credentials.",
+    },
+    {
+      title: "Apply Online",
+      desc: "Our application form takes about 10 minutes. Upload your documents, choose your programme, and we'll review your application within 24–48 hours.",
+      icon: "📝",
+      page: "Apply",
+      tip: "You can also check your application status and make payments here.",
+    },
+    {
+      title: "Book an Appointment",
+      desc: "Not sure which programme is right for you? Book a free consultation. We offer sessions for general enquiries, payment guidance, academic support, and employer consultations.",
+      icon: "📅",
+      page: "Contact",
+      tip: "Scroll down to see all appointment types and book directly.",
+    },
+    {
+      title: "Our Story",
+      desc: "Read our founder's personal letter about why CTS ETS exists — and why it was built for people exactly like you.",
+      icon: "❤️",
+      page: "About",
+      tip: "Click 'Continue Reading' to read the full letter.",
+    },
+    {
+      title: "You're Ready!",
+      desc: "That's everything you need to know. Explore at your own pace, and remember — if you have any questions, we're just a WhatsApp message away.",
+      icon: "🚀",
+      page: "Home",
+      cta: "Start Exploring",
+    },
+  ];
+
+  const current = steps[step];
+  const isFirst = step === 0;
+  const isLast = step === steps.length - 1;
+  const progress = ((step + 1) / steps.length) * 100;
+
+  const goNext = () => {
+    if (isLast) {
+      localStorage.setItem("cts_tour_done", "1");
+      onClose();
+      return;
+    }
+    setFadeIn(false);
+    setTimeout(() => {
+      const nextStep = steps[step + 1];
+      if (nextStep.page && onNavigate) {
+        onNavigate(nextStep.page);
+        // Scroll to top after navigation
+        setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 200);
+      }
+      setStep(s => s + 1);
+      setFadeIn(true);
+    }, 300);
+  };
+
+  const goBack = () => {
+    if (isFirst) return;
+    setFadeIn(false);
+    setTimeout(() => {
+      const prevStep = steps[step - 1];
+      if (prevStep.page && onNavigate) onNavigate(prevStep.page);
+      else if (!prevStep.page && onNavigate) onNavigate("Home");
+      setStep(s => s - 1);
+      setFadeIn(true);
+    }, 300);
+  };
+
+  const skipTour = () => {
+    localStorage.setItem("cts_tour_done", "1");
+    onNavigate("Home");
+    onClose();
+  };
+
+  return (
+    <>
+      {/* Backdrop overlay */}
+      <div style={{ position: "fixed", inset: 0, background: "rgba(1,30,64,0.6)", backdropFilter: "blur(3px)", zIndex: 99990, transition: "opacity 0.3s" }} onClick={skipTour} />
+
+      {/* Tour card */}
+      <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 99991, width: "min(440px, 90vw)", transition: "all 0.3s ease", opacity: fadeIn ? 1 : 0, scale: fadeIn ? "1" : "0.95" }}>
+        <div style={{ background: "#fff", borderRadius: 20, boxShadow: "0 20px 60px rgba(1,30,64,0.25)", overflow: "hidden" }}>
+
+          {/* Progress bar */}
+          <div style={{ height: 4, background: "rgba(1,30,64,0.06)" }}>
+            <div style={{ width: progress + "%", height: "100%", background: `linear-gradient(to right, ${S.navy}, ${S.gold})`, transition: "width 0.5s ease", borderRadius: "0 2px 2px 0" }} />
+          </div>
+
+          {/* Content */}
+          <div style={{ padding: "clamp(24px,4vw,36px)" }}>
+            {/* Step indicator */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <div style={{ display: "flex", gap: 5 }}>
+                {steps.map((_, i) => (
+                  <div key={i} style={{ width: i === step ? 20 : 8, height: 8, borderRadius: 4, background: i === step ? S.gold : (i < step ? S.navy : "rgba(1,30,64,0.1)"), transition: "all 0.3s" }} />
+                ))}
+              </div>
+              <button onClick={skipTour} style={{ background: "none", border: "none", fontSize: 12, color: S.gray, cursor: "pointer", fontFamily: S.body, padding: "4px 8px" }}>Skip tour</button>
+            </div>
+
+            {/* Icon */}
+            <div style={{ fontSize: 42, marginBottom: 14, transition: "all 0.3s" }}>{current.icon}</div>
+
+            {/* Title */}
+            <h3 style={{ fontFamily: S.heading, fontSize: "clamp(20px,3vw,26px)", color: S.navy, marginBottom: 10, fontWeight: 700, lineHeight: 1.3 }}>{current.title}</h3>
+
+            {/* Description */}
+            <p style={{ fontFamily: S.body, fontSize: 15, color: "#4A5568", lineHeight: 1.7, marginBottom: current.tip ? 14 : 20 }}>{current.desc}</p>
+
+            {/* Tip box */}
+            {current.tip && (
+              <div style={{ padding: "12px 16px", borderRadius: 8, background: "rgba(196,145,18,0.06)", borderLeft: "3px solid " + S.gold, marginBottom: 20 }}>
+                <p style={{ fontFamily: S.body, fontSize: 13, color: S.navy, lineHeight: 1.5, margin: 0 }}>
+                  <span style={{ fontWeight: 700, color: S.gold }}>Tip: </span>{current.tip}
+                </p>
+              </div>
+            )}
+
+            {/* Navigation buttons */}
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              {!isFirst && (
+                <button onClick={goBack} style={{ padding: "12px 20px", borderRadius: 10, background: "transparent", border: "2px solid rgba(1,30,64,0.15)", color: S.navy, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: S.body, transition: "all 0.2s" }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = S.navy}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(1,30,64,0.15)"}>
+                  Back
+                </button>
+              )}
+              <button onClick={goNext} style={{ flex: 1, padding: "14px 24px", borderRadius: 10, background: isLast ? S.gold : S.navy, color: isLast ? S.navy : "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body, border: "none", letterSpacing: 0.5, transition: "all 0.2s", boxShadow: "0 4px 16px " + (isLast ? "rgba(196,145,18,0.3)" : "rgba(1,30,64,0.2)") }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 24px " + (isLast ? "rgba(196,145,18,0.4)" : "rgba(1,30,64,0.3)"); }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 4px 16px " + (isLast ? "rgba(196,145,18,0.3)" : "rgba(1,30,64,0.2)"); }}>
+                {isLast ? (current.cta || "Finish") : isFirst ? "Start Tour" : "Next →"}
+              </button>
+            </div>
+
+            {/* Page indicator */}
+            {current.page && !isFirst && !isLast && (
+              <p style={{ fontFamily: S.body, fontSize: 11, color: "rgba(1,30,64,0.3)", textAlign: "center", marginTop: 12, letterSpacing: 1 }}>
+                You're viewing: {current.page}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export default function CTSApp() {
   const [page, setPage] = useState(() => {
     // Hash routing: read initial page from URL hash
@@ -3712,19 +3944,25 @@ export default function CTSApp() {
     return match || "Home";
   });
   const [loading, setLoading] = useState(() => {
-    // Only show splash on fresh visits — not on same-session navigations
     if (sessionStorage.getItem("cts_entered")) return false;
     return true;
   });
   const [transitioning, setTransitioning] = useState(false);
   const [splashFading, setSplashFading] = useState(false);
+  const [showTour, setShowTour] = useState(false);
 
   const handleEnter = useCallback(() => {
     setSplashFading(true);
     sessionStorage.setItem("cts_entered", "1");
     setPage("Home");
     window.history.pushState(null, "", window.location.pathname);
-    setTimeout(() => setLoading(false), 600);
+    setTimeout(() => {
+      setLoading(false);
+      // Show tour 1 second after splash fades — only on first ever visit
+      if (!localStorage.getItem("cts_tour_done")) {
+        setTimeout(() => setShowTour(true), 1000);
+      }
+    }, 600);
   }, []);
 
   const navigate = useCallback((p) => {
@@ -3740,6 +3978,31 @@ export default function CTSApp() {
   }, []);
 
   // Splash screen handled by handleEnter callback
+
+  // Global scroll-reveal: animate sections as they enter viewport
+  useEffect(() => {
+    if (loading) return;
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("revealed");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: "0px 0px -30px 0px" });
+
+    // Small delay to let page render, then observe major content blocks
+    const timer = setTimeout(() => {
+      document.querySelectorAll("section > div > div, section > div, [class*='resp-grid']").forEach(el => {
+        if (el.offsetHeight > 40 && !el.closest("[style*='position: fixed']")) {
+          el.classList.add("reveal-section");
+          observer.observe(el);
+        }
+      });
+    }, 100);
+
+    return () => { clearTimeout(timer); observer.disconnect(); };
+  }, [loading, page]);
 
   // Browser back button handling
   useEffect(() => {
@@ -3842,6 +4105,12 @@ export default function CTSApp() {
           @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
           @keyframes loadBar { 0% { transform: translateX(-100%); } 50% { transform: translateX(100%); } 100% { transform: translateX(300%); } }
           @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+          @keyframes revealUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
+          .reveal-section { opacity: 0; transform: translateY(28px); transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1); }
+          .reveal-section.revealed { opacity: 1; transform: translateY(0); }
+          .reveal-section:nth-child(2) { transition-delay: 0.08s; }
+          .reveal-section:nth-child(3) { transition-delay: 0.16s; }
+          .reveal-section:nth-child(4) { transition-delay: 0.24s; }
           @media (max-width: 1100px) {
             .desktop-nav { display: none !important; }
             .mobile-menu-btn { display: flex !important; }
@@ -3873,13 +4142,14 @@ export default function CTSApp() {
         <OfflineBanner />
         <AnnouncementBar />
         <Navbar page={page} setPage={navigate} />
-        <div style={{ opacity: transitioning ? 0.6 : 1, transition: "opacity 0.15s ease", animation: "fadeIn 0.25s ease" }}>
+        <div key={page} style={{ opacity: transitioning ? 0 : 1, transform: transitioning ? "translateY(8px)" : "translateY(0)", transition: "opacity 0.3s ease, transform 0.3s ease" }}>
           {renderPage()}
         </div>
         <Footer setPage={navigate} />
         <ScrollToTop />
         <WhatsAppBtn />
         <CookieBanner setPage={navigate} />
+        {showTour && <WebsiteTour onClose={() => setShowTour(false)} onNavigate={navigate} />}
       </div>
     </ErrorBoundary>
   );
