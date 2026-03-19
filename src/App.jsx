@@ -762,7 +762,7 @@ function LoadingScreen({ onEnter }) {
       {stage === "prayer" && (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", padding: "clamp(32px,6vh,60px) 24px", position: "relative", zIndex: 2, transition: "opacity 0.6s ease", opacity: prayerFade ? 1 : 0 }}>
           <div style={{ maxWidth: 540, width: "100%", textAlign: "center" }}>
-            <div style={{ fontSize: "clamp(40px,8vw,56px)", marginBottom: 20, animation: "crossGlow 3s ease-in-out infinite" }}>{"\u2720"}</div>
+            <div style={{ fontSize: "clamp(40px,8vw,56px)", marginBottom: 20, animation: "crossGlow 3s ease-in-out infinite", display: "flex", alignItems: "center", justifyContent: "center", gap: "clamp(12px,3vw,20px)" }}>{"\uD83C\uDDEF\uD83C\uDDF2"}<span>{"\uD83D\uDE4F"}</span>{"\uD83C\uDDEF\uD83C\uDDF2"}</div>
             <div style={{ fontFamily: S.body, fontSize: 12, color: S.gold, letterSpacing: 5, textTransform: "uppercase", fontWeight: 600, marginBottom: 16 }}>A Blessing Before You Begin</div>
             <div style={{ height: 2, background: `linear-gradient(to right, transparent, ${S.gold}, transparent)`, width: 100, margin: "0 auto 28px", borderRadius: 2 }} />
             <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(14px,2vw,17px)", color: "rgba(255,255,255,0.8)", lineHeight: 2, fontStyle: "italic", marginBottom: 28, textAlign: "left", padding: "0 clamp(0px,2vw,20px)" }}>
@@ -1127,6 +1127,10 @@ function AboutPage() {
                 <div>
                   <div style={{ fontFamily: S.heading, fontSize: 20, fontWeight: 700, color: S.navy }}>Mark O. Lindo, Ph.D</div>
                   <div style={{ fontFamily: S.body, fontSize: 12, color: S.gold, letterSpacing: 1, textTransform: "uppercase", fontWeight: 600 }}>Founder & Principal</div>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 6 }}>
+                    <span style={{ fontSize: 9, fontFamily: S.body, color: "#fff", background: S.navy, padding: "3px 8px", borderRadius: 4, fontWeight: 600, letterSpacing: 0.5 }}>City & Guilds Level 3 IVQ — Certified Assessor</span>
+                    <span style={{ fontSize: 9, fontFamily: S.body, color: "#fff", background: S.navy, padding: "3px 8px", borderRadius: 4, fontWeight: 600, letterSpacing: 0.5 }}>NCTVET NVQ-J Level 4 — Assessment</span>
+                  </div>
                 </div>
               </div>
 
@@ -1203,7 +1207,11 @@ function AboutPage() {
                       <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, marginBottom: 12 }}>With respect and admiration,</p>
                       <p style={{ fontFamily: S.heading, fontSize: 18, color: S.navy, fontWeight: 700, marginBottom: 2 }}>Mark O. Lindo, Ph.D</p>
                       <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, marginBottom: 0 }}>Founder & Principal</p>
-                      <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray }}>CTS Empowerment & Training Solutions</p>
+                      <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, marginBottom: 6 }}>CTS Empowerment & Training Solutions</p>
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 10, fontFamily: S.body, color: S.gold, background: "rgba(196,145,18,0.08)", padding: "3px 10px", borderRadius: 4, fontWeight: 600 }}>City & Guilds Level 3 IVQ — Certified Assessor</span>
+                        <span style={{ fontSize: 10, fontFamily: S.body, color: S.gold, background: "rgba(196,145,18,0.08)", padding: "3px 10px", borderRadius: 4, fontWeight: 600 }}>NCTVET NVQ-J Level 4 — Assessment</span>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -1268,6 +1276,24 @@ function WhyChoosePage({ setPage }) {
             </Reveal>
           ))}
         </div>
+
+        {/* Assessor credentials callout */}
+        <Reveal>
+        <div style={{ display: "flex", alignItems: "center", gap: 20, padding: "22px 28px", borderRadius: 12, background: S.navy, marginBottom: 40, flexWrap: "wrap" }}>
+          <img src={FOUNDER_PHOTO} alt="Dr. Lindo" style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover", border: "2px solid " + S.gold, flexShrink: 0 }} />
+          <div style={{ flex: 1, minWidth: 240 }}>
+            <p style={{ fontFamily: S.body, fontSize: 14, color: "#fff", lineHeight: 1.6, margin: "0 0 8px" }}>
+              Your assessor holds <strong style={{ color: S.gold }}>City & Guilds Level 3 IVQ</strong> and <strong style={{ color: S.gold }}>NCTVET NVQ-J Level 4 in Assessment</strong> — certified to teach and assess by the same bodies that certify you.
+            </p>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <img src={CG_LOGO} alt="C&G" style={{ height: 16, objectFit: "contain", background: "#fff", borderRadius: 3, padding: "1px 3px" }} />
+              <img src={NCTVET_LOGO} alt="NCTVET" style={{ height: 16, objectFit: "contain", background: "#fff", borderRadius: 3, padding: "1px 3px" }} />
+              <span style={{ fontFamily: S.body, fontSize: 11, color: "rgba(255,255,255,0.5)" }}>Dual-certified assessor</span>
+            </div>
+          </div>
+        </div>
+        </Reveal>
+
         {/* Who is it for */}
         <div style={{ background: S.navy, borderRadius: 16, padding: "clamp(28px,3vw,48px)", marginBottom: 40 }}>
           <div style={{ textAlign: "center", marginBottom: 28 }}>
@@ -1430,6 +1456,43 @@ function CertificationPage() {
             <p style={{ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.6, margin: 0 }}>NCTVET external assessment and certification fees are not included in tuition and are payable directly to the NCTVET. Learners will be advised of applicable fees prior to registration.</p>
           </div>
         </div>
+
+        {/* Assessor Credentials */}
+        <Reveal>
+        <div style={{ marginTop: 32, padding: "28px 28px", borderRadius: 14, background: S.navy, position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, borderRadius: "50%", background: "rgba(196,145,18,0.08)" }} />
+          <div style={{ position: "relative", zIndex: 2 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16, flexWrap: "wrap" }}>
+              <img src={FOUNDER_PHOTO} alt="Dr. Mark O. Lindo" style={{ width: 52, height: 52, borderRadius: "50%", objectFit: "cover", border: "2px solid " + S.gold, flexShrink: 0 }} />
+              <div>
+                <div style={{ fontFamily: S.body, fontSize: 10, color: S.gold, letterSpacing: 3, textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>Your Assessor</div>
+                <div style={{ fontFamily: S.heading, fontSize: 18, color: "#fff", fontWeight: 700 }}>Mark O. Lindo, Ph.D</div>
+              </div>
+            </div>
+            <p style={{ fontFamily: S.body, fontSize: 14, color: "rgba(255,255,255,0.8)", lineHeight: 1.75, marginBottom: 16 }}>
+              Your learning and assessments are facilitated by a professional who holds certifications from <strong style={{ color: S.gold }}>both</strong> of the bodies that certify you. This means the person guiding your education has been independently verified as qualified to teach, train, and assess to national and international standards.
+            </p>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <div style={{ flex: 1, minWidth: 200, padding: "14px 16px", borderRadius: 10, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(196,145,18,0.2)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <img src={CG_LOGO} alt="City & Guilds" style={{ height: 18, objectFit: "contain", background: "#fff", borderRadius: 3, padding: "2px 4px" }} />
+                  <span style={{ fontFamily: S.body, fontSize: 11, color: S.gold, fontWeight: 700, letterSpacing: 0.5 }}>City & Guilds</span>
+                </div>
+                <div style={{ fontFamily: S.body, fontSize: 12, color: "#fff", fontWeight: 600, marginBottom: 2 }}>Level 3 IVQ Certificate</div>
+                <div style={{ fontFamily: S.body, fontSize: 11, color: "rgba(255,255,255,0.5)" }}>Teaching, Training & Assessing Learning — Assessing Competence (1106-93)</div>
+              </div>
+              <div style={{ flex: 1, minWidth: 200, padding: "14px 16px", borderRadius: 10, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(196,145,18,0.2)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <img src={NCTVET_LOGO} alt="NCTVET" style={{ height: 18, objectFit: "contain", background: "#fff", borderRadius: 3, padding: "2px 4px" }} />
+                  <span style={{ fontFamily: S.body, fontSize: 11, color: S.gold, fontWeight: 700, letterSpacing: 0.5 }}>NCTVET</span>
+                </div>
+                <div style={{ fontFamily: S.body, fontSize: 12, color: "#fff", fontWeight: 600, marginBottom: 2 }}>NVQ-J Level 4 — Assessment</div>
+                <div style={{ fontFamily: S.body, fontSize: 11, color: "rgba(255,255,255,0.5)" }}>National Vocational Qualification of Jamaica — Cert. #1117358</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </Reveal>
 
         {/* Institution Certificate Section */}
         <div style={{ marginTop: 48 }}>
