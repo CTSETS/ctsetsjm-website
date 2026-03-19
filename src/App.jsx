@@ -2097,15 +2097,15 @@ function ApplyPage({ setPage }) {
 
         {/* ─── TAB: STATUS ─── */}
         {activeTab === "status" && (
-          <div style={{ maxWidth: 560, margin: "0 auto" }}>
+          <div style={{ maxWidth: 620, margin: "0 auto" }}>
             <div style={{ background: "#fff", borderRadius: 16, padding: "clamp(28px,4vw,44px)", boxShadow: "0 4px 24px rgba(1,30,64,0.06)", border: "1px solid rgba(1,30,64,0.05)" }}>
               <div style={{ textAlign: "center", marginBottom: 28 }}>
                 <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(1,30,64,0.05)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px", fontSize: 24 }}>🔍</div>
-                <h3 style={{ fontFamily: S.heading, fontSize: 22, color: S.navy, marginBottom: 8 }}>Check Application Status</h3>
-                <p style={{ fontFamily: S.body, fontSize: 14, color: "#4A5568", lineHeight: 1.6 }}>Enter the email address you registered with to retrieve your application status.</p>
+                <h3 style={{ fontFamily: S.heading, fontSize: 22, color: S.navy, marginBottom: 8 }}>Track Your Application</h3>
+                <p style={{ fontFamily: S.body, fontSize: 14, color: "#4A5568", lineHeight: 1.6 }}>Enter the email address you used when applying to see your application status and next steps.</p>
               </div>
               <div style={{ marginBottom: 16 }}>
-                <label style={labelStyle}>Registered Email Address</label>
+                <label style={labelStyle}>Email Address</label>
                 <div style={{ display: "flex", gap: 10 }}>
                   <input style={{ ...inputStyle, flex: 1 }} value={statusEmail} onChange={e => setStatusEmail(e.target.value)} placeholder="your@email.com" type="email" onKeyDown={e => e.key === "Enter" && !statusLoading && checkStatus()} />
                   <button onClick={checkStatus} disabled={statusLoading} style={{ padding: "12px 22px", borderRadius: 8, background: statusLoading ? "#4A5568" : S.navy, color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: statusLoading ? "wait" : "pointer", fontFamily: S.body, whiteSpace: "nowrap", opacity: statusLoading ? 0.7 : 1, transition: "all 0.2s", minWidth: 120 }}>{statusLoading ? "⏳ Checking..." : "Check Status"}</button>
@@ -2119,41 +2119,98 @@ function ApplyPage({ setPage }) {
                 </div>
               )}
 
-              {statusResult && statusResult !== "notfound" && (
-                <div style={{ background: S.lightBg, borderRadius: 12, border: "1px solid rgba(1,30,64,0.07)", overflow: "hidden" }}>
-                  <div style={{ background: S.navy, padding: "14px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", fontFamily: S.body }}>Application on File</div>
-                    <div style={{ fontSize: 11, color: S.gold, fontFamily: S.body, fontWeight: 700, letterSpacing: 1 }}>{statusResult.ref}</div>
-                  </div>
-                  {statusResult.studentId && <div style={{ background: "rgba(196,145,18,0.08)", padding: "10px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(1,30,64,0.05)" }}>
-                    <span style={{ fontSize: 11, color: S.gray, fontWeight: 700, fontFamily: S.body, letterSpacing: 0.5, textTransform: "uppercase" }}>Student ID</span>
-                    <span style={{ fontSize: 14, color: S.navy, fontWeight: 800, fontFamily: S.heading, letterSpacing: 1 }}>{statusResult.studentId}</span>
-                  </div>}
-                  <div style={{ padding: "20px" }}>
-                    {[["Applicant Name", statusResult.name], ["Programme", statusResult.level + " — " + statusResult.programme], ["Date Submitted", statusResult.submittedAt]].map(([label, val]) => (
-                      <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "9px 0", borderBottom: "1px solid rgba(1,30,64,0.05)", fontSize: 13, fontFamily: S.body }}>
-                        <span style={{ color: S.gray, fontWeight: 600 }}>{label}</span>
-                        <span style={{ color: S.navy, fontWeight: 600, textAlign: "right", maxWidth: "60%" }}>{val}</span>
+              {statusResult && statusResult !== "notfound" && (() => {
+                const statusConfig = {
+                  "Under Review": { colour: "#F59E0B", bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.2)", icon: "📋", step: 1, next: "Our admissions team is reviewing your application and documents. You will receive an email within 24–48 hours." },
+                  "Documents Needed": { colour: "#E65100", bg: "rgba(230,81,0,0.06)", border: "rgba(230,81,0,0.2)", icon: "📄", step: 1, next: "Additional documents are required. Please upload them using the Upload Documents tab on this page, or email them to info@ctsetsjm.com." },
+                  "Accepted": { colour: "#2E7D32", bg: "rgba(46,125,50,0.06)", border: "rgba(46,125,50,0.2)", icon: "✅", step: 2, next: "Congratulations! Complete your payment via the Payment Centre tab to secure your place and receive access to the Learning Portal." },
+                  "Enrolled": { colour: "#0D47A1", bg: "rgba(13,71,161,0.06)", border: "rgba(13,71,161,0.2)", icon: "🎓", step: 3, next: "You're enrolled! Access your course materials at canvas.instructure.com. Download the Canvas Student app to study on the go." },
+                  "Completed": { colour: "#C49112", bg: "rgba(196,145,18,0.06)", border: "rgba(196,145,18,0.15)", icon: "🏆", step: 4, next: "Congratulations on completing your programme! Your certificate has been emailed to you. NCTVET external assessment details will follow." },
+                  "Deferred": { colour: "#6A1B9A", bg: "rgba(106,27,154,0.06)", border: "rgba(106,27,154,0.2)", icon: "⏸️", step: 0, next: "Your application has been deferred. Contact us at info@ctsetsjm.com to discuss options for a future intake." },
+                  "Withdrawn": { colour: "#616161", bg: "rgba(97,97,97,0.06)", border: "rgba(97,97,97,0.2)", icon: "↩️", step: 0, next: "Your application has been withdrawn. If you wish to re-apply, you are welcome to submit a new application." },
+                  "Rejected": { colour: "#B71C1C", bg: "rgba(183,28,28,0.06)", border: "rgba(183,28,28,0.2)", icon: "📨", step: 0, next: "Your application was not successful at this time. Contact info@ctsetsjm.com for guidance on reapplication." },
+                };
+                const apps = statusResult.applications || [statusResult];
+                const steps = [
+                  { label: "Applied", desc: "Application received" },
+                  { label: "Accepted", desc: "Payment required" },
+                  { label: "Enrolled", desc: "Learning started" },
+                  { label: "Completed", desc: "Certified" },
+                ];
+                return <div>
+                  {apps.map((app, idx) => {
+                    const cfg = statusConfig[app.status] || statusConfig["Under Review"];
+                    return <div key={app.ref} style={{ marginBottom: idx < apps.length - 1 ? 24 : 0 }}>
+                      {/* Header */}
+                      <div style={{ background: S.navy, padding: "14px 20px", borderRadius: "12px 12px 0 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", fontFamily: S.body }}>{app.name || "Application"}</div>
+                        <div style={{ fontSize: 11, color: S.gold, fontFamily: S.body, fontWeight: 700, letterSpacing: 1 }}>{app.ref}</div>
                       </div>
-                    ))}
-                    <div style={{ marginTop: 14, padding: "14px 16px", borderRadius: 8, background: ({"Accepted":"rgba(46,125,50,0.06)","Enrolled":"rgba(13,71,161,0.06)","Completed":"rgba(1,30,64,0.06)","Rejected":"rgba(183,28,28,0.06)","Withdrawn":"rgba(97,97,97,0.06)","Deferred":"rgba(106,27,154,0.06)","Documents Needed":"rgba(230,81,0,0.06)"}[statusResult.status] || "rgba(196,145,18,0.06)"), border: "1px solid " + ({"Accepted":"rgba(46,125,50,0.2)","Enrolled":"rgba(13,71,161,0.2)","Completed":"rgba(1,30,64,0.2)","Rejected":"rgba(183,28,28,0.2)","Withdrawn":"rgba(97,97,97,0.2)","Deferred":"rgba(106,27,154,0.2)","Documents Needed":"rgba(230,81,0,0.2)"}[statusResult.status] || "rgba(196,145,18,0.15)") }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                        <div style={{ width: 10, height: 10, borderRadius: "50%", background: ({"Under Review":"#F59E0B","Documents Needed":"#E65100","Accepted":"#2E7D32","Enrolled":"#0D47A1","Deferred":"#6A1B9A","Withdrawn":"#616161","Completed":"#C49112","Rejected":"#B71C1C"}[statusResult.status] || "#F59E0B"), flexShrink: 0 }} />
-                        <span style={{ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body }}>Status: {statusResult.status}</span>
+
+                      {/* Student ID */}
+                      {app.studentId && <div style={{ background: "rgba(196,145,18,0.08)", padding: "10px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", borderLeft: "1px solid rgba(1,30,64,0.05)", borderRight: "1px solid rgba(1,30,64,0.05)" }}>
+                        <span style={{ fontSize: 11, color: S.gray, fontWeight: 700, fontFamily: S.body, letterSpacing: 0.5, textTransform: "uppercase" }}>Student ID</span>
+                        <span style={{ fontSize: 14, color: S.navy, fontWeight: 800, fontFamily: S.heading, letterSpacing: 1 }}>{app.studentId}</span>
+                      </div>}
+
+                      <div style={{ background: S.lightBg, borderRadius: "0 0 12px 12px", border: "1px solid rgba(1,30,64,0.07)", borderTop: "none", padding: 20 }}>
+                        {/* Progress timeline */}
+                        {cfg.step > 0 && <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20, padding: "0 4px" }}>
+                          {steps.map((s, si) => {
+                            const active = si < cfg.step;
+                            const current = si === cfg.step - 1;
+                            return <div key={s.label} style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, position: "relative" }}>
+                              <div style={{ width: current ? 32 : 24, height: current ? 32 : 24, borderRadius: "50%", background: active ? cfg.colour : "#E2E8F0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: current ? 14 : 11, color: active ? "#fff" : "#A0AEC0", fontWeight: 700, fontFamily: S.body, transition: "all 0.3s", border: current ? "3px solid " + cfg.colour : "none", boxShadow: current ? "0 0 0 4px " + cfg.bg : "none" }}>{active ? "✓" : si + 1}</div>
+                              <div style={{ fontSize: 10, fontWeight: 700, color: active ? cfg.colour : "#A0AEC0", fontFamily: S.body, marginTop: 6, textAlign: "center" }}>{s.label}</div>
+                              <div style={{ fontSize: 9, color: "#A0AEC0", fontFamily: S.body, textAlign: "center" }}>{s.desc}</div>
+                              {si < steps.length - 1 && <div style={{ position: "absolute", top: current ? 16 : 12, left: "55%", width: "90%", height: 2, background: active && si < cfg.step - 1 ? cfg.colour : "#E2E8F0" }} />}
+                            </div>;
+                          })}
+                        </div>}
+
+                        {/* Details */}
+                        {[["Programme", app.level + " — " + app.programme], ["Payment Plan", app.payPlan || "To be confirmed"], ["Date Submitted", app.submittedAt]].map(([label, val]) => (
+                          <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "9px 0", borderBottom: "1px solid rgba(1,30,64,0.05)", fontSize: 13, fontFamily: S.body }}>
+                            <span style={{ color: S.gray, fontWeight: 600 }}>{label}</span>
+                            <span style={{ color: S.navy, fontWeight: 600, textAlign: "right", maxWidth: "60%" }}>{val}</span>
+                          </div>
+                        ))}
+
+                        {/* Status badge */}
+                        <div style={{ marginTop: 14, padding: "14px 16px", borderRadius: 8, background: cfg.bg, border: "1px solid " + cfg.border }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                            <span style={{ fontSize: 18 }}>{cfg.icon}</span>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: cfg.colour, fontFamily: S.body }}>Status: {app.status}</span>
+                          </div>
+                          <p style={{ fontSize: 13, color: "#4A5568", fontFamily: S.body, lineHeight: 1.6, margin: 0 }}>{cfg.next}</p>
+                        </div>
+
+                        {/* Action buttons based on status */}
+                        {app.status === "Accepted" && <div style={{ marginTop: 14, textAlign: "center" }}>
+                          <button onClick={() => { setActiveTab("payment"); setStatusEmail(statusEmail); }} style={{ padding: "12px 28px", borderRadius: 8, background: "#2E7D32", color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>Go to Payment Centre →</button>
+                        </div>}
+                        {app.status === "Documents Needed" && <div style={{ marginTop: 14, textAlign: "center" }}>
+                          <button onClick={() => setActiveTab("apply")} style={{ padding: "12px 28px", borderRadius: 8, background: "#E65100", color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>Upload Documents →</button>
+                        </div>}
+                        {app.status === "Enrolled" && <div style={{ marginTop: 14, textAlign: "center" }}>
+                          <a href={CANVAS_URL} target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", padding: "12px 28px", borderRadius: 8, background: "#2E7D32", color: "#fff", textDecoration: "none", fontSize: 13, fontWeight: 700, fontFamily: S.body }}>📚 Access Learning Portal →</a>
+                        </div>}
                       </div>
-                      {statusResult.payStatus && <div style={{ fontSize: 12, color: "#4A5568", fontFamily: S.body, marginBottom: 6 }}>Payment: <strong>{statusResult.payStatus}</strong></div>}
-                      {statusResult.notes && <p style={{ fontSize: 12, color: "#4A5568", fontFamily: S.body, lineHeight: 1.65, margin: 0 }}>{statusResult.notes}</p>}
-                    </div>
-                    <div style={{ marginTop: 14, fontSize: 12, color: S.gray, fontFamily: S.body, lineHeight: 1.6, textAlign: "center" }}>
-                      For urgent queries: <strong>info@ctsetsjm.com</strong> | <strong>876-525-6802</strong> (Flow) | <strong>876-381-9771</strong> (Digicel)
-                    </div>
+                    </div>;
+                  })}
+
+                  <div style={{ marginTop: 20, padding: "14px 16px", borderRadius: 8, background: "rgba(1,30,64,0.03)", border: "1px solid rgba(1,30,64,0.06)", fontSize: 12, color: S.gray, fontFamily: S.body, lineHeight: 1.6, textAlign: "center" }}>
+                    For urgent queries: <strong>info@ctsetsjm.com</strong> | <strong>876-525-6802</strong> (Flow) | <strong>876-381-9771</strong> (Digicel)<br />
+                    Payment queries: <strong>finance@ctsetsjm.com</strong>
                   </div>
+                </div>;
+              })()}
+
+              {!statusResult && (
+                <div style={{ marginTop: 20, padding: "14px 16px", borderRadius: 8, background: "rgba(1,30,64,0.03)", border: "1px solid rgba(1,30,64,0.06)", fontSize: 12, color: S.gray, fontFamily: S.body, lineHeight: 1.6, textAlign: "center" }}>
+                  💡 Haven't applied yet? Use the <strong>Apply Now</strong> tab. Your application reference and status will be retrievable here using your registered email.
                 </div>
               )}
-
-              <div style={{ marginTop: 20, padding: "14px 16px", borderRadius: 8, background: "rgba(1,30,64,0.03)", border: "1px solid rgba(1,30,64,0.06)", fontSize: 12, color: S.gray, fontFamily: S.body, lineHeight: 1.6, textAlign: "center" }}>
-                💡 Haven't applied yet? Use the <strong>Apply Now</strong> tab. Your application reference and status will be retrievable here using your registered email.
-              </div>
             </div>
           </div>
         )}
