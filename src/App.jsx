@@ -892,9 +892,12 @@ function HomePage({ setPage }) {
 function InterestCapture() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const [hp, setHp] = useState("");
+  const startTime = useRef(Date.now());
   const handleSubmit = () => {
+    if (hp) return; // honeypot
+    if (Date.now() - startTime.current < 3000) return; // too fast = bot
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
-    // Fire and forget to Apps Script
     try {
       fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({ form_type: "Interest Capture", email, timestamp: new Date().toISOString() }), mode: "no-cors" });
     } catch (_) {}
@@ -911,7 +914,8 @@ function InterestCapture() {
       <div style={{ fontSize: 10, color: S.gold, letterSpacing: 3, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600, marginBottom: 8 }}>Stay Informed</div>
       <h3 style={{ fontFamily: S.heading, fontSize: 22, color: "#fff", marginBottom: 10 }}>Get Notified About Future Intakes</h3>
       <p style={{ fontFamily: S.body, fontSize: 13, color: "rgba(255,255,255,0.6)", marginBottom: 20, lineHeight: 1.6 }}>Enter your email and we'll let you know when the next enrolment window opens.</p>
-      <div style={{ display: "flex", gap: 8, maxWidth: 400, margin: "0 auto" }}>
+      <div style={{ display: "flex", gap: 8, maxWidth: 400, margin: "0 auto", position: "relative" }}>
+        <HoneypotField value={hp} onChange={e => setHp(e.target.value)} />
         <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="your@email.com" onKeyDown={e => e.key === "Enter" && handleSubmit()}
           style={{ flex: 1, padding: "12px 16px", borderRadius: 8, border: "2px solid rgba(196,145,18,0.3)", background: "rgba(255,255,255,0.06)", fontSize: 13, fontFamily: S.body, color: "#fff", outline: "none" }} />
         <button onClick={handleSubmit} style={{ padding: "12px 24px", borderRadius: 8, background: S.gold, color: S.navy, border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: S.body, whiteSpace: "nowrap" }}>Notify Me</button>
@@ -1573,6 +1577,8 @@ function ApplyPage({ setPage }) {
   const [payName, setPayName] = useState("");
   const [payConfirm, setPayConfirm] = useState(false);
   const [payDeclare, setPayDeclare] = useState(false);
+  const [payCaptcha, setPayCaptcha] = useState(false);
+  const [payHoneypot, setPayHoneypot] = useState("");
   const [payDeclareTimestamp, setPayDeclareTimestamp] = useState(null);
   const [payAppRef, setPayAppRef] = useState(""); // Application reference (CTS-2026-XXXXX)
   const [payStudentId, setPayStudentId] = useState(""); // Only assigned on acceptance
@@ -1673,6 +1679,8 @@ function ApplyPage({ setPage }) {
   const [groupSubmitted, setGroupSubmitted] = useState(false);
   const [groupSubmitting, setGroupSubmitting] = useState(false);
   const [groupDeclare, setGroupDeclare] = useState(false);
+  const [groupCaptcha, setGroupCaptcha] = useState(false);
+  const [groupHoneypot, setGroupHoneypot] = useState("");
   const [groupDeclareTimestamp, setGroupDeclareTimestamp] = useState(null);
   const ug = (k, v) => setGroupForm(f => ({ ...f, [k]: v }));
   const u = (k, v) => setForm(f => ({ ...f, [k]: v }));
@@ -2440,7 +2448,11 @@ function ApplyPage({ setPage }) {
                 </div>
 
                 {/* Submit */}
+                <HoneypotField value={groupHoneypot} onChange={e => setGroupHoneypot(e.target.value)} />
+                <CaptchaChallenge onVerified={setGroupCaptcha} verified={groupCaptcha} />
                 <button onClick={async () => {
+                  if (groupHoneypot) return;
+                  if (!groupCaptcha) { alert("Please complete the verification challenge."); return; }
                   setGroupSubmitting(true);
                   try {
                     const progsText = groupForm.selectedProgs.join("; ");
@@ -2465,10 +2477,10 @@ function ApplyPage({ setPage }) {
                     setGroupSubmitted(true);
                   } catch (err) { console.error("Group submit error:", err); alert("Something went wrong. Please try again."); }
                   finally { setGroupSubmitting(false); }
-                }} disabled={!groupDeclare || groupSubmitting} style={{ width: "100%", padding: "16px", borderRadius: 10, background: (!groupDeclare || groupSubmitting) ? "#4A5568" : S.navy, color: "#fff", border: "none", fontSize: 15, fontWeight: 700, cursor: (!groupDeclare || groupSubmitting) ? "not-allowed" : "pointer", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", opacity: (!groupDeclare || groupSubmitting) ? 0.5 : 1, transition: "all 0.2s", boxShadow: groupDeclare && !groupSubmitting ? "0 4px 16px rgba(1,30,64,0.25)" : "none" }}
-                  onMouseEnter={e => { if (groupDeclare && !groupSubmitting) e.currentTarget.style.background = "#001228"; }}
-                  onMouseLeave={e => { if (groupDeclare && !groupSubmitting) e.currentTarget.style.background = S.navy; }}>
-                  {groupSubmitting ? "⏳ Submitting Enquiry..." : !groupDeclare ? "🔒 Please Accept Declaration Above" : "Submit Group Enquiry →"}
+                }} disabled={!groupDeclare || !groupCaptcha || groupSubmitting} style={{ width: "100%", padding: "16px", borderRadius: 10, background: (!groupDeclare || !groupCaptcha || groupSubmitting) ? "#4A5568" : S.navy, color: "#fff", border: "none", fontSize: 15, fontWeight: 700, cursor: (!groupDeclare || !groupCaptcha || groupSubmitting) ? "not-allowed" : "pointer", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", opacity: (!groupDeclare || !groupCaptcha || groupSubmitting) ? 0.5 : 1, transition: "all 0.2s", boxShadow: groupDeclare && groupCaptcha && !groupSubmitting ? "0 4px 16px rgba(1,30,64,0.25)" : "none" }}
+                  onMouseEnter={e => { if (groupDeclare && groupCaptcha && !groupSubmitting) e.currentTarget.style.background = "#001228"; }}
+                  onMouseLeave={e => { if (groupDeclare && groupCaptcha && !groupSubmitting) e.currentTarget.style.background = S.navy; }}>
+                  {groupSubmitting ? "⏳ Submitting Enquiry..." : !groupCaptcha ? "🔒 Complete Verification Above" : !groupDeclare ? "🔒 Please Accept Declaration Above" : "Submit Group Enquiry →"}
                 </button>
                 {!groupDeclare && groupReqComplete && <p style={{ textAlign: "center", fontSize: 11, color: "#C62828", fontFamily: S.body, marginTop: 8 }}>You must accept the declaration above before submitting.</p>}
 
@@ -3104,7 +3116,11 @@ function ApplyPage({ setPage }) {
                     </div>
                   </div>
 
+                  <HoneypotField value={payHoneypot} onChange={e => setPayHoneypot(e.target.value)} />
+                  <CaptchaChallenge onVerified={setPayCaptcha} verified={payCaptcha} />
                   <button onClick={async () => {
+                    if (payHoneypot) return;
+                    if (!payCaptcha) { alert("Please complete the verification challenge."); return; }
                     if (!payEmail || !files.paymentProof) { alert("Please provide your email and upload proof of payment."); return; }
                     setPaySubmitting(true);
                     try {
@@ -3130,8 +3146,8 @@ function ApplyPage({ setPage }) {
                     } finally {
                       setPaySubmitting(false);
                     }
-                  }} disabled={!payDeclare || paySubmitting} style={{ width: "100%", padding: "16px", borderRadius: 8, background: (!payDeclare || paySubmitting) ? "#4A5568" : S.gold, color: S.navy, border: "none", fontSize: 15, fontWeight: 700, cursor: (!payDeclare || paySubmitting) ? "not-allowed" : "pointer", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", opacity: (!payDeclare || paySubmitting) ? 0.5 : 1, transition: "all 0.2s", boxShadow: payDeclare && !paySubmitting ? "0 4px 16px rgba(196,145,18,0.25)" : "none" }}>
-                    {paySubmitting ? "⏳ Submitting..." : !payDeclare ? "🔒 Accept Declaration to Submit" : "Submit Payment Evidence"}
+                  }} disabled={!payDeclare || !payCaptcha || paySubmitting} style={{ width: "100%", padding: "16px", borderRadius: 8, background: (!payDeclare || !payCaptcha || paySubmitting) ? "#4A5568" : S.gold, color: S.navy, border: "none", fontSize: 15, fontWeight: 700, cursor: (!payDeclare || !payCaptcha || paySubmitting) ? "not-allowed" : "pointer", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", opacity: (!payDeclare || !payCaptcha || paySubmitting) ? 0.5 : 1, transition: "all 0.2s", boxShadow: payDeclare && payCaptcha && !paySubmitting ? "0 4px 16px rgba(196,145,18,0.25)" : "none" }}>
+                    {paySubmitting ? "⏳ Submitting..." : !payCaptcha ? "🔒 Complete Verification Above" : !payDeclare ? "🔒 Accept Declaration to Submit" : "Submit Payment Evidence"}
                   </button>
                   {!payDeclare && upReqComplete && <p style={{ textAlign: "center", fontSize: 11, color: "#C62828", fontFamily: S.body, marginTop: 8 }}>You must accept the declaration above before submitting.</p>}
                 </div>
