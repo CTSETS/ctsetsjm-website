@@ -110,6 +110,14 @@ const PAGES = ["Home","About","Why Choose","Programmes","Certification","Fees & 
 // Canvas LMS — Update this URL after registering at canvas.instructure.com
 const CANVAS_URL = "https://canvas.instructure.com"; // CTS ETS Learning Portal
 
+// Booking appointment URLs (replace with your Google Calendar Appointment Schedule links)
+const BOOKING_URLS = {
+  general: "https://calendar.app.google/zPKr4G5hdCcbTgdj9",
+  payment: "https://calendar.app.google/NBJVeEe1WhwvQXXC7",
+  academic: "https://calendar.app.google/dAEuRwjV743izwJM8",
+  employer: "https://calendar.app.google/wpLUXKRdWzwY7P929",
+};
+
 const FAQS = [
   { q: "What qualifications do I need to enrol?", a: "Entry requirements vary by level. Job Certificates are open entry (no qualifications needed). Level 2 requires a Job Certificate or 2 CXCs. Level 3 needs Level 2 or 3 CXCs. Levels 4 and 5 require the previous level diploma in a related area." },
   { q: "Are your programmes 100% online?", a: "Yes — almost entirely. Delivery is online and self-paced. Some practical assessments may be conducted in person. You can study at your own pace, mornings, evenings, or weekends." },
@@ -2713,6 +2721,40 @@ function ContactPage({ setPage }) {
               </div>
             </a>
           ))}
+        </div>
+
+        {/* ─── BOOK AN APPOINTMENT ─── */}
+        <div style={{ marginBottom: 56 }}>
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
+            <span style={{ fontSize: 11, color: S.gold, letterSpacing: 3, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600 }}>Schedule a Call</span>
+            <h3 style={{ fontFamily: S.heading, fontSize: "clamp(20px,3vw,28px)", color: S.navy, margin: "8px 0 0", fontWeight: 700 }}>Book an Appointment</h3>
+            <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, marginTop: 10, lineHeight: 1.6, maxWidth: 540, margin: "10px auto 0" }}>Choose a time that works for you. All consultations are free and conducted via phone or WhatsApp.</p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 16 }} className="resp-grid-2">
+            {[
+              { icon: "🎓", title: "General Enquiry", desc: "Questions about programmes, entry requirements, or getting started.", duration: "15 min", who: "Prospective students", url: BOOKING_URLS.general },
+              { icon: "💳", title: "Payment & Enrolment", desc: "Guidance on payment plans, the Payment Centre, or enrolment steps.", duration: "20 min", who: "Accepted students", url: BOOKING_URLS.payment },
+              { icon: "📚", title: "Academic Support", desc: "Help with coursework, assessments, Canvas, or programme content.", duration: "30 min", who: "Enrolled students", url: BOOKING_URLS.academic },
+              { icon: "👥", title: "Employer Consultation", desc: "Discuss group enrolment, 15% discount, and training plans for your team.", duration: "30 min", who: "Employers & HR", url: BOOKING_URLS.employer },
+            ].map(apt => (
+              <a key={apt.title} href={apt.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+                <div style={{ background: "#fff", borderRadius: 14, padding: "28px 22px", border: "1px solid rgba(1,30,64,0.06)", boxShadow: "0 2px 12px rgba(1,30,64,0.04)", transition: "all 0.2s", cursor: "pointer" }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = S.gold; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(196,145,18,0.12)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(1,30,64,0.06)"; e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 12px rgba(1,30,64,0.04)"; }}>
+                  <div style={{ fontSize: 32, marginBottom: 12 }}>{apt.icon}</div>
+                  <div style={{ fontFamily: S.heading, fontSize: 17, fontWeight: 700, color: S.navy, marginBottom: 6 }}>{apt.title}</div>
+                  <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.6, marginBottom: 14 }}>{apt.desc}</p>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div>
+                      <span style={{ fontFamily: S.body, fontSize: 11, color: S.gold, fontWeight: 700, background: "rgba(196,145,18,0.08)", padding: "4px 10px", borderRadius: 6 }}>{apt.duration}</span>
+                      <span style={{ fontFamily: S.body, fontSize: 11, color: S.gray, marginLeft: 8 }}>{apt.who}</span>
+                    </div>
+                    <span style={{ fontFamily: S.body, fontSize: 13, color: S.gold, fontWeight: 700 }}>Book →</span>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
         </div>
 
         {/* ─── CONTACT FORM ─── */}
