@@ -559,7 +559,7 @@ function LoadingScreen({ onEnter }) {
   }, [stage, dedications.length]);
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: S.navy, zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+    <div style={{ position: "fixed", inset: 0, background: S.navy, zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", overflowY: "auto", overflowX: "hidden" }}>
       <style>{`
         @keyframes float1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(30px,-20px) scale(1.1); } }
         @keyframes float2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-20px,30px) scale(0.95); } }
@@ -592,11 +592,11 @@ function LoadingScreen({ onEnter }) {
       ))}
 
       {/* Main content */}
-      <div style={{ position: "relative", zIndex: 2, textAlign: "center", padding: "0 24px", maxWidth: 760, width: "100%" }}>
+      <div style={{ position: "relative", zIndex: 2, textAlign: "center", padding: "clamp(40px,8vh,80px) 24px clamp(60px,10vh,100px)", maxWidth: 760, width: "100%", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
 
         {/* Logo */}
         <div style={{ transition: "all 1s cubic-bezier(0.16,1,0.3,1)", transform: stage === "loading" ? "scale(0.7)" : "scale(1)", opacity: stage === "loading" ? 0.6 : 1 }}>
-          <img src={NAV_LOGO} alt="CTS ETS" style={{ width: stage === "loading" ? 80 : 130, height: stage === "loading" ? 90 : 146, objectFit: "contain", transition: "all 1s cubic-bezier(0.16,1,0.3,1)", filter: stage !== "loading" ? "drop-shadow(0 6px 30px rgba(196,145,18,0.4))" : "none", animation: stage !== "loading" ? "logoFloat 4s ease-in-out infinite" : "none" }} />
+          <img src={NAV_LOGO} alt="CTS ETS" style={{ width: stage === "loading" ? 80 : "clamp(90px,15vw,130px)", height: stage === "loading" ? 90 : "clamp(100px,17vw,146px)", objectFit: "contain", transition: "all 1s cubic-bezier(0.16,1,0.3,1)", filter: stage !== "loading" ? "drop-shadow(0 6px 30px rgba(196,145,18,0.4))" : "none", animation: stage !== "loading" ? "logoFloat 4s ease-in-out infinite" : "none" }} />
         </div>
 
         {/* Progress bar — Stage 1 */}
@@ -663,7 +663,7 @@ function LoadingScreen({ onEnter }) {
         </div>
 
         {/* Bottom registration */}
-        <div style={{ position: "fixed", bottom: 24, left: 0, right: 0, textAlign: "center", transition: "all 0.8s ease 1s", opacity: stage === "ready" ? 1 : 0 }}>
+        <div style={{ marginTop: 40, textAlign: "center", transition: "all 0.8s ease 1s", opacity: stage === "ready" ? 1 : 0 }}>
           <div style={{ fontFamily: S.body, fontSize: 10, color: "rgba(255,255,255,0.15)", letterSpacing: 1.5 }}>Reg. No. 16007/2025 — Companies of Jamaica &nbsp;&nbsp;|&nbsp;&nbsp; www.ctsetsjm.com</div>
         </div>
       </div>
