@@ -118,6 +118,114 @@ const BOOKING_URLS = {
   employer: "https://calendar.app.google/wpLUXKRdWzwY7P929",
 };
 
+// ─── SCRIPTURES ─────────────────────────────────────────────────────
+// Subtle biblical references woven into each page, contextual to the theme
+const SCRIPTURES = {
+  home: { text: "For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, plans to give you hope and a future.", ref: "Jeremiah 29:11", meaning: "Your journey to CTS ETS is not by accident. God has a plan for your growth, your career, and your future — and it starts with a single step of faith." },
+  about: { text: "The Spirit of the Sovereign Lord is on me, because the Lord has anointed me to proclaim good news to the poor. He has sent me to bind up the brokenhearted, to proclaim freedom for the captives.", ref: "Isaiah 61:1", meaning: "CTS ETS was founded to bring opportunity where it has been denied — to open doors for those who have been told they are not enough." },
+  whyChoose: { text: "I can do all things through Christ who strengthens me.", ref: "Philippians 4:13", meaning: "You have everything you need to succeed. The strength to study after a long day, the discipline to finish what you started — it is already within you." },
+  programmes: { text: "The heart of the discerning acquires knowledge, for the ears of the wise seek it out.", ref: "Proverbs 18:15", meaning: "Choosing to learn is an act of wisdom. Every programme you explore here is a seed that can bear fruit for years to come." },
+  certification: { text: "Whatever you do, work at it with all your heart, as working for the Lord, not for human masters.", ref: "Colossians 3:23", meaning: "Your certification is not just a piece of paper — it is evidence of your dedication, your discipline, and your commitment to excellence." },
+  fees: { text: "And my God will meet all your needs according to the riches of His glory in Christ Jesus.", ref: "Philippians 4:19", meaning: "When you invest in yourself, God meets you where you are. The provision for your education is already on its way." },
+  employers: { text: "Do you see someone skilled in their work? They will serve before kings; they will not serve before officials of low rank.", ref: "Proverbs 22:29", meaning: "Investing in your team's skills is not a cost — it is planting seeds for a harvest of excellence, loyalty, and growth." },
+  apply: { text: "Have I not commanded you? Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go.", ref: "Joshua 1:9", meaning: "Pressing 'Submit' is an act of courage. Whatever doubts you carry, know this — you are not doing this alone." },
+  contact: { text: "Two are better than one, because they have a good return for their labour.", ref: "Ecclesiastes 4:9", meaning: "Reaching out is the beginning of partnership. We are here to walk this journey with you, not just to answer questions." },
+  completion: { text: "I have fought the good fight, I have finished the race, I have kept the faith.", ref: "2 Timothy 4:7", meaning: "You did it. Every late night, every moment of doubt — it was worth it. This is your proof." },
+  documents: { text: "Commit to the Lord whatever you do, and He will establish your plans.", ref: "Proverbs 16:3", meaning: "Every document you prepare, every form you complete — it is all part of God's plan unfolding in your life." },
+};
+
+function PageScripture({ page }) {
+  const s = SCRIPTURES[page];
+  if (!s) return null;
+  return (
+    <Reveal delay={0.3}>
+      <div style={{ textAlign: "center", padding: "36px 24px 0", marginTop: 40, borderTop: "1px solid rgba(10,35,66,0.06)" }}>
+        <p style={{ fontFamily: "Georgia, serif", fontSize: 13, color: "rgba(1,30,64,0.35)", lineHeight: 1.7, fontStyle: "italic", maxWidth: 520, margin: "0 auto" }}>
+          "{s.text}"
+        </p>
+        <p style={{ fontFamily: S.body, fontSize: 10, color: "rgba(196,145,18,0.5)", letterSpacing: 2, marginTop: 8, textTransform: "uppercase" }}>
+          — {s.ref}
+        </p>
+        {s.meaning && (
+          <p style={{ fontFamily: S.body, fontSize: 12, color: "rgba(1,30,64,0.28)", lineHeight: 1.6, maxWidth: 460, margin: "12px auto 0", fontStyle: "normal" }}>
+            {s.meaning}
+          </p>
+        )}
+      </div>
+    </Reveal>
+  );
+}
+
+// Prayer blessing popup — shown briefly after application submission
+// Contextual prayers per submission type — personalized with name
+const PRAYERS = {
+  application: (name, g) => ({
+    title: "Our Prayer for You, " + name,
+    prayer: `Heavenly Father, we lift up ${name} before You as ${g.he} takes this courageous step toward a better future. We thank You for the desire You have placed in ${g.his} heart to grow, to learn, and to become all that You created ${g.him} to be. Grant ${name} wisdom as ${g.he} studies, discipline when the journey feels long, and perseverance when challenges arise. Open doors of opportunity that no one can shut, and let this qualification be the beginning of something beautiful in ${g.his} life. We trust You with ${name}'s journey, Lord, for You are faithful.`,
+    scripture: "For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, plans to give you hope and a future.",
+    ref: "Jeremiah 29:11",
+  }),
+  contact: (name, g) => ({
+    title: "Our Prayer for You, " + name,
+    prayer: `Father God, we thank You for ${name} who has reached out to us today. Whatever question is on ${g.his} heart, we pray that You guide us to give the right answer at the right time. We pray that ${name} finds clarity, peace, and confidence in the path ahead. May this connection be the beginning of something meaningful, and may ${name} know that ${g.he} is not alone on this journey.`,
+    scripture: "Ask and it will be given to you; seek and you will find; knock and the door will be opened to you.",
+    ref: "Matthew 7:7",
+  }),
+  group: (name, g) => ({
+    title: "Our Prayer for You, " + name,
+    prayer: `Lord, we thank You for ${name} and the heart ${g.he} has for investing in ${g.his} team. Bless ${g.his} organisation, bless the learners who will grow through this training, and multiply the impact of this investment. We pray that every employee who enrols would discover new strengths, new confidence, and new possibilities. May this partnership bear fruit that lasts.`,
+    scripture: "Do you see someone skilled in their work? They will serve before kings; they will not serve before officials of low rank.",
+    ref: "Proverbs 22:29",
+  }),
+  payment: (name, g) => ({
+    title: "Our Prayer for You, " + name,
+    prayer: `Father, we honour the sacrifice that ${name} is making today. This payment represents more than money — it represents faith, commitment, and a belief that the future can be better. We pray that You multiply this investment a hundredfold. Let ${name} never lack, and let this step of obedience open floodgates of blessing in ${g.his} life, ${g.his} career, and ${g.his} family.`,
+    scripture: "And my God will meet all your needs according to the riches of His glory in Christ Jesus.",
+    ref: "Philippians 4:19",
+  }),
+};
+
+// Gender pronoun helper
+function genderPronouns(gender) {
+  if (gender === "Male") return { he: "he", him: "him", his: "his", He: "He" };
+  if (gender === "Female") return { he: "she", him: "her", his: "her", He: "She" };
+  return { he: "they", him: "them", his: "their", He: "They" };
+}
+
+function PrayerBlessing({ name, gender, context, onClose }) {
+  const g = genderPronouns(gender);
+  const p = (PRAYERS[context] || PRAYERS.application)(name || "Friend", g);
+
+  useEffect(() => {
+    const timer = setTimeout(onClose, 20000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(1,30,64,0.7)", backdropFilter: "blur(4px)", zIndex: 99990, display: "flex", alignItems: "center", justifyContent: "center", animation: "fadeIn 0.5s ease", overflowY: "auto", padding: "20px 0" }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 20, maxWidth: 480, width: "90vw", boxShadow: "0 20px 60px rgba(1,30,64,0.3)", overflow: "hidden", animation: "fadeIn 0.6s ease" }}>
+        <div style={{ height: 4, background: `linear-gradient(to right, ${S.gold}, ${S.navy}, ${S.gold})` }} />
+        <div style={{ padding: "clamp(24px,4vw,36px) clamp(20px,4vw,32px)", textAlign: "center" }}>
+          <div style={{ fontSize: 36, marginBottom: 12 }}>🙏</div>
+          <h3 style={{ fontFamily: S.heading, fontSize: "clamp(18px,3vw,24px)", color: S.navy, marginBottom: 16, fontWeight: 700, lineHeight: 1.3 }}>{p.title}</h3>
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#4A5568", lineHeight: 1.9, fontStyle: "italic", marginBottom: 20, textAlign: "left" }}>
+            {p.prayer}
+          </p>
+          <div style={{ width: 40, height: 2, background: S.gold, margin: "0 auto 16px", borderRadius: 2 }} />
+          <p style={{ fontFamily: "Georgia, serif", fontSize: 13, color: "rgba(1,30,64,0.4)", fontStyle: "italic", lineHeight: 1.6 }}>
+            "{p.scripture}"
+          </p>
+          <p style={{ fontFamily: S.body, fontSize: 10, color: "rgba(196,145,18,0.5)", letterSpacing: 2, marginTop: 6, textTransform: "uppercase" }}>— {p.ref}</p>
+          <div style={{ marginTop: 24 }}>
+            <button onClick={onClose} style={{ padding: "14px 40px", borderRadius: 8, background: S.navy, color: S.gold, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body, letterSpacing: 1 }}>Amen, God Bless You</button>
+          </div>
+        </div>
+        <div style={{ height: 4, background: `linear-gradient(to right, ${S.gold}, ${S.navy}, ${S.gold})` }} />
+      </div>
+    </div>
+  );
+}
+
 const FAQS = [
   { q: "What qualifications do I need to enrol?", a: "Entry requirements vary by level. Job Certificates are open entry (no qualifications needed). Level 2 requires a Job Certificate or 2 CXCs. Level 3 needs Level 2 or 3 CXCs. Levels 4 and 5 require the previous level diploma in a related area." },
   { q: "Are your programmes 100% online?", a: "Yes — almost entirely. Delivery is online and self-paced. Some practical assessments may be conducted in person. You can study at your own pace, mornings, evenings, or weekends." },
@@ -467,22 +575,53 @@ function CountdownTimer({ targetDate }) {
   );
 }
 
-// Scroll to Top Button
-function ScrollToTop() {
-  const [visible, setVisible] = useState(false);
+// Scroll Navigation Arrows — up and down with labels
+function ScrollNav() {
+  const [showUp, setShowUp] = useState(false);
+  const [showDown, setShowDown] = useState(true);
+
   useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > 400);
+    const onScroll = () => {
+      const scrollY = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight;
+      const winHeight = window.innerHeight;
+      setShowUp(scrollY > 300);
+      setShowDown(scrollY < docHeight - winHeight - 200);
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-  if (!visible) return null;
+
+  const btnStyle = (visible) => ({
+    position: "fixed", right: 24, width: 44, borderRadius: 22, background: S.navy, border: "2px solid " + S.gold,
+    color: S.gold, fontSize: 11, fontWeight: 700, fontFamily: S.body, cursor: "pointer",
+    boxShadow: "0 4px 16px rgba(0,0,0,0.2)", zIndex: 9996, display: "flex", flexDirection: "column",
+    alignItems: "center", justifyContent: "center", padding: "8px 0",
+    transition: "transform 0.2s, opacity 0.3s", opacity: visible ? 0.9 : 0, pointerEvents: visible ? "auto" : "none",
+    letterSpacing: 0.5,
+  });
+
   return (
-    <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} aria-label="Scroll to top"
-      style={{ position: "fixed", bottom: 148, right: 24, width: 44, height: 44, borderRadius: "50%", background: S.navy, border: "2px solid " + S.gold, color: S.gold, fontSize: 18, cursor: "pointer", boxShadow: "0 4px 16px rgba(0,0,0,0.2)", zIndex: 9996, display: "flex", alignItems: "center", justifyContent: "center", transition: "transform 0.2s, opacity 0.2s", opacity: 0.9 }}
-      onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.1)"; e.currentTarget.style.opacity = "1"; }}
-      onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.opacity = "0.9"; }}>
-      ↑
-    </button>
+    <>
+      {/* Scroll Up */}
+      <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} aria-label="Scroll to top"
+        style={{ ...btnStyle(showUp), bottom: 148 }}
+        onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.1)"; e.currentTarget.style.opacity = "1"; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.opacity = "0.9"; }}>
+        <span style={{ fontSize: 16, lineHeight: 1 }}>↑</span>
+        <span style={{ fontSize: 8, marginTop: 2, letterSpacing: 1 }}>UP</span>
+      </button>
+
+      {/* Scroll Down */}
+      <button onClick={() => window.scrollBy({ top: window.innerHeight * 0.8, behavior: "smooth" })} aria-label="Scroll down"
+        style={{ ...btnStyle(showDown), bottom: 96 }}
+        onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.1)"; e.currentTarget.style.opacity = "1"; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.opacity = "0.9"; }}>
+        <span style={{ fontSize: 16, lineHeight: 1 }}>↓</span>
+        <span style={{ fontSize: 8, marginTop: 2, letterSpacing: 1 }}>DOWN</span>
+      </button>
+    </>
   );
 }
 
@@ -555,8 +694,10 @@ function SplashStat({ num, label, delay, active }) {
 }
 
 function LoadingScreen({ onEnter }) {
+  // Stages: prayer → loading → splash → ready
+  const [stage, setStage] = useState("prayer");
   const [progress, setProgress] = useState(0);
-  const [stage, setStage] = useState("loading");
+  const [prayerFade, setPrayerFade] = useState(true);
   const [dedIdx, setDedIdx] = useState(0);
   const [dedFade, setDedFade] = useState(true);
 
@@ -573,139 +714,134 @@ function LoadingScreen({ onEnter }) {
     "For Jamaica. For you.",
   ];
 
-  useEffect(() => {
-    const steps = [
-      [100, 6], [200, 14], [350, 24], [500, 38], [650, 48],
-      [800, 58], [950, 68], [1100, 78], [1250, 88], [1400, 95], [1550, 100]
-    ];
-    const timers = steps.map(([delay, val]) => setTimeout(() => setProgress(val), delay));
-    const splashTimer = setTimeout(() => setStage("splash"), 1800);
-    const readyTimer = setTimeout(() => setStage("ready"), 3000);
-    return () => { timers.forEach(clearTimeout); clearTimeout(splashTimer); clearTimeout(readyTimer); };
-  }, []);
+  // After prayer → start loading sequence
+  const startLoading = () => {
+    setPrayerFade(false);
+    setTimeout(() => {
+      setStage("loading");
+      const steps = [[100,8],[250,18],[400,30],[600,45],[800,58],[1000,70],[1200,82],[1400,91],[1600,97],[1800,100]];
+      steps.forEach(([d, v]) => setTimeout(() => setProgress(v), d));
+      setTimeout(() => setStage("splash"), 2200);
+      setTimeout(() => setStage("ready"), 3400);
+    }, 600);
+  };
 
   // Cycle dedications
   useEffect(() => {
-    if (stage === "loading") return;
+    if (stage !== "splash" && stage !== "ready") return;
     const interval = setInterval(() => {
       setDedFade(false);
-      setTimeout(() => {
-        setDedIdx(prev => (prev + 1) % dedications.length);
-        setDedFade(true);
-      }, 500);
+      setTimeout(() => { setDedIdx(prev => (prev + 1) % dedications.length); setDedFade(true); }, 500);
     }, 3200);
     return () => clearInterval(interval);
   }, [stage, dedications.length]);
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: S.navy, zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", overflowY: "auto", overflowX: "hidden" }}>
+    <div style={{ position: "fixed", inset: 0, background: S.navy, zIndex: 99999, overflowY: "auto", overflowX: "hidden" }}>
       <style>{`
         @keyframes float1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(30px,-20px) scale(1.1); } }
         @keyframes float2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-20px,30px) scale(0.95); } }
         @keyframes float3 { 0%,100% { transform: translate(0,0) scale(1.05); } 50% { transform: translate(15px,15px) scale(0.9); } }
         @keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
-        @keyframes breathe { 0%,100% { opacity: 0.03; transform: scale(1); } 50% { opacity: 0.07; transform: scale(1.15); } }
         @keyframes ringPulse { 0% { transform: translate(-50%,-50%) scale(0.8); opacity: 0.15; } 50% { transform: translate(-50%,-50%) scale(1.2); opacity: 0; } 100% { transform: translate(-50%,-50%) scale(0.8); opacity: 0.15; } }
         @keyframes ringPulse2 { 0% { transform: translate(-50%,-50%) scale(1); opacity: 0.1; } 50% { transform: translate(-50%,-50%) scale(1.4); opacity: 0; } 100% { transform: translate(-50%,-50%) scale(1); opacity: 0.1; } }
         @keyframes particle { 0% { transform: translateY(0) scale(1); opacity: 0.6; } 100% { transform: translateY(-60vh) scale(0); opacity: 0; } }
-        @keyframes goldLine { 0%,100% { width: 0; opacity: 0; } 20% { opacity: 1; } 50% { width: 120px; opacity: 1; } 80% { opacity: 1; } 100% { width: 0; opacity: 0; } }
         @keyframes enterGlow { 0%,100% { box-shadow: 0 0 20px rgba(196,145,18,0.15); } 50% { box-shadow: 0 0 40px rgba(196,145,18,0.35); } }
         @keyframes textGlow { 0%,100% { text-shadow: 0 0 20px rgba(196,145,18,0); } 50% { text-shadow: 0 0 30px rgba(196,145,18,0.3); } }
         @keyframes logoFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        @keyframes gentlePulse { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }
+        @keyframes crossGlow { 0%,100% { filter: drop-shadow(0 0 8px rgba(196,145,18,0.2)); } 50% { filter: drop-shadow(0 0 24px rgba(196,145,18,0.6)); } }
       `}</style>
 
-      {/* Animated background orbs */}
+      {/* Background orbs */}
       <div style={{ position: "absolute", top: "-15%", right: "-8%", width: "45vw", height: "45vw", borderRadius: "50%", background: "radial-gradient(circle, rgba(196,145,18,0.06) 0%, transparent 70%)", animation: "float1 8s ease-in-out infinite" }} />
       <div style={{ position: "absolute", bottom: "-20%", left: "-12%", width: "55vw", height: "55vw", borderRadius: "50%", background: "radial-gradient(circle, rgba(196,145,18,0.04) 0%, transparent 70%)", animation: "float2 10s ease-in-out infinite" }} />
       <div style={{ position: "absolute", top: "30%", left: "60%", width: "30vw", height: "30vw", borderRadius: "50%", background: "radial-gradient(circle, rgba(255,255,255,0.02) 0%, transparent 70%)", animation: "float3 7s ease-in-out infinite" }} />
 
-      {/* Breathing ring behind logo */}
-      {stage !== "loading" && <>
-        <div style={{ position: "absolute", top: "50%", left: "50%", width: 300, height: 300, borderRadius: "50%", border: "1px solid rgba(196,145,18,0.1)", animation: "ringPulse 4s ease-in-out infinite", marginTop: -80 }} />
-        <div style={{ position: "absolute", top: "50%", left: "50%", width: 400, height: 400, borderRadius: "50%", border: "1px solid rgba(196,145,18,0.06)", animation: "ringPulse2 5s ease-in-out infinite 0.5s", marginTop: -80 }} />
-      </>}
-
-      {/* Floating particles */}
-      {stage !== "loading" && Array.from({ length: 12 }).map((_, i) => (
-        <div key={i} style={{ position: "absolute", bottom: "5%", left: (8 + i * 8) + "%", width: 3, height: 3, borderRadius: "50%", background: S.gold, opacity: 0.4, animation: `particle ${4 + (i % 4)}s ease-out infinite ${i * 0.5}s` }} />
-      ))}
-
-      {/* Main content */}
-      <div style={{ position: "relative", zIndex: 2, textAlign: "center", padding: "clamp(40px,8vh,80px) 24px clamp(60px,10vh,100px)", maxWidth: 760, width: "100%", minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-
-        {/* Logo */}
-        <div style={{ transition: "all 1s cubic-bezier(0.16,1,0.3,1)", transform: stage === "loading" ? "scale(0.7)" : "scale(1)", opacity: stage === "loading" ? 0.6 : 1 }}>
-          <img src={NAV_LOGO} alt="CTS ETS" style={{ width: stage === "loading" ? 80 : "clamp(90px,15vw,130px)", height: stage === "loading" ? 90 : "clamp(100px,17vw,146px)", objectFit: "contain", transition: "all 1s cubic-bezier(0.16,1,0.3,1)", filter: stage !== "loading" ? "drop-shadow(0 6px 30px rgba(196,145,18,0.4))" : "none", animation: stage !== "loading" ? "logoFloat 4s ease-in-out infinite" : "none" }} />
-        </div>
-
-        {/* Progress bar — Stage 1 */}
-        <div style={{ transition: "all 0.8s ease", opacity: stage === "loading" ? 1 : 0, height: stage === "loading" ? 50 : 0, overflow: "hidden", marginTop: 24 }}>
-          <div style={{ width: 240, height: 3, borderRadius: 2, background: "rgba(255,255,255,0.06)", margin: "0 auto", overflow: "hidden" }}>
-            <div style={{ width: progress + "%", height: "100%", background: `linear-gradient(90deg, ${S.gold}, #E8C547, ${S.gold})`, backgroundSize: "200% 100%", borderRadius: 2, transition: "width 0.3s ease-out", animation: progress === 100 ? "shimmer 1.5s ease-in-out infinite" : "none" }} />
-          </div>
-          <div style={{ fontFamily: S.body, fontSize: 11, color: "rgba(255,255,255,0.25)", marginTop: 12, letterSpacing: 3, transition: "all 0.3s" }}>{progress < 100 ? "LOADING" : "READY"}</div>
-        </div>
-
-        {/* Splash content — Stage 2+ */}
-        <div style={{ transition: "all 1s cubic-bezier(0.16,1,0.3,1)", opacity: stage !== "loading" ? 1 : 0, transform: stage !== "loading" ? "translateY(0)" : "translateY(40px)", marginTop: stage !== "loading" ? 32 : 0 }}>
-
-          {/* Gold decorative line */}
-          <div style={{ height: 2, background: `linear-gradient(to right, transparent, ${S.gold}, transparent)`, margin: "0 auto 28px", borderRadius: 2, transition: "all 0.8s ease 0.2s", opacity: stage !== "loading" ? 1 : 0, width: stage !== "loading" ? 140 : 0 }} />
-
-          {/* Welcome to */}
-          <div style={{ fontFamily: S.body, fontSize: 13, color: S.gold, letterSpacing: 6, textTransform: "uppercase", marginBottom: 20, fontWeight: 600, transition: "all 0.6s ease 0.1s", opacity: stage !== "loading" ? 1 : 0, transform: stage !== "loading" ? "translateY(0)" : "translateY(15px)" }}>Welcome to</div>
-
-          {/* BIG institution name */}
-          <h1 style={{ fontFamily: S.heading, fontSize: "clamp(32px,6.5vw,58px)", color: "#FFFFFF", fontWeight: 800, lineHeight: 1.15, margin: "0 0 6px", transition: "all 0.8s ease 0.25s", opacity: stage !== "loading" ? 1 : 0, transform: stage !== "loading" ? "translateY(0)" : "translateY(25px)", animation: stage === "ready" ? "textGlow 3s ease-in-out infinite" : "none" }}>
-            CTS Empowerment &<br />Training Solutions
-          </h1>
-
-          {/* Tagline */}
-          <div style={{ fontFamily: S.heading, fontSize: "clamp(13px,2.2vw,17px)", color: S.gold, letterSpacing: 3, fontStyle: "italic", marginTop: 16, transition: "all 0.8s ease 0.4s", opacity: stage !== "loading" ? 1 : 0, transform: stage !== "loading" ? "translateY(0)" : "translateY(15px)" }}>Called To Serve — Committed to Excellence</div>
-
-          {/* Animated stats */}
-          <div style={{ display: "flex", justifyContent: "center", gap: "clamp(16px,4vw,48px)", margin: "28px 0 8px", transition: "all 0.8s ease 0.45s", opacity: stage !== "loading" ? 1 : 0, transform: stage !== "loading" ? "translateY(0)" : "translateY(20px)" }}>
-            {[["25", "Programmes"], ["5", "Levels"], ["100%", "Online"], ["3", "Payment Plans"]].map(([num, label], i) => (
-              <SplashStat key={label} num={num} label={label} delay={i * 0.15} active={stage !== "loading"} />
-            ))}
-          </div>
-
-          {/* Gold decorative line */}
-          <div style={{ height: 2, background: `linear-gradient(to right, transparent, ${S.gold}, transparent)`, margin: "20px auto 24px", borderRadius: 2, transition: "all 0.8s ease 0.5s", opacity: stage !== "loading" ? 1 : 0, width: stage !== "loading" ? 80 : 0 }} />
-
-          {/* Philosophical statement */}
-          <p style={{ fontFamily: S.heading, fontSize: "clamp(14px,2vw,17px)", color: "rgba(255,255,255,0.5)", fontWeight: 400, margin: "0 auto 16px", maxWidth: 480, lineHeight: 1.6, transition: "all 0.8s ease 0.52s", opacity: stage !== "loading" ? 1 : 0, transform: stage !== "loading" ? "translateY(0)" : "translateY(10px)" }}>
-            Where talent meets opportunity.<br />Where ambition earns its proof.
-          </p>
-
-          {/* Rotating dedications */}
-          <div style={{ minHeight: 70, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 0 12px", transition: "all 0.8s ease 0.55s", opacity: stage !== "loading" ? 1 : 0 }}>
-            <p style={{ fontFamily: S.heading, fontSize: "clamp(15px,2.5vw,21px)", color: "rgba(255,255,255,0.65)", fontWeight: 400, fontStyle: "italic", lineHeight: 1.6, maxWidth: 520, margin: 0, transition: "all 0.5s ease", opacity: dedFade ? 1 : 0, transform: dedFade ? "translateY(0)" : "translateY(8px)" }}>
-              {dedications[dedIdx]}
+      {/* ═══ STAGE 1: WELCOME PRAYER & BLESSING ═══ */}
+      {stage === "prayer" && (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", padding: "clamp(32px,6vh,60px) 24px", position: "relative", zIndex: 2, transition: "opacity 0.6s ease", opacity: prayerFade ? 1 : 0 }}>
+          <div style={{ maxWidth: 540, width: "100%", textAlign: "center" }}>
+            <div style={{ fontSize: "clamp(40px,8vw,56px)", marginBottom: 20, animation: "crossGlow 3s ease-in-out infinite" }}>{"\u2720"}</div>
+            <div style={{ fontFamily: S.body, fontSize: 12, color: S.gold, letterSpacing: 5, textTransform: "uppercase", fontWeight: 600, marginBottom: 16 }}>A Blessing Before You Begin</div>
+            <div style={{ height: 2, background: `linear-gradient(to right, transparent, ${S.gold}, transparent)`, width: 100, margin: "0 auto 28px", borderRadius: 2 }} />
+            <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(14px,2vw,17px)", color: "rgba(255,255,255,0.8)", lineHeight: 2, fontStyle: "italic", marginBottom: 28, textAlign: "left", padding: "0 clamp(0px,2vw,20px)" }}>
+              Gracious Father, we welcome every soul who has found their way to this place. Before they see a programme, before they read a single word — we ask that You speak to their spirit. Let them know that this is not by accident. You have led them here because You have a plan for their growth, their career, and their future.
             </p>
-          </div>
-
-          {/* Your journey awaits */}
-          <p style={{ fontFamily: S.heading, fontSize: "clamp(18px,3vw,26px)", color: "rgba(255,255,255,0.85)", fontWeight: 500, margin: "8px 0 44px", transition: "all 0.8s ease 0.6s", opacity: stage !== "loading" ? 1 : 0, transform: stage !== "loading" ? "translateY(0)" : "translateY(15px)", animation: stage === "ready" ? "textGlow 4s ease-in-out infinite 1s" : "none" }}>Your journey awaits you</p>
-
-          {/* ENTER button */}
-          <div style={{ transition: "all 0.8s cubic-bezier(0.16,1,0.3,1)", opacity: stage === "ready" ? 1 : 0, transform: stage === "ready" ? "translateY(0) scale(1)" : "translateY(25px) scale(0.9)" }}>
-            <button onClick={() => { if (onEnter) onEnter(); }} style={{ padding: "18px 64px", borderRadius: 50, background: "transparent", border: "2px solid " + S.gold, color: S.gold, fontSize: 16, fontWeight: 700, fontFamily: S.body, cursor: "pointer", letterSpacing: 4, textTransform: "uppercase", transition: "all 0.3s ease", animation: "enterGlow 2.5s ease-in-out infinite" }}
-              onMouseEnter={e => { e.currentTarget.style.background = S.gold; e.currentTarget.style.color = S.navy; e.currentTarget.style.transform = "scale(1.08)"; e.currentTarget.style.letterSpacing = "6px"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = S.gold; e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.letterSpacing = "4px"; }}>
-              Enter
+            <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(14px,2vw,17px)", color: "rgba(255,255,255,0.8)", lineHeight: 2, fontStyle: "italic", marginBottom: 28, textAlign: "left", padding: "0 clamp(0px,2vw,20px)" }}>
+              Whatever burden they carry today — financial pressure, self-doubt, the weight of responsibilities — we lay it at Your feet. Give them the courage to take the next step, and the faith to believe that it will be worth it. In Jesus' name.
+            </p>
+            <div style={{ height: 2, background: `linear-gradient(to right, transparent, ${S.gold}, transparent)`, width: 60, margin: "0 auto 24px", borderRadius: 2 }} />
+            <p style={{ fontFamily: "Georgia, serif", fontSize: "clamp(13px,1.8vw,15px)", color: "rgba(255,255,255,0.45)", fontStyle: "italic", lineHeight: 1.7, maxWidth: 440, margin: "0 auto 8px" }}>
+              "Trust in the Lord with all your heart, and lean not on your own understanding; in all your ways acknowledge Him, and He shall direct your paths."
+            </p>
+            <p style={{ fontFamily: S.body, fontSize: 10, color: "rgba(196,145,18,0.45)", letterSpacing: 3, textTransform: "uppercase", marginBottom: 36 }}>— Proverbs 3:5-6</p>
+            <button onClick={startLoading} style={{ padding: "16px 48px", borderRadius: 50, background: "transparent", border: "2px solid " + S.gold, color: S.gold, fontSize: 15, fontWeight: 700, fontFamily: S.body, cursor: "pointer", letterSpacing: 2, textTransform: "uppercase", transition: "all 0.3s ease", animation: "enterGlow 2.5s ease-in-out infinite" }}
+              onMouseEnter={e => { e.currentTarget.style.background = S.gold; e.currentTarget.style.color = S.navy; e.currentTarget.style.transform = "scale(1.05)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = S.gold; e.currentTarget.style.transform = "scale(1)"; }}>
+              Amen, God Bless You
             </button>
-
-            {/* Subtitle under button */}
-            <p style={{ fontFamily: S.body, fontSize: 11, color: "rgba(255,255,255,0.2)", marginTop: 20, letterSpacing: 2, animation: stage === "ready" ? "pulse 2s infinite" : "none" }}>CLICK TO BEGIN</p>
+            <p style={{ fontFamily: S.body, fontSize: 10, color: "rgba(255,255,255,0.12)", marginTop: 36, letterSpacing: 1.5 }}>CTS Empowerment & Training Solutions</p>
           </div>
         </div>
+      )}
 
-        {/* Bottom registration */}
-        <div style={{ marginTop: 40, textAlign: "center", transition: "all 0.8s ease 1s", opacity: stage === "ready" ? 1 : 0 }}>
-          <div style={{ fontFamily: S.body, fontSize: 10, color: "rgba(255,255,255,0.15)", letterSpacing: 1.5 }}>Reg. No. 16007/2025 — Companies of Jamaica &nbsp;&nbsp;|&nbsp;&nbsp; www.ctsetsjm.com</div>
+      {/* ═══ STAGE 2: LOADING — "Come on this journey with us" ═══ */}
+      {stage === "loading" && (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", position: "relative", zIndex: 2, animation: "fadeIn 0.6s ease" }}>
+          <div style={{ textAlign: "center", padding: "0 24px" }}>
+            <img src={NAV_LOGO} alt="CTS ETS" style={{ width: 80, height: 90, objectFit: "contain", marginBottom: 24, opacity: 0.8 }} />
+            <p style={{ fontFamily: S.heading, fontSize: "clamp(20px,3.5vw,30px)", color: "#fff", fontWeight: 600, lineHeight: 1.4, marginBottom: 8 }}>Come on this journey with us</p>
+            <p style={{ fontFamily: S.heading, fontSize: "clamp(12px,1.8vw,15px)", color: S.gold, fontStyle: "italic", letterSpacing: 2, marginBottom: 28 }}>Your future is being prepared...</p>
+            <div style={{ width: 260, height: 3, borderRadius: 2, background: "rgba(255,255,255,0.06)", margin: "0 auto", overflow: "hidden" }}>
+              <div style={{ width: progress + "%", height: "100%", background: `linear-gradient(90deg, ${S.gold}, #E8C547, ${S.gold})`, backgroundSize: "200% 100%", borderRadius: 2, transition: "width 0.3s ease-out", animation: progress === 100 ? "shimmer 1.5s ease-in-out infinite" : "none" }} />
+            </div>
+            <div style={{ fontFamily: S.body, fontSize: 11, color: "rgba(255,255,255,0.2)", marginTop: 14, letterSpacing: 3 }}>{progress < 100 ? "PREPARING" : "READY"}</div>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* ═══ STAGE 3 & 4: SPLASH & READY ═══ */}
+      {(stage === "splash" || stage === "ready") && (
+        <>
+          <div style={{ position: "absolute", top: "50%", left: "50%", width: 300, height: 300, borderRadius: "50%", border: "1px solid rgba(196,145,18,0.1)", animation: "ringPulse 4s ease-in-out infinite", marginTop: -80 }} />
+          <div style={{ position: "absolute", top: "50%", left: "50%", width: 400, height: 400, borderRadius: "50%", border: "1px solid rgba(196,145,18,0.06)", animation: "ringPulse2 5s ease-in-out infinite 0.5s", marginTop: -80 }} />
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div key={i} style={{ position: "absolute", bottom: "5%", left: (8 + i * 8) + "%", width: 3, height: 3, borderRadius: "50%", background: S.gold, opacity: 0.4, animation: `particle ${4 + (i % 4)}s ease-out infinite ${i * 0.5}s` }} />
+          ))}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", position: "relative", zIndex: 2, padding: "clamp(40px,8vh,80px) 24px clamp(60px,10vh,100px)" }}>
+            <div style={{ maxWidth: 760, width: "100%", textAlign: "center", animation: "fadeIn 0.8s ease" }}>
+              <img src={NAV_LOGO} alt="CTS ETS" style={{ width: "clamp(90px,15vw,130px)", height: "clamp(100px,17vw,146px)", objectFit: "contain", filter: "drop-shadow(0 6px 30px rgba(196,145,18,0.4))", animation: "logoFloat 4s ease-in-out infinite" }} />
+              <div style={{ height: 2, background: `linear-gradient(to right, transparent, ${S.gold}, transparent)`, margin: "28px auto", width: 140, borderRadius: 2 }} />
+              <div style={{ fontFamily: S.body, fontSize: 13, color: S.gold, letterSpacing: 6, textTransform: "uppercase", marginBottom: 20, fontWeight: 600 }}>Welcome to</div>
+              <h1 style={{ fontFamily: S.heading, fontSize: "clamp(32px,6.5vw,58px)", color: "#FFFFFF", fontWeight: 800, lineHeight: 1.15, margin: "0 0 6px", animation: stage === "ready" ? "textGlow 3s ease-in-out infinite" : "none" }}>CTS Empowerment &<br />Training Solutions</h1>
+              <div style={{ fontFamily: S.heading, fontSize: "clamp(13px,2.2vw,17px)", color: S.gold, letterSpacing: 3, fontStyle: "italic", marginTop: 16 }}>Called To Serve — Committed to Excellence</div>
+              <div style={{ display: "flex", justifyContent: "center", gap: "clamp(16px,4vw,48px)", margin: "28px 0 8px" }}>
+                {[["25", "Programmes"], ["5", "Levels"], ["100%", "Online"], ["3", "Payment Plans"]].map(([num, label], i) => (
+                  <SplashStat key={label} num={num} label={label} delay={i * 0.15} active={true} />
+                ))}
+              </div>
+              <div style={{ height: 2, background: `linear-gradient(to right, transparent, ${S.gold}, transparent)`, margin: "20px auto 24px", width: 80, borderRadius: 2 }} />
+              <p style={{ fontFamily: S.heading, fontSize: "clamp(14px,2vw,17px)", color: "rgba(255,255,255,0.5)", margin: "0 auto 16px", maxWidth: 480, lineHeight: 1.6 }}>Where talent meets opportunity.<br />Where ambition earns its proof.</p>
+              <div style={{ minHeight: 70, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 0 12px" }}>
+                <p style={{ fontFamily: S.heading, fontSize: "clamp(15px,2.5vw,21px)", color: "rgba(255,255,255,0.65)", fontStyle: "italic", lineHeight: 1.6, maxWidth: 520, margin: 0, transition: "all 0.5s ease", opacity: dedFade ? 1 : 0, transform: dedFade ? "translateY(0)" : "translateY(8px)" }}>{dedications[dedIdx]}</p>
+              </div>
+              <p style={{ fontFamily: S.heading, fontSize: "clamp(18px,3vw,26px)", color: "rgba(255,255,255,0.85)", fontWeight: 500, margin: "8px 0 44px", animation: stage === "ready" ? "textGlow 4s ease-in-out infinite 1s" : "none" }}>Your journey awaits you</p>
+              <div style={{ transition: "all 0.8s cubic-bezier(0.16,1,0.3,1)", opacity: stage === "ready" ? 1 : 0, transform: stage === "ready" ? "translateY(0) scale(1)" : "translateY(25px) scale(0.9)" }}>
+                <button onClick={() => { if (onEnter) onEnter(); }} style={{ padding: "18px 64px", borderRadius: 50, background: "transparent", border: "2px solid " + S.gold, color: S.gold, fontSize: 16, fontWeight: 700, fontFamily: S.body, cursor: "pointer", letterSpacing: 4, textTransform: "uppercase", transition: "all 0.3s ease", animation: "enterGlow 2.5s ease-in-out infinite" }}
+                  onMouseEnter={e => { e.currentTarget.style.background = S.gold; e.currentTarget.style.color = S.navy; e.currentTarget.style.transform = "scale(1.08)"; e.currentTarget.style.letterSpacing = "6px"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = S.gold; e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.letterSpacing = "4px"; }}>
+                  Enter
+                </button>
+                <p style={{ fontFamily: S.body, fontSize: 11, color: "rgba(255,255,255,0.2)", marginTop: 20, letterSpacing: 2, animation: "gentlePulse 2s infinite" }}>CLICK TO BEGIN</p>
+              </div>
+              <div style={{ marginTop: 40, opacity: stage === "ready" ? 1 : 0, transition: "opacity 0.8s ease 1s" }}>
+                <div style={{ fontFamily: S.body, fontSize: 10, color: "rgba(255,255,255,0.15)", letterSpacing: 1.5 }}>Reg. No. 16007/2025 — Companies of Jamaica &nbsp;&nbsp;|&nbsp;&nbsp; www.ctsetsjm.com</div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -883,6 +1019,10 @@ function HomePage({ setPage }) {
         <Container>
           <InterestCapture />
         </Container>
+      </section>
+
+      <section style={{ background: "#fff" }}>
+        <Container><PageScripture page="home" /></Container>
       </section>
     </div>
   );
@@ -1089,6 +1229,7 @@ function AboutPage() {
             <p style={{ fontSize: 13, color: "#2D3748", fontFamily: S.body, lineHeight: 1.6, margin: 0 }}>Registered with the Companies of Jamaica — Registration No. 16007/2025. Currently in process for registration with the Ministry of Education, Youth and Information (Independent Schools).</p>
           </div>
         </div>
+        <PageScripture page="about" />
       </Container>
     </PageWrapper>
   );
@@ -1156,6 +1297,7 @@ function WhyChoosePage({ setPage }) {
         <div style={{ textAlign: "center", marginTop: 40 }}>
           <Btn primary onClick={() => setPage("Apply")} style={{ color: S.navy }}>Start Your Application</Btn>
         </div>
+        <PageScripture page="whyChoose" />
       </Container>
     </PageWrapper>
   );
@@ -1238,6 +1380,7 @@ function ProgrammesPage({ setPage }) {
           <Btn primary onClick={() => setPage("Apply")} style={{ color: S.navy }}>Apply Now</Btn>
           <WhatsAppShare text={"Check out the programmes at CTS ETS — 25 programmes from Job Certificate to Bachelor's Equivalent, aligned to NCTVET & City & Guilds! 🎓 https://ctsetsjm.com"} label="Share Programmes" />
         </div>
+        <PageScripture page="programmes" />
       </Container>
     </PageWrapper>
   );
@@ -1363,6 +1506,7 @@ function CertificationPage() {
           </div>
           <p style={{ textAlign: "center", fontFamily: S.body, fontSize: 12, color: S.gray, marginTop: 12, fontStyle: "italic" }}>Sample only — actual certificate will bear learner's name, programme details, and official signatures.</p>
         </div>
+        <PageScripture page="certification" />
       </Container>
     </PageWrapper>
   );
@@ -1485,6 +1629,7 @@ function FeesPage({ setPage }) {
         <div style={{ marginTop: 24, padding: "14px 20px", borderRadius: 8, background: "rgba(196,145,18,0.04)", border: "1px solid rgba(196,145,18,0.1)", fontSize: 12, color: S.gray, fontFamily: S.body, lineHeight: 1.6 }}>
           ⚠️ <strong>Price Fluctuation Disclaimer:</strong> All fees shown are current as of April 2026 and are subject to change. CTS ETS reserves the right to adjust fees with reasonable notice. Confirmed enrolments will be honoured at the rate agreed at the time of registration.
         </div>
+        <PageScripture page="fees" />
       </Container>
     </PageWrapper>
   );
@@ -1532,6 +1677,7 @@ function EmployersPage({ setPage }) {
           </div>
         )}
         <div style={{ textAlign: "center", marginTop: 36 }}><Btn primary onClick={() => { sessionStorage.setItem("cts_apply_tab", "group"); setPage("Apply"); }} style={{ color: S.navy }}>Enrol Your Team</Btn></div>
+        <PageScripture page="employers" />
       </Container>
     </PageWrapper>
   );
@@ -1562,6 +1708,7 @@ function ApplyPage({ setPage }) {
   });
   const [files, setFiles] = useState({ heartForm: null, trn: null, photo: null, qualifications: null, nationalId: null, birthCert: null, paymentProof: null });
   const [submitted, setSubmitted] = useState(false);
+  const [showPrayer, setShowPrayer] = useState(null); // { name, context }
   const [submitting, setSubmitting] = useState(false);
   const [statusEmail, setStatusEmail] = useState("");
   const [statusResult, setStatusResult] = useState(null);
@@ -1892,6 +2039,7 @@ function ApplyPage({ setPage }) {
     // Clear draft on success
     try { sessionStorage.removeItem("cts_form_draft"); sessionStorage.removeItem("cts_form_sector"); } catch(_){}
     setSubmitted(true);
+    setShowPrayer({ name: form.firstName, context: "application", gender: form.gender });
     } catch (err) {
       console.error("Submit error:", err);
       alert("Something went wrong. Please try again.");
@@ -1964,7 +2112,9 @@ function ApplyPage({ setPage }) {
               </div>
             </div>
           </div>
+          <PageScripture page="apply" />
         </Container>
+        {showPrayer && <PrayerBlessing name={showPrayer.name} gender={showPrayer.gender} context={showPrayer.context} onClose={() => setShowPrayer(null)} />}
       </PageWrapper>
     );
   }
@@ -2019,7 +2169,7 @@ function ApplyPage({ setPage }) {
                   <div><label style={labelStyle}>First Name(s) {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.firstName ? "#C62828" : undefined }} value={form.firstName} onChange={e => u("firstName", e.target.value)} placeholder="First name(s)" />{errMsg("firstName")}</div>
                   <div><label style={labelStyle}>Middle Name</label><input style={inputStyle} value={form.middleName} onChange={e => u("middleName", e.target.value)} placeholder="Middle name (if any)" /></div>
                   <div><label style={labelStyle}>Last Name {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.lastName ? "#C62828" : undefined }} value={form.lastName} onChange={e => u("lastName", e.target.value)} placeholder="Last name" />{errMsg("lastName")}</div>
-                  <div><label style={labelStyle}>Gender {reqDot}</label><select style={{ ...inputStyle, borderColor: formErrors.gender ? "#C62828" : undefined }} value={form.gender} onChange={e => u("gender", e.target.value)}><option value="">Select</option><option>Male</option><option>Female</option><option>Other / Prefer not to say</option></select>{errMsg("gender")}</div>
+                  <div><label style={labelStyle}>Gender {reqDot}</label><select style={{ ...inputStyle, borderColor: formErrors.gender ? "#C62828" : undefined }} value={form.gender} onChange={e => u("gender", e.target.value)}><option value="">Select</option><option>Male</option><option>Female</option></select>{errMsg("gender")}</div>
                   <div><label style={labelStyle}>Date of Birth {reqDot}</label><input type="date" style={inputStyle} value={form.dob} onChange={e => u("dob", e.target.value)} /></div>
                   <div><label style={labelStyle}>Nationality</label><input style={inputStyle} value={form.nationality} onChange={e => u("nationality", e.target.value)} placeholder="e.g. Jamaican" /></div>
                   <div><label style={labelStyle}>TRN {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.trn ? "#C62828" : undefined }} value={form.trn} onChange={e => handleTRN(e.target.value)} placeholder="9-digit Tax Registration Number" maxLength={9} />{errMsg("trn")}</div>
@@ -2475,6 +2625,7 @@ function ApplyPage({ setPage }) {
                       }).catch(err => console.error("EmailJS error:", err));
                     }
                     setGroupSubmitted(true);
+                    setShowPrayer({ name: groupForm.contactName.split(" ")[0], context: "group" });
                   } catch (err) { console.error("Group submit error:", err); alert("Something went wrong. Please try again."); }
                   finally { setGroupSubmitting(false); }
                 }} disabled={!groupDeclare || !groupCaptcha || groupSubmitting} style={{ width: "100%", padding: "16px", borderRadius: 10, background: (!groupDeclare || !groupCaptcha || groupSubmitting) ? "#4A5568" : S.navy, color: "#fff", border: "none", fontSize: 15, fontWeight: 700, cursor: (!groupDeclare || !groupCaptcha || groupSubmitting) ? "not-allowed" : "pointer", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", opacity: (!groupDeclare || !groupCaptcha || groupSubmitting) ? 0.5 : 1, transition: "all 0.2s", boxShadow: groupDeclare && groupCaptcha && !groupSubmitting ? "0 4px 16px rgba(1,30,64,0.25)" : "none" }}
@@ -2753,6 +2904,7 @@ function ApplyPage({ setPage }) {
                     } else {
                       // WiPay not configured — show manual instructions
                       setPaySubmitted(true);
+                      setShowPrayer({ name: payEmail.split("@")[0], context: "payment" });
                     }
                   } catch (err) {
                     console.error("Payment error:", err);
@@ -3140,6 +3292,7 @@ function ApplyPage({ setPage }) {
                       }).catch(err => console.error("EmailJS error:", err));
                     }
                     setPaySubmitted(true);
+                    setShowPrayer({ name: payEmail.split("@")[0], context: "payment" });
                     } catch (err) {
                       console.error("Payment submit error:", err);
                       alert("Something went wrong. Please try again.");
@@ -3169,6 +3322,7 @@ function ContactPage({ setPage }) {
   const [openFaq, setOpenFaq] = useState(null);
   const [cForm, setCForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
   const [cSent, setCSent] = useState(false);
+  const [cPrayer, setCPrayer] = useState(false);
   const [cSending, setCSending] = useState(false);
   const [cCaptcha, setCCaptcha] = useState(false);
   const [cHoneypot, setCHoneypot] = useState("");
@@ -3201,6 +3355,7 @@ function ContactPage({ setPage }) {
         }).catch(err => console.error("EmailJS error:", err));
       }
       setCSent(true);
+      setCPrayer(true);
     } catch (err) {
       console.error("Contact form error:", err);
       alert("Something went wrong. Please try again or email us directly at finance@ctsetsjm.com.");
@@ -3403,7 +3558,9 @@ function PrivacyPage() {
             Registered with the Companies of Jamaica — Reg. No. 16007/2025. MOE Independent Schools registration in progress.
           </div>
         </div>
+        <PageScripture page="contact" />
       </Container>
+      {cPrayer && <PrayerBlessing name={cForm.name.split(" ")[0]} gender="" context="contact" onClose={() => setCPrayer(false)} />}
     </PageWrapper>
   );
 }
@@ -4162,7 +4319,7 @@ export default function CTSApp() {
           {renderPage()}
         </div>
         <Footer setPage={navigate} />
-        <ScrollToTop />
+        <ScrollNav />
         <WhatsAppBtn />
         <CookieBanner setPage={navigate} />
         {showTour && <WebsiteTour onClose={() => setShowTour(false)} onNavigate={navigate} />}
