@@ -267,6 +267,89 @@ function Btn({ children, primary, onClick, style }) {
   );
 }
 
+// ─── CAPTCHA: Math challenge + honeypot ──────────────────────────────
+function CaptchaChallenge({ onVerified, verified }) {
+  const [challenge, setChallenge] = useState(null);
+  const [answer, setAnswer] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    generateChallenge();
+  }, []);
+
+  const generateChallenge = () => {
+    const ops = [
+      () => { const a = Math.floor(Math.random() * 10) + 2; const b = Math.floor(Math.random() * 10) + 1; return { q: `${a} + ${b}`, a: a + b }; },
+      () => { const a = Math.floor(Math.random() * 10) + 10; const b = Math.floor(Math.random() * 8) + 1; return { q: `${a} - ${b}`, a: a - b }; },
+      () => { const a = Math.floor(Math.random() * 5) + 2; const b = Math.floor(Math.random() * 5) + 2; return { q: `${a} x ${b}`, a: a * b }; },
+    ];
+    setChallenge(ops[Math.floor(Math.random() * ops.length)]());
+    setAnswer("");
+    setError("");
+  };
+
+  const verify = () => {
+    if (!challenge) return;
+    const parsed = parseInt(answer.trim());
+    if (isNaN(parsed)) { setError("Please enter a number"); return; }
+    if (parsed === challenge.a) {
+      onVerified(true);
+      setError("");
+    } else {
+      setError("Incorrect. Try again.");
+      generateChallenge();
+      onVerified(false);
+    }
+  };
+
+  if (verified) return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: 8, background: "rgba(46,125,50,0.06)", border: "1px solid rgba(46,125,50,0.2)", marginBottom: 16 }}>
+      <div style={{ width: 22, height: 22, borderRadius: "50%", background: "#2E7D32", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <span style={{ color: "#fff", fontSize: 12, fontWeight: 700 }}>✓</span>
+      </div>
+      <span style={{ fontFamily: S.body, fontSize: 13, color: "#2E7D32", fontWeight: 600 }}>Verified — you're human!</span>
+    </div>
+  );
+
+  if (!challenge) return null;
+
+  return (
+    <div style={{ padding: "16px 18px", borderRadius: 10, background: "rgba(1,30,64,0.03)", border: "1px solid rgba(1,30,64,0.08)", marginBottom: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+        <div style={{ width: 20, height: 20, borderRadius: 4, border: "2px solid " + S.navy, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <span style={{ fontSize: 10, fontWeight: 700, color: S.navy }}>?</span>
+        </div>
+        <span style={{ fontFamily: S.body, fontSize: 12, fontWeight: 700, color: S.navy, letterSpacing: 0.5 }}>Quick Verification</span>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        <span style={{ fontFamily: S.body, fontSize: 14, color: "#2D3748" }}>What is <strong style={{ color: S.navy, fontSize: 16 }}>{challenge.q}</strong> ?</span>
+        <input
+          type="text"
+          value={answer}
+          onChange={e => { setAnswer(e.target.value.replace(/[^0-9-]/g, "")); setError(""); }}
+          onKeyDown={e => e.key === "Enter" && verify()}
+          placeholder="?"
+          style={{ width: 70, padding: "8px 12px", borderRadius: 6, border: "1px solid " + (error ? "#C62828" : "rgba(1,30,64,0.15)"), fontSize: 16, textAlign: "center", fontFamily: S.body, fontWeight: 700, color: S.navy }}
+          maxLength={4}
+          autoComplete="off"
+        />
+        <button onClick={verify} style={{ padding: "8px 16px", borderRadius: 6, background: S.navy, color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>Verify</button>
+      </div>
+      {error && <div style={{ fontFamily: S.body, fontSize: 11, color: "#C62828", marginTop: 6 }}>{error}</div>}
+    </div>
+  );
+}
+
+// Honeypot field — invisible to humans, bots fill it
+function HoneypotField({ value, onChange }) {
+  return (
+    <div style={{ position: "absolute", left: "-9999px", top: "-9999px", opacity: 0, height: 0, overflow: "hidden" }} aria-hidden="true" tabIndex={-1}>
+      <label>Leave this blank</label>
+      <input type="text" name="website_url" value={value} onChange={onChange} tabIndex={-1} autoComplete="off" />
+    </div>
+  );
+}
+
 function SectionBlock({ num, title, desc, children, locked, complete }) {
   return (
     <div style={{ marginBottom: 32, position: "relative", opacity: locked ? 0.45 : 1, transition: "opacity 0.3s", pointerEvents: locked ? "none" : "auto" }}>
@@ -398,9 +481,58 @@ function OfflineBanner() {
 }
 
 // Branded Loading Screen
+// Animated stat counter for splash screen
+function SplashStat({ num, label, delay, active }) {
+  const [display, setDisplay] = useState("0");
+  const isPercent = num.includes("%");
+  const target = parseInt(num);
+
+  useEffect(() => {
+    if (!active) return;
+    const start = performance.now();
+    const duration = 1200;
+    const delayMs = delay * 1000 + 300;
+    const timer = setTimeout(() => {
+      const animate = (now) => {
+        const elapsed = now - start - delayMs;
+        if (elapsed < 0) { requestAnimationFrame(animate); return; }
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = Math.round(target * eased);
+        setDisplay(current + (isPercent ? "%" : ""));
+        if (progress < 1) requestAnimationFrame(animate);
+      };
+      requestAnimationFrame(animate);
+    }, delayMs);
+    return () => clearTimeout(timer);
+  }, [active, target, delay, isPercent]);
+
+  return (
+    <div style={{ textAlign: "center", minWidth: 60 }}>
+      <div style={{ fontFamily: S.heading, fontSize: "clamp(22px,4vw,36px)", fontWeight: 800, color: S.gold, lineHeight: 1, transition: "all 0.3s" }}>{active ? display : "0"}</div>
+      <div style={{ fontFamily: S.body, fontSize: "clamp(8px,1.2vw,11px)", color: "rgba(255,255,255,0.35)", letterSpacing: 1.5, textTransform: "uppercase", marginTop: 6 }}>{label}</div>
+    </div>
+  );
+}
+
 function LoadingScreen({ onEnter }) {
   const [progress, setProgress] = useState(0);
   const [stage, setStage] = useState("loading");
+  const [dedIdx, setDedIdx] = useState(0);
+  const [dedFade, setDedFade] = useState(true);
+
+  const dedications = [
+    "For the mother studying after the children sleep.",
+    "For the security guard who knows he\u2019s worth more than his post.",
+    "For the young entrepreneur who bet on herself.",
+    "For the worker with twenty years of experience \u2014 and no certificate to prove it.",
+    "For everyone who was told \u201Cyou\u2019re not qualified.\u201D",
+    "For the dreamer who refuses to stay where they are.",
+    "For the one who was overlooked \u2014 not anymore.",
+    "For the father working two jobs to build a better life.",
+    "For anyone who ever said \u201CI wish I could go back to school.\u201D",
+    "For Jamaica. For you.",
+  ];
 
   useEffect(() => {
     const steps = [
@@ -412,6 +544,19 @@ function LoadingScreen({ onEnter }) {
     const readyTimer = setTimeout(() => setStage("ready"), 3000);
     return () => { timers.forEach(clearTimeout); clearTimeout(splashTimer); clearTimeout(readyTimer); };
   }, []);
+
+  // Cycle dedications
+  useEffect(() => {
+    if (stage === "loading") return;
+    const interval = setInterval(() => {
+      setDedFade(false);
+      setTimeout(() => {
+        setDedIdx(prev => (prev + 1) % dedications.length);
+        setDedFade(true);
+      }, 500);
+    }, 3200);
+    return () => clearInterval(interval);
+  }, [stage, dedications.length]);
 
   return (
     <div style={{ position: "fixed", inset: 0, background: S.navy, zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
@@ -479,11 +624,30 @@ function LoadingScreen({ onEnter }) {
           {/* Tagline */}
           <div style={{ fontFamily: S.heading, fontSize: "clamp(13px,2.2vw,17px)", color: S.gold, letterSpacing: 3, fontStyle: "italic", marginTop: 16, transition: "all 0.8s ease 0.4s", opacity: stage !== "loading" ? 1 : 0, transform: stage !== "loading" ? "translateY(0)" : "translateY(15px)" }}>Called To Serve — Committed to Excellence</div>
 
+          {/* Animated stats */}
+          <div style={{ display: "flex", justifyContent: "center", gap: "clamp(16px,4vw,48px)", margin: "28px 0 8px", transition: "all 0.8s ease 0.45s", opacity: stage !== "loading" ? 1 : 0, transform: stage !== "loading" ? "translateY(0)" : "translateY(20px)" }}>
+            {[["25", "Programmes"], ["5", "Levels"], ["100%", "Online"], ["3", "Payment Plans"]].map(([num, label], i) => (
+              <SplashStat key={label} num={num} label={label} delay={i * 0.15} active={stage !== "loading"} />
+            ))}
+          </div>
+
           {/* Gold decorative line */}
-          <div style={{ height: 2, background: `linear-gradient(to right, transparent, ${S.gold}, transparent)`, margin: "28px auto", borderRadius: 2, transition: "all 0.8s ease 0.5s", opacity: stage !== "loading" ? 1 : 0, width: stage !== "loading" ? 80 : 0 }} />
+          <div style={{ height: 2, background: `linear-gradient(to right, transparent, ${S.gold}, transparent)`, margin: "20px auto 24px", borderRadius: 2, transition: "all 0.8s ease 0.5s", opacity: stage !== "loading" ? 1 : 0, width: stage !== "loading" ? 80 : 0 }} />
+
+          {/* Philosophical statement */}
+          <p style={{ fontFamily: S.heading, fontSize: "clamp(14px,2vw,17px)", color: "rgba(255,255,255,0.5)", fontWeight: 400, margin: "0 auto 16px", maxWidth: 480, lineHeight: 1.6, transition: "all 0.8s ease 0.52s", opacity: stage !== "loading" ? 1 : 0, transform: stage !== "loading" ? "translateY(0)" : "translateY(10px)" }}>
+            Where talent meets opportunity.<br />Where ambition earns its proof.
+          </p>
+
+          {/* Rotating dedications */}
+          <div style={{ minHeight: 70, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 0 12px", transition: "all 0.8s ease 0.55s", opacity: stage !== "loading" ? 1 : 0 }}>
+            <p style={{ fontFamily: S.heading, fontSize: "clamp(15px,2.5vw,21px)", color: "rgba(255,255,255,0.65)", fontWeight: 400, fontStyle: "italic", lineHeight: 1.6, maxWidth: 520, margin: 0, transition: "all 0.5s ease", opacity: dedFade ? 1 : 0, transform: dedFade ? "translateY(0)" : "translateY(8px)" }}>
+              {dedications[dedIdx]}
+            </p>
+          </div>
 
           {/* Your journey awaits */}
-          <p style={{ fontFamily: S.heading, fontSize: "clamp(18px,3vw,26px)", color: "rgba(255,255,255,0.7)", fontWeight: 400, margin: "0 0 44px", fontStyle: "italic", transition: "all 0.8s ease 0.6s", opacity: stage !== "loading" ? 1 : 0, transform: stage !== "loading" ? "translateY(0)" : "translateY(15px)", animation: stage === "ready" ? "textGlow 4s ease-in-out infinite 1s" : "none" }}>Your journey awaits you</p>
+          <p style={{ fontFamily: S.heading, fontSize: "clamp(18px,3vw,26px)", color: "rgba(255,255,255,0.85)", fontWeight: 500, margin: "8px 0 44px", transition: "all 0.8s ease 0.6s", opacity: stage !== "loading" ? 1 : 0, transform: stage !== "loading" ? "translateY(0)" : "translateY(15px)", animation: stage === "ready" ? "textGlow 4s ease-in-out infinite 1s" : "none" }}>Your journey awaits you</p>
 
           {/* ENTER button */}
           <div style={{ transition: "all 0.8s cubic-bezier(0.16,1,0.3,1)", opacity: stage === "ready" ? 1 : 0, transform: stage === "ready" ? "translateY(0) scale(1)" : "translateY(25px) scale(0.9)" }}>
@@ -1449,6 +1613,9 @@ function ApplyPage({ setPage }) {
     }, 800);
   };
   const [declareChecked, setDeclareChecked] = useState(false);
+  const [captchaVerified, setCaptchaVerified] = useState(false);
+  const [honeypot, setHoneypot] = useState("");
+  const formStartTime = useRef(Date.now());
   const [declareTimestamp, setDeclareTimestamp] = useState(null);
   const [emailSuggestion, setEmailSuggestion] = useState(null);
   const [uploadProgress, setUploadProgress] = useState({});
@@ -1592,8 +1759,13 @@ function ApplyPage({ setPage }) {
   };
 
   const submitApplication = async () => {
-    // Honeypot check — bots will fill the hidden field
-    if (form._hp) { console.warn("Bot detected"); return; }
+    // ── BOT PROTECTION ──
+    // Honeypot check — bots fill the hidden field
+    if (honeypot) { console.warn("Bot detected (honeypot)"); return; }
+    // Time check — humans take at least 10 seconds to fill a form
+    if (Date.now() - formStartTime.current < 10000) { alert("Please take your time filling out the form."); return; }
+    // CAPTCHA check
+    if (!captchaVerified) { alert("Please complete the verification challenge before submitting."); return; }
     // Duplicate guard
     if (submitGuardRef.current) return;
     submitGuardRef.current = true;
@@ -1990,10 +2162,12 @@ function ApplyPage({ setPage }) {
                 </p>
               </div>
 
-              <button onClick={submitApplication} disabled={!declareChecked || submitting} style={{ width: "100%", padding: "17px", borderRadius: 10, background: (!declareChecked || submitting) ? "#4A5568" : S.navy, color: "#fff", border: "none", fontSize: 15, fontWeight: 700, cursor: (!declareChecked || submitting) ? "not-allowed" : "pointer", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", boxShadow: declareChecked && !submitting ? "0 4px 16px rgba(1,30,64,0.25)" : "none", transition: "all 0.2s", opacity: (!declareChecked || submitting) ? 0.5 : 1 }}
+              <HoneypotField value={honeypot} onChange={e => setHoneypot(e.target.value)} />
+              <CaptchaChallenge onVerified={setCaptchaVerified} verified={captchaVerified} />
+              <button onClick={submitApplication} disabled={!declareChecked || !captchaVerified || submitting} style={{ width: "100%", padding: "17px", borderRadius: 10, background: (!declareChecked || !captchaVerified || submitting) ? "#4A5568" : S.navy, color: "#fff", border: "none", fontSize: 15, fontWeight: 700, cursor: (!declareChecked || !captchaVerified || submitting) ? "not-allowed" : "pointer", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", boxShadow: declareChecked && captchaVerified && !submitting ? "0 4px 16px rgba(1,30,64,0.25)" : "none", transition: "all 0.2s", opacity: (!declareChecked || !captchaVerified || submitting) ? 0.5 : 1 }}
                 onMouseEnter={e => { if (declareChecked && !submitting) e.currentTarget.style.background = "#001228"; }}
                 onMouseLeave={e => { if (declareChecked && !submitting) e.currentTarget.style.background = S.navy; }}>
-                {submitting ? "⏳ Submitting Application — Please Wait..." : !declareChecked ? "🔒 Please Accept Declaration Above" : "Submit Application →"}
+                {submitting ? "⏳ Submitting Application — Please Wait..." : !captchaVerified ? "🔒 Complete Verification Above" : !declareChecked ? "🔒 Please Accept Declaration Above" : "Submit Application →"}
               </button>
               {!declareChecked && <p style={{ textAlign: "center", fontSize: 11, color: "#C62828", fontFamily: S.body, marginTop: 8 }}>You must accept the declaration above before submitting your application.</p>}
               <p style={{ textAlign: "center", fontSize: 11, color: S.gray, fontFamily: S.body, marginTop: 12 }}>Your Student ID and reference number will be displayed immediately after submission.</p>
@@ -2267,7 +2441,7 @@ function ApplyPage({ setPage }) {
               <p style={{ fontFamily: S.body, fontSize: 14, color: "#4A5568", lineHeight: 1.7, maxWidth: 460, margin: "0 auto 28px" }}>
                 CTS ETS uses the official HEART/NSTA Trust Application for Admission Form. Download it below, complete all sections in <strong>BLOCK LETTERS</strong>, sign the declaration, then return to the <strong>Apply Now</strong> tab to submit it with your documents.
               </p>
-              <a href="/HEART%20Application%20for%20Admission%20Form.pdf" download="HEART_Application_for_Admission_Form.pdf"
+              <a href="/HEART_Application_for_Admission_Form.pdf" download="HEART_Application_for_Admission_Form.pdf"
                 style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "15px 36px", borderRadius: 10, background: S.navy, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body, textDecoration: "none", marginBottom: 28, boxShadow: "0 4px 16px rgba(1,30,64,0.2)" }}>
                 <img src={HEART_LOGO} alt="" style={{ height: 20, objectFit: "contain" }} />
                 Download HEART Application Form (PDF)
@@ -2931,9 +3105,15 @@ function ContactPage({ setPage }) {
   const [cForm, setCForm] = useState({ name: "", email: "", phone: "", subject: "", message: "" });
   const [cSent, setCSent] = useState(false);
   const [cSending, setCSending] = useState(false);
+  const [cCaptcha, setCCaptcha] = useState(false);
+  const [cHoneypot, setCHoneypot] = useState("");
+  const cStartTime = useRef(Date.now());
   const cu = (k, v) => setCForm(f => ({ ...f, [k]: v }));
 
   const sendEnquiry = async () => {
+    if (cHoneypot) { console.warn("Bot detected"); return; }
+    if (Date.now() - cStartTime.current < 5000) { alert("Please take a moment before submitting."); return; }
+    if (!cCaptcha) { alert("Please complete the verification challenge."); return; }
     if (!cForm.name.trim() || !cForm.email.trim() || !cForm.message.trim()) { alert("Please fill in your name, email, and message."); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cForm.email)) { alert("Please enter a valid email address."); return; }
     setCSending(true);
@@ -3058,8 +3238,10 @@ function ContactPage({ setPage }) {
                 <label style={labelStyle}>Your Message {reqDot}</label>
                 <textarea style={{ ...inputStyle, minHeight: 120, resize: "vertical" }} value={cForm.message} onChange={e => cu("message", e.target.value)} placeholder="Tell us how we can help you..." />
               </div>
-              <button onClick={sendEnquiry} disabled={cSending} style={{ width: "100%", padding: "16px", borderRadius: 10, background: cSending ? "#4A5568" : S.navy, color: "#fff", border: "none", fontSize: 15, fontWeight: 700, cursor: cSending ? "wait" : "pointer", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", opacity: cSending ? 0.7 : 1, transition: "all 0.2s" }}>
-                {cSending ? "⏳ Sending..." : "Send Message →"}
+              <HoneypotField value={cHoneypot} onChange={e => setCHoneypot(e.target.value)} />
+              <CaptchaChallenge onVerified={setCCaptcha} verified={cCaptcha} />
+              <button onClick={sendEnquiry} disabled={cSending || !cCaptcha} style={{ width: "100%", padding: "16px", borderRadius: 10, background: (cSending || !cCaptcha) ? "#4A5568" : S.navy, color: "#fff", border: "none", fontSize: 15, fontWeight: 700, cursor: (cSending || !cCaptcha) ? "wait" : "pointer", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", opacity: (cSending || !cCaptcha) ? 0.7 : 1, transition: "all 0.2s" }}>
+                {cSending ? "⏳ Sending..." : !cCaptcha ? "🔒 Complete Verification Above" : "Send Message →"}
               </button>
               <p style={{ textAlign: "center", fontSize: 11, color: S.gray, fontFamily: S.body, marginTop: 10, lineHeight: 1.5 }}>Or email us directly at <strong>info@ctsetsjm.com</strong></p>
             </div>
@@ -3702,4 +3884,3 @@ export default function CTSApp() {
     </ErrorBoundary>
   );
 }
-
