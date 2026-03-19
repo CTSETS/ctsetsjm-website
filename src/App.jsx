@@ -1103,126 +1103,155 @@ function AboutPage() {
           </div>
         </div>
 
-        {/* ═══ A LETTER FROM OUR FOUNDER ═══ */}
-        <Reveal>
-        <div style={{ marginTop: 64, marginBottom: 48 }}>
-          {/* Section intro */}
-          <div style={{ textAlign: "center", marginBottom: 36 }}>
+        {/* ═══ OUR CREST & FOUNDER'S LETTER — SIDE BY SIDE ═══ */}
+        <div style={{ marginTop: 56, marginBottom: 48 }}>
+          {/* Shared header */}
+          <div style={{ textAlign: "center", marginBottom: 32 }}>
             <div style={{ width: 60, height: 2, background: S.gold, margin: "0 auto 20px", borderRadius: 2 }} />
-            <span style={{ fontSize: 11, color: S.gold, letterSpacing: 4, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600 }}>From the Founder's Desk</span>
-            <h2 style={{ fontFamily: S.heading, fontSize: "clamp(24px,4vw,36px)", color: S.navy, margin: "12px 0 0", fontWeight: 700 }}>A Personal Letter</h2>
-            <p style={{ fontFamily: S.body, fontSize: 15, color: S.gray, marginTop: 10, maxWidth: 520, margin: "10px auto 0", lineHeight: 1.6 }}>Why CTS ETS exists — in the words of our founder, Dr. Mark O. Lindo</p>
+            <span style={{ fontSize: 11, color: S.gold, letterSpacing: 4, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600 }}>Our Identity & Our Heart</span>
+            <h2 style={{ fontFamily: S.heading, fontSize: "clamp(22px,3.5vw,32px)", color: S.navy, margin: "12px 0 0", fontWeight: 700 }}>What We Stand For</h2>
           </div>
 
-          {/* The letter */}
-          <div style={{ maxWidth: 720, margin: "0 auto" }}>
-            <div style={{ background: "#fff", borderRadius: 20, boxShadow: "0 8px 40px rgba(1,30,64,0.08)", border: "1px solid rgba(196,145,18,0.12)", overflow: "hidden" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28, alignItems: "start" }} className="resp-grid-2">
 
-              {/* Gold accent bar */}
+            {/* LEFT: Crest & Meaning */}
+            <Reveal>
+            <div style={{ background: "#fff", borderRadius: 20, boxShadow: "0 4px 24px rgba(1,30,64,0.06)", border: "1px solid rgba(1,30,64,0.06)", overflow: "hidden", position: "sticky", top: 90 }}>
               <div style={{ height: 4, background: `linear-gradient(to right, ${S.gold}, ${S.navy}, ${S.gold})` }} />
-
-              {/* Photo + name header */}
-              <div style={{ display: "flex", alignItems: "center", gap: 20, padding: "28px 36px 20px", borderBottom: "1px solid rgba(1,30,64,0.06)" }}>
-                <img src={FOUNDER_PHOTO} alt="Dr. Mark O. Lindo" style={{ width: 72, height: 72, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "3px solid " + S.gold, boxShadow: "0 4px 12px rgba(196,145,18,0.2)" }} />
-                <div>
-                  <div style={{ fontFamily: S.heading, fontSize: 20, fontWeight: 700, color: S.navy }}>Mark O. Lindo, Ph.D</div>
-                  <div style={{ fontFamily: S.body, fontSize: 12, color: S.gold, letterSpacing: 1, textTransform: "uppercase", fontWeight: 600 }}>Founder & Principal</div>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 6 }}>
-                    <span style={{ fontSize: 9, fontFamily: S.body, color: "#fff", background: S.navy, padding: "3px 8px", borderRadius: 4, fontWeight: 600, letterSpacing: 0.5 }}>City & Guilds Level 3 IVQ — Certified Assessor</span>
-                    <span style={{ fontSize: 9, fontFamily: S.body, color: "#fff", background: S.navy, padding: "3px 8px", borderRadius: 4, fontWeight: 600, letterSpacing: 0.5 }}>NCTVET NVQ-J Level 4 — Assessment</span>
+              <div style={{ padding: "28px 24px", textAlign: "center" }}>
+                <img src={NAV_LOGO} alt="CTS ETS Crest" style={{ width: 140, height: "auto", objectFit: "contain", filter: "drop-shadow(0 4px 16px rgba(1,30,64,0.12))", marginBottom: 16 }} />
+                <h3 style={{ fontFamily: S.heading, fontSize: 18, color: S.navy, marginBottom: 6, fontWeight: 700 }}>The CTS ETS Crest</h3>
+                <p style={{ fontFamily: S.body, fontSize: 12, color: S.gray, lineHeight: 1.5, marginBottom: 20 }}>Every element tells a story about who we are.</p>
+              </div>
+              <div style={{ padding: "0 24px 24px" }}>
+                {[
+                  ["\uD83D\uDCD6", "The Open Book", "Knowledge — the foundation of everything we do."],
+                  ["\uD83D\uDD25", "The Flaming Torch", "Enlightenment — lighting the path for those left in the dark."],
+                  ["\uD83D\uDE4C", "The Empowered Figure", "Personal growth — arms raised, rising with education."],
+                  ["\u2699\uFE0F", "The Gear & Diploma", "Vocational skill meeting formal recognition."],
+                  ["\uD83C\uDF3F", "The Laurel Wreaths", "Achievement, honour, and excellence."],
+                  ["\uD83D\uDEE1\uFE0F", "The Shield", "Strength, protection, and institutional integrity."],
+                ].map(([icon, title, desc], i) => (
+                  <div key={title} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: i < 5 ? 12 : 0 }}>
+                    <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>{icon}</span>
+                    <div>
+                      <div style={{ fontFamily: S.body, fontSize: 12, fontWeight: 700, color: S.navy, marginBottom: 1 }}>{title}</div>
+                      <p style={{ fontFamily: S.body, fontSize: 11, color: S.gray, lineHeight: 1.5, margin: 0 }}>{desc}</p>
+                    </div>
                   </div>
+                ))}
+                <div style={{ marginTop: 14, padding: "10px 12px", borderRadius: 8, background: "rgba(196,145,18,0.06)", borderLeft: "3px solid " + S.gold }}>
+                  <p style={{ fontFamily: S.body, fontSize: 11, color: S.navy, lineHeight: 1.5, margin: 0 }}>
+                    <strong style={{ color: S.gold }}>Navy & Gold</strong> — Trust meets excellence. Serious education, valuable outcomes.
+                  </p>
                 </div>
               </div>
-
-              {/* Letter body */}
-              <div style={{ padding: "32px 36px 36px" }}>
-                <p style={{ fontFamily: S.heading, fontSize: 19, color: S.navy, marginBottom: 24 }}>Dear Friend,</p>
-
-                <p style={pStyle}>I need to tell you something that has been on my heart for a long time.</p>
-
-                <p style={pStyle}>For years, I watched talented, hardworking Jamaicans get passed over — not because they lacked skill, not because they lacked drive, but because they lacked a piece of paper. A qualification. A certificate that said, in a language employers understand: <em style={emphStyle}>"This person is trained. This person is ready."</em></p>
-
-                <p style={pStyle}>I watched mothers who could manage entire households with precision and grace get told they weren't qualified for an entry-level office job. I watched young men with brilliant mechanical intuition get turned away because they didn't have a certificate to prove what their hands already knew. I watched experienced professionals — people with ten, fifteen, twenty years on the job — get overlooked for promotion because someone with a qualification, but less experience, checked a box they couldn't.</p>
-
-                {/* Pull quote */}
-                <div style={{ margin: "32px 0", padding: "24px 28px", borderLeft: "4px solid " + S.gold, background: "rgba(196,145,18,0.04)", borderRadius: "0 12px 12px 0" }}>
-                  <p style={quoteStyle}>"Why is it so hard for good people to get qualified in Jamaica?"</p>
-                </div>
-
-                <p style={pStyle}>The traditional path is clear: go to university. But university isn't designed for the single mother working two jobs. It isn't built for the security guard who can only study after his night shift. It isn't affordable for the young entrepreneur who spent her savings starting a small business. And it often isn't practical — because the job market doesn't always need a four-year degree. It needs <strong style={emphStyle}>specific, recognised, practical skills.</strong></p>
-
-                <p style={{ ...pStyle, fontSize: 18, fontWeight: 700, color: S.navy }}>That is why CTS Empowerment & Training Solutions exists.</p>
-
-                {!letterOpen && (
-                  <div style={{ textAlign: "center", margin: "28px 0 0" }}>
-                    <button onClick={() => setLetterOpen(true)} style={{ padding: "14px 36px", borderRadius: 10, background: S.navy, color: S.gold, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body, letterSpacing: 0.5, transition: "all 0.2s", boxShadow: "0 4px 16px rgba(1,30,64,0.15)" }}
-                      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(1,30,64,0.2)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(1,30,64,0.15)"; }}>
-                      Continue Reading →
-                    </button>
-                  </div>
-                )}
-
-                {letterOpen && (
-                  <div style={{ animation: "fadeIn 0.6s ease" }}>
-                    <p style={pStyle}>Not because Jamaica needed another school. But because Jamaica needed a <em>different kind</em> of school. One where you don't have to choose between earning a living and earning a qualification. One where you don't need to sit in a classroom at a time someone else decided. One where your TRN and your determination are enough to walk through the door.</p>
-
-                    <p style={pStyle}>I built CTS ETS to be 100% online and 100% self-paced because I believe that <strong style={emphStyle}>education should fit your life — not the other way around.</strong> You study at 5 AM before the children wake up, or at 11 PM after you lock up the shop. You study on your phone during your lunch break, or on your tablet on the weekend. You move through the material at a pace that respects both your intelligence and your reality.</p>
-
-                    <p style={pStyle}>And the qualifications you earn are not consolation prizes. They are NCTVET-aligned and City & Guilds recognised — the same standards used by training institutions across Jamaica and 80 countries worldwide. When you complete a programme at CTS ETS, employers know exactly what that means. It means you are <strong style={emphStyle}>trained, assessed, and certified to a national and international standard.</strong></p>
-
-                    {/* Emotional pull quote */}
-                    <div style={{ margin: "36px 0", padding: "28px 32px", background: S.navy, borderRadius: 12, textAlign: "center" }}>
-                      <p style={{ fontFamily: S.heading, fontSize: "clamp(16px,2.5vw,20px)", color: "#fff", lineHeight: 1.7, fontStyle: "italic", margin: 0 }}>"Every single person who has completed a programme at CTS ETS has said the same thing —</p>
-                      <p style={{ fontFamily: S.heading, fontSize: "clamp(20px,3vw,26px)", color: S.gold, lineHeight: 1.5, fontWeight: 700, margin: "12px 0 0" }}>'I didn't think I could do it, but I did.'"</p>
-                    </div>
-
-                    <p style={pStyle}>And that — right there — is why I wake up every morning and do this work.</p>
-
-                    <p style={pStyle}>I am not running CTS ETS to build an empire. I am running it because every person who earns a qualification through our programmes goes home a little taller. They update their CV with something real. They walk into their next interview with proof. They become the person their children look up to — not just because of who they are, but because of what they <em style={emphStyle}>chose to become.</em></p>
-
-                    <p style={pStyle}>If you are reading this and wondering whether CTS ETS is right for you, let me make it simple:</p>
-
-                    {/* The invitation */}
-                    <div style={{ margin: "32px 0", padding: "28px 32px", borderLeft: "4px solid " + S.gold, background: "rgba(196,145,18,0.04)", borderRadius: "0 12px 12px 0" }}>
-                      <p style={{ ...pStyle, marginBottom: 0 }}>If you have the desire to learn, we have the programme for you. If you have the discipline to study on your own time, we have the platform to support you. And if you have the courage to invest in yourself — even when it's scary, even when the money is tight, even when people around you don't understand — then <strong style={emphStyle}>you are exactly the kind of person CTS ETS was built for.</strong></p>
-                    </div>
-
-                    <p style={pStyle}>We are called CTS — Called To Serve. That is not just a name. It is a covenant. I made a promise to myself that this institution would serve the people who are too often overlooked by the education system. The working class. The hustlers. The dreamers. The ones who never had it handed to them. The ones who know that the only way up is through.</p>
-
-                    <p style={pStyle}>If that is you, then I want you to know:</p>
-
-                    {/* You belong here */}
-                    <div style={{ textAlign: "center", margin: "32px 0" }}>
-                      <p style={{ fontFamily: S.heading, fontSize: "clamp(26px,4vw,38px)", fontWeight: 800, color: S.navy, margin: 0, lineHeight: 1.3 }}>You belong here.</p>
-                      <div style={{ width: 60, height: 3, background: S.gold, margin: "16px auto", borderRadius: 2 }} />
-                    </div>
-
-                    <p style={pStyle}>Not because of where you went to school. Not because of how much money you have. Not because of who you know. But because you decided — today — that you are worth the investment.</p>
-
-                    <p style={{ fontFamily: S.heading, fontSize: 20, fontWeight: 700, color: S.navy, marginBottom: 28 }}>And you are.</p>
-
-                    {/* Sign-off */}
-                    <div style={{ borderTop: "2px solid " + S.gold, paddingTop: 20, marginTop: 32 }}>
-                      <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, marginBottom: 12 }}>With respect and admiration,</p>
-                      <p style={{ fontFamily: S.heading, fontSize: 18, color: S.navy, fontWeight: 700, marginBottom: 2 }}>Mark O. Lindo, Ph.D</p>
-                      <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, marginBottom: 0 }}>Founder & Principal</p>
-                      <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, marginBottom: 6 }}>CTS Empowerment & Training Solutions</p>
-                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                        <span style={{ fontSize: 10, fontFamily: S.body, color: S.gold, background: "rgba(196,145,18,0.08)", padding: "3px 10px", borderRadius: 4, fontWeight: 600 }}>City & Guilds Level 3 IVQ — Certified Assessor</span>
-                        <span style={{ fontSize: 10, fontFamily: S.body, color: S.gold, background: "rgba(196,145,18,0.08)", padding: "3px 10px", borderRadius: 4, fontWeight: 600 }}>NCTVET NVQ-J Level 4 — Assessment</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Gold accent bar */}
               <div style={{ height: 4, background: `linear-gradient(to right, ${S.gold}, ${S.navy}, ${S.gold})` }} />
             </div>
+            </Reveal>
+
+            {/* RIGHT: Founder's Letter */}
+            <Reveal delay={0.15}>
+            <div>
+              <div style={{ textAlign: "center", marginBottom: 20 }}>
+                <span style={{ fontSize: 11, color: S.gold, letterSpacing: 4, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600 }}>From the Founder's Desk</span>
+                <h3 style={{ fontFamily: S.heading, fontSize: "clamp(18px,2.5vw,24px)", color: S.navy, margin: "8px 0 0", fontWeight: 700 }}>A Personal Letter</h3>
+                <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, marginTop: 6, lineHeight: 1.5 }}>Why CTS ETS exists — in the words of Dr. Mark O. Lindo</p>
+              </div>
+
+              <div style={{ background: "#fff", borderRadius: 20, boxShadow: "0 8px 40px rgba(1,30,64,0.08)", border: "1px solid rgba(196,145,18,0.12)", overflow: "hidden" }}>
+                <div style={{ height: 4, background: `linear-gradient(to right, ${S.gold}, ${S.navy}, ${S.gold})` }} />
+                {/* Photo + name header */}
+                <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "20px 24px 16px", borderBottom: "1px solid rgba(1,30,64,0.06)" }}>
+                  <img src={FOUNDER_PHOTO} alt="Dr. Mark O. Lindo" style={{ width: 56, height: 56, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "3px solid " + S.gold, boxShadow: "0 4px 12px rgba(196,145,18,0.2)" }} />
+                  <div>
+                    <div style={{ fontFamily: S.heading, fontSize: 17, fontWeight: 700, color: S.navy }}>Mark O. Lindo, Ph.D</div>
+                    <div style={{ fontFamily: S.body, fontSize: 11, color: S.gold, letterSpacing: 1, textTransform: "uppercase", fontWeight: 600 }}>Founder & Principal</div>
+                    <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 4 }}>
+                      <span style={{ fontSize: 8, fontFamily: S.body, color: "#fff", background: S.navy, padding: "2px 6px", borderRadius: 3, fontWeight: 600 }}>City & Guilds L3 IVQ</span>
+                      <span style={{ fontSize: 8, fontFamily: S.body, color: "#fff", background: S.navy, padding: "2px 6px", borderRadius: 3, fontWeight: 600 }}>NCTVET NVQ-J L4</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Letter body */}
+                <div style={{ padding: "24px 24px 28px" }}>
+                  <p style={{ fontFamily: S.heading, fontSize: 16, color: S.navy, marginBottom: 18 }}>Dear Friend,</p>
+                  <p style={pStyle}>I need to tell you something that has been on my heart for a long time.</p>
+                  <p style={pStyle}>For years, I watched talented, hardworking Jamaicans get passed over — not because they lacked skill, not because they lacked drive, but because they lacked a piece of paper. A qualification. A certificate that said, in a language employers understand: <em style={emphStyle}>"This person is trained. This person is ready."</em></p>
+                  <p style={pStyle}>I watched mothers who could manage entire households with precision and grace get told they weren't qualified for an entry-level office job. I watched young men with brilliant mechanical intuition get turned away because they didn't have a certificate to prove what their hands already knew.</p>
+
+                  {/* Pull quote */}
+                  <div style={{ margin: "24px 0", padding: "18px 20px", borderLeft: "4px solid " + S.gold, background: "rgba(196,145,18,0.04)", borderRadius: "0 10px 10px 0" }}>
+                    <p style={{ ...quoteStyle, fontSize: "clamp(15px,2vw,18px)" }}>"Why is it so hard for good people to get qualified in Jamaica?"</p>
+                  </div>
+
+                  <p style={pStyle}>The traditional path is clear: go to university. But university isn't designed for the single mother working two jobs. It isn't built for the security guard who can only study after his night shift. And it often isn't practical — because the job market doesn't always need a four-year degree. It needs <strong style={emphStyle}>specific, recognised, practical skills.</strong></p>
+
+                  <p style={{ ...pStyle, fontSize: 16, fontWeight: 700, color: S.navy }}>That is why CTS Empowerment & Training Solutions exists.</p>
+
+                  {!letterOpen && (
+                    <div style={{ textAlign: "center", margin: "24px 0 0" }}>
+                      <button onClick={() => setLetterOpen(true)} style={{ padding: "12px 28px", borderRadius: 8, background: S.navy, color: S.gold, border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: S.body, letterSpacing: 0.5, transition: "all 0.2s", boxShadow: "0 4px 16px rgba(1,30,64,0.15)" }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = "none"; }}>
+                        Continue Reading →
+                      </button>
+                    </div>
+                  )}
+
+                  {letterOpen && (
+                    <div style={{ animation: "fadeIn 0.6s ease" }}>
+                      <p style={pStyle}>Not because Jamaica needed another school. But because Jamaica needed a <em>different kind</em> of school. One where you don't have to choose between earning a living and earning a qualification. One where your TRN and your determination are enough to walk through the door.</p>
+
+                      <p style={pStyle}>I built CTS ETS to be 100% online and 100% self-paced because I believe that <strong style={emphStyle}>education should fit your life — not the other way around.</strong></p>
+
+                      <p style={pStyle}>And the qualifications you earn are not consolation prizes. They are NCTVET-aligned and City & Guilds recognised — the same standards used by training institutions across Jamaica and 80 countries worldwide. When you complete a programme at CTS ETS, employers know exactly what that means. It means you are <strong style={emphStyle}>trained, assessed, and certified to a national and international standard.</strong></p>
+
+                      <div style={{ margin: "28px 0", padding: "22px 24px", background: S.navy, borderRadius: 10, textAlign: "center" }}>
+                        <p style={{ fontFamily: S.heading, fontSize: "clamp(14px,2vw,16px)", color: "#fff", lineHeight: 1.7, fontStyle: "italic", margin: 0 }}>"Every single person who has completed a programme at CTS ETS has said the same thing —</p>
+                        <p style={{ fontFamily: S.heading, fontSize: "clamp(17px,2.5vw,22px)", color: S.gold, lineHeight: 1.5, fontWeight: 700, margin: "10px 0 0" }}>'I didn't think I could do it, but I did.'"</p>
+                      </div>
+
+                      <p style={pStyle}>And that — right there — is why I wake up every morning and do this work.</p>
+
+                      <p style={pStyle}>If you are reading this and wondering whether CTS ETS is right for you, let me make it simple:</p>
+
+                      <div style={{ margin: "24px 0", padding: "20px 24px", borderLeft: "4px solid " + S.gold, background: "rgba(196,145,18,0.04)", borderRadius: "0 10px 10px 0" }}>
+                        <p style={{ ...pStyle, marginBottom: 0 }}>If you have the desire to learn, we have the programme for you. If you have the discipline to study on your own time, we have the platform to support you. And if you have the courage to invest in yourself — then <strong style={emphStyle}>you are exactly the kind of person CTS ETS was built for.</strong></p>
+                      </div>
+
+                      <p style={pStyle}>If that is you, then I want you to know:</p>
+
+                      <div style={{ textAlign: "center", margin: "24px 0" }}>
+                        <p style={{ fontFamily: S.heading, fontSize: "clamp(22px,3.5vw,32px)", fontWeight: 800, color: S.navy, margin: 0, lineHeight: 1.3 }}>You belong here.</p>
+                        <div style={{ width: 50, height: 3, background: S.gold, margin: "12px auto", borderRadius: 2 }} />
+                      </div>
+
+                      <p style={pStyle}>Not because of where you went to school. Not because of how much money you have. Not because of who you know. But because you decided — today — that you are worth the investment.</p>
+
+                      <p style={{ fontFamily: S.heading, fontSize: 18, fontWeight: 700, color: S.navy, marginBottom: 24 }}>And you are.</p>
+
+                      <div style={{ borderTop: "2px solid " + S.gold, paddingTop: 16, marginTop: 24 }}>
+                        <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, marginBottom: 10 }}>With respect and admiration,</p>
+                        <p style={{ fontFamily: S.heading, fontSize: 16, color: S.navy, fontWeight: 700, marginBottom: 2 }}>Mark O. Lindo, Ph.D</p>
+                        <p style={{ fontFamily: S.body, fontSize: 12, color: S.gray, marginBottom: 0 }}>Founder & Principal</p>
+                        <p style={{ fontFamily: S.body, fontSize: 12, color: S.gray, marginBottom: 4 }}>CTS Empowerment & Training Solutions</p>
+                        <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                          <span style={{ fontSize: 9, fontFamily: S.body, color: S.gold, background: "rgba(196,145,18,0.08)", padding: "2px 8px", borderRadius: 4, fontWeight: 600 }}>City & Guilds Level 3 IVQ — Certified Assessor</span>
+                          <span style={{ fontSize: 9, fontFamily: S.body, color: S.gold, background: "rgba(196,145,18,0.08)", padding: "2px 8px", borderRadius: 4, fontWeight: 600 }}>NCTVET NVQ-J Level 4 — Assessment</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div style={{ height: 4, background: `linear-gradient(to right, ${S.gold}, ${S.navy}, ${S.gold})` }} />
+              </div>
+            </div>
+            </Reveal>
+
           </div>
         </div>
-        </Reveal>
 
         {/* Mantra */}
         <div style={{ textAlign: "center", padding: "24px 0", borderTop: "1px solid rgba(10,35,66,0.08)" }}>
