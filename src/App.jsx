@@ -1253,6 +1253,60 @@ function AboutPage() {
           </div>
         </div>
 
+        {/* ═══ INSTITUTIONAL STRUCTURE ═══ */}
+        <Reveal>
+        <div style={{ marginTop: 56, marginBottom: 40 }}>
+          <div style={{ textAlign: "center", marginBottom: 32 }}>
+            <div style={{ width: 60, height: 2, background: S.gold, margin: "0 auto 20px", borderRadius: 2 }} />
+            <span style={{ fontSize: 11, color: S.gold, letterSpacing: 4, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600 }}>Governance</span>
+            <h2 style={{ fontFamily: S.heading, fontSize: "clamp(22px,3.5vw,32px)", color: S.navy, margin: "12px 0 0", fontWeight: 700 }}>Our Institutional Structure</h2>
+            <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, marginTop: 10, maxWidth: 560, margin: "10px auto 0", lineHeight: 1.6 }}>CTS ETS is organised into eight departments, each with defined responsibilities, ensuring clear accountability and Ministry-compliant governance.</p>
+          </div>
+
+          {/* Principal card */}
+          <div style={{ maxWidth: 420, margin: "0 auto 24px", padding: "20px 24px", background: S.navy, borderRadius: 14, textAlign: "center", border: "2px solid " + S.gold, boxShadow: "0 6px 24px rgba(1,30,64,0.15)" }}>
+            <img src={FOUNDER_PHOTO} alt="Dr. Mark O. Lindo" style={{ width: 56, height: 56, borderRadius: "50%", objectFit: "cover", border: "3px solid " + S.gold, marginBottom: 10 }} />
+            <div style={{ fontFamily: S.heading, fontSize: 17, color: S.gold, fontWeight: 700, marginBottom: 2 }}>Office of the Principal</div>
+            <div style={{ fontFamily: S.body, fontSize: 13, color: "#fff" }}>Dr. Mark O. Lindo, Ph.D</div>
+            <div style={{ fontFamily: S.body, fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 4 }}>principal@ctsetsjm.com</div>
+          </div>
+
+          {/* Connecting line */}
+          <div style={{ width: 2, height: 24, background: S.gold, margin: "0 auto", borderRadius: 2 }} />
+
+          {/* Department grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginTop: 12 }} className="resp-grid-4">
+            {[
+              ["📋", "Admissions & Enrolment", "admissions@ctsetsjm.com", "Applications, documents, student IDs, Ministry Register"],
+              ["📚", "Academic Affairs", "academic@ctsetsjm.com", "Programme delivery, Canvas LMS, assessments, quality assurance"],
+              ["💰", "Finance & Administration", "finance@ctsetsjm.com", "Tuition, payment plans, budgeting, tax compliance"],
+              ["🤝", "Student Services & Support", "studentservices@ctsetsjm.com", "Pastoral care, guidance, complaints, alumni relations"],
+              ["📣", "Marketing & Communications", "marketing@ctsetsjm.com", "Branding, social media, recruitment, employer engagement"],
+              ["💻", "Information Technology", "it@ctsetsjm.com", "Website, Canvas, Google Workspace, automation, security"],
+              ["✅", "Quality Assurance & Compliance", "quality@ctsetsjm.com", "Ministry compliance, audits, policy, continuous improvement"],
+            ].map(([icon, name, email, desc]) => (
+              <Reveal key={name} delay={0.05}>
+              <div style={{ background: "#fff", borderRadius: 12, padding: "18px 16px", border: "1px solid rgba(1,30,64,0.06)", height: "100%", display: "flex", flexDirection: "column", transition: "all 0.2s", cursor: "default" }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = S.gold; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,145,18,0.12)"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(1,30,64,0.06)"; e.currentTarget.style.boxShadow = "none"; }}>
+                <div style={{ fontSize: 22, marginBottom: 8 }}>{icon}</div>
+                <div style={{ fontFamily: S.body, fontSize: 12, fontWeight: 700, color: S.navy, marginBottom: 4, lineHeight: 1.3 }}>{name}</div>
+                <p style={{ fontFamily: S.body, fontSize: 11, color: S.gray, lineHeight: 1.5, margin: "0 0 8px", flex: 1 }}>{desc}</p>
+                <div style={{ fontFamily: S.body, fontSize: 9, color: S.gold, fontWeight: 600, letterSpacing: 0.3 }}>{email}</div>
+              </div>
+              </Reveal>
+            ))}
+          </div>
+
+          {/* Operational note */}
+          <div style={{ marginTop: 20, padding: "14px 18px", borderRadius: 10, background: "rgba(196,145,18,0.04)", borderLeft: "3px solid " + S.gold }}>
+            <p style={{ fontFamily: S.body, fontSize: 12, color: S.gray, lineHeight: 1.6, margin: 0 }}>
+              <strong style={{ color: S.navy }}>Operational Model:</strong> During the institution's foundational phase (2026–2031), all departments are led by the Founder & Principal, supported by 47 automated workflows. Departmental heads will be recruited as student enrolment scales.
+            </p>
+          </div>
+        </div>
+        </Reveal>
+
         {/* Mantra */}
         <div style={{ textAlign: "center", padding: "24px 0", borderTop: "1px solid rgba(10,35,66,0.08)" }}>
           <p style={{ fontFamily: S.heading, fontSize: 19, color: S.navy, fontStyle: "italic", opacity: 0.7 }}>"May all who come behind us, find us faithful to the end."</p>
@@ -4379,6 +4433,7 @@ export default function CTSApp() {
           @media (max-width: 1100px) {
             .desktop-nav { display: none !important; }
             .mobile-menu-btn { display: flex !important; }
+            .resp-grid-4 { grid-template-columns: 1fr 1fr !important; }
           }
           @media (min-width: 1101px) {
             .mobile-menu-btn { display: none !important; }
@@ -4386,6 +4441,7 @@ export default function CTSApp() {
           @media (max-width: 768px) {
             .resp-grid-2 { grid-template-columns: 1fr !important; }
             .resp-grid-3 { grid-template-columns: 1fr !important; }
+            .resp-grid-4 { grid-template-columns: 1fr !important; }
             .resp-grid-calc { grid-template-columns: 1fr !important; }
             .compare-row { font-size: 11px !important; }
             .compare-row > div { padding: 8px 10px !important; }
