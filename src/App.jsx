@@ -49,17 +49,18 @@ const PROGRAMMES = {
 const REG_FEE = 5000;
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxDzchxbJi7zOIHjZc5yq6wOSvDu7NzsNzMRhgYVtTBplyF_BS_F7adQPZyU1PQrbW8hQ/exec";
 
-// WiPay Configuration — Replace with your live keys after merchant registration
+// WiPay Configuration — LIVE
 const WIPAY_CONFIG = {
-  accountNumber: "", // Your WiPay merchant account number
-  apiKey: "", // Your WiPay API key  
-  sandbox: true, // Set to false for live payments
-  fee: 0.035, // 3.5% transaction fee
+  accountNumber: "1541486593",
+  apiKey: "cfwj968p99", // PASTE YOUR API KEY HERE — from WiPay Dashboard → Developer  
+  sandbox: false, // LIVE payments enabled
+  feeStructure: "customer", // Student pays the processing fee
+  fee: 0.035, // 3.5% transaction fee (for display purposes)
   get baseUrl() { return this.sandbox ? "https://sandbox.wipayfinancial.com/v1/gateway" : "https://wipayfinancial.com/v1/gateway"; },
   currency: "JMD",
   country: "JM",
-  returnUrl: "https://ctsetsjm.com/#payment-success",
-  cancelUrl: "https://ctsetsjm.com/#apply",
+  returnUrl: "https://www.ctsetsjm.com/#payment-success",
+  cancelUrl: "https://www.ctsetsjm.com/#apply",
 };
 const CALC_DATA = [
   { level: "Job Certificate", name: "Data Entry / ICT Proficiency", tuition: 8000, goldOnly: true },
