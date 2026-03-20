@@ -1265,10 +1265,10 @@ function AboutPage() {
 
           {/* Principal card */}
           <div style={{ maxWidth: 420, margin: "0 auto 24px", padding: "20px 24px", background: S.navy, borderRadius: 14, textAlign: "center", border: "2px solid " + S.gold, boxShadow: "0 6px 24px rgba(1,30,64,0.15)" }}>
-            <img src={FOUNDER_PHOTO} alt="Dr. Mark O. Lindo" style={{ width: 56, height: 56, borderRadius: "50%", objectFit: "cover", border: "3px solid " + S.gold, marginBottom: 10 }} />
+            <img src={NAV_LOGO} alt="CTS ETS" style={{ width: 48, height: 54, objectFit: "contain", marginBottom: 10, filter: "drop-shadow(0 2px 8px rgba(196,145,18,0.3))" }} />
             <div style={{ fontFamily: S.heading, fontSize: 17, color: S.gold, fontWeight: 700, marginBottom: 2 }}>Office of the Principal</div>
-            <div style={{ fontFamily: S.body, fontSize: 13, color: "#fff" }}>Dr. Mark O. Lindo, Ph.D</div>
-            <div style={{ fontFamily: S.body, fontSize: 11, color: "rgba(255,255,255,0.5)", marginTop: 4 }}>principal@ctsetsjm.com</div>
+            <div style={{ fontFamily: S.body, fontSize: 12, color: "rgba(255,255,255,0.6)" }}>Strategic Leadership & Institutional Governance</div>
+            <div style={{ fontFamily: S.body, fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>principal@ctsetsjm.com</div>
           </div>
 
           {/* Connecting line */}
@@ -1277,13 +1277,13 @@ function AboutPage() {
           {/* Department grid */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginTop: 12 }} className="resp-grid-4">
             {[
-              ["📋", "Admissions & Enrolment", "admissions@ctsetsjm.com", "Applications, documents, student IDs, Ministry Register"],
-              ["📚", "Academic Affairs", "academic@ctsetsjm.com", "Programme delivery, Canvas LMS, assessments, quality assurance"],
-              ["💰", "Finance & Administration", "finance@ctsetsjm.com", "Tuition, payment plans, budgeting, tax compliance"],
-              ["🤝", "Student Services & Support", "studentservices@ctsetsjm.com", "Pastoral care, guidance, complaints, alumni relations"],
-              ["📣", "Marketing & Communications", "marketing@ctsetsjm.com", "Branding, social media, recruitment, employer engagement"],
-              ["💻", "Information Technology", "it@ctsetsjm.com", "Website, Canvas, Google Workspace, automation, security"],
-              ["✅", "Quality Assurance & Compliance", "quality@ctsetsjm.com", "Ministry compliance, audits, policy, continuous improvement"],
+              ["\uD83D\uDCCB", "Admissions & Enrolment", "admissions@ctsetsjm.com", "Applications, document verification, student IDs, Ministry Register"],
+              ["\uD83D\uDCDA", "Academic Affairs", "academic@ctsetsjm.com", "Programme delivery, Canvas LMS, assessments, quality assurance"],
+              ["\uD83D\uDCB0", "Finance & Administration", "finance@ctsetsjm.com", "Tuition, payment plans, budgeting, tax compliance"],
+              ["\uD83E\uDD1D", "Student Services & Support", "studentservices@ctsetsjm.com", "Pastoral care, guidance, complaints, alumni relations"],
+              ["\uD83D\uDCE3", "Marketing & Communications", "marketing@ctsetsjm.com", "Branding, social media, recruitment, employer engagement"],
+              ["\uD83D\uDCBB", "Information Technology", "it@ctsetsjm.com", "Website, Canvas LMS, Google Workspace, data security"],
+              ["\u2705", "Quality Assurance & Compliance", "quality@ctsetsjm.com", "Ministry compliance, audits, policy, continuous improvement"],
             ].map(([icon, name, email, desc]) => (
               <Reveal key={name} delay={0.05}>
               <div style={{ background: "#fff", borderRadius: 12, padding: "18px 16px", border: "1px solid rgba(1,30,64,0.06)", height: "100%", display: "flex", flexDirection: "column", transition: "all 0.2s", cursor: "default" }}
@@ -1296,13 +1296,6 @@ function AboutPage() {
               </div>
               </Reveal>
             ))}
-          </div>
-
-          {/* Operational note */}
-          <div style={{ marginTop: 20, padding: "14px 18px", borderRadius: 10, background: "rgba(196,145,18,0.04)", borderLeft: "3px solid " + S.gold }}>
-            <p style={{ fontFamily: S.body, fontSize: 12, color: S.gray, lineHeight: 1.6, margin: 0 }}>
-              <strong style={{ color: S.navy }}>Operational Model:</strong> During the institution's foundational phase (2026–2031), all departments are led by the Founder & Principal, supported by 47 automated workflows. Departmental heads will be recruited as student enrolment scales.
-            </p>
           </div>
         </div>
         </Reveal>
