@@ -3465,89 +3465,88 @@ function StudentJourneyPage({ setPage }) {
   const toggle = (i) => setActive(active === i ? -1 : i);
 
   const steps = [
-    { n: "1", t: "Enquire", s: "Explore programmes and fees", color: "#011E40", bg: "#E6F1FB", tagBg: "#011E40", tagColor: "#C49112",
+    { n: "1", t: "Enquire", s: "Browse programmes & fees", color: "#011E40", bg: "#E6F1FB", icon: "\uD83D\uDD0D", tagBg: "#011E40", tagColor: "#C49112",
       tags: ["Website","WhatsApp","Fee calculator"],
-      d: <>Visit <b>ctsetsjm.com</b> and browse our 25 programmes across 5 qualification levels. Use the <b>Fee Calculator</b> to see exact costs for your chosen programme and payment plan. Have questions? <b>WhatsApp us</b> on 876-525-6802 (Flow) or 876-381-9771 (Digicel), or email info@ctsetsjm.com.</>
+      d: <>Visit <b>ctsetsjm.com</b> and browse our 25 programmes across 5 qualification levels. Use the <b>Fee Calculator</b> to see exact costs. <b>WhatsApp us</b> on 876-525-6802 or email info@ctsetsjm.com.</>
     },
-    { n: "2", t: "Apply online", s: "Fill out form + upload documents", color: "#011E40", bg: "#E6F1FB",
-      d: <>Complete the <b>online application form</b> on ctsetsjm.com. You'll provide personal details, emergency contact, programme choice, payment plan, and educational background.<br/><br/><b>Upload these documents:</b><br/>• HEART Registration Form<br/>• TRN (Tax Registration Number)<br/>• Passport-size photo<br/>• Qualifications (CXC, CAPE, etc.)<br/>• National ID or passport<br/><br/>You'll receive a <b>confirmation email with a personalised prayer</b> immediately.</>
+    { n: "2", t: "Apply", s: "Online form + documents", color: "#011E40", bg: "#E6F1FB", icon: "\uD83D\uDCDD",
+      d: <>Complete the <b>online application form</b>. Upload: HEART form, TRN, passport photo, qualifications, and national ID. You receive a <b>confirmation email with a personalised prayer</b> immediately.</>
     },
-    { n: "3", t: "Under review", s: "We check your application", color: "#633806", bg: "#FAEEDA",
-      d: <>Our Admissions team reviews your documents and checks <b>entry requirements</b>:<br/><br/>• <b>Job Certificate:</b> Open entry — no formal qualifications<br/>• <b>Level 2:</b> Job Certificate OR 2 CXCs<br/>• <b>Level 3:</b> Level 2 OR 3 CXCs (CAPE accepted)<br/>• <b>Level 4:</b> Level 3 Diploma required<br/>• <b>Level 5:</b> Level 4 Associate required<br/><br/>If anything is missing, we'll email you. You can <b>check your status anytime</b> on the website.</>
+    { n: "3", t: "Review", s: "We check your application", color: "#633806", bg: "#FAEEDA", icon: "\uD83D\uDCCB",
+      d: <>We review your documents and <b>entry requirements</b>. Job Certificate is open entry. Level 2 needs JC or 2 CXCs. Level 3 needs L2 or 3 CXCs. Level 4 needs L3 Diploma. Level 5 needs L4 Associate. If anything is missing, we email you.</>
     },
-    { n: "4", t: "Accepted!", s: "Student ID + acceptance email", color: "#085041", bg: "#E1F5EE", tagBg: "#085041", tagColor: "#9FE1CB",
+    { n: "4", t: "Accepted", s: "Student ID assigned", color: "#085041", bg: "#E1F5EE", icon: "\u2705", tagBg: "#085041", tagColor: "#9FE1CB",
       tags: ["Student ID","Prayer email","14-day window"],
-      d: <>Congratulations! You receive:<br/>• Your permanent <b>Student ID</b> (CTSETS-2026-04-NNNN)<br/>• An <b>acceptance email with a personalised prayer</b><br/>• <b>Payment instructions</b> for your chosen plan<br/><br/>You have <b>14 days to complete payment</b> and secure your place.</>
+      d: <>You receive your permanent <b>Student ID</b>, an <b>acceptance email with prayer</b>, and payment instructions. You have <b>14 days</b> to pay and secure your place.</>
     },
-    { n: "5", t: "Pay tuition", s: "WiPay online or bank transfer", color: "#011E40", bg: "#E6F1FB",
-      d: <><b>Option 1 — Pay online (WiPay)</b><br/>Click "Pay Online" on the website. Enter your card details on WiPay's secure checkout. Instant confirmation.<br/><br/><b>Option 2 — Bank transfer + upload receipt</b><br/>Transfer to the CTS ETS business account. Upload your receipt on the Payment Centre page.<br/><br/><b>Payment plans:</b><br/>• <b>Gold:</b> 100% upfront — no processing fee (all levels)<br/>• <b>Silver:</b> 60% now + 40% at midpoint (Level 3–5 only)<br/>• <b>Bronze:</b> 30% now + monthly instalments (Level 3–5 only)</>
+    { n: "5", t: "Pay", s: "WiPay or bank transfer", color: "#011E40", bg: "#E6F1FB", icon: "\uD83D\uDCB3",
+      d: <><b>Pay online</b> via WiPay (card) or <b>bank transfer</b> + upload receipt. Plans: <b>Gold</b> (100% upfront, all levels), <b>Silver</b> (50/50 split + 5% fee, L3-5), <b>Bronze</b> (20% deposit + monthly + 8% fee, L3-5).</>
     },
-    { n: "6", t: "Enrolled!", s: "Canvas access + welcome packet", color: "#085041", bg: "#E1F5EE", tagBg: "#085041", tagColor: "#9FE1CB",
+    { n: "6", t: "Enrolled", s: "Canvas + welcome pack", color: "#085041", bg: "#E1F5EE", icon: "\uD83C\uDF93", tagBg: "#085041", tagColor: "#9FE1CB",
       tags: ["Canvas login","Welcome packet","Handbook"],
-      d: <>You're officially a CTS ETS student! You receive:<br/>• <b>Canvas LMS login credentials</b> — your Learning Portal<br/>• <b>Welcome Packet PDF</b> with everything you need<br/>• <b>Student Handbook</b> (rights, responsibilities, policies)<br/>• Access to your <b>programme modules</b><br/><br/>Over the next 120 days, you'll receive <b>9 welcome emails</b> with tips, encouragement, and guidance.</>
+      d: <>You receive <b>Canvas LMS login</b>, <b>Welcome Packet PDF</b>, Student Handbook, and access to all programme modules. Over 120 days, you get <b>9 welcome emails</b> with tips and guidance.</>
     },
-    { n: "7", t: "Learn", s: "Self-paced modules on Canvas", color: "#3C3489", bg: "#EEEDFE",
-      d: <>Study at <b>your own pace</b> from anywhere. Each programme is divided into modules containing learning materials, practice exercises, and assessment tasks.<br/><br/>Aim to complete <b>at least one module per fortnight</b> and log into Canvas <b>at least once per week</b>.<br/><br/><b>Programme durations:</b><br/>{"• Job Certificate: 2–3 months  •  Level 2: 3–4 months"}<br/>{"• Level 3: 5–6 months  •  Level 4: 7–8 months  •  Level 5: 8–9 months"}</>
+    { n: "7", t: "Learn", s: "Self-paced on Canvas", color: "#3C3489", bg: "#EEEDFE", icon: "\uD83D\uDCDA",
+      d: <>Study at <b>your own pace</b> from anywhere. Complete modules, activities, and assessments online. Log in <b>at least once per week</b>. Durations: JC 2-3 months, L2 3-4, L3 5-6, L4 7-8, L5 8-9 months.</>
     },
-    { n: "8", t: "Assessed", s: "Competent or not yet competent", color: "#3C3489", bg: "#EEEDFE", tagBg: "#3C3489", tagColor: "#CECBF6",
-      tags: ["No grades","Free re-sit","Feedback in 10 days"],
-      d: <>CTS ETS uses <b>competency-based assessment</b>:<br/><br/>• <b>Competent (C)</b> — you've demonstrated all the required skills<br/>• <b>Not Yet Competent (NYC)</b> — you need more work in some areas<br/><br/><b>No grades or percentages.</b> If you receive NYC, you get <b>one free re-assessment within 14 days</b> with clear feedback.<br/><br/><b>Methods:</b> written assignments, case studies, video demonstrations, quizzes, portfolios, and projects.</>
+    { n: "8", t: "Assessed", s: "Competent or NYC", color: "#3C3489", bg: "#EEEDFE", icon: "\uD83D\uDCDD", tagBg: "#3C3489", tagColor: "#CECBF6",
+      tags: ["No grades","Free re-sit","10-day feedback"],
+      d: <><b>Competent (C)</b> or <b>Not Yet Competent (NYC)</b>. No grades or percentages. If NYC, you get <b>one free re-assessment within 14 days</b>. Methods: assignments, case studies, video demos, quizzes, portfolios.</>
     },
-    { n: "9", t: "Completed!", s: "CTS ETS certificate issued", color: "#27500A", bg: "#EAF3DE",
-      d: <>Once all your units are Competent, you receive:<br/>• <b>CTS ETS Institutional Certificate</b> (PDF)<br/>• A <b>completion email with a personalised prayer</b><br/>• A <b>LinkedIn celebration post</b> drafted for you<br/>• An invitation to share a <b>testimonial</b><br/>• A <b>satisfaction survey</b><br/><br/>Within 3 days, you'll receive info about <b>enrolling in the next level</b>.</>
+    { n: "9", t: "Completed", s: "CTS ETS certificate", color: "#27500A", bg: "#EAF3DE", icon: "\uD83C\uDFC6",
+      d: <>CTS ETS <b>Institutional Certificate</b> issued. Completion email with prayer. <b>LinkedIn celebration post</b> drafted. Satisfaction survey. Within 3 days: info about <b>enrolling in the next level</b>.</>
     },
-    { n: "10", t: "NCTVET / City & Guilds", s: "National + international certification", color: "#27500A", bg: "#EAF3DE", tagBg: "#27500A", tagColor: "#C0DD97",
-      tags: ["NVQ-J","City & Guilds","Internationally recognised"],
-      d: <>CTS ETS registers you for <b>NCTVET External Assessment</b> or <b>City & Guilds certification</b>:<br/><br/>• An external assessor reviews your evidence portfolio<br/>• If successful, you receive the <b>NVQ-J</b> or <b>City & Guilds IVQ</b><br/>• These are <b>nationally and internationally recognised</b><br/><br/>External assessment fees are <b>separate from tuition</b> and paid directly to NCTVET.</>
+    { n: "10", t: "Certified", s: "NCTVET / City & Guilds", color: "#27500A", bg: "#EAF3DE", icon: "\uD83C\uDFAF", tagBg: "#27500A", tagColor: "#C0DD97",
+      tags: ["NVQ-J","City & Guilds","International"],
+      d: <>Register for <b>NCTVET External Assessment</b> or <b>City & Guilds certification</b>. An external assessor reviews your portfolio. <b>Nationally and internationally recognised.</b> Fees separate from tuition.</>
     },
-    { n: "11", t: "Graduate!", s: "Enter the workforce or level up", color: "#27500A", bg: "#EAF3DE",
-      d: <>You're now a <b>qualified professional</b>. Your options:<br/><br/>• <b>Enter the workforce</b> — your qualification is recognised across Jamaica and the Caribbean<br/>• <b>Enrol in the next level</b> — Level 2 → 3 → 4 → 5<br/>• <b>Become a mentor</b> — share your experience with new students<br/><br/><b>CTS ETS is with you beyond graduation.</b> We're always here for references, career guidance, or further qualifications.<br/><br/><em style={{color:"rgba(196,145,18,0.7)",fontFamily:"Georgia,serif"}}>"May all who come behind us, find us faithful to the end."</em></>
+    { n: "11", t: "Graduate!", s: "Workforce or next level", color: "#27500A", bg: "#EAF3DE", icon: "\uD83D\uDE80",
+      d: <><b>Enter the workforce</b> with a recognised qualification, <b>enrol in the next level</b>, or become a mentor. CTS ETS is with you beyond graduation.</>
     },
   ];
 
   return (
     <PageWrapper bg="#F5F3EE">
-      <SectionHeader tag="Your Path" title="Student Journey" desc="Click each step to discover what happens at every stage — from your first enquiry to graduation day." />
+      <SectionHeader tag="Your Path" title="Student Journey" desc="Click any step to learn more about what happens at each stage of your CTS ETS experience." />
       <Container>
-        <div style={{ maxWidth: 660, margin: "0 auto" }}>
-          {steps.map((step, i) => (
-            <div key={i}>
-              <div
-                onClick={() => toggle(i)}
-                style={{ display: "flex", gap: 14, alignItems: "flex-start", padding: "12px 14px", borderRadius: 12, cursor: "pointer", transition: "background 0.15s", background: active === i ? step.bg : "transparent" }}
-                onMouseEnter={e => { if (active !== i) e.currentTarget.style.background = "rgba(1,30,64,0.04)"; }}
-                onMouseLeave={e => { if (active !== i) e.currentTarget.style.background = "transparent"; }}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }} className="resp-grid-2">
+          {steps.map((step, i) => {
+            const isActive = active === i;
+            return (
+              <div key={i} onClick={() => toggle(i)} style={{ position: "relative", background: isActive ? step.bg : "#fff", border: isActive ? "2px solid " + step.color : "1px solid rgba(10,35,66,0.08)", borderRadius: 14, padding: "22px 14px 14px", cursor: "pointer", transition: "all 0.2s ease", transform: isActive ? "scale(1.03)" : "scale(1)", boxShadow: isActive ? "0 8px 24px rgba(1,30,64,0.12)" : "0 1px 4px rgba(0,0,0,0.04)", textAlign: "center", minHeight: 110, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}
+                onMouseEnter={e => { if (!isActive) { e.currentTarget.style.boxShadow = "0 4px 14px rgba(1,30,64,0.1)"; e.currentTarget.style.transform = "translateY(-2px)"; }}}
+                onMouseLeave={e => { if (!isActive) { e.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.04)"; e.currentTarget.style.transform = "scale(1)"; }}}
               >
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                  <div style={{ width: 42, height: 42, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: S.heading, fontWeight: 700, fontSize: 16, background: active === i ? S.navy : step.bg, color: active === i ? S.gold : step.color, transition: "all 0.2s", transform: active === i ? "scale(1.1)" : "scale(1)", border: active === i ? "2px solid " + S.gold : "2px solid transparent" }}>
-                    {step.n}
-                  </div>
-                  {i < steps.length - 1 && (
-                    <div style={{ width: 2, height: active === i ? 8 : 18, background: S.gold, opacity: 0.3, transition: "height 0.2s" }} />
-                  )}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <h3 style={{ fontFamily: S.heading, fontSize: 17, fontWeight: 700, color: S.navy, margin: 0 }}>{step.t}</h3>
-                    <span style={{ fontSize: 16, color: S.gold, transition: "transform 0.2s", transform: active === i ? "rotate(180deg)" : "rotate(0deg)" }}>{"\u25BE"}</span>
-                  </div>
-                  <p style={{ fontSize: 13, color: "#718096", margin: "2px 0 0", fontFamily: S.body }}>{step.s}</p>
-                  <div style={{ overflow: "hidden", maxHeight: active === i ? 600 : 0, opacity: active === i ? 1 : 0, transition: "max-height 0.35s ease, opacity 0.3s", marginTop: active === i ? 10 : 0 }}>
-                    <div style={{ padding: "14px 18px", borderRadius: 10, fontSize: 13, lineHeight: 1.7, color: "#4A5568", fontFamily: S.body, background: step.bg, borderLeft: "4px solid " + step.color }}>
-                      {step.d}
-                      {step.tags && (
-                        <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 6 }}>
-                          {step.tags.map(t => <span key={t} style={{ fontSize: 11, fontWeight: 600, padding: "2px 10px", borderRadius: 12, background: step.tagBg, color: step.tagColor }}>{t}</span>)}
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                <div style={{ position: "absolute", top: -11, left: "50%", transform: "translateX(-50%)", width: 22, height: 22, borderRadius: "50%", background: isActive ? S.navy : step.bg, color: isActive ? S.gold : step.color, fontSize: 11, fontWeight: 700, fontFamily: S.body, display: "flex", alignItems: "center", justifyContent: "center", border: isActive ? "2px solid " + S.gold : "1px solid " + step.color }}>{step.n}</div>
+                <div style={{ fontSize: 26, marginBottom: 6 }}>{step.icon}</div>
+                <h3 style={{ fontFamily: S.heading, fontSize: 14, fontWeight: 700, color: S.navy, margin: "0 0 3px", lineHeight: 1.2 }}>{step.t}</h3>
+                <p style={{ fontSize: 11, color: "#718096", fontFamily: S.body, margin: 0, lineHeight: 1.3 }}>{step.s}</p>
+                <div style={{ fontSize: 9, color: isActive ? S.gold : "rgba(196,145,18,0.4)", marginTop: 6, fontFamily: S.body, letterSpacing: 0.5 }}>{isActive ? "tap to close" : "tap for details"}</div>
+              </div>
+            );
+          })}
+        </div>
+        {active >= 0 && (
+          <Reveal>
+            <div style={{ background: steps[active].bg, borderLeft: "4px solid " + steps[active].color, borderRadius: 12, padding: "20px 24px", marginTop: 20, fontSize: 13, lineHeight: 1.7, color: "#4A5568", fontFamily: S.body, position: "relative" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                <span style={{ fontSize: 26 }}>{steps[active].icon}</span>
+                <div>
+                  <h3 style={{ fontFamily: S.heading, fontSize: 18, fontWeight: 700, color: S.navy, margin: 0 }}>Step {steps[active].n}: {steps[active].t}</h3>
+                  <p style={{ fontSize: 12, color: "#718096", margin: 0 }}>{steps[active].s}</p>
                 </div>
               </div>
+              <div>{steps[active].d}</div>
+              {steps[active].tags && (
+                <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {steps[active].tags.map(t => <span key={t} style={{ fontSize: 11, fontWeight: 600, padding: "3px 12px", borderRadius: 12, background: steps[active].tagBg, color: steps[active].tagColor }}>{t}</span>)}
+                </div>
+              )}
+              <button onClick={(e) => { e.stopPropagation(); setActive(-1); }} style={{ position: "absolute", top: 12, right: 14, background: "none", border: "none", fontSize: 18, color: "#A0AEC0", cursor: "pointer", fontFamily: S.body }} aria-label="Close">{"\u2715"}</button>
             </div>
-          ))}
-        </div>
-        <div style={{ textAlign: "center", margin: "40px 0 0" }}>
+          </Reveal>
+        )}
+        <div style={{ textAlign: "center", margin: "36px 0 0" }}>
           <Btn primary onClick={() => setPage("Apply")} style={{ color: S.navy, fontSize: 15, padding: "14px 36px" }}>Start Your Application</Btn>
         </div>
       </Container>
