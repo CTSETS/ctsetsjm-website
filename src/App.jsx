@@ -3461,7 +3461,7 @@ function ApplyPage({ setPage }) {
 // ─── CONTACT PAGE ────────────────────────────────────────────────────
 // ─── STUDENT JOURNEY PAGE ────────────────────────────────────────────
 function StudentJourneyPage({ setPage }) {
-  const [active, setActive] = React.useState(-1);
+  const [active, setActive] = useState(-1);
   const toggle = (i) => setActive(active === i ? -1 : i);
 
   const steps = [
@@ -3487,7 +3487,7 @@ function StudentJourneyPage({ setPage }) {
       d: <>You're officially a CTS ETS student! You receive:<br/>• <b>Canvas LMS login credentials</b> — your Learning Portal<br/>• <b>Welcome Packet PDF</b> with everything you need<br/>• <b>Student Handbook</b> (rights, responsibilities, policies)<br/>• Access to your <b>programme modules</b><br/><br/>Over the next 120 days, you'll receive <b>9 welcome emails</b> with tips, encouragement, and guidance.</>
     },
     { n: "7", t: "Learn", s: "Self-paced modules on Canvas", color: "#3C3489", bg: "#EEEDFE",
-      d: <>Study at <b>your own pace</b> from anywhere. Each programme is divided into modules containing learning materials, practice exercises, and assessment tasks.<br/><br/>Aim to complete <b>at least one module per fortnight</b> and log into Canvas <b>at least once per week</b>.<br/><br/><b>Programme durations:</b><br/>• Job Certificate: 2–3 months &nbsp; • Level 2: 3–4 months<br/>• Level 3: 5–6 months &nbsp; • Level 4: 7–8 months &nbsp; • Level 5: 8–9 months</>
+      d: <>Study at <b>your own pace</b> from anywhere. Each programme is divided into modules containing learning materials, practice exercises, and assessment tasks.<br/><br/>Aim to complete <b>at least one module per fortnight</b> and log into Canvas <b>at least once per week</b>.<br/><br/><b>Programme durations:</b><br/>{"• Job Certificate: 2–3 months  •  Level 2: 3–4 months"}<br/>{"• Level 3: 5–6 months  •  Level 4: 7–8 months  •  Level 5: 8–9 months"}</>
     },
     { n: "8", t: "Assessed", s: "Competent or not yet competent", color: "#3C3489", bg: "#EEEDFE", tagBg: "#3C3489", tagColor: "#CECBF6",
       tags: ["No grades","Free re-sit","Feedback in 10 days"],
@@ -3529,7 +3529,7 @@ function StudentJourneyPage({ setPage }) {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <h3 style={{ fontFamily: S.heading, fontSize: 17, fontWeight: 700, color: S.navy, margin: 0 }}>{step.t}</h3>
-                    <span style={{ fontSize: 16, color: S.gold, transition: "transform 0.2s", transform: active === i ? "rotate(180deg)" : "rotate(0deg)" }}>&#9662;</span>
+                    <span style={{ fontSize: 16, color: S.gold, transition: "transform 0.2s", transform: active === i ? "rotate(180deg)" : "rotate(0deg)" }}>{"\u25BE"}</span>
                   </div>
                   <p style={{ fontSize: 13, color: "#718096", margin: "2px 0 0", fontFamily: S.body }}>{step.s}</p>
                   <div style={{ overflow: "hidden", maxHeight: active === i ? 600 : 0, opacity: active === i ? 1 : 0, transition: "max-height 0.35s ease, opacity 0.3s", marginTop: active === i ? 10 : 0 }}>
