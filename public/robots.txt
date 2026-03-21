@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /api/
 
-Sitemap: https://ctsetsjm.com/sitemap.xml
+Sitemap: https://www.ctsetsjm.com/sitemap.xml
