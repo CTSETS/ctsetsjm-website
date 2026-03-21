@@ -961,7 +961,7 @@ function HomePage({ setPage }) {
 
       {/* Testimonials */}
       <section style={{ background: "#fff", padding: "64px 0" }}>
-        <SectionHeader tag="What Our Learners Say" title="Success Stories" desc="Real results from real learners across Jamaica." />
+        <SectionHeader tag="What Our Learners Will Say" title="Envisioned Student Outcomes" desc="These represent the kinds of results our programmes are designed to deliver. Real student testimonials will be featured here once our first cohort completes." />
         <Container>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 22 }} className="resp-grid-3">
             {TESTIMONIALS.map((t, i) => (
@@ -986,7 +986,7 @@ function HomePage({ setPage }) {
               </Reveal>
             ))}
           </div>
-          <p style={{ textAlign: "center", fontSize: 11, color: S.gray, fontFamily: S.body, marginTop: 18, fontStyle: "italic", opacity: 0.7 }}>Testimonials shown are representative examples. Names and details have been adjusted to protect privacy.</p>
+          <p style={{ textAlign: "center", fontSize: 11, color: S.gray, fontFamily: S.body, marginTop: 18, fontStyle: "italic", opacity: 0.7 }}>These are illustrative examples of the outcomes our programmes are designed to achieve. Real student testimonials will be featured as our first cohort graduates in 2026.</p>
           <div style={{ textAlign: "center", marginTop: 28 }}>
             <Btn primary onClick={() => setPage("Apply")} style={{ color: S.navy }}>Join Our Learners — Apply Now</Btn>
           </div>
@@ -1484,6 +1484,38 @@ function ProgrammesPage({ setPage }) {
           <Btn primary onClick={() => setPage("Apply")} style={{ color: S.navy }}>Apply Now</Btn>
           <WhatsAppShare text={"Check out the programmes at CTS ETS — 25 programmes from Job Certificate to Bachelor's Equivalent, aligned to NCTVET & City & Guilds! 🎓 https://ctsetsjm.com"} label="Share Programmes" />
         </div>
+
+        {/* Academic Calendar */}
+        <Reveal>
+          <div style={{ marginTop: 48, padding: "32px clamp(20px,4vw,36px)", background: "#fff", borderRadius: 14, border: "1px solid rgba(10,35,66,0.06)" }}>
+            <div style={{ textAlign: "center", marginBottom: 24 }}>
+              <div style={{ fontSize: 10, color: S.gold, letterSpacing: 3, textTransform: "uppercase", fontWeight: 700, fontFamily: S.body, marginBottom: 8 }}>Academic Year 2026–2027</div>
+              <h3 style={{ fontFamily: S.heading, fontSize: "clamp(20px,3vw,26px)", color: S.navy, fontWeight: 700, margin: 0 }}>Academic Calendar</h3>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }} className="resp-grid-3">
+              {[
+                { term: "Term 1", dates: "April 6 – July 17, 2026", weeks: "15 weeks", color: S.gold, items: ["April intake (primary)", "New Student Orientation", "First assessments (June)"] },
+                { term: "Term 2", dates: "August 17 – December 11, 2026", weeks: "17 weeks", color: S.navy, items: ["August intake (mid-year)", "NCTVET registration deadline", "Mid-programme assessments"] },
+                { term: "Term 3", dates: "January 11 – March 26, 2027", weeks: "11 weeks", color: "#27500A", items: ["January intake (new year)", "Final assessments", "Graduation: March 28"] },
+              ].map(t => (
+                <div key={t.term} style={{ padding: "20px", borderRadius: 10, border: "1px solid rgba(10,35,66,0.06)", background: "#FAFAF8" }}>
+                  <div style={{ fontSize: 10, color: t.color, letterSpacing: 2, textTransform: "uppercase", fontWeight: 700, fontFamily: S.body, marginBottom: 6 }}>{t.term}</div>
+                  <div style={{ fontFamily: S.heading, fontSize: 15, fontWeight: 700, color: S.navy, marginBottom: 2 }}>{t.dates}</div>
+                  <div style={{ fontSize: 12, color: "#718096", fontFamily: S.body, marginBottom: 12 }}>{t.weeks}</div>
+                  {t.items.map((item, j) => (
+                    <div key={j} style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 6 }}>
+                      <div style={{ width: 5, height: 5, borderRadius: "50%", background: t.color, marginTop: 5, flexShrink: 0 }} />
+                      <span style={{ fontSize: 12, color: "#4A5568", fontFamily: S.body, lineHeight: 1.4 }}>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+            <div style={{ textAlign: "center", marginTop: 16 }}>
+              <p style={{ fontSize: 12, color: "#718096", fontFamily: S.body }}>Rolling enrolment — new students may join at any time and will be assigned to the next available cohort.</p>
+            </div>
+          </div>
+        </Reveal>
         <PageScripture page="programmes" />
       </Container>
     </PageWrapper>
@@ -1769,6 +1801,10 @@ function FeesPage({ setPage }) {
         </div>
         <div style={{ marginTop: 24, padding: "14px 20px", borderRadius: 8, background: "rgba(196,145,18,0.04)", border: "1px solid rgba(196,145,18,0.1)", fontSize: 12, color: S.gray, fontFamily: S.body, lineHeight: 1.6 }}>
           ⚠️ <strong>Price Fluctuation Disclaimer:</strong> All fees shown are current as of April 2026 and are subject to change. CTS ETS reserves the right to adjust fees with reasonable notice. Confirmed enrolments will be honoured at the rate agreed at the time of registration.
+        </div>
+        <div style={{ marginTop: 12, padding: "14px 20px", borderRadius: 8, background: "rgba(1,30,64,0.03)", border: "1px solid rgba(10,35,66,0.06)", fontSize: 12, color: S.gray, fontFamily: S.body, lineHeight: 1.6, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 16 }}>📋</span>
+          <span>Changed your mind? Read our <button onClick={() => setPage("Terms")} style={{ background: "none", border: "none", color: S.gold, fontSize: 12, fontFamily: S.body, cursor: "pointer", textDecoration: "underline", padding: 0, fontWeight: 600 }}>Refund &amp; Cancellation Policy</button> — including the 7-day cooling-off period with full refund.</span>
         </div>
         <PageScripture page="fees" />
       </Container>
@@ -2265,6 +2301,39 @@ function ApplyPage({ setPage }) {
     <PageWrapper bg={S.lightBg}>
       <SectionHeader tag="Admissions" title="Apply to CTS ETS" desc="Complete the application form below and upload your required documents. Our admissions team will review your submission within 24–48 hours." />
       <Container>
+        {/* Before You Apply — Document Links */}
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 24 }}>
+          <a href="mailto:studentservices@ctsetsjm.com?subject=Student%20Handbook%20Request&body=Hi%20CTS%20ETS%2C%0A%0AI%20would%20like%20to%20request%20a%20copy%20of%20the%20Student%20Handbook.%0A%0AThank%20you." style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", borderRadius: 10, border: "1px solid rgba(10,35,66,0.08)", background: "#fff", cursor: "pointer", fontFamily: S.body, transition: "all 0.15s", boxShadow: "0 1px 3px rgba(0,0,0,0.03)", textDecoration: "none" }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = S.gold; e.currentTarget.style.boxShadow = "0 2px 8px rgba(196,145,18,0.12)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(10,35,66,0.08)"; e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.03)"; }}
+          >
+            <span style={{ fontSize: 18 }}>{"📖"}</span>
+            <div style={{ textAlign: "left" }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: S.navy }}>Student Handbook</div>
+              <div style={{ fontSize: 10, color: "#718096" }}>Request a copy via email</div>
+            </div>
+          </a>
+          <button onClick={() => setPage("Programmes")} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", borderRadius: 10, border: "1px solid rgba(10,35,66,0.08)", background: "#fff", cursor: "pointer", fontFamily: S.body, transition: "all 0.15s", boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = S.gold; e.currentTarget.style.boxShadow = "0 2px 8px rgba(196,145,18,0.12)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(10,35,66,0.08)"; e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.03)"; }}
+          >
+            <span style={{ fontSize: 18 }}>{"📅"}</span>
+            <div style={{ textAlign: "left" }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: S.navy }}>Academic Calendar</div>
+              <div style={{ fontSize: 10, color: "#718096" }}>View term dates & intakes</div>
+            </div>
+          </button>
+          <button onClick={() => setPage("Terms")} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", borderRadius: 10, border: "1px solid rgba(10,35,66,0.08)", background: "#fff", cursor: "pointer", fontFamily: S.body, transition: "all 0.15s", boxShadow: "0 1px 3px rgba(0,0,0,0.03)" }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = S.gold; e.currentTarget.style.boxShadow = "0 2px 8px rgba(196,145,18,0.12)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(10,35,66,0.08)"; e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.03)"; }}
+          >
+            <span style={{ fontSize: 18 }}>{"🔄"}</span>
+            <div style={{ textAlign: "left" }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: S.navy }}>Refund Policy</div>
+              <div style={{ fontSize: 10, color: "#718096" }}>7-day cooling-off period</div>
+            </div>
+          </button>
+        </div>
         {/* Tabs */}
         <div style={{ display: "flex", gap: 0, justifyContent: "center", marginBottom: 40, background: "#fff", borderRadius: 10, padding: 4, maxWidth: 600, margin: "0 auto 40px", boxShadow: "0 2px 8px rgba(1,30,64,0.06)", border: "1px solid rgba(1,30,64,0.08)" }}>
           {[["apply", "📝  Apply Now"], ["group", "👥  Group Enrol"], ["download", "📥  HEART Form"], ["status", "🔍  Check Status"], ["payment", "💳  Payment Centre"]].map(([v, l]) => (
@@ -3850,8 +3919,12 @@ function TermsPage() {
           </div>
 
           <div style={sectionStyle}>
-            <h3 style={hStyle}>8. Refund Policy</h3>
-            <p style={pStyle}>The registration fee is non-refundable. Tuition refunds are considered on a case-by-case basis. If a student withdraws within the first 14 days of programme commencement and has not accessed more than 20% of course materials, a partial refund (less the registration fee and any processing fees) may be issued. No refunds are provided after 14 days or if more than 20% of course materials have been accessed. Refund requests must be submitted in writing to finance@ctsetsjm.com.</p>
+            <h3 style={hStyle}>8. Refund &amp; Cancellation Policy</h3>
+            <p style={pStyle}><strong>Cooling-Off Period:</strong> Students may cancel within 7 calendar days of enrolment confirmation and receive a full refund of all tuition fees paid, less a JMD $2,000 administrative processing fee.</p>
+            <p style={pStyle}><strong>After the Cooling-Off Period:</strong> Within 14 days of enrolment: 75% refund (less admin fee). 15–30 days: 50% refund. 31–60 days: 25% refund. After 60 days or completion of more than 50% of the programme (whichever comes first): no refund.</p>
+            <p style={pStyle}><strong>Non-refundable items:</strong> NCTVET external assessment fees, the $2,000 administrative fee, WiPay processing fees, and materials already accessed or downloaded.</p>
+            <p style={pStyle}><strong>Exceptional circumstances</strong> (serious illness, bereavement, natural disaster) are considered individually by the Principal. Instalment plan obligations remain in effect until the date of withdrawal.</p>
+            <p style={pStyle}>To request a refund, email finance@ctsetsjm.com with your Student ID, programme name, reason for withdrawal, and preferred refund method. Approved refunds are processed within 15 working days. Appeals may be submitted to quality@ctsetsjm.com within 10 working days.</p>
           </div>
 
           <div style={sectionStyle}>
@@ -3911,11 +3984,26 @@ function Footer({ setPage }) {
             <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", fontFamily: S.body, lineHeight: 1.6, marginBottom: 10 }}>A registered post-secondary vocational training institution in Jamaica. 25 programmes aligned to NCTVET &amp; City &amp; Guilds.</p>
             <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", fontFamily: S.body, lineHeight: 1.6, marginBottom: 4 }}>📍 6 Newark Avenue, Kingston 11, Jamaica W.I.</p>
             <p style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", fontFamily: S.body, lineHeight: 1.5 }}>Reg. No. 16007/2025 — Companies of Jamaica</p>
+            {/* Social Media */}
+            <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+              {[
+                { label: "Facebook", url: "https://facebook.com/ctsetsjm", path: "M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" },
+                { label: "Instagram", url: "https://instagram.com/ctsetsjm", path: "M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" },
+                { label: "LinkedIn", url: "https://linkedin.com/company/ctsetsjm", path: "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" },
+              ].map(s => (
+                <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer" aria-label={s.label} style={{ width: 30, height: 30, borderRadius: 6, background: "rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", transition: "background 0.2s" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "rgba(196,145,18,0.3)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.08)"}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,0.6)"><path d={s.path}/></svg>
+                </a>
+              ))}
+            </div>
           </div>
           {/* Quick Links */}
           <div>
             <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600, marginBottom: 16 }}>Quick Links</div>
-            {["About","Programmes","Fees & Calculator","Certification","Apply","Contact"].map(p => (
+            {["About","Programmes","Student Journey","Fees & Calculator","Certification","Apply","Contact"].map(p => (
               <button key={p} onClick={() => setPage(p)} style={{ display: "block", background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 13, fontFamily: S.body, cursor: "pointer", padding: "4px 0", textAlign: "left" }}>{p}</button>
             ))}
             <a href={CANVAS_URL} target="_blank" rel="noopener noreferrer" style={{ display: "block", color: "#81C784", fontSize: 13, fontFamily: S.body, padding: "4px 0", textDecoration: "none", fontWeight: 600 }}>📚 Learning Portal</a>
@@ -4017,7 +4105,7 @@ function AdminAnalyticsPanel() {
   const [pin, setPin] = useState("");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const ADMIN_PIN = "2026";
+  const ADMIN_PIN = "831947";
 
   const fetchData = useCallback(() => {
     setLoading(true);
@@ -4037,7 +4125,7 @@ function AdminAnalyticsPanel() {
           <h2 style={{ fontFamily: S.heading, fontSize: 22, color: S.navy, marginBottom: 8 }}>Admin Access</h2>
           <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, marginBottom: 20 }}>Enter your admin PIN to view analytics.</p>
           <div style={{ display: "flex", gap: 10 }}>
-            <input type="password" value={pin} onChange={e => setPin(e.target.value)} onKeyDown={e => e.key === "Enter" && pin === ADMIN_PIN && setAuth(true)} placeholder="PIN" style={{ flex: 1, padding: "12px 16px", borderRadius: 8, border: "1px solid #E2E8F0", fontSize: 16, textAlign: "center", fontFamily: S.body, letterSpacing: 6 }} maxLength={4} />
+            <input type="password" value={pin} onChange={e => setPin(e.target.value)} onKeyDown={e => e.key === "Enter" && pin === ADMIN_PIN && setAuth(true)} placeholder="PIN" style={{ flex: 1, padding: "12px 16px", borderRadius: 8, border: "1px solid #E2E8F0", fontSize: 16, textAlign: "center", fontFamily: S.body, letterSpacing: 6 }} maxLength={6} />
             <button onClick={() => pin === ADMIN_PIN ? setAuth(true) : alert("Incorrect PIN")} style={{ padding: "12px 24px", borderRadius: 8, background: S.navy, color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>Enter</button>
           </div>
         </div>
