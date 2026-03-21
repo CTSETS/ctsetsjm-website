@@ -106,7 +106,7 @@ const GROUP_DISCOUNTS = [
   { level: "L5: Bus Admin Mgmt", standard: "$155,000", group: "$131,750", saving: "$23,250" },
 ];
 
-const PAGES = ["Home","About","Why Choose","Programmes","Certification","Fees & Calculator","For Employers","Student Journey","Apply","Contact"];
+const PAGES = ["Home","About","Why Choose","Programmes","Certification","Fees & Calculator","For Employers","Student Journey","Careers","Blog","Apply","Contact"];
 
 // Canvas LMS — Update this URL after registering at canvas.instructure.com
 const CANVAS_URL = "https://canvas.instructure.com"; // CTS ETS Learning Portal
@@ -132,6 +132,8 @@ const SCRIPTURES = {
   apply: { text: "Have I not commanded you? Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go.", ref: "Joshua 1:9", meaning: "Pressing 'Submit' is an act of courage. Whatever doubts you carry, know this — you are not doing this alone." },
   contact: { text: "Two are better than one, because they have a good return for their labour.", ref: "Ecclesiastes 4:9", meaning: "Reaching out is the beginning of partnership. We are here to walk this journey with you, not just to answer questions." },
   studentJourney: { text: "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to Him, and He will make your paths straight.", ref: "Proverbs 3:5-6", meaning: "Every step of this journey — from enquiry to graduation — is ordered by God. You do not walk alone." },
+  careers: { text: "For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, plans to give you hope and a future.", ref: "Jeremiah 29:11", meaning: "Every programme leads somewhere. Every qualification opens a door. God has already prepared the path — your job is to walk it." },
+  blog: { text: "The heart of the discerning acquires knowledge, for the ears of the wise seek it out.", ref: "Proverbs 18:15", meaning: "Learning never stops. These articles are here to equip you with knowledge beyond the classroom." },
   completion: { text: "I have fought the good fight, I have finished the race, I have kept the faith.", ref: "2 Timothy 4:7", meaning: "You did it. Every late night, every moment of doubt — it was worth it. This is your proof." },
   documents: { text: "Commit to the Lord whatever you do, and He will establish your plans.", ref: "Proverbs 16:3", meaning: "Every document you prepare, every form you complete — it is all part of God's plan unfolding in your life." },
 };
@@ -867,6 +869,346 @@ function NotFoundPage({ setPage }) {
 }
 
 
+
+// ─── ANIMATED STAT COMPONENT ─────────────────────────────────────────
+function AnimatedStat({ value, label }) {
+  const [display, setDisplay] = useState("0");
+  const ref = useRef(null);
+  const animated = useRef(false);
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !animated.current) {
+        animated.current = true;
+        const isPercent = value.includes("%");
+        const target = parseInt(value);
+        const dur = 1200;
+        const start = performance.now();
+        const tick = (now) => {
+          const p = Math.min((now - start) / dur, 1);
+          const eased = 1 - Math.pow(1 - p, 3);
+          const current = Math.round(target * eased);
+          setDisplay(current + (isPercent ? "%" : ""));
+          if (p < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }
+    }, { threshold: 0.5 });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, [value]);
+  return (
+    <div ref={ref} style={{ background: "rgba(255,255,255,0.05)", borderRadius: 10, padding: "16px 14px", textAlign: "center", border: "1px solid rgba(255,255,255,0.08)" }}>
+      <div style={{ fontFamily: S.heading, fontSize: "clamp(22px,3vw,30px)", fontWeight: 800, color: S.gold }}>{display}</div>
+      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", marginTop: 4 }}>{label}</div>
+    </div>
+  );
+}
+
+// ─── PROGRAMME DETAILS DATA ──────────────────────────────────────────
+const PROGRAMME_DETAILS = {
+  "Data Entry / ICT Proficiency": { level: "Job Certificate", duration: "2–3 months", modules: ["Keyboarding & Data Entry", "Microsoft Office Suite", "File Management & Cloud Storage", "Internet & Email Proficiency", "Data Accuracy & Quality Control"], careers: ["Data Entry Clerk", "Office Assistant", "Administrative Support", "Records Clerk", "Receptionist"], prerequisites: "Open entry — no formal qualifications needed" },
+  "Digital Literacy / CSR / Admin Asst.": { level: "Job Certificate", duration: "2–3 months", modules: ["Digital Literacy Fundamentals", "Customer Service Principles", "Telephone & Email Etiquette", "Office Administration Basics", "Filing & Records Management"], careers: ["Customer Service Representative", "Administrative Assistant", "Front Desk Officer", "Call Centre Agent", "Office Clerk"], prerequisites: "Open entry — no formal qualifications needed" },
+  "Team Leader": { level: "Job Certificate", duration: "2–3 months", modules: ["Introduction to Leadership", "Team Communication", "Conflict Resolution Basics", "Task Delegation & Monitoring", "Motivating Team Members"], careers: ["Team Leader", "Shift Supervisor", "Group Coordinator", "Section Head", "Crew Leader"], prerequisites: "Open entry — no formal qualifications needed" },
+  "Industrial Security Ops Manager": { level: "Job Certificate", duration: "2–3 months", modules: ["Security Fundamentals", "Risk Assessment Basics", "Access Control Procedures", "Report Writing", "Emergency Response Protocols"], careers: ["Security Officer", "Access Control Officer", "Site Security Coordinator", "Event Security Staff", "Loss Prevention Officer"], prerequisites: "Open entry — no formal qualifications needed" },
+  "Data Protection Officer": { level: "Job Certificate", duration: "2–3 months", modules: ["Data Privacy Principles", "GDPR & Jamaica Data Protection Act", "Organisational Compliance", "Risk Assessment for Data", "Breach Detection & Management"], careers: ["Data Protection Officer", "Compliance Assistant", "Privacy Coordinator", "Records Manager", "IT Compliance Support"], prerequisites: "Open entry — no formal qualifications needed" },
+  "Human Resource Administrator": { level: "Job Certificate", duration: "2–3 months", modules: ["Introduction to HR", "Employee Records Management", "Recruitment Support", "Payroll Basics", "Workplace Policies & Procedures"], careers: ["HR Assistant", "Payroll Clerk", "Recruitment Coordinator", "Personnel Officer", "Benefits Administrator"], prerequisites: "Open entry — no formal qualifications needed" },
+  "Customer Service": { level: "Level 2 — Vocational", duration: "3–4 months", modules: ["Customer Service Excellence", "Professional Communication", "Handling Complaints", "Telephone & Digital Service", "Product Knowledge & Sales Support", "Service Recovery Techniques"], careers: ["Customer Service Officer", "Call Centre Agent", "Help Desk Associate", "Client Relations Officer", "Retail Customer Advisor"], prerequisites: "Job Certificate OR 2 CXC subjects" },
+  "Entrepreneurship": { level: "Level 2 — Vocational", duration: "3–4 months", modules: ["Introduction to Entrepreneurship", "Business Idea Generation", "Market Research Basics", "Financial Literacy for Entrepreneurs", "Marketing Fundamentals", "Business Registration & Compliance"], careers: ["Micro-business Owner", "Freelancer", "Market Vendor (formalised)", "Online Seller", "Service Provider"], prerequisites: "Job Certificate OR 2 CXC subjects" },
+  "Administrative Assistance": { level: "Level 2 — Vocational", duration: "3–4 months", modules: ["Office Procedures", "Business Communication", "Document Preparation", "Scheduling & Calendar Management", "Filing Systems", "Customer-Facing Administration"], careers: ["Administrative Assistant", "Office Coordinator", "Secretary", "Executive Assistant (entry)", "Receptionist"], prerequisites: "Job Certificate OR 2 CXC subjects" },
+  "Business Admin (Secretarial)": { level: "Level 2 — Vocational", duration: "3–4 months", modules: ["Secretarial Practices", "Minutes & Report Writing", "Office Technology", "Event Coordination", "Business Correspondence", "Records Management"], careers: ["Executive Secretary", "Office Manager (entry)", "PA to Director", "Board Secretary (entry)", "Corporate Receptionist"], prerequisites: "Job Certificate OR 2 CXC subjects" },
+  "Industrial Security Operations": { level: "Level 2 — Vocational", duration: "3–4 months", modules: ["Advanced Security Operations", "Surveillance Techniques", "Legal Framework for Security", "Emergency Planning", "Incident Documentation", "Communication Protocols"], careers: ["Security Supervisor", "CCTV Operator", "Corporate Security Officer", "Asset Protection Specialist", "Transport Security Officer"], prerequisites: "Job Certificate OR 2 CXC subjects" },
+  "Customer Service Supervision": { level: "Level 3 — Diploma", duration: "5–6 months", modules: ["Supervising Customer Service Teams", "Quality Assurance in Service", "Staff Training & Development", "Performance Monitoring", "Service Level Agreements", "Customer Analytics & Feedback", "Handling Escalated Complaints", "Workforce Scheduling"], careers: ["Customer Service Supervisor", "Call Centre Team Leader", "Service Desk Manager", "Quality Assurance Officer", "Client Experience Manager"], prerequisites: "Level 2 OR 3 CXC subjects (CAPE accepted)" },
+  "Bus Admin — Management": { level: "Level 3 — Diploma", duration: "5–6 months", modules: ["Principles of Management", "Business Operations", "Financial Record-Keeping", "Human Resource Fundamentals", "Marketing Principles", "Business Law Basics", "Project Coordination", "Leadership & Team Management"], careers: ["Office Manager", "Operations Coordinator", "Branch Manager (entry)", "Business Development Officer", "Administrative Manager"], prerequisites: "Level 2 OR 3 CXC subjects (CAPE accepted)" },
+  "Supervisory Management": { level: "Level 3 — Diploma", duration: "5–6 months", modules: ["Supervisory Skills", "Performance Management", "Workplace Communication", "Conflict Management", "Decision-Making & Problem Solving", "Team Building", "Change Management", "Budgeting for Supervisors"], careers: ["Supervisor", "Department Lead", "Operations Supervisor", "Production Supervisor", "Facilities Supervisor"], prerequisites: "Level 2 OR 3 CXC subjects (CAPE accepted)" },
+  "Industrial Security Ops": { level: "Level 3 — Diploma", duration: "5–6 months", modules: ["Strategic Security Management", "Threat Assessment & Intelligence", "Security Auditing", "Contract Management", "Crisis Management", "Security Technology Systems", "Legal & Regulatory Compliance", "Staff Supervision & Training"], careers: ["Security Manager", "Risk Assessment Officer", "Loss Prevention Manager", "Security Consultant", "Corporate Security Coordinator"], prerequisites: "Level 2 OR 3 CXC subjects (CAPE accepted)" },
+  "Human Resource Management": { level: "Level 4 — Associate", duration: "7–8 months", modules: ["Strategic HR Management", "Recruitment & Selection", "Employee Relations", "Labour Law & Industrial Relations", "Training & Development", "Performance Appraisal Systems", "Compensation & Benefits", "HR Information Systems", "Organisational Development", "Workplace Health & Safety"], careers: ["HR Manager", "Recruitment Manager", "Training Manager", "Employee Relations Officer", "Compensation & Benefits Specialist", "HR Business Partner"], prerequisites: "Level 3 Diploma required, preferably business-related" },
+  "Bus Admin — Management L4": { level: "Level 4 — Associate", duration: "7–8 months", modules: ["Strategic Management", "Financial Management", "Marketing Strategy", "Operations Management", "Business Research Methods", "International Business", "Entrepreneurial Management", "Business Ethics & Governance", "Advanced Project Management", "Organisational Behaviour"], careers: ["General Manager", "Operations Manager", "Business Analyst", "Project Manager", "Regional Manager", "Business Development Manager"], prerequisites: "Level 3 Diploma required, preferably business-related" },
+  "Human Resource Management L5": { level: "Level 5 — Bachelor's Equivalent", duration: "8–9 months", modules: ["Advanced Strategic HRM", "Organisational Change Management", "Advanced Labour Law", "Talent Management & Succession Planning", "HR Analytics & Metrics", "International HRM", "Research Methods in HR", "Executive Leadership", "Diversity & Inclusion Strategy", "Capstone Project"], careers: ["HR Director", "Chief Human Resources Officer", "Organisational Development Director", "Talent Acquisition Director", "HR Consultant", "People & Culture Lead"], prerequisites: "Level 4 Associate required, preferably business-related" },
+  "Bus Admin Management L5": { level: "Level 5 — Bachelor's Equivalent", duration: "8–9 months", modules: ["Advanced Strategic Planning", "Corporate Finance", "Global Business Strategy", "Advanced Marketing Management", "Supply Chain Management", "Business Intelligence & Analytics", "Corporate Governance", "Innovation & Entrepreneurship", "Research Project", "Capstone Business Plan"], careers: ["Chief Operating Officer", "Managing Director", "Strategy Consultant", "Business Owner/CEO", "Programme Director", "Regional Operations Director"], prerequisites: "Level 4 Associate required, preferably business-related" },
+};
+
+// Map Level 3 Customer Service to its data (shares key with L2)
+PROGRAMME_DETAILS["Customer Service L3"] = { ...PROGRAMME_DETAILS["Customer Service Supervision"] };
+
+// ─── BLOG ARTICLES DATA ─────────────────────────────────────────────
+const BLOG_ARTICLES = [
+  {
+    id: 1,
+    title: "Why Vocational Training Matters in Jamaica",
+    date: "March 20, 2026",
+    author: "Dr. Mark O. Lindo",
+    readTime: "5 min read",
+    tag: "Education",
+    excerpt: "Jamaica faces a skills gap. Too many qualified positions go unfilled while thousands of capable Jamaicans lack the formal certifications to fill them. Vocational training bridges this gap.",
+    body: [
+      "Jamaica faces a paradox. On one hand, employers across the island struggle to find qualified candidates for supervisory, administrative, and technical roles. On the other, thousands of talented Jamaicans are underemployed or locked out of career advancement because they lack formal qualifications.",
+      "Vocational training \u2014 specifically, competency-based education and training (CBET) \u2014 is the bridge. Unlike traditional academic programmes that prioritise theory and examinations, CBET focuses on what you can do. Can you manage a team? Can you write a professional report? Can you handle a customer complaint with grace? If you can demonstrate competency, you earn the qualification.",
+      "The National Council on Technical and Vocational Education and Training (NCTVET) sets the standard in Jamaica through the NVQ-J framework. These qualifications are not consolation prizes \u2014 they are nationally recognised credentials that employers trust and regulators require.",
+      "For Jamaica to achieve Vision 2030 and beyond, we need a workforce that is not just educated, but skilled. Vocational training creates that workforce. And with 100% online delivery now available through institutions like CTS ETS, access is no longer a barrier.",
+      "The question is no longer whether vocational training matters. The question is: are you ready to invest in yourself?"
+    ]
+  },
+  {
+    id: 2,
+    title: "5 Careers You Can Start With an NVQ-J",
+    date: "March 22, 2026",
+    author: "CTS ETS",
+    readTime: "4 min read",
+    tag: "Careers",
+    excerpt: "An NVQ-J (National Vocational Qualification of Jamaica) opens doors you might not expect. Here are 5 career paths that become accessible with the right vocational qualification.",
+    body: [
+      "Many Jamaicans are surprised to learn just how much an NVQ-J qualification can accelerate their careers. Here are five real career paths that open up with vocational qualifications:",
+      "1. HR Manager (Level 4 NVQ-J in Human Resource Management) \u2014 Organisations across Jamaica need qualified HR professionals. An NVQ-J Level 4 in HRM covers recruitment, labour law, employee relations, and training. Starting salaries range from JMD $1.2M\u2013$2M per year.",
+      "2. Security Manager (Level 3 NVQ-J in Industrial Security) \u2014 Jamaica\u2019s security sector is one of the largest private employers on the island. A Level 3 diploma transforms a security guard into a security manager, with responsibility for operations, risk assessment, and compliance.",
+      "3. Customer Service Supervisor (Level 3 NVQ-J in Customer Service Supervision) \u2014 BPO and call centre operations are booming in Jamaica. A Level 3 qualification in Customer Service Supervision prepares you to lead teams, manage quality, and handle escalated issues.",
+      "4. Office Manager (Level 3 NVQ-J in Business Administration) \u2014 Every business needs someone who can keep the operations running. A Business Administration diploma covers management, finance, HR, and leadership. It\u2019s the foundation for moving into senior management.",
+      "5. Entrepreneur (Level 3 NVQ-J in Entrepreneurship) \u2014 Starting a business without a plan is a gamble. The Entrepreneurship programme gives you business planning, market analysis, financial management, and marketing skills. Turn your hustle into a sustainable business."
+    ]
+  },
+  {
+    id: 3,
+    title: "How to Study Effectively Online: Tips for Self-Paced Learners",
+    date: "March 24, 2026",
+    author: "CTS ETS",
+    readTime: "4 min read",
+    tag: "Study Tips",
+    excerpt: "Online learning gives you freedom, but freedom requires discipline. Here are practical strategies for making the most of your self-paced CTS ETS programme.",
+    body: [
+      "Online learning is a gift \u2014 but it comes with a catch. Without a fixed class schedule, the temptation to procrastinate is real. Here\u2019s how to stay on track:",
+      "Set a weekly schedule. Treat your study time like a work shift. Block out 6\u201310 hours per week (depending on your programme level) and protect that time. Consistency beats intensity.",
+      "Create a dedicated study space. It doesn\u2019t need to be a home office. A quiet corner, a library, or even a coffee shop works \u2014 as long as it\u2019s where you go to focus. Your brain will start associating that space with learning.",
+      "Break modules into smaller tasks. Don\u2019t try to complete an entire module in one sitting. Read one section, complete one activity, review one concept. Small wins build momentum.",
+      "Use the Canvas mobile app. Download it on your phone. This way, you can review materials during your commute, on your lunch break, or while waiting for an appointment. Every 15 minutes adds up.",
+      "Don\u2019t wait until you\u2019re stuck to ask for help. CTS ETS provides WhatsApp support for a reason. If something doesn\u2019t make sense, reach out immediately. The longer you sit with confusion, the harder it gets.",
+      "Log into Canvas at least once per week. This is a CTS ETS requirement, but it\u2019s also a habit that keeps you connected to your programme. Even if you only spend 20 minutes, you\u2019re maintaining momentum.",
+      "Remember: you\u2019re not studying for a grade. CTS ETS uses competency-based assessment \u2014 you\u2019re either Competent or Not Yet Competent. Focus on understanding and applying, not memorising."
+    ]
+  },
+];
+
+// ─── BLOG PAGE ──────────────────────────────────────────────────────
+function BlogPage({ setPage }) {
+  const [selected, setSelected] = useState(null);
+  if (selected) {
+    const a = BLOG_ARTICLES.find(x => x.id === selected);
+    return (
+      <PageWrapper bg="#F5F3EE">
+        <Container>
+          <button onClick={() => setSelected(null)} style={{ background: "none", border: "none", color: S.gold, fontSize: 13, fontFamily: S.body, cursor: "pointer", padding: "20px 0 12px", fontWeight: 600 }}>{"\u2190"} Back to all articles</button>
+          <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 0 60px" }}>
+            <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600, marginBottom: 8 }}>{a.tag}</div>
+            <h1 style={{ fontFamily: S.heading, fontSize: "clamp(26px,4vw,38px)", color: S.navy, fontWeight: 700, lineHeight: 1.25, margin: "0 0 16px" }}>{a.title}</h1>
+            <div style={{ display: "flex", gap: 16, fontSize: 13, color: S.gray, fontFamily: S.body, marginBottom: 32, flexWrap: "wrap" }}>
+              <span>{a.author}</span><span>{a.date}</span><span>{a.readTime}</span>
+            </div>
+            <div style={{ height: 3, background: S.gold, width: 60, borderRadius: 2, marginBottom: 32 }} />
+            {a.body.map((para, i) => <p key={i} style={{ fontFamily: S.body, fontSize: 15, color: "#2D3748", lineHeight: 1.85, marginBottom: 20 }}>{para}</p>)}
+            <div style={{ marginTop: 40, padding: "24px 28px", background: S.navy, borderRadius: 12 }}>
+              <p style={{ fontFamily: S.body, fontSize: 14, color: "rgba(255,255,255,0.8)", margin: "0 0 12px" }}>Ready to start your journey?</p>
+              <Btn primary onClick={() => setPage("Apply")} style={{ color: S.navy }}>Apply to CTS ETS</Btn>
+            </div>
+          </div>
+        </Container>
+        <PageScripture page="blog" />
+      </PageWrapper>
+    );
+  }
+  return (
+    <PageWrapper bg="#F5F3EE">
+      <SectionHeader tag="Insights" title="Blog & News" desc="Practical guidance, career insights, and updates from CTS Empowerment & Training Solutions." />
+      <Container>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 24 }} className="resp-grid-3">
+          {BLOG_ARTICLES.map(a => (
+            <Reveal key={a.id}>
+              <div onClick={() => setSelected(a.id)} style={{ background: "#fff", borderRadius: 14, overflow: "hidden", border: "1px solid rgba(10,35,66,0.06)", cursor: "pointer", transition: "all 0.2s", height: "100%", display: "flex", flexDirection: "column" }}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 8px 24px rgba(1,30,64,0.08)"; e.currentTarget.style.transform = "translateY(-4px)"; }}
+                onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; }}
+              >
+                <div style={{ height: 6, background: S.gold }} />
+                <div style={{ padding: "24px 22px", flex: 1, display: "flex", flexDirection: "column" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                    <span style={{ fontSize: 10, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700 }}>{a.tag}</span>
+                    <span style={{ fontSize: 11, color: "#A0AEC0", fontFamily: S.body }}>{a.readTime}</span>
+                  </div>
+                  <h3 style={{ fontFamily: S.heading, fontSize: 18, fontWeight: 700, color: S.navy, lineHeight: 1.3, margin: "0 0 10px" }}>{a.title}</h3>
+                  <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.65, flex: 1 }}>{a.excerpt}</p>
+                  <div style={{ marginTop: 16, fontSize: 12, color: S.gold, fontWeight: 600, fontFamily: S.body }}>{a.author} &middot; {a.date}</div>
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </Container>
+      <PageScripture page="blog" />
+    </PageWrapper>
+  );
+}
+
+// ─── CAREER OUTCOMES PAGE ───────────────────────────────────────────
+function CareerOutcomesPage({ setPage }) {
+  const [selLevel, setSelLevel] = useState("All");
+  const levels = ["All", "Job Certificate", "Level 2", "Level 3", "Level 4", "Level 5"];
+  const allProgs = Object.entries(PROGRAMME_DETAILS).filter(([k]) => !k.endsWith(" L3") && !k.endsWith(" L4") && !k.endsWith(" L5")).map(([name, d]) => ({ name, ...d }));
+  // Add back L4/L5 with clean names
+  if (PROGRAMME_DETAILS["Bus Admin — Management L4"]) allProgs.push({ name: "Bus Admin — Management", ...PROGRAMME_DETAILS["Bus Admin — Management L4"] });
+  if (PROGRAMME_DETAILS["Human Resource Management L5"]) allProgs.push({ name: "Human Resource Management", ...PROGRAMME_DETAILS["Human Resource Management L5"] });
+  if (PROGRAMME_DETAILS["Bus Admin Management L5"]) allProgs.push({ name: "Bus Admin Management", ...PROGRAMME_DETAILS["Bus Admin Management L5"] });
+  const filtered = selLevel === "All" ? allProgs : allProgs.filter(p => p.level.includes(selLevel === "Level 2" ? "Level 2" : selLevel === "Level 3" ? "Level 3" : selLevel === "Level 4" ? "Level 4" : selLevel === "Level 5" ? "Level 5" : "Job Certificate"));
+  const levelColours = { "Job Certificate": "#2E7D32", "Level 2": "#1565C0", "Level 3": "#6A1B9A", "Level 4": "#E65100", "Level 5": "#B71C1C" };
+  return (
+    <PageWrapper bg="#F5F3EE">
+      <SectionHeader tag="Where Can This Take You?" title="Career Outcomes" desc="Discover the career paths each CTS ETS programme opens. Every qualification leads somewhere real." />
+      <Container>
+        <div style={{ display: "flex", gap: 6, justifyContent: "center", flexWrap: "wrap", marginBottom: 32 }}>
+          {levels.map(l => <button key={l} onClick={() => setSelLevel(l)} style={{ padding: "8px 16px", borderRadius: 20, border: "none", background: selLevel === l ? S.navy : "#fff", color: selLevel === l ? S.gold : S.gray, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: S.body, transition: "all 0.2s" }}>{l}</button>)}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 16 }} className="resp-grid-2">
+          {filtered.map((p, i) => (
+            <Reveal key={p.name + p.level} delay={i * 0.05}>
+              <div style={{ background: "#fff", borderRadius: 14, padding: "24px 22px", border: "1px solid rgba(10,35,66,0.06)", height: "100%" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12, gap: 10, flexWrap: "wrap" }}>
+                  <h3 style={{ fontFamily: S.heading, fontSize: 16, fontWeight: 700, color: S.navy, margin: 0, flex: 1 }}>{p.name}</h3>
+                  <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 10, background: (levelColours[p.level.split(" —")[0]] || S.navy) + "15", color: levelColours[p.level.split(" —")[0]] || S.navy, fontFamily: S.body, whiteSpace: "nowrap" }}>{p.level}</span>
+                </div>
+                <div style={{ fontSize: 12, color: "#718096", fontFamily: S.body, marginBottom: 14 }}>{p.duration} &middot; {p.modules.length} modules</div>
+                <div style={{ fontSize: 11, color: S.gold, letterSpacing: 1, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 8 }}>Career Paths</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {p.careers.map(c => <span key={c} style={{ fontSize: 11, padding: "4px 10px", borderRadius: 8, background: S.navy + "08", color: S.navy, fontFamily: S.body, fontWeight: 500 }}>{c}</span>)}
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+        <div style={{ textAlign: "center", marginTop: 36 }}>
+          <Btn primary onClick={() => setPage("Apply")} style={{ color: S.navy }}>Start Your Career Journey</Btn>
+        </div>
+      </Container>
+      <PageScripture page="careers" />
+    </PageWrapper>
+  );
+}
+
+// ─── PROGRAMME DETAIL MODAL ─────────────────────────────────────────
+function ProgrammeDetailModal({ programme, onClose, setPage }) {
+  const d = PROGRAMME_DETAILS[programme.name] || PROGRAMME_DETAILS[programme.name + " L4"] || PROGRAMME_DETAILS[programme.name + " L5"];
+  if (!d) return null;
+  return (
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(1,30,64,0.6)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ background: "#fff", borderRadius: 16, maxWidth: 700, width: "100%", maxHeight: "85vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+        <div style={{ background: S.navy, padding: "24px 28px", borderRadius: "16px 16px 0 0" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div>
+              <div style={{ fontSize: 10, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 6 }}>{d.level}</div>
+              <h2 style={{ fontFamily: S.heading, fontSize: 24, fontWeight: 700, color: "#fff", margin: 0 }}>{programme.name}</h2>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", fontFamily: S.body, marginTop: 6 }}>{d.duration} &middot; {d.modules.length} modules &middot; Tuition: ${programme.tuition?.toLocaleString() || "N/A"} JMD</div>
+            </div>
+            <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", fontSize: 22, cursor: "pointer" }}>{"\u2715"}</button>
+          </div>
+        </div>
+        <div style={{ padding: "24px 28px" }}>
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 10 }}>Entry Requirements</div>
+            <p style={{ fontSize: 14, color: S.gray, fontFamily: S.body, lineHeight: 1.6, margin: 0 }}>{d.prerequisites}</p>
+          </div>
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 10 }}>Modules You Will Study</div>
+            {d.modules.map((m, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: i < d.modules.length - 1 ? "1px solid rgba(10,35,66,0.06)" : "none" }}>
+                <div style={{ width: 24, height: 24, borderRadius: 6, background: S.navy + "10", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: S.navy, fontFamily: S.body, flexShrink: 0 }}>{i + 1}</div>
+                <span style={{ fontSize: 14, color: "#2D3748", fontFamily: S.body }}>{m}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 10 }}>Career Outcomes</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {d.careers.map(c => <span key={c} style={{ fontSize: 12, padding: "6px 14px", borderRadius: 20, background: "#E1F5EE", color: "#085041", fontFamily: S.body, fontWeight: 600 }}>{c}</span>)}
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 12, marginTop: 20, flexWrap: "wrap" }}>
+            <Btn primary onClick={() => { onClose(); setPage("Apply"); }} style={{ color: S.navy, flex: 1 }}>Apply for This Programme</Btn>
+            <Btn onClick={() => { onClose(); setPage("Fees & Calculator"); }} style={{ color: S.navy, flex: 1 }}>Calculate Fees</Btn>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── PROGRAMME COMPARISON TOOL ──────────────────────────────────────
+function ProgrammeCompare() {
+  const allProgs = CALC_DATA.map(p => p.name + " (" + p.level + ")");
+  const [sel1, setSel1] = useState("");
+  const [sel2, setSel2] = useState("");
+  const getDetails = (name) => {
+    const clean = name.split(" (")[0];
+    return PROGRAMME_DETAILS[clean] || null;
+  };
+  const getCalc = (name) => {
+    const clean = name.split(" (")[0];
+    const level = name.match(/\(([^)]+)\)/)?.[1] || "";
+    return CALC_DATA.find(p => p.name === clean && p.level === level) || null;
+  };
+  const p1 = sel1 ? getDetails(sel1) : null;
+  const p2 = sel2 ? getDetails(sel2) : null;
+  const c1 = sel1 ? getCalc(sel1) : null;
+  const c2 = sel2 ? getCalc(sel2) : null;
+  if (!sel1 && !sel2) {
+    return (
+      <div style={{ background: "#fff", borderRadius: 14, padding: "28px 24px", border: "1px solid rgba(10,35,66,0.06)", textAlign: "center" }}>
+        <div style={{ fontSize: 10, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 8 }}>Programme Comparison Tool</div>
+        <h3 style={{ fontFamily: S.heading, fontSize: 22, fontWeight: 700, color: S.navy, margin: "0 0 12px" }}>Compare Two Programmes</h3>
+        <p style={{ fontSize: 13, color: S.gray, fontFamily: S.body, marginBottom: 20 }}>Select two programmes below to compare modules, career outcomes, duration, and tuition side by side.</p>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, maxWidth: 560, margin: "0 auto" }}>
+          <select value={sel1} onChange={e => setSel1(e.target.value)} style={{ padding: "12px 14px", borderRadius: 8, border: "1px solid #E2E8F0", fontSize: 13, fontFamily: S.body, color: S.navy }}>
+            <option value="">Select Programme 1</option>
+            {allProgs.map(p => <option key={p} value={p}>{p}</option>)}
+          </select>
+          <select value={sel2} onChange={e => setSel2(e.target.value)} style={{ padding: "12px 14px", borderRadius: 8, border: "1px solid #E2E8F0", fontSize: 13, fontFamily: S.body, color: S.navy }}>
+            <option value="">Select Programme 2</option>
+            {allProgs.map(p => <option key={p} value={p}>{p}</option>)}
+          </select>
+        </div>
+      </div>
+    );
+  }
+  const CompCol = ({ label, v1, v2 }) => (
+    <div style={{ display: "grid", gridTemplateColumns: "140px 1fr 1fr", gap: 0, borderBottom: "1px solid rgba(10,35,66,0.06)" }}>
+      <div style={{ padding: "10px 12px", fontSize: 12, fontWeight: 600, color: S.navy, fontFamily: S.body, background: "#FAFAF7" }}>{label}</div>
+      <div style={{ padding: "10px 12px", fontSize: 12, color: S.gray, fontFamily: S.body, borderLeft: "1px solid rgba(10,35,66,0.06)" }}>{v1 || "—"}</div>
+      <div style={{ padding: "10px 12px", fontSize: 12, color: S.gray, fontFamily: S.body, borderLeft: "1px solid rgba(10,35,66,0.06)" }}>{v2 || "—"}</div>
+    </div>
+  );
+  return (
+    <div style={{ background: "#fff", borderRadius: 14, padding: "20px", border: "1px solid rgba(10,35,66,0.06)" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+        <select value={sel1} onChange={e => setSel1(e.target.value)} style={{ padding: "10px 12px", borderRadius: 8, border: "1px solid #E2E8F0", fontSize: 12, fontFamily: S.body }}>
+          <option value="">Select Programme 1</option>
+          {allProgs.map(p => <option key={p} value={p}>{p}</option>)}
+        </select>
+        <select value={sel2} onChange={e => setSel2(e.target.value)} style={{ padding: "10px 12px", borderRadius: 8, border: "1px solid #E2E8F0", fontSize: 12, fontFamily: S.body }}>
+          <option value="">Select Programme 2</option>
+          {allProgs.map(p => <option key={p} value={p}>{p}</option>)}
+        </select>
+      </div>
+      <div style={{ border: "1px solid rgba(10,35,66,0.06)", borderRadius: 10, overflow: "hidden" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "140px 1fr 1fr", background: S.navy }}>
+          <div style={{ padding: "10px 12px", fontSize: 11, color: S.gold, fontFamily: S.body, fontWeight: 700 }}>COMPARE</div>
+          <div style={{ padding: "10px 12px", fontSize: 12, color: "#fff", fontFamily: S.body, fontWeight: 700, borderLeft: "1px solid rgba(255,255,255,0.1)" }}>{sel1?.split(" (")[0] || "Programme 1"}</div>
+          <div style={{ padding: "10px 12px", fontSize: 12, color: "#fff", fontFamily: S.body, fontWeight: 700, borderLeft: "1px solid rgba(255,255,255,0.1)" }}>{sel2?.split(" (")[0] || "Programme 2"}</div>
+        </div>
+        <CompCol label="Level" v1={p1?.level} v2={p2?.level} />
+        <CompCol label="Duration" v1={p1?.duration} v2={p2?.duration} />
+        <CompCol label="Tuition" v1={c1 ? "$" + c1.tuition.toLocaleString() + " JMD" : null} v2={c2 ? "$" + c2.tuition.toLocaleString() + " JMD" : null} />
+        <CompCol label="Modules" v1={p1?.modules.length + " modules"} v2={p2?.modules.length + " modules"} />
+        <CompCol label="Prerequisites" v1={p1?.prerequisites} v2={p2?.prerequisites} />
+        <CompCol label="Top Careers" v1={p1?.careers.slice(0,3).join(", ")} v2={p2?.careers.slice(0,3).join(", ")} />
+      </div>
+      <button onClick={() => { setSel1(""); setSel2(""); }} style={{ marginTop: 12, background: "none", border: "none", color: S.gold, fontSize: 12, fontFamily: S.body, cursor: "pointer", fontWeight: 600 }}>Reset comparison</button>
+    </div>
+  );
+}
+
 // ─── NAVBAR ──────────────────────────────────────────────────────────
 function Navbar({ page, setPage }) {
   const [open, setOpen] = useState(false);
@@ -942,10 +1284,7 @@ function HomePage({ setPage }) {
             <img src={HERO_LOGO} alt="CTS ETS" style={{ width: "100%", maxWidth: 420, margin: "0 auto", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.4)", display: "block" }} />
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               {[["25", "Programmes"], ["5", "Levels"], ["3", "Payment Plans"], ["15%", "Group Discount"]].map(([v, l]) => (
-                <div key={l} style={{ background: "rgba(255,255,255,0.05)", borderRadius: 10, padding: "16px 14px", textAlign: "center", border: "1px solid rgba(255,255,255,0.08)" }}>
-                  <div style={{ fontFamily: S.heading, fontSize: "clamp(22px,3vw,30px)", fontWeight: 800, color: S.gold }}>{v}</div>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", marginTop: 4 }}>{l}</div>
-                </div>
+                <AnimatedStat key={l} value={v} label={l} />
               ))}
             </div>
           </div>
@@ -1410,6 +1749,7 @@ function WhyChoosePage({ setPage }) {
 // ─── PROGRAMMES PAGE ─────────────────────────────────────────────────
 function ProgrammesPage({ setPage }) {
   const [activeLevel, setActiveLevel] = useState(Object.keys(PROGRAMMES)[0]);
+  const [detailProg, setDetailProg] = useState(null);
   const REQUIREMENTS = [
     { level: "Job Certificate", icon: "📝", req: "No formal qualifications required", detail: "Open entry. Suitable for individuals with or without prior training. Basic literacy and numeracy recommended.", color: "#4CAF50" },
     { level: "Level 2 — Vocational Certificate", icon: "📗", req: "Level 1 / Job Certificate OR 2 CXCs", detail: "Completion of a related Job Certificate programme, or at least 2 CXC/CSEC subjects at General Proficiency (Grades 1–3).", color: "#2196F3" },
@@ -1433,10 +1773,14 @@ function ProgrammesPage({ setPage }) {
             ))}
           </div>
           {PROGRAMMES[activeLevel].map((p, i) => (
-            <div key={p.name} style={{ display: "grid", gridTemplateColumns: "1fr 100px 100px 100px", padding: "14px 24px", background: i % 2 === 0 ? "#fff" : S.lightBg, borderBottom: "1px solid rgba(10,35,66,0.03)", gap: 10 }} className="prog-row">
+            <div key={p.name} onClick={() => setDetailProg(p)} style={{ display: "grid", gridTemplateColumns: "1fr 100px 100px 100px", padding: "14px 24px", background: i % 2 === 0 ? "#fff" : S.lightBg, borderBottom: "1px solid rgba(10,35,66,0.03)", gap: 10, cursor: "pointer", transition: "background 0.15s" }} className="prog-row"
+              onMouseEnter={e => e.currentTarget.style.background = "rgba(196,145,18,0.06)"}
+              onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? "#fff" : S.lightBg}
+            >
               <div>
                 <span style={{ fontSize: 14, color: S.navy, fontFamily: S.body, fontWeight: 500, display: "block" }}>{p.name}</span>
                 {p.desc && <span style={{ fontSize: 11, color: S.gray, fontFamily: S.body, lineHeight: 1.4, marginTop: 3, display: "block", opacity: 0.8 }}>{p.desc}</span>}
+                <span style={{ fontSize: 10, color: S.gold, fontFamily: S.body, marginTop: 3, display: "block" }}>Click for full details {"\u2192"}</span>
               </div>
               <span style={{ fontSize: 13, color: S.gray, fontFamily: S.body, textAlign: "center" }}>{p.duration}</span>
               <span style={{ fontSize: 13, color: S.gray, fontFamily: S.body, textAlign: "center" }}>{p.tuition}</span>
@@ -1516,7 +1860,15 @@ function ProgrammesPage({ setPage }) {
             </div>
           </div>
         </Reveal>
+        {/* Programme Comparison Tool */}
+        <Reveal>
+          <div style={{ marginTop: 40 }}>
+            <ProgrammeCompare />
+          </div>
+        </Reveal>
+
         <PageScripture page="programmes" />
+        {detailProg && <ProgrammeDetailModal programme={detailProg} onClose={() => setDetailProg(null)} setPage={setPage} />}
       </Container>
     </PageWrapper>
   );
@@ -4003,7 +4355,7 @@ function Footer({ setPage }) {
           {/* Quick Links */}
           <div>
             <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600, marginBottom: 16 }}>Quick Links</div>
-            {["About","Programmes","Student Journey","Fees & Calculator","Certification","Apply","Contact"].map(p => (
+            {["About","Programmes","Careers","Blog","Student Journey","Fees & Calculator","Apply","Contact"].map(p => (
               <button key={p} onClick={() => setPage(p)} style={{ display: "block", background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 13, fontFamily: S.body, cursor: "pointer", padding: "4px 0", textAlign: "left" }}>{p}</button>
             ))}
             <a href={CANVAS_URL} target="_blank" rel="noopener noreferrer" style={{ display: "block", color: "#81C784", fontSize: 13, fontFamily: S.body, padding: "4px 0", textDecoration: "none", fontWeight: 600 }}>📚 Learning Portal</a>
@@ -4516,7 +4868,7 @@ export default function CTSApp() {
 
   // Page titles
   useEffect(() => {
-    const titles = { Home: "CTS ETS — Build Real Skills. Earn Recognised Qualifications.", About: "About Us — CTS ETS", "Why Choose": "Why Choose CTS ETS", Programmes: "Programmes — CTS ETS", Certification: "Certification — CTS ETS", "Fees & Calculator": "Fees & Payment Calculator — CTS ETS", "For Employers": "For Employers — CTS ETS", "Student Journey": "Your Student Journey — CTS ETS", Apply: "Apply Now — CTS ETS", Contact: "Contact Us — CTS ETS", Privacy: "Privacy Policy — CTS ETS", Terms: "Terms & Conditions — CTS ETS" };
+    const titles = { Home: "CTS ETS — Build Real Skills. Earn Recognised Qualifications.", About: "About Us — CTS ETS", "Why Choose": "Why Choose CTS ETS", Programmes: "Programmes — CTS ETS", Certification: "Certification — CTS ETS", "Fees & Calculator": "Fees & Payment Calculator — CTS ETS", "For Employers": "For Employers — CTS ETS", "Student Journey": "Your Student Journey — CTS ETS", Careers: "Career Outcomes — CTS ETS", Blog: "Blog & News — CTS ETS", Apply: "Apply Now — CTS ETS", Contact: "Contact Us — CTS ETS", Privacy: "Privacy Policy — CTS ETS", Terms: "Terms & Conditions — CTS ETS" };
     document.title = titles[page] || "CTS Empowerment & Training Solutions";
   }, [page]);
 
@@ -4535,7 +4887,11 @@ export default function CTSApp() {
     window.gtag("config", GA_ID, { send_page_view: false });
   }, []);
 
-  // Track page views (GA4 + local + CTS backend)
+  // Tawk.to Live Chat — To activate:
+  // 1. Create free account at tawk.to
+  // 2. Get your widget code (looks like: embed.tawk.to/6XXXXXXXXXX/1XXXXXXX)
+  // 3. Uncomment and replace the URL below:
+  // useEffect(() => { const s = document.createElement("script"); s.async = true; s.src = "https://embed.tawk.to/YOUR_ID/default"; s.charset = "UTF-8"; document.head.appendChild(s); }, []);
   useEffect(() => {
     if (window.gtag) window.gtag("event", "page_view", { page_title: page, page_location: window.location.href, page_path: "/" + page.toLowerCase().replace(/ /g, "-") });
     // Ping Apps Script analytics
@@ -4581,6 +4937,8 @@ export default function CTSApp() {
       case "Fees & Calculator": return <FeesPage setPage={navigate} />;
       case "For Employers": return <EmployersPage setPage={navigate} />;
       case "Student Journey": return <StudentJourneyPage setPage={navigate} />;
+      case "Careers": return <CareerOutcomesPage setPage={navigate} />;
+      case "Blog": return <BlogPage setPage={navigate} />;
       case "Apply": return <ApplyPage setPage={navigate} />;
       case "Contact": return <ContactPage setPage={navigate} />;
       case "Privacy": return <PrivacyPage />;
