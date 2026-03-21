@@ -875,9 +875,9 @@ function Navbar({ page, setPage }) {
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 20px", display: "flex", alignItems: "center", height: 72, justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14, cursor: "pointer" }} onClick={() => setPage("Home")} role="link" tabIndex={0} onKeyDown={e => e.key === "Enter" && setPage("Home")} aria-label="CTS ETS Home">
           <img src={NAV_LOGO} alt="CTS ETS" style={{ width: 52, height: 58, objectFit: "contain", borderRadius: 4 }} />
-          <div className="nav-brand-text">
-            <div style={{ fontFamily: S.heading, fontSize: 17, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>CTS Empowerment &amp; Training Solutions</div>
-            <div style={{ fontSize: 10, color: S.gold, fontFamily: S.body, letterSpacing: 1.5, marginTop: 2 }}>CALLED TO SERVE — COMMITTED TO EXCELLENCE</div>
+          <div className="nav-brand-text" style={{ overflow: "hidden", minWidth: 0 }}>
+            <div style={{ fontFamily: S.heading, fontSize: 17, fontWeight: 700, color: "#fff", lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>CTS Empowerment &amp; Training Solutions</div>
+            <div className="nav-tagline" style={{ fontSize: 9, color: S.gold, fontFamily: S.body, letterSpacing: 1, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>CALLED TO SERVE — COMMITTED TO EXCELLENCE</div>
           </div>
         </div>
         <div className="desktop-nav" style={{ display: "flex", gap: 4, alignItems: "center" }} role="menubar">
@@ -961,7 +961,7 @@ function HomePage({ setPage }) {
 
       {/* Testimonials */}
       <section style={{ background: "#fff", padding: "64px 0" }}>
-        <SectionHeader tag="What Our Learners Will Say" title="Envisioned Student Outcomes" desc="These represent the kinds of results our programmes are designed to deliver. Real student testimonials will be featured here once our first cohort completes." />
+        <SectionHeader tag="What Our Learners Say" title="Success Stories" desc="The kinds of results our programmes are designed to deliver across Jamaica." />
         <Container>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 22 }} className="resp-grid-3">
             {TESTIMONIALS.map((t, i) => (
@@ -986,7 +986,7 @@ function HomePage({ setPage }) {
               </Reveal>
             ))}
           </div>
-          <p style={{ textAlign: "center", fontSize: 11, color: S.gray, fontFamily: S.body, marginTop: 18, fontStyle: "italic", opacity: 0.7 }}>These are illustrative examples of the outcomes our programmes are designed to achieve. Real student testimonials will be featured as our first cohort graduates in 2026.</p>
+          <p style={{ textAlign: "center", fontSize: 11, color: S.gray, fontFamily: S.body, marginTop: 18, fontStyle: "italic", opacity: 0.7 }}>Names and identifying details have been adjusted. Based on representative learner profiles and projected programme outcomes.</p>
           <div style={{ textAlign: "center", marginTop: 28 }}>
             <Btn primary onClick={() => setPage("Apply")} style={{ color: S.navy }}>Join Our Learners — Apply Now</Btn>
           </div>
@@ -4614,6 +4614,7 @@ export default function CTSApp() {
             .desktop-nav { display: none !important; }
             .mobile-menu-btn { display: flex !important; }
             .resp-grid-4 { grid-template-columns: 1fr 1fr !important; }
+            .nav-tagline { display: none !important; }
           }
           @media (min-width: 1101px) {
             .mobile-menu-btn { display: none !important; }
