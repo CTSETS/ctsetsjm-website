@@ -50,7 +50,7 @@ const REG_FEE = 5000;
 
 // International pricing — USD to JMD conversion rate (update periodically)
 const USD_RATE = 155; // JMD per 1 USD — last updated March 2026
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxDzchxbJi7zOIHjZc5yq6wOSvDu7NzsNzMRhgYVtTBplyF_BS_F7adQPZyU1PQrbW8hQ/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwuwSUVojJFZh1gnhuZQOCqAtuGHJ1LfT-CCg9MFewRx13rOibb5xDF-9GCNissgh_GpQ/exec";
 
 // WiPay Configuration — LIVE
 const WIPAY_CONFIG = {
@@ -404,13 +404,19 @@ const submitToAppsScript = async (formData, fileMap) => {
     }
     const payload = JSON.stringify({ ...formData, files });
 
-    // Method 1: Standard fetch
+    // Method 1: Standard fetch (parses response for duplicate detection)
     try {
       const res = await fetch(APPS_SCRIPT_URL, { method: "POST", body: payload });
-      if (res.ok) return { success: true };
+      if (res.ok) {
+        try {
+          const json = await res.json();
+          if (json.duplicate) return { success: false, duplicate: true, message: json.message, existingRef: json.existingRef, existingStatus: json.existingStatus };
+          return { success: true, ref: json.ref };
+        } catch (_) { return { success: true }; }
+      }
     } catch (_) {}
 
-    // Method 2: no-cors fallback
+    // Method 2: no-cors fallback (cannot read response — duplicates not detected)
     try {
       await fetch(APPS_SCRIPT_URL, { method: "POST", body: payload, mode: "no-cors" });
       return { success: true };
@@ -743,7 +749,7 @@ function AnnouncementBar({ onDismiss }) {
   return (
     <div style={{ background: S.gold, padding: "8px 20px", display: "flex", alignItems: "center", justifyContent: "center", gap: 12, flexWrap: "wrap", position: "relative", zIndex: 1001 }}>
       <span style={{ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body, textAlign: "center" }}>
-        🎓 April 2026 intake is NOW OPEN — Limited spots available!
+        🎓 Enrolment is NOW OPEN — Start anytime, study at your own pace!
       </span>
       <button onClick={dismiss} aria-label="Dismiss announcement" style={{ background: "rgba(1,30,64,0.1)", border: "none", borderRadius: "50%", width: 22, height: 22, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: S.navy, fontWeight: 700, flexShrink: 0 }}>✕</button>
     </div>
@@ -1423,7 +1429,7 @@ function HomePage({ setPage }) {
             </div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "rgba(196,145,18,0.12)", border: "1px solid rgba(196,145,18,0.3)", borderRadius: 30, padding: "8px 20px", marginBottom: 20 }}>
               <div style={{ width: 8, height: 8, borderRadius: "50%", background: S.gold, animation: "pulse 2s infinite" }} />
-              <span style={{ fontSize: 12, color: S.gold, fontFamily: S.body, fontWeight: 600, letterSpacing: 1 }}>APRIL 2026 INTAKE — NOW OPEN</span>
+              <span style={{ fontSize: 12, color: S.gold, fontFamily: S.body, fontWeight: 600, letterSpacing: 1 }}>ROLLING ENROLMENT — START ANYTIME</span>
             </div>
             {/* Countdown Timer */}
             <div style={{ marginBottom: 28 }}>
@@ -2006,9 +2012,9 @@ function ProgrammesPage({ setPage }) {
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }} className="resp-grid-3">
               {[
-                { term: "Term 1", dates: "April 6 – July 17, 2026", weeks: "15 weeks", color: S.gold, items: ["April intake (primary)", "New Student Orientation", "First assessments (June)"] },
-                { term: "Term 2", dates: "August 17 – December 11, 2026", weeks: "17 weeks", color: S.navy, items: ["August intake (mid-year)", "NCTVET registration deadline", "Mid-programme assessments"] },
-                { term: "Term 3", dates: "January 11 – March 26, 2027", weeks: "11 weeks", color: "#27500A", items: ["January intake (new year)", "Final assessments", "Graduation: March 28"] },
+                { term: "Term 1", dates: "April – July 2026", weeks: "15 weeks", color: S.gold, items: ["Rolling enrolment (join anytime)", "New Student Orientation (monthly)", "Ongoing assessments"] },
+                { term: "Term 2", dates: "August – December 2026", weeks: "17 weeks", color: S.navy, items: ["Rolling enrolment continues", "NCTVET registration deadline", "Mid-programme assessments"] },
+                { term: "Term 3", dates: "January – March 2027", weeks: "11 weeks", color: "#27500A", items: ["Rolling enrolment continues", "Final assessments", "Graduation: March 2027"] },
               ].map(t => (
                 <div key={t.term} style={{ padding: "20px", borderRadius: 10, border: "1px solid rgba(10,35,66,0.06)", background: "#FAFAF8" }}>
                   <div style={{ fontSize: 10, color: t.color, letterSpacing: 2, textTransform: "uppercase", fontWeight: 700, fontFamily: S.body, marginBottom: 6 }}>{t.term}</div>
@@ -2180,7 +2186,7 @@ function CertificationPage() {
               <div style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(14px,2.5vw,20px)", color: S.navy, fontWeight: 700, marginBottom: 4 }}>Level 3 Diploma — Customer Service Supervision</div>
               <div style={{ fontSize: 11, color: S.gold, fontFamily: "serif", marginBottom: 18 }}>NVQ-J Aligned Programme</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, maxWidth: 480, margin: "0 auto 16px" }}>
-                {[["Issue Date", "April 2026"], ["Programme Duration", "7 Months"], ["Reference", "CTS-2026-001"]].map(([label, val]) => (
+                {[["Issue Date", "March 2026"], ["Programme Duration", "7 Months"], ["Reference", "CTS-2026-001"]].map(([label, val]) => (
                   <div key={label} style={{ textAlign: "center" }}>
                     <div style={{ fontSize: 9, color: S.gray, fontFamily: "serif", textTransform: "uppercase", letterSpacing: 1 }}>{label}</div>
                     <div style={{ fontSize: 12, color: S.navy, fontFamily: "serif", fontWeight: 700, marginTop: 2 }}>{val}</div>
@@ -2236,7 +2242,7 @@ function FeesPage({ setPage }) {
     const grandJMD = parseInt(result.grandTotal.replace(/[$,]/g, ""));
     const grandUSD = "US$" + Math.round(grandJMD / USD_RATE).toLocaleString();
     const w = window.open("", "_blank");
-    w.document.write(`<html><head><title>CTS ETS Fee Breakdown</title><style>body{font-family:sans-serif;padding:40px;max-width:600px;margin:0 auto}h1{color:#011E40;font-size:24px}h2{color:#C49112;font-size:18px}.row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee}.label{color:#666}.amount{font-weight:700;color:#011E40}.total{font-size:22px;font-weight:800}.usd{font-size:18px;font-weight:700;color:#C49112}.note{font-size:12px;color:#666;margin-top:20px;line-height:1.6}</style></head><body><h1>CTS Empowerment & Training Solutions</h1><h2>Fee Breakdown — ${result.plan} Plan</h2><p><strong>Programme:</strong> ${prog.name}</p><p><strong>Level:</strong> ${selLevel}</p>${isGroup ? "<p><strong>Group Discount:</strong> 15% applied</p>" : ""}${result.steps.map(s => `<div class="row"><span class="label">${s.label}</span><span class="amount">${s.amount}</span></div><div style="font-size:12px;color:#888;padding-bottom:8px">${s.detail}</div>`).join("")}<div class="row" style="border-top:2px solid #011E40;margin-top:12px;padding-top:16px"><span class="label" style="font-size:16px">Total (USD)</span><span class="total" style="color:#C49112">${grandUSD}</span></div><div class="row"><span class="label" style="font-size:14px">JMD Equivalent</span><span class="amount" style="font-size:18px">${result.grandTotal}</span></div>${result.savings ? `<p style="color:#2E7D32;font-weight:600">Group discount saves ${result.savings}</p>` : ""}<p class="note">⚠️ USD amounts are approximate at US$1 = J$${USD_RATE}. Fees shown are current as of April 2026 and are subject to change. NCTVET external assessment fees are separate.</p><p class="note">CTS ETS | ctsetsjm.com | finance@ctsetsjm.com | 876-525-6802</p></body></html>`);
+    w.document.write(`<html><head><title>CTS ETS Fee Breakdown</title><style>body{font-family:sans-serif;padding:40px;max-width:600px;margin:0 auto}h1{color:#011E40;font-size:24px}h2{color:#C49112;font-size:18px}.row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee}.label{color:#666}.amount{font-weight:700;color:#011E40}.total{font-size:22px;font-weight:800}.usd{font-size:18px;font-weight:700;color:#C49112}.note{font-size:12px;color:#666;margin-top:20px;line-height:1.6}</style></head><body><h1>CTS Empowerment & Training Solutions</h1><h2>Fee Breakdown — ${result.plan} Plan</h2><p><strong>Programme:</strong> ${prog.name}</p><p><strong>Level:</strong> ${selLevel}</p>${isGroup ? "<p><strong>Group Discount:</strong> 15% applied</p>" : ""}${result.steps.map(s => `<div class="row"><span class="label">${s.label}</span><span class="amount">${s.amount}</span></div><div style="font-size:12px;color:#888;padding-bottom:8px">${s.detail}</div>`).join("")}<div class="row" style="border-top:2px solid #011E40;margin-top:12px;padding-top:16px"><span class="label" style="font-size:16px">Total (USD)</span><span class="total" style="color:#C49112">${grandUSD}</span></div><div class="row"><span class="label" style="font-size:14px">JMD Equivalent</span><span class="amount" style="font-size:18px">${result.grandTotal}</span></div>${result.savings ? `<p style="color:#2E7D32;font-weight:600">Group discount saves ${result.savings}</p>` : ""}<p class="note">⚠️ USD amounts are approximate at US$1 = J$${USD_RATE}. Fees shown are current as of 2026 and are subject to change. NCTVET external assessment fees are separate.</p><p class="note">CTS ETS | ctsetsjm.com | finance@ctsetsjm.com | 876-525-6802</p></body></html>`);
     w.document.close();
     w.print();
   };
@@ -2326,7 +2332,7 @@ function FeesPage({ setPage }) {
           )}
         </div>
         <div style={{ marginTop: 24, padding: "14px 20px", borderRadius: 8, background: "rgba(196,145,18,0.04)", border: "1px solid rgba(196,145,18,0.1)", fontSize: 12, color: S.gray, fontFamily: S.body, lineHeight: 1.6 }}>
-          ⚠️ <strong>Price Fluctuation Disclaimer:</strong> All fees shown are current as of April 2026 and are subject to change. CTS ETS reserves the right to adjust fees with reasonable notice. Confirmed enrolments will be honoured at the rate agreed at the time of registration.
+          ⚠️ <strong>Price Fluctuation Disclaimer:</strong> All fees shown are current as of 2026 and are subject to change. CTS ETS reserves the right to adjust fees with reasonable notice. Confirmed enrolments will be honoured at the rate agreed at the time of registration.
         </div>
         <div style={{ marginTop: 12, padding: "14px 20px", borderRadius: 8, background: "rgba(1,30,64,0.03)", border: "1px solid rgba(10,35,66,0.06)", fontSize: 12, color: S.gray, fontFamily: S.body, lineHeight: 1.6, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <span style={{ fontSize: 16 }}>📋</span>
@@ -2437,6 +2443,7 @@ function ApplyPage({ setPage }) {
   const [submitted, setSubmitted] = useState(false);
   const [showPrayer, setShowPrayer] = useState(null); // { name, context }
   const [submitting, setSubmitting] = useState(false);
+  const [duplicateError, setDuplicateError] = useState(null); // { message, existingRef, existingStatus }
   const [statusEmail, setStatusEmail] = useState("");
   const [statusResult, setStatusResult] = useState(null);
   const [statusLoading, setStatusLoading] = useState(false);
@@ -2588,7 +2595,7 @@ function ApplyPage({ setPage }) {
   const errMsg = (field) => formErrors[field] ? <div style={{ fontSize: 11, color: "#C62828", fontFamily: S.body, marginTop: 3 }}>{formErrors[field]}</div> : null;
 
   // Phone / TRN auto-format (strip non-digits)
-  const handlePhone = (k, val) => u(k, val.replace(/\D/g, "").slice(0, 10));
+  const handlePhone = (k, val) => u(k, val.replace(/\D/g, "").slice(0, applicantType === "jamaican" ? 10 : 15));
   const handleTRN = (val) => u("trn", val.replace(/\D/g, "").slice(0, 9));
 
   // Email change with typo detection
@@ -2656,8 +2663,8 @@ function ApplyPage({ setPage }) {
   const validatePhone = (phone) => { const digits = phone.replace(/\D/g, ""); return digits.length === 10; };
   const validateTRN = (trn) => { const digits = trn.replace(/\D/g, ""); return digits.length === 9; };
 
-  const secA = !!(applicantType && form.firstName.trim() && form.lastName.trim() && form.email.trim() && validateEmail(form.email) && form.phone.trim() && (applicantType === "jamaican" ? validatePhone(form.phone) : form.phone.length >= 7) && form.gender && form.parish && form.maritalStatus && form.address.trim() && (applicantType === "jamaican" ? (form.trn.trim() && validateTRN(form.trn)) : true) && (applicantType !== "jamaican" ? (form.country || form.nationality) : true));
-  const secB = !!(secA && form.emergencyName.trim() && form.emergencyPhone.trim() && (applicantType === "jamaican" ? validatePhone(form.emergencyPhone) : form.emergencyPhone.length >= 7) && form.emergencyRelation);
+  const secA = !!(applicantType && form.firstName.trim() && form.lastName.trim() && form.email.trim() && validateEmail(form.email) && form.phone.trim() && (applicantType === "jamaican" ? validatePhone(form.phone) : form.phone.replace(/\D/g, "").length >= 7) && form.gender && form.parish && form.maritalStatus && form.address.trim() && (applicantType === "jamaican" ? (form.trn.trim() && validateTRN(form.trn)) : true) && (applicantType !== "jamaican" ? (form.country || form.nationality) : true));
+  const secB = !!(secA && form.emergencyName.trim() && form.emergencyPhone.trim() && (applicantType === "jamaican" ? validatePhone(form.emergencyPhone) : form.emergencyPhone.replace(/\D/g, "").length >= 7) && form.emergencyRelation);
   const secC = !!(secB && form.level && form.programme);
   const secD = !!(secC && form.education && form.lastSchool.trim());
   const secE = !!(secD && sector);
@@ -2707,17 +2714,22 @@ function ApplyPage({ setPage }) {
     if (!form.lastName.trim()) errors.lastName = "Last name is required";
     if (!form.email.trim()) errors.email = "Email is required";
     else if (!validateEmail(form.email)) errors.email = "Please enter a valid email";
-    if (!form.phone.trim()) errors.phone = "Phone number is required (10 digits, no dashes)";
-    else if (!validatePhone(form.phone)) errors.phone = "Phone must be exactly 10 digits (e.g. 8765256802)";
-    if (!form.trn.trim()) errors.trn = "TRN is required";
-    else if (!validateTRN(form.trn)) errors.trn = "TRN must be exactly 9 digits";
+    if (!form.phone.trim()) errors.phone = "Phone number is required (digits only, no dashes)";
+    else if (applicantType === "jamaican" && !validatePhone(form.phone)) errors.phone = "Phone must be exactly 10 digits (e.g. 8765256802)";
+    else if (applicantType !== "jamaican" && form.phone.replace(/\D/g, "").length < 7) errors.phone = "Phone must be at least 7 digits (digits only, no dashes)";
+    if (applicantType === "jamaican") {
+      if (!form.trn.trim()) errors.trn = "TRN is required (9 digits, no dashes)";
+      else if (!validateTRN(form.trn)) errors.trn = "TRN must be exactly 9 digits, no dashes";
+    }
     if (!form.gender) errors.gender = "Gender is required";
-    if (!form.parish) errors.parish = "Parish of residence is required";
+    if (!form.parish) errors.parish = applicantType === "jamaican" ? "Parish of residence is required" : "City / location is required";
     if (!form.maritalStatus) errors.maritalStatus = "Marital status is required";
     if (!form.address.trim()) errors.address = "Residential address is required";
+    if (applicantType !== "jamaican" && !form.country && !form.nationality) errors.parish = "Country is required";
     if (!form.emergencyName.trim()) errors.emergencyName = "Emergency contact name is required";
-    if (!form.emergencyPhone.trim()) errors.emergencyPhone = "Emergency contact number is required (10 digits)";
-    else if (!validatePhone(form.emergencyPhone)) errors.emergencyPhone = "Contact number must be exactly 10 digits";
+    if (!form.emergencyPhone.trim()) errors.emergencyPhone = "Emergency contact number is required (digits only)";
+    else if (applicantType === "jamaican" && !validatePhone(form.emergencyPhone)) errors.emergencyPhone = "Contact number must be exactly 10 digits";
+    else if (applicantType !== "jamaican" && form.emergencyPhone.replace(/\D/g, "").length < 7) errors.emergencyPhone = "Contact number must be at least 7 digits";
     if (!form.emergencyRelation) errors.emergencyRelation = "Relationship is required";
     if (!form.level) errors.level = "Please select a level";
     if (!form.programme) errors.programme = "Please select a programme";
@@ -2741,7 +2753,7 @@ function ApplyPage({ setPage }) {
     });
     localStorage.setItem("cts_applications", JSON.stringify(apps));
 
-    await submitToAppsScript({
+    const submitResult = await submitToAppsScript({
       form_type: "New Application", ref,
       applicantType: applicantType, country: form.country || "",
       firstName: form.firstName, middleName: form.middleName, lastName: form.lastName,
@@ -2755,6 +2767,16 @@ function ApplyPage({ setPage }) {
       education: form.education, lastSchool: form.lastSchool, message: form.message,
       declarationTimestamp: declareTimestamp,
     }, { heartForm: files.heartForm, trn: files.trn, photo: files.photo, qualifications: files.qualifications, nationalId: files.nationalId, birthCert: files.birthCert });
+
+    // Stop if duplicate detected
+    if (submitResult && submitResult.duplicate) {
+      setSubmitting(false);
+      // Remove the pre-added localStorage entry
+      try { const a = JSON.parse(localStorage.getItem("cts_applications") || "[]"); const filtered = a.filter(x => x.ref !== ref); localStorage.setItem("cts_applications", JSON.stringify(filtered)); } catch(_){}
+      setDuplicateError({ message: submitResult.message, existingRef: submitResult.existingRef, existingStatus: submitResult.existingStatus });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
 
     if (window.emailjs) {
       window.emailjs.send("service_05xj674", "template_rvn4485", {
@@ -2897,6 +2919,27 @@ function ApplyPage({ setPage }) {
         {/* ─── TAB: APPLY ─── */}
         {activeTab === "apply" && (
           <div style={{ maxWidth: 740, margin: "0 auto" }}>
+            {/* Duplicate Application Error */}
+            {duplicateError && (
+              <div style={{ marginBottom: 20, padding: "20px 24px", borderRadius: 12, background: "rgba(230,81,0,0.06)", border: "2px solid rgba(230,81,0,0.3)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                  <span style={{ fontSize: 24 }}>⚠️</span>
+                  <div style={{ fontFamily: S.heading, fontSize: 16, fontWeight: 700, color: "#E65100" }}>Duplicate Application Detected</div>
+                </div>
+                <p style={{ fontFamily: S.body, fontSize: 13, color: "#2D3748", lineHeight: 1.7, margin: "0 0 12px" }}>{duplicateError.message}</p>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  <button onClick={() => { setDuplicateError(null); setActiveTab("status"); }}
+                    style={{ padding: "10px 20px", borderRadius: 8, background: S.navy, color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>
+                    🔍 Check My Application Status
+                  </button>
+                  <button onClick={() => setDuplicateError(null)}
+                    style={{ padding: "10px 20px", borderRadius: 8, background: "transparent", color: S.navy, border: "1.5px solid rgba(1,30,64,0.2)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: S.body }}>
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Trust Badge */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 20, padding: "8px 16px", borderRadius: 6, background: "rgba(46,125,50,0.04)", border: "1px solid rgba(46,125,50,0.12)" }}>
               <span style={{ fontSize: 14 }}>🔒</span>
@@ -2975,7 +3018,7 @@ function ApplyPage({ setPage }) {
                     <div><label style={labelStyle}>Country of Residence {reqDot}</label><input style={inputStyle} value={form.country} onChange={e => { u("country", e.target.value); u("nationality", e.target.value); }} placeholder="e.g. United Kingdom, Canada, Nigeria" /></div>
                   )}
                   {applicantType === "jamaican" && (
-                    <div><label style={labelStyle}>TRN {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.trn ? "#C62828" : undefined }} value={form.trn} onChange={e => handleTRN(e.target.value)} placeholder="9-digit Tax Registration Number" maxLength={9} />{errMsg("trn")}</div>
+                    <div><label style={labelStyle}>TRN {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.trn ? "#C62828" : undefined }} value={form.trn} onChange={e => handleTRN(e.target.value)} placeholder="9 digits, no dashes (e.g. 123456789)" maxLength={9} />{errMsg("trn")}</div>
                   )}
                   <div><label style={labelStyle}>Marital Status {reqDot}</label><select style={{ ...inputStyle, borderColor: formErrors.maritalStatus ? "#C62828" : undefined }} value={form.maritalStatus} onChange={e => u("maritalStatus", e.target.value)}><option value="">Select</option><option>Single</option><option>Married</option><option>Common Law</option><option>Widowed</option><option>Divorced</option></select>{errMsg("maritalStatus")}</div>
                   <div>
@@ -2988,7 +3031,7 @@ function ApplyPage({ setPage }) {
                     <label style={labelStyle}>Mobile Number {reqDot}</label>
                     <div style={{ position: "relative" }}>
                       <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 11, color: S.gray, fontFamily: S.body, pointerEvents: "none" }}>{applicantType === "jamaican" ? "+1" : "+"}</span>
-                      <input style={{ ...inputStyle, paddingLeft: applicantType === "jamaican" ? 34 : 24, borderColor: formErrors.phone ? "#C62828" : undefined }} value={form.phone} onChange={e => applicantType === "jamaican" ? handlePhone("phone", e.target.value) : u("phone", e.target.value)} placeholder={applicantType === "jamaican" ? "8765256802" : "Include country code"} maxLength={applicantType === "jamaican" ? 10 : 20} />
+                      <input style={{ ...inputStyle, paddingLeft: applicantType === "jamaican" ? 34 : 24, borderColor: formErrors.phone ? "#C62828" : undefined }} value={form.phone} onChange={e => handlePhone("phone", e.target.value)} placeholder={applicantType === "jamaican" ? "8765256802" : "Include country code, digits only"} maxLength={applicantType === "jamaican" ? 10 : 15} />
                     </div>
                     {errMsg("phone")}
                   </div>
@@ -3012,7 +3055,7 @@ function ApplyPage({ setPage }) {
                   <div><label style={labelStyle}>Contact Full Name {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.emergencyName ? "#C62828" : undefined }} value={form.emergencyName} onChange={e => u("emergencyName", e.target.value)} placeholder="Full name" />{errMsg("emergencyName")}</div>
                   <div>
                     <label style={labelStyle}>Contact Number {reqDot}</label>
-                    <input style={{ ...inputStyle, borderColor: formErrors.emergencyPhone ? "#C62828" : undefined }} value={form.emergencyPhone} onChange={e => applicantType === "jamaican" ? handlePhone("emergencyPhone", e.target.value) : u("emergencyPhone", e.target.value)} placeholder={applicantType === "jamaican" ? "8761234567 (10 digits)" : "Include country code"} maxLength={applicantType === "jamaican" ? 10 : 20} />
+                    <input style={{ ...inputStyle, borderColor: formErrors.emergencyPhone ? "#C62828" : undefined }} value={form.emergencyPhone} onChange={e => handlePhone("emergencyPhone", e.target.value)} placeholder={applicantType === "jamaican" ? "8761234567 (10 digits)" : "Digits only, include country code"} maxLength={applicantType === "jamaican" ? 10 : 15} />
                     {errMsg("emergencyPhone")}
                   </div>
                   <div><label style={labelStyle}>Relationship to Applicant {reqDot}</label><select style={{ ...inputStyle, borderColor: formErrors.emergencyRelation ? "#C62828" : undefined }} value={form.emergencyRelation} onChange={e => u("emergencyRelation", e.target.value)}><option value="">Select</option><option>Parent</option><option>Guardian</option><option>Spouse / Partner</option><option>Sibling</option><option>Relative</option><option>Friend</option></select>{errMsg("emergencyRelation")}</div>
