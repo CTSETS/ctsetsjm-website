@@ -47,6 +47,9 @@ const PROGRAMMES = {
 };
 
 const REG_FEE = 5000;
+
+// International pricing — USD to JMD conversion rate (update periodically)
+const USD_RATE = 155; // JMD per 1 USD — last updated March 2026
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxDzchxbJi7zOIHjZc5yq6wOSvDu7NzsNzMRhgYVtTBplyF_BS_F7adQPZyU1PQrbW8hQ/exec";
 
 // WiPay Configuration — LIVE
@@ -106,10 +109,19 @@ const GROUP_DISCOUNTS = [
   { level: "L5: Bus Admin Mgmt", standard: "$155,000", group: "$131,750", saving: "$23,250" },
 ];
 
-const PAGES = ["Home","About","Why Choose","Programmes","Certification","Fees & Calculator","For Employers","Student Journey","Careers","Blog","Apply","Contact"];
+const PAGES = ["Home","About","Why Choose","Programmes","Certification","Fees & Calculator","For Employers","International","Student Journey","Careers","Blog","Apply","Contact","Verify Certificate","Payment Confirm","Feedback"];
 
-// Canvas LMS — Update this URL after registering at canvas.instructure.com
-const CANVAS_URL = "https://canvas.instructure.com"; // CTS ETS Learning Portal
+// CTS ETS Student Portal — Update this URL after publishing your student portal
+// TIP: Set portal.ctsetsjm.com as a custom domain redirect to hide the hosting platform
+const PORTAL_URL = "https://sites.google.com/ctsetsjm.com/student-portal";
+
+// CTS ETS Interactive Learning Environment links — One per programme (private — do not expose tool names)
+const LEARNING_ENV_LINKS = {
+  "BSBRIM0055A": "", // Paste programme learning environment link here
+  "MOD5-SC": "", // Paste programme learning environment link here
+  "MOD6-EMD": "", // Paste programme learning environment link here
+  default: "",
+};
 
 // Booking appointment URLs (replace with your Google Calendar Appointment Schedule links)
 const BOOKING_URLS = {
@@ -136,6 +148,9 @@ const SCRIPTURES = {
   blog: { text: "The heart of the discerning acquires knowledge, for the ears of the wise seek it out.", ref: "Proverbs 18:15", meaning: "Learning never stops. These articles are here to equip you with knowledge beyond the classroom." },
   completion: { text: "I have fought the good fight, I have finished the race, I have kept the faith.", ref: "2 Timothy 4:7", meaning: "You did it. Every late night, every moment of doubt — it was worth it. This is your proof." },
   documents: { text: "Commit to the Lord whatever you do, and He will establish your plans.", ref: "Proverbs 16:3", meaning: "Every document you prepare, every form you complete — it is all part of God's plan unfolding in your life." },
+  international: { text: "For from the rising of the sun to the place of its setting, my name will be great among the nations.", ref: "Malachi 1:11", meaning: "CTS ETS was built to serve learners everywhere. No matter where you are in the world, excellence knows no borders." },
+  verify: { text: "Let your light shine before others, that they may see your good deeds and glorify your Father in heaven.", ref: "Matthew 5:16", meaning: "Your certificate is a light — proof of your dedication, your skill, and your commitment to excellence. Let it shine." },
+  feedback: { text: "As iron sharpens iron, so one person sharpens another.", ref: "Proverbs 27:17", meaning: "Your honest feedback makes us better. Every word you share helps shape the experience for the learners who come after you." },
 };
 
 function PageScripture({ page }) {
@@ -231,15 +246,17 @@ function PrayerBlessing({ name, gender, context, onClose }) {
 }
 
 const FAQS = [
-  { q: "What qualifications do I need to enrol?", a: "Entry requirements vary by level. Job Certificates are open entry (no qualifications needed). Level 2 requires a Job Certificate or 2 CXCs. Level 3 needs Level 2 or 3 CXCs. Levels 4 and 5 require the previous level diploma in a related area." },
-  { q: "Are your programmes 100% online?", a: "Yes — almost entirely. Delivery is online and self-paced. Some practical assessments may be conducted in person. You can study at your own pace, mornings, evenings, or weekends." },
+  { q: "What qualifications do I need to enrol?", a: "Entry requirements vary by level. Job Certificates are open entry (no qualifications needed — open to applicants worldwide). Level 2 requires a Job Certificate, 2 CXC/CSEC subjects, or equivalent secondary school qualifications from your country. Level 3 needs Level 2 or 3 CXC/CSEC subjects (GCSEs, O-Levels, or equivalent accepted for international students). Levels 4 and 5 require the previous level diploma in a related area." },
+  { q: "Are your programmes 100% online?", a: "Yes — 100% online and self-paced. You study through expert-written learner guides and the CTS ETS Interactive Learning System, which includes audio study sessions, an intelligent study assistant, video summaries, and flashcards. Some practical assessments may require workplace evidence. You can study at your own pace — mornings, evenings, weekends, or at 2 AM." },
+  { q: "What study tools are included?", a: "Every programme includes access to the CTS ETS Interactive Learning System — our proprietary study platform built exclusively for CTS ETS students. This gives you: Audio Study Sessions (podcast-style conversations about your course content you can listen to anywhere), an Intelligent Study Assistant (ask any question about your course and get instant, accurate answers 24/7), Study Guides and Summaries (condensed overviews of key concepts), and Flashcards (test your own understanding as you go). All included in your tuition — no extra cost." },
+  { q: "How do I access my learning materials?", a: "After enrolment, you receive a link to the CTS ETS Student Portal and your programme's Interactive Learning Environment. Everything is accessible from any device — phone, tablet, or computer. No special software or apps required. Just click the link and you're in." },
   { q: "How long do programmes take to complete?", a: "Depending on the level, programmes run from 2 months (Job Certificate) up to 9 months (Level 5). At 2 topics per week, most learners finish comfortably within the timeframe." },
   { q: "What certifications will I receive?", a: "Each programme is aligned to either NCTVET (NVQ-J) or City & Guilds — not both simultaneously. Upon successful completion of your programme and all required assessments, you will receive: (1) A CTS ETS Institutional Certificate of Completion, confirming your achievement with us; and (2) The relevant programme-aligned qualification — either an NVQ-J certificate issued through NCTVET, or a City & Guilds qualification. The specific awarding body is confirmed at enrolment. Both are nationally and internationally recognised." },
   { q: "What is the NCTVET external assessment fee?", a: "NCTVET external assessment and certification fees are separate from tuition and are paid directly to NCTVET. You will be advised of the applicable fees before the assessment stage." },
   { q: "Can my employer pay for my training?", a: "Yes! We offer a 15% group discount for 8 or more learners. Employers can enrol teams under the employer application option. Contact us for a group quotation." },
   { q: "What payment plans are available?", a: "Gold (full payment, 0% surcharge) is available for all levels. Silver (50/50) and Bronze (monthly instalments) are available for Levels 3–5 only. Job Certificate and Level 2 require full payment." },
-  { q: "How do I submit my application?", a: "Download the official HEART/NSTA application form, complete it, and upload it along with your required documents on the Apply page. Once received, payment information will be sent to you via email." },
-  { q: "What documents do I need to apply?", a: "You will need: a completed HEART/NSTA application form, TRN card or letter, a recent passport-size photograph, proof of qualifications (CXC/CAPE results or certificates), a birth certificate, and a valid National ID (passport, driver's licence, or national ID card)." },
+  { q: "How do I submit my application?", a: "Complete the online application form on ctsetsjm.com. When you start, you'll select whether you're a Jamaican, Caribbean, or International applicant — the form will adapt to show the right fields and document requirements for your location. Jamaican applicants also upload the HEART/NSTA application form. Once received, payment information will be sent to you via email." },
+  { q: "What documents do I need to apply?", a: "Documents vary by location. Jamaican applicants: HEART/NSTA application form, TRN, passport photo, qualifications (CXC/CAPE), birth certificate, and national ID. Caribbean applicants: passport photo, qualifications (CXC/CSEC or CVQ), birth certificate or passport, and government ID. International applicants: passport photo, secondary school transcripts or equivalent qualifications, passport bio page, and proof of identity. All documents can be uploaded digitally — no physical copies needed." },
   { q: "How do I contact CTS ETS?", a: "Email us at info@ctsetsjm.com, call 876-525-6802 or 876-381-9771, or WhatsApp us using the chat button on this page. We aim to respond within 24–48 hours." },
 ];
 
@@ -254,6 +271,95 @@ const TESTIMONIALS = [
 
 // ─── UTILITIES ───────────────────────────────────────────────────────
 const fmt = (n) => "$" + Math.round(n).toLocaleString();
+
+// ─── DUAL CURRENCY DISPLAY SYSTEM ───────────────────────────────────
+// ALL prices always show both USD and JMD. No toggle needed for display.
+// The ONLY choice a student makes is which currency to PAY in (Payment Centre).
+
+// Dual price display — USD primary, JMD in brackets
+const dualPrice = (jmdAmount) => {
+  const num = typeof jmdAmount === "string" ? parseInt(jmdAmount.replace(/[$,]/g, "")) : jmdAmount;
+  if (isNaN(num)) return "—";
+  return "US$" + Math.round(num / USD_RATE).toLocaleString() + " (J$" + Math.round(num).toLocaleString() + ")";
+};
+
+// Component version — more control over styling
+function DualPrice({ amount, size = 13, style = {} }) {
+  const num = typeof amount === "string" ? parseInt(amount.replace(/[$,]/g, "")) : amount;
+  if (isNaN(num)) return <span style={{ fontSize: size, fontFamily: S.body, ...style }}>—</span>;
+  const usd = "US$" + Math.round(num / USD_RATE).toLocaleString();
+  const jmd = "J$" + Math.round(num).toLocaleString();
+  return (
+    <span style={{ fontFamily: S.body, ...style }}>
+      <span style={{ fontSize: size, fontWeight: 700, color: S.navy }}>{usd}</span>
+      <span style={{ fontSize: Math.max(size - 2, 10), fontWeight: 600, color: S.gold, marginLeft: 4 }}>({jmd})</span>
+    </span>
+  );
+}
+
+// For payment-specific formatting — shows amount in selected pay currency
+const payFmt = (jmdAmount, cur) => {
+  const num = typeof jmdAmount === "number" ? jmdAmount : parseInt(String(jmdAmount).replace(/[$,]/g, ""));
+  if (cur === "usd") return "US$" + Math.round(num / USD_RATE).toLocaleString();
+  return "J$" + Math.round(num).toLocaleString();
+};
+
+// ─── PAYMENT SECURITY CONSTANTS ─────────────────────────────────────
+const SECURITY_BADGES = [
+  "🔒 256-bit SSL Encryption",
+  "🛡️ PCI DSS Level 1 Compliant",
+  "✅ 3D Secure Authentication",
+  "💳 Visa / Mastercard Accepted",
+  "🏦 USD & JMD Accounts",
+];
+
+function PaymentSecurityNotice() {
+  return (
+    <div style={{ padding: "16px 20px", borderRadius: 10, background: "rgba(46,125,50,0.03)", border: "1px solid rgba(46,125,50,0.12)", marginBottom: 20 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+        <span style={{ fontSize: 16 }}>🔐</span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: "#2E7D32", fontFamily: S.body }}>International Payment Security Standard</span>
+      </div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
+        {SECURITY_BADGES.map(b => (
+          <span key={b} style={{ padding: "4px 10px", borderRadius: 20, background: "rgba(46,125,50,0.06)", border: "1px solid rgba(46,125,50,0.15)", fontSize: 10, color: "#2E7D32", fontFamily: S.body, fontWeight: 600 }}>{b}</span>
+        ))}
+      </div>
+      <p style={{ fontSize: 11, color: S.gray, fontFamily: S.body, lineHeight: 1.6, margin: 0 }}>
+        All transactions are processed through WiPay, a PCI DSS Level 1 certified payment processor. Your card details are never stored on CTS ETS servers. All data is transmitted using 256-bit TLS encryption. 3D Secure (Verified by Visa / Mastercard SecureCode) is enforced on every transaction for fraud prevention.
+      </p>
+    </div>
+  );
+}
+
+function BankDetailsCard({ currency: bankCur }) {
+  const details = bankCur === "usd" ? BANK_DETAILS.usd : BANK_DETAILS.jmd;
+  return (
+    <div style={{ padding: "18px 20px", borderRadius: 12, background: bankCur === "usd" ? "rgba(13,71,161,0.03)" : "rgba(46,125,50,0.03)", border: "1px solid " + (bankCur === "usd" ? "rgba(13,71,161,0.15)" : "rgba(46,125,50,0.15)"), marginBottom: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+        <span style={{ fontSize: 18 }}>{bankCur === "usd" ? "🇺🇸" : "🇯🇲"}</span>
+        <span style={{ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body }}>{bankCur === "usd" ? "USD Account" : "JMD Account"} — Bank Transfer Details</span>
+      </div>
+      {[
+        ["Bank", details.bank],
+        ["Account Name", details.accountName],
+        ["Account Number", details.accountNumber || "Contact finance@ctsetsjm.com"],
+        ["Account Type", details.accountType],
+        ...(details.branch ? [["Branch", details.branch]] : []),
+        ...(bankCur === "usd" && details.swiftCode ? [["SWIFT Code", details.swiftCode]] : []),
+        ["Currency", details.currency],
+      ].map(([label, val]) => (
+        <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid rgba(0,0,0,0.04)", fontSize: 12, fontFamily: S.body }}>
+          <span style={{ color: S.gray, fontWeight: 600 }}>{label}</span>
+          <span style={{ color: S.navy, fontWeight: 700, textAlign: "right", maxWidth: "60%", wordBreak: "break-all" }}>{val}</span>
+        </div>
+      ))}
+      <p style={{ fontSize: 10, color: S.gray, fontFamily: S.body, marginTop: 10, lineHeight: 1.5, fontStyle: "italic" }}>
+        After transferring, upload your receipt via the Upload Evidence tab. Reference: your Application Reference number.
+      </p>
+    </div>
+  );
+}
 const S = { heading: "'Playfair Display', Georgia, serif", body: "'DM Sans', sans-serif", navy: "#011E40", gold: "#C49112", gray: "#4A5568", lightBg: "#FAFAF7", darkBg: "#011E40" };
 
 // Email typo detection
@@ -912,15 +1018,15 @@ const PROGRAMME_DETAILS = {
   "Industrial Security Ops Manager": { level: "Job Certificate", duration: "2–3 months", modules: ["Security Fundamentals", "Risk Assessment Basics", "Access Control Procedures", "Report Writing", "Emergency Response Protocols"], careers: ["Security Officer", "Access Control Officer", "Site Security Coordinator", "Event Security Staff", "Loss Prevention Officer"], prerequisites: "Open entry — no formal qualifications needed" },
   "Data Protection Officer": { level: "Job Certificate", duration: "2–3 months", modules: ["Data Privacy Principles", "GDPR & Jamaica Data Protection Act", "Organisational Compliance", "Risk Assessment for Data", "Breach Detection & Management"], careers: ["Data Protection Officer", "Compliance Assistant", "Privacy Coordinator", "Records Manager", "IT Compliance Support"], prerequisites: "Open entry — no formal qualifications needed" },
   "Human Resource Administrator": { level: "Job Certificate", duration: "2–3 months", modules: ["Introduction to HR", "Employee Records Management", "Recruitment Support", "Payroll Basics", "Workplace Policies & Procedures"], careers: ["HR Assistant", "Payroll Clerk", "Recruitment Coordinator", "Personnel Officer", "Benefits Administrator"], prerequisites: "Open entry — no formal qualifications needed" },
-  "Customer Service": { level: "Level 2 — Vocational", duration: "3–4 months", modules: ["Customer Service Excellence", "Professional Communication", "Handling Complaints", "Telephone & Digital Service", "Product Knowledge & Sales Support", "Service Recovery Techniques"], careers: ["Customer Service Officer", "Call Centre Agent", "Help Desk Associate", "Client Relations Officer", "Retail Customer Advisor"], prerequisites: "Job Certificate OR 2 CXC subjects" },
-  "Entrepreneurship": { level: "Level 2 — Vocational", duration: "3–4 months", modules: ["Introduction to Entrepreneurship", "Business Idea Generation", "Market Research Basics", "Financial Literacy for Entrepreneurs", "Marketing Fundamentals", "Business Registration & Compliance"], careers: ["Micro-business Owner", "Freelancer", "Market Vendor (formalised)", "Online Seller", "Service Provider"], prerequisites: "Job Certificate OR 2 CXC subjects" },
-  "Administrative Assistance": { level: "Level 2 — Vocational", duration: "3–4 months", modules: ["Office Procedures", "Business Communication", "Document Preparation", "Scheduling & Calendar Management", "Filing Systems", "Customer-Facing Administration"], careers: ["Administrative Assistant", "Office Coordinator", "Secretary", "Executive Assistant (entry)", "Receptionist"], prerequisites: "Job Certificate OR 2 CXC subjects" },
-  "Business Admin (Secretarial)": { level: "Level 2 — Vocational", duration: "3–4 months", modules: ["Secretarial Practices", "Minutes & Report Writing", "Office Technology", "Event Coordination", "Business Correspondence", "Records Management"], careers: ["Executive Secretary", "Office Manager (entry)", "PA to Director", "Board Secretary (entry)", "Corporate Receptionist"], prerequisites: "Job Certificate OR 2 CXC subjects" },
-  "Industrial Security Operations": { level: "Level 2 — Vocational", duration: "3–4 months", modules: ["Advanced Security Operations", "Surveillance Techniques", "Legal Framework for Security", "Emergency Planning", "Incident Documentation", "Communication Protocols"], careers: ["Security Supervisor", "CCTV Operator", "Corporate Security Officer", "Asset Protection Specialist", "Transport Security Officer"], prerequisites: "Job Certificate OR 2 CXC subjects" },
-  "Customer Service Supervision": { level: "Level 3 — Diploma", duration: "5–6 months", modules: ["Supervising Customer Service Teams", "Quality Assurance in Service", "Staff Training & Development", "Performance Monitoring", "Service Level Agreements", "Customer Analytics & Feedback", "Handling Escalated Complaints", "Workforce Scheduling"], careers: ["Customer Service Supervisor", "Call Centre Team Leader", "Service Desk Manager", "Quality Assurance Officer", "Client Experience Manager"], prerequisites: "Level 2 OR 3 CXC subjects (CAPE accepted)" },
-  "Bus Admin — Management": { level: "Level 3 — Diploma", duration: "5–6 months", modules: ["Principles of Management", "Business Operations", "Financial Record-Keeping", "Human Resource Fundamentals", "Marketing Principles", "Business Law Basics", "Project Coordination", "Leadership & Team Management"], careers: ["Office Manager", "Operations Coordinator", "Branch Manager (entry)", "Business Development Officer", "Administrative Manager"], prerequisites: "Level 2 OR 3 CXC subjects (CAPE accepted)" },
-  "Supervisory Management": { level: "Level 3 — Diploma", duration: "5–6 months", modules: ["Supervisory Skills", "Performance Management", "Workplace Communication", "Conflict Management", "Decision-Making & Problem Solving", "Team Building", "Change Management", "Budgeting for Supervisors"], careers: ["Supervisor", "Department Lead", "Operations Supervisor", "Production Supervisor", "Facilities Supervisor"], prerequisites: "Level 2 OR 3 CXC subjects (CAPE accepted)" },
-  "Industrial Security Ops": { level: "Level 3 — Diploma", duration: "5–6 months", modules: ["Strategic Security Management", "Threat Assessment & Intelligence", "Security Auditing", "Contract Management", "Crisis Management", "Security Technology Systems", "Legal & Regulatory Compliance", "Staff Supervision & Training"], careers: ["Security Manager", "Risk Assessment Officer", "Loss Prevention Manager", "Security Consultant", "Corporate Security Coordinator"], prerequisites: "Level 2 OR 3 CXC subjects (CAPE accepted)" },
+  "Customer Service": { level: "Level 2 — Vocational", duration: "3–4 months", modules: ["Customer Service Excellence", "Professional Communication", "Handling Complaints", "Telephone & Digital Service", "Product Knowledge & Sales Support", "Service Recovery Techniques"], careers: ["Customer Service Officer", "Call Centre Agent", "Help Desk Associate", "Client Relations Officer", "Retail Customer Advisor"], prerequisites: "Job Certificate OR 2 CXC subjects (or equivalent secondary qualifications)" },
+  "Entrepreneurship": { level: "Level 2 — Vocational", duration: "3–4 months", modules: ["Introduction to Entrepreneurship", "Business Idea Generation", "Market Research Basics", "Financial Literacy for Entrepreneurs", "Marketing Fundamentals", "Business Registration & Compliance"], careers: ["Micro-business Owner", "Freelancer", "Market Vendor (formalised)", "Online Seller", "Service Provider"], prerequisites: "Job Certificate OR 2 CXC subjects (or equivalent secondary qualifications)" },
+  "Administrative Assistance": { level: "Level 2 — Vocational", duration: "3–4 months", modules: ["Office Procedures", "Business Communication", "Document Preparation", "Scheduling & Calendar Management", "Filing Systems", "Customer-Facing Administration"], careers: ["Administrative Assistant", "Office Coordinator", "Secretary", "Executive Assistant (entry)", "Receptionist"], prerequisites: "Job Certificate OR 2 CXC subjects (or equivalent secondary qualifications)" },
+  "Business Admin (Secretarial)": { level: "Level 2 — Vocational", duration: "3–4 months", modules: ["Secretarial Practices", "Minutes & Report Writing", "Office Technology", "Event Coordination", "Business Correspondence", "Records Management"], careers: ["Executive Secretary", "Office Manager (entry)", "PA to Director", "Board Secretary (entry)", "Corporate Receptionist"], prerequisites: "Job Certificate OR 2 CXC subjects (or equivalent secondary qualifications)" },
+  "Industrial Security Operations": { level: "Level 2 — Vocational", duration: "3–4 months", modules: ["Advanced Security Operations", "Surveillance Techniques", "Legal Framework for Security", "Emergency Planning", "Incident Documentation", "Communication Protocols"], careers: ["Security Supervisor", "CCTV Operator", "Corporate Security Officer", "Asset Protection Specialist", "Transport Security Officer"], prerequisites: "Job Certificate OR 2 CXC subjects (or equivalent secondary qualifications)" },
+  "Customer Service Supervision": { level: "Level 3 — Diploma", duration: "5–6 months", modules: ["Supervising Customer Service Teams", "Quality Assurance in Service", "Staff Training & Development", "Performance Monitoring", "Service Level Agreements", "Customer Analytics & Feedback", "Handling Escalated Complaints", "Workforce Scheduling"], careers: ["Customer Service Supervisor", "Call Centre Team Leader", "Service Desk Manager", "Quality Assurance Officer", "Client Experience Manager"], prerequisites: "Level 2 OR 3 CXC subjects (CAPE, GCSEs, or equivalent accepted)" },
+  "Bus Admin — Management": { level: "Level 3 — Diploma", duration: "5–6 months", modules: ["Principles of Management", "Business Operations", "Financial Record-Keeping", "Human Resource Fundamentals", "Marketing Principles", "Business Law Basics", "Project Coordination", "Leadership & Team Management"], careers: ["Office Manager", "Operations Coordinator", "Branch Manager (entry)", "Business Development Officer", "Administrative Manager"], prerequisites: "Level 2 OR 3 CXC subjects (CAPE, GCSEs, or equivalent accepted)" },
+  "Supervisory Management": { level: "Level 3 — Diploma", duration: "5–6 months", modules: ["Supervisory Skills", "Performance Management", "Workplace Communication", "Conflict Management", "Decision-Making & Problem Solving", "Team Building", "Change Management", "Budgeting for Supervisors"], careers: ["Supervisor", "Department Lead", "Operations Supervisor", "Production Supervisor", "Facilities Supervisor"], prerequisites: "Level 2 OR 3 CXC subjects (CAPE, GCSEs, or equivalent accepted)" },
+  "Industrial Security Ops": { level: "Level 3 — Diploma", duration: "5–6 months", modules: ["Strategic Security Management", "Threat Assessment & Intelligence", "Security Auditing", "Contract Management", "Crisis Management", "Security Technology Systems", "Legal & Regulatory Compliance", "Staff Supervision & Training"], careers: ["Security Manager", "Risk Assessment Officer", "Loss Prevention Manager", "Security Consultant", "Corporate Security Coordinator"], prerequisites: "Level 2 OR 3 CXC subjects (CAPE, GCSEs, or equivalent accepted)" },
   "Human Resource Management": { level: "Level 4 — Associate", duration: "7–8 months", modules: ["Strategic HR Management", "Recruitment & Selection", "Employee Relations", "Labour Law & Industrial Relations", "Training & Development", "Performance Appraisal Systems", "Compensation & Benefits", "HR Information Systems", "Organisational Development", "Workplace Health & Safety"], careers: ["HR Manager", "Recruitment Manager", "Training Manager", "Employee Relations Officer", "Compensation & Benefits Specialist", "HR Business Partner"], prerequisites: "Level 3 Diploma required, preferably business-related" },
   "Bus Admin — Management L4": { level: "Level 4 — Associate", duration: "7–8 months", modules: ["Strategic Management", "Financial Management", "Marketing Strategy", "Operations Management", "Business Research Methods", "International Business", "Entrepreneurial Management", "Business Ethics & Governance", "Advanced Project Management", "Organisational Behaviour"], careers: ["General Manager", "Operations Manager", "Business Analyst", "Project Manager", "Regional Manager", "Business Development Manager"], prerequisites: "Level 3 Diploma required, preferably business-related" },
   "Human Resource Management L5": { level: "Level 5 — Bachelor's Equivalent", duration: "8–9 months", modules: ["Advanced Strategic HRM", "Organisational Change Management", "Advanced Labour Law", "Talent Management & Succession Planning", "HR Analytics & Metrics", "International HRM", "Research Methods in HR", "Executive Leadership", "Diversity & Inclusion Strategy", "Capstone Project"], careers: ["HR Director", "Chief Human Resources Officer", "Organisational Development Director", "Talent Acquisition Director", "HR Consultant", "People & Culture Lead"], prerequisites: "Level 4 Associate required, preferably business-related" },
@@ -978,9 +1084,9 @@ const BLOG_ARTICLES = [
       "Set a weekly schedule. Treat your study time like a work shift. Block out 6\u201310 hours per week (depending on your programme level) and protect that time. Consistency beats intensity.",
       "Create a dedicated study space. It doesn\u2019t need to be a home office. A quiet corner, a library, or even a coffee shop works \u2014 as long as it\u2019s where you go to focus. Your brain will start associating that space with learning.",
       "Break modules into smaller tasks. Don\u2019t try to complete an entire module in one sitting. Read one section, complete one activity, review one concept. Small wins build momentum.",
-      "Use the Canvas mobile app. Download it on your phone. This way, you can review materials during your commute, on your lunch break, or while waiting for an appointment. Every 15 minutes adds up.",
+      "Use your phone to study. Access your learner guides and interactive study tools on your mobile device. This way, you can review materials during your commute, on your lunch break, or while waiting for an appointment. Every 15 minutes adds up.",
       "Don\u2019t wait until you\u2019re stuck to ask for help. CTS ETS provides WhatsApp support for a reason. If something doesn\u2019t make sense, reach out immediately. The longer you sit with confusion, the harder it gets.",
-      "Log into Canvas at least once per week. This is a CTS ETS requirement, but it\u2019s also a habit that keeps you connected to your programme. Even if you only spend 20 minutes, you\u2019re maintaining momentum.",
+      "Log into the Student Portal at least once per week. This keeps you connected to your programme and your study tools. Even if you only spend 20 minutes, you\u2019re maintaining momentum.",
       "Remember: you\u2019re not studying for a grade. CTS ETS uses competency-based assessment \u2014 you\u2019re either Competent or Not Yet Competent. Focus on understanding and applying, not memorising."
     ]
   },
@@ -1100,7 +1206,7 @@ function ProgrammeDetailModal({ programme, onClose, setPage }) {
             <div>
               <div style={{ fontSize: 10, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 6 }}>{d.level}</div>
               <h2 style={{ fontFamily: S.heading, fontSize: 24, fontWeight: 700, color: "#fff", margin: 0 }}>{programme.name}</h2>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", fontFamily: S.body, marginTop: 6 }}>{d.duration} &middot; {d.modules.length} modules &middot; Tuition: ${programme.tuition?.toLocaleString() || "N/A"} JMD</div>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", fontFamily: S.body, marginTop: 6 }}>{d.duration} &middot; {d.modules.length} modules &middot; {dualPrice(programme.tuition || 0)}</div>
             </div>
             <button onClick={onClose} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", fontSize: 22, cursor: "pointer" }}>{"\u2715"}</button>
           </div>
@@ -1199,7 +1305,7 @@ function ProgrammeCompare() {
         </div>
         <CompCol label="Level" v1={p1?.level} v2={p2?.level} />
         <CompCol label="Duration" v1={p1?.duration} v2={p2?.duration} />
-        <CompCol label="Tuition" v1={c1 ? "$" + c1.tuition.toLocaleString() + " JMD" : null} v2={c2 ? "$" + c2.tuition.toLocaleString() + " JMD" : null} />
+        <CompCol label="Tuition" v1={c1 ? dualPrice(c1.tuition) : null} v2={c2 ? dualPrice(c2.tuition) : null} />
         <CompCol label="Modules" v1={p1?.modules.length + " modules"} v2={p2?.modules.length + " modules"} />
         <CompCol label="Prerequisites" v1={p1?.prerequisites} v2={p2?.prerequisites} />
         <CompCol label="Top Careers" v1={p1?.careers.slice(0,3).join(", ")} v2={p2?.careers.slice(0,3).join(", ")} />
@@ -1271,7 +1377,7 @@ function Navbar({ page, setPage }) {
         </div>
         <div className="desktop-nav" style={{ display: "flex", gap: 2, alignItems: "center" }} role="menubar">
           {NAV_GROUPS.map(g => <NavDropdown key={g.label} group={g} page={page} setPage={setPage} />)}
-          <a href={CANVAS_URL} target="_blank" rel="noopener noreferrer" style={{ padding: "8px 14px", borderRadius: 6, background: "#2E7D32", color: "#fff", fontSize: 11, fontWeight: 700, fontFamily: S.body, textDecoration: "none", whiteSpace: "nowrap", letterSpacing: 0.5, display: "flex", alignItems: "center", gap: 5, transition: "opacity 0.2s", marginLeft: 4 }} onMouseEnter={e => e.currentTarget.style.opacity = "0.85"} onMouseLeave={e => e.currentTarget.style.opacity = "1"}>📚 Learning Portal</a>
+          <a href={PORTAL_URL} target="_blank" rel="noopener noreferrer" style={{ padding: "8px 14px", borderRadius: 6, background: "#2E7D32", color: "#fff", fontSize: 11, fontWeight: 700, fontFamily: S.body, textDecoration: "none", whiteSpace: "nowrap", letterSpacing: 0.5, display: "flex", alignItems: "center", gap: 5, transition: "opacity 0.2s", marginLeft: 4 }} onMouseEnter={e => e.currentTarget.style.opacity = "0.85"} onMouseLeave={e => e.currentTarget.style.opacity = "1"}>🎓 Student Portal</a>
         </div>
         <button className="mobile-menu-btn" onClick={() => setOpen(!open)} aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} style={{ display: "none", flexDirection: "column", gap: 4, background: "none", border: "none", cursor: "pointer", padding: 8 }}>
           {[0,1,2].map(i => <div key={i} style={{ width: 22, height: 2, background: "#fff", borderRadius: 2 }} />)}
@@ -1292,7 +1398,7 @@ function Navbar({ page, setPage }) {
               </div>
             );
           })}
-          <a href={CANVAS_URL} target="_blank" rel="noopener noreferrer" style={{ display: "block", width: "100%", padding: "12px 24px", color: "#81C784", fontSize: 14, fontWeight: 700, fontFamily: S.body, textDecoration: "none", textAlign: "left", borderLeft: "3px solid #2E7D32" }}>📚 Learning Portal</a>
+          <a href={PORTAL_URL} target="_blank" rel="noopener noreferrer" style={{ display: "block", width: "100%", padding: "12px 24px", color: "#81C784", fontSize: 14, fontWeight: 700, fontFamily: S.body, textDecoration: "none", textAlign: "left", borderLeft: "3px solid #2E7D32" }}>🎓 Student Portal</a>
         </div>
       )}
     </nav>
@@ -1328,7 +1434,7 @@ function HomePage({ setPage }) {
               Build Real Skills.<br /><span style={{ color: S.gold }}>Earn Recognised</span><br />Qualifications.
             </h1>
             <p style={{ fontFamily: S.body, fontSize: "clamp(14px,1.5vw,17px)", color: "rgba(255,255,255,0.75)", lineHeight: 1.7, marginBottom: 32, maxWidth: 480 }}>
-              25 programmes from Job Certificate to Bachelor's Equivalent — aligned to NCTVET &amp; City &amp; Guilds. Study online, at your pace, on your schedule.
+              25 programmes from Job Certificate to Bachelor's Equivalent — aligned to NCTVET &amp; City &amp; Guilds. Study online, at your pace, with our exclusive interactive learning system designed to feel like a personal instructor.
             </p>
             <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
               <Btn primary onClick={() => setPage("Apply")} style={{ fontSize: 15, padding: "16px 36px", color: S.navy }}>Apply Now</Btn>
@@ -1387,24 +1493,24 @@ function HomePage({ setPage }) {
         </Container>
       </section>
 
-      {/* Learning Portal CTA */}
+      {/* Student Portal CTA */}
       <section style={{ background: "#fff", padding: "48px 0", borderTop: "1px solid rgba(10,35,66,0.06)" }}>
         <Container>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 32, flexWrap: "wrap", padding: "32px clamp(24px,4vw,48px)", background: S.lightBg, borderRadius: 16, border: "1px solid rgba(10,35,66,0.06)" }}>
             <div style={{ flex: 1, minWidth: 280 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-                <div style={{ width: 44, height: 44, borderRadius: 10, background: "rgba(46,125,50,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>📚</div>
+                <div style={{ width: 44, height: 44, borderRadius: 10, background: "rgba(46,125,50,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>🎓</div>
                 <div>
-                  <div style={{ fontSize: 10, color: "#2E7D32", letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700 }}>Now Available</div>
-                  <h3 style={{ fontFamily: S.heading, fontSize: 20, color: S.navy, margin: 0, fontWeight: 700 }}>CTS ETS Learning Portal</h3>
+                  <div style={{ fontSize: 10, color: "#2E7D32", letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700 }}>Exclusive to CTS ETS</div>
+                  <h3 style={{ fontFamily: S.heading, fontSize: 20, color: S.navy, margin: 0, fontWeight: 700 }}>CTS ETS Student Portal</h3>
                 </div>
               </div>
               <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, lineHeight: 1.7, margin: 0 }}>
-                Access your course materials, submit assessments, track your progress, and connect with facilitators — all from one place. Available on desktop and the Canvas Student mobile app.
+                Access expert-written learner guides, audio study sessions you can listen to like a podcast, an intelligent study assistant that answers your questions 24/7, video summaries, flashcards, and more — all from one place.
               </p>
             </div>
-            <a href={CANVAS_URL} target="_blank" rel="noopener noreferrer" style={{ padding: "14px 32px", borderRadius: 8, background: "#2E7D32", color: "#fff", fontSize: 14, fontWeight: 700, fontFamily: S.body, textDecoration: "none", whiteSpace: "nowrap", boxShadow: "0 4px 16px rgba(46,125,50,0.2)", transition: "opacity 0.2s", display: "inline-flex", alignItems: "center", gap: 8 }} onMouseEnter={e => e.currentTarget.style.opacity = "0.85"} onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
-              Access Learning Portal →
+            <a href={PORTAL_URL} target="_blank" rel="noopener noreferrer" style={{ padding: "14px 32px", borderRadius: 8, background: "#2E7D32", color: "#fff", fontSize: 14, fontWeight: 700, fontFamily: S.body, textDecoration: "none", whiteSpace: "nowrap", boxShadow: "0 4px 16px rgba(46,125,50,0.2)", transition: "opacity 0.2s", display: "inline-flex", alignItems: "center", gap: 8 }} onMouseEnter={e => e.currentTarget.style.opacity = "0.85"} onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+              Access Student Portal →
             </a>
           </div>
         </Container>
@@ -1598,7 +1704,7 @@ function AboutPage() {
 
                   {letterOpen && (
                     <div style={{ animation: "fadeIn 0.6s ease" }}>
-                      <p style={pStyle}>Not because Jamaica needed another school. But because Jamaica needed a <em>different kind</em> of school. One where you don't have to choose between earning a living and earning a qualification. One where your TRN and your determination are enough to walk through the door.</p>
+                      <p style={pStyle}>Not because Jamaica needed another school. But because Jamaica needed a <em>different kind</em> of school. One where you don't have to choose between earning a living and earning a qualification. One where your determination is enough to walk through the door — whether you're in Kingston, Port of Spain, London, or Lagos.</p>
 
                       <p style={pStyle}>I built CTS ETS to be 100% online and 100% self-paced because I believe that <strong style={emphStyle}>education should fit your life — not the other way around.</strong></p>
 
@@ -1674,11 +1780,11 @@ function AboutPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginTop: 12 }} className="resp-grid-4">
             {[
               ["\uD83D\uDCCB", "Admissions & Enrolment", "admissions@ctsetsjm.com", "Applications, document verification, student IDs, Ministry Register"],
-              ["\uD83D\uDCDA", "Academic Affairs", "academic@ctsetsjm.com", "Programme delivery, Canvas LMS, assessments, quality assurance"],
+              ["\uD83D\uDCDA", "Academic Affairs", "academic@ctsetsjm.com", "Programme delivery, Student Portal, assessments, quality assurance"],
               ["\uD83D\uDCB0", "Finance & Administration", "finance@ctsetsjm.com", "Tuition, payment plans, budgeting, tax compliance"],
               ["\uD83E\uDD1D", "Student Services & Support", "studentservices@ctsetsjm.com", "Pastoral care, guidance, complaints, alumni relations"],
               ["\uD83D\uDCE3", "Marketing & Communications", "marketing@ctsetsjm.com", "Branding, social media, recruitment, employer engagement"],
-              ["\uD83D\uDCBB", "Information Technology", "it@ctsetsjm.com", "Website, Canvas LMS, Google Workspace, data security"],
+              ["\uD83D\uDCBB", "Information Technology", "it@ctsetsjm.com", "Website, Student Portal, learning systems, data security"],
               ["\u2705", "Quality Assurance & Compliance", "quality@ctsetsjm.com", "Ministry compliance, audits, policy, continuous improvement"],
             ].map(([icon, name, email, desc]) => (
               <Reveal key={name} delay={0.05}>
@@ -1721,7 +1827,7 @@ function WhyChoosePage({ setPage }) {
     { icon: "🕐", title: "Study On Your Terms", desc: "No fixed class times. No commuting. Log in when it suits you — mornings, evenings, weekends." },
     { icon: "💼", title: "Prove You Can Do The Job", desc: "Our CBET model means you build a portfolio of practical evidence employers want." },
     { icon: "⚡", title: "Finish Faster", desc: "At 2 topics per week, most programmes complete in 2–9 months." },
-    { icon: "💰", title: "Pay A Fraction", desc: "Programmes from $13,000 to $155,000 JMD — up to 50–81% less than traditional institutions." },
+    { icon: "💰", title: "Pay A Fraction", desc: "Programmes from as low as US$52 (J$8,000) — up to 50–81% less than traditional institutions." },
     { icon: "📋", title: "Flexible Payments", desc: "Gold (full), Silver (50/50), or Bronze (20% deposit + monthly instalments)." },
     { icon: "🌍", title: "Internationally Recognised", desc: "City & Guilds and NCTVET qualifications recognised across Jamaica, CARICOM, and beyond." },
   ];
@@ -1807,8 +1913,8 @@ function ProgrammesPage({ setPage }) {
   const [detailProg, setDetailProg] = useState(null);
   const REQUIREMENTS = [
     { level: "Job Certificate", icon: "📝", req: "No formal qualifications required", detail: "Open entry. Suitable for individuals with or without prior training. Basic literacy and numeracy recommended.", color: "#4CAF50" },
-    { level: "Level 2 — Vocational Certificate", icon: "📗", req: "Level 1 / Job Certificate OR 2 CXCs", detail: "Completion of a related Job Certificate programme, or at least 2 CXC/CSEC subjects at General Proficiency (Grades 1–3).", color: "#2196F3" },
-    { level: "Level 3 — Diploma", icon: "📘", req: "Level 2 Certificate OR 3 CXCs", detail: "Completion of a related Level 2 Vocational Certificate, or at least 3 CXC/CSEC subjects at General Proficiency (Grades 1–3). CAPE passes also accepted.", color: "#7B1FA2" },
+    { level: "Level 2 — Vocational Certificate", icon: "📗", req: "Level 1 / Job Certificate OR 2 CXCs (or equivalent)", detail: "Completion of a related Job Certificate programme, or at least 2 CXC/CSEC subjects at General Proficiency (Grades 1–3). Caribbean: CVQ or equivalent. International: 2+ secondary school passes or equivalent.", color: "#2196F3" },
+    { level: "Level 3 — Diploma", icon: "📘", req: "Level 2 Certificate OR 3 CXCs (or equivalent)", detail: "Completion of a related Level 2 Vocational Certificate, or at least 3 CXC/CSEC subjects at General Proficiency. CAPE, A-Levels, GCSEs (grades A*–C), or equivalent international qualifications accepted.", color: "#7B1FA2" },
     { level: "Level 4 — Associate Equivalent", icon: "📙", req: "Level 3 Diploma required", detail: "Completion of a Level 3 Diploma in a related business area (e.g. Business Administration, Customer Service, HR, or Management). Prior work experience in a relevant field is an advantage.", color: "#E65100" },
     { level: "Level 5 — Bachelor's Equivalent", icon: "🎓", req: "Level 4 Associate required", detail: "Completion of a Level 4 Associate Equivalent in a related business area. Candidates should have a foundation in business operations, management, or a related discipline. Work experience in the field is preferred.", color: "#C62828" },
   ];
@@ -1822,13 +1928,16 @@ function ProgrammesPage({ setPage }) {
           ))}
         </div>
         <div style={{ background: S.lightBg, borderRadius: 12, overflow: "hidden", border: "1px solid rgba(10,35,66,0.06)" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 100px 100px 100px", padding: "14px 24px", background: S.navy, gap: 10 }} className="prog-row">
-            {["Programme", "Duration", "Tuition", "Total*"].map((h, i) => (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 100px 120px 120px", padding: "14px 24px", background: S.navy, gap: 10 }} className="prog-row">
+            {["Programme", "Duration", "Tuition (USD / JMD)", "Total* (USD / JMD)"].map((h, i) => (
               <span key={h} style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", fontWeight: 600, textAlign: i > 0 ? "center" : "left" }}>{h}</span>
             ))}
           </div>
-          {PROGRAMMES[activeLevel].map((p, i) => (
-            <div key={p.name} onClick={() => setDetailProg(p)} style={{ display: "grid", gridTemplateColumns: "1fr 100px 100px 100px", padding: "14px 24px", background: i % 2 === 0 ? "#fff" : S.lightBg, borderBottom: "1px solid rgba(10,35,66,0.03)", gap: 10, cursor: "pointer", transition: "background 0.15s" }} className="prog-row"
+          {PROGRAMMES[activeLevel].map((p, i) => {
+            const tuitionNum = parseInt(p.tuition.replace(/[$,]/g, ""));
+            const totalNum = parseInt(p.total.replace(/[$,]/g, ""));
+            return (
+            <div key={p.name} onClick={() => setDetailProg(p)} style={{ display: "grid", gridTemplateColumns: "1fr 100px 120px 120px", padding: "14px 24px", background: i % 2 === 0 ? "#fff" : S.lightBg, borderBottom: "1px solid rgba(10,35,66,0.03)", gap: 10, cursor: "pointer", transition: "background 0.15s" }} className="prog-row"
               onMouseEnter={e => e.currentTarget.style.background = "rgba(196,145,18,0.06)"}
               onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? "#fff" : S.lightBg}
             >
@@ -1838,12 +1947,16 @@ function ProgrammesPage({ setPage }) {
                 <span style={{ fontSize: 10, color: S.gold, fontFamily: S.body, marginTop: 3, display: "block" }}>Click for full details {"\u2192"}</span>
               </div>
               <span style={{ fontSize: 13, color: S.gray, fontFamily: S.body, textAlign: "center" }}>{p.duration}</span>
-              <span style={{ fontSize: 13, color: S.gray, fontFamily: S.body, textAlign: "center" }}>{p.tuition}</span>
-              <span style={{ fontSize: 14, color: S.navy, fontFamily: S.body, fontWeight: 700, textAlign: "center" }}>{p.total}</span>
+              <span style={{ textAlign: "center" }}><DualPrice amount={tuitionNum} size={12} /></span>
+              <span style={{ textAlign: "center" }}><DualPrice amount={totalNum} size={13} /></span>
             </div>
-          ))}
+            );
+          })}
           <div style={{ padding: "14px 24px", background: "rgba(196,145,18,0.06)", fontSize: 12, color: "#2D3748", fontFamily: S.body, lineHeight: 1.55 }}>
-            <strong>* Total = Tuition + $5,000 Registration Fee (non-refundable).</strong> All fees in JMD. Includes cluster assessments. NCTVET external fees separate.
+            <strong>* Total = Tuition + US${Math.round(5000/USD_RATE)} (J$5,000) Registration Fee (non-refundable).</strong> Prices in USD with JMD equivalents. Includes cluster assessments. NCTVET external fees separate.
+            <div style={{ marginTop: 8, padding: "8px 12px", background: "rgba(1,30,64,0.04)", borderRadius: 6, fontSize: 11, color: S.gray }}>
+              🌍 <strong>International Students:</strong> Full international pricing available on our <span style={{ color: S.gold, cursor: "pointer", fontWeight: 600 }} onClick={() => setPage("International")}>International Students</span> page. Exchange rate: US$1 = J${USD_RATE} (indicative only).
+            </div>
           </div>
         </div>
 
@@ -2120,13 +2233,15 @@ function FeesPage({ setPage }) {
   // Print / Share calculator result
   const printResult = () => {
     if (!result || !prog) return;
+    const grandJMD = parseInt(result.grandTotal.replace(/[$,]/g, ""));
+    const grandUSD = "US$" + Math.round(grandJMD / USD_RATE).toLocaleString();
     const w = window.open("", "_blank");
-    w.document.write(`<html><head><title>CTS ETS Fee Breakdown</title><style>body{font-family:sans-serif;padding:40px;max-width:600px;margin:0 auto}h1{color:#011E40;font-size:24px}h2{color:#C49112;font-size:18px}.row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee}.label{color:#666}.amount{font-weight:700;color:#011E40}.total{font-size:22px;font-weight:800}.note{font-size:12px;color:#666;margin-top:20px;line-height:1.6}</style></head><body><h1>CTS Empowerment & Training Solutions</h1><h2>Fee Breakdown — ${result.plan} Plan</h2><p><strong>Programme:</strong> ${prog.name}</p><p><strong>Level:</strong> ${selLevel}</p>${isGroup ? "<p><strong>Group Discount:</strong> 15% applied</p>" : ""}${result.steps.map(s => `<div class="row"><span class="label">${s.label}</span><span class="amount">${s.amount}</span></div><div style="font-size:12px;color:#888;padding-bottom:8px">${s.detail}</div>`).join("")}<div class="row" style="border-top:2px solid #011E40;margin-top:12px;padding-top:16px"><span class="label" style="font-size:16px">Total</span><span class="total">${result.grandTotal}</span></div>${result.savings ? `<p style="color:#2E7D32;font-weight:600">Group discount saves ${result.savings}</p>` : ""}<p class="note">⚠️ Fees shown are current as of April 2026 and are subject to change. NCTVET external assessment fees are separate.</p><p class="note">CTS ETS | ctsetsjm.com | finance@ctsetsjm.com | 876-525-6802</p></body></html>`);
+    w.document.write(`<html><head><title>CTS ETS Fee Breakdown</title><style>body{font-family:sans-serif;padding:40px;max-width:600px;margin:0 auto}h1{color:#011E40;font-size:24px}h2{color:#C49112;font-size:18px}.row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee}.label{color:#666}.amount{font-weight:700;color:#011E40}.total{font-size:22px;font-weight:800}.usd{font-size:18px;font-weight:700;color:#C49112}.note{font-size:12px;color:#666;margin-top:20px;line-height:1.6}</style></head><body><h1>CTS Empowerment & Training Solutions</h1><h2>Fee Breakdown — ${result.plan} Plan</h2><p><strong>Programme:</strong> ${prog.name}</p><p><strong>Level:</strong> ${selLevel}</p>${isGroup ? "<p><strong>Group Discount:</strong> 15% applied</p>" : ""}${result.steps.map(s => `<div class="row"><span class="label">${s.label}</span><span class="amount">${s.amount}</span></div><div style="font-size:12px;color:#888;padding-bottom:8px">${s.detail}</div>`).join("")}<div class="row" style="border-top:2px solid #011E40;margin-top:12px;padding-top:16px"><span class="label" style="font-size:16px">Total (USD)</span><span class="total" style="color:#C49112">${grandUSD}</span></div><div class="row"><span class="label" style="font-size:14px">JMD Equivalent</span><span class="amount" style="font-size:18px">${result.grandTotal}</span></div>${result.savings ? `<p style="color:#2E7D32;font-weight:600">Group discount saves ${result.savings}</p>` : ""}<p class="note">⚠️ USD amounts are approximate at US$1 = J$${USD_RATE}. Fees shown are current as of April 2026 and are subject to change. NCTVET external assessment fees are separate.</p><p class="note">CTS ETS | ctsetsjm.com | finance@ctsetsjm.com | 876-525-6802</p></body></html>`);
     w.document.close();
     w.print();
   };
 
-  const shareText = result && prog ? `CTS ETS Fee Breakdown:\n${prog.name} (${selLevel})\n${result.plan} Plan: ${result.grandTotal}\n${isGroup ? "Group discount applied!\n" : ""}Apply: https://ctsetsjm.com` : "";
+  const shareText = result && prog ? `CTS ETS Fee Breakdown:\n${prog.name} (${selLevel})\n${result.plan} Plan: US$${Math.round(parseInt(result.grandTotal.replace(/[$,]/g, "")) / USD_RATE).toLocaleString()} (${result.grandTotal} JMD)\n${isGroup ? "Group discount applied!\n" : ""}Apply: https://ctsetsjm.com` : "";
 
   return (
     <PageWrapper>
@@ -2151,7 +2266,7 @@ function FeesPage({ setPage }) {
             <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 20 }}>
               {progsForLevel.map(p => (
                 <button key={p.name} onClick={() => setSelProg(p)} style={{ padding: "10px 14px", borderRadius: 6, border: "2px solid " + (prog?.name === p.name ? S.gold : "rgba(10,35,66,0.08)"), background: prog?.name === p.name ? "rgba(196,145,18,0.06)" : "#fff", color: S.navy, fontSize: 13, fontWeight: prog?.name === p.name ? 700 : 500, cursor: "pointer", fontFamily: S.body, textAlign: "left" }}>
-                  <div>{p.name}</div><div style={{ fontSize: 11, color: S.gray, marginTop: 2 }}>Tuition: {fmt(p.tuition)}</div>
+                  <div>{p.name}</div><div style={{ fontSize: 11, color: S.gray, marginTop: 2 }}>Tuition: {dualPrice(p.tuition)}</div>
                 </button>
               ))}
             </div>
@@ -2187,8 +2302,12 @@ function FeesPage({ setPage }) {
                 ))}
                 <div style={{ marginTop: 24, padding: "16px 0", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", fontFamily: S.body }}>Total Cost</span>
-                    <span style={{ fontSize: 26, fontWeight: 800, color: "#fff", fontFamily: S.heading }}>{result.grandTotal}</span>
+                    <span style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", fontFamily: S.body }}>Total Cost (USD)</span>
+                    <span style={{ fontSize: 26, fontWeight: 800, color: "#fff", fontFamily: S.heading }}>{"US$" + Math.round(parseInt(result.grandTotal.replace(/[$,]/g, "")) / USD_RATE).toLocaleString()}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
+                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", fontFamily: S.body }}>JMD Equivalent</span>
+                    <span style={{ fontSize: 18, fontWeight: 700, color: S.gold, fontFamily: S.heading }}>{result.grandTotal}</span>
                   </div>
                   {result.savings && <div style={{ fontSize: 12, color: "#81C784", fontFamily: S.body, marginTop: 8, textAlign: "right" }}>Group discount saves {result.savings}</div>}
                 </div>
@@ -2240,18 +2359,19 @@ function EmployersPage({ setPage }) {
           ))}
         </div>
         <h3 style={{ fontFamily: S.heading, fontSize: "clamp(20px,3vw,26px)", color: S.navy, fontWeight: 700, marginBottom: 20 }}>Group Savings Table</h3>
+        <p style={{ fontFamily: S.body, fontSize: 12, color: S.gray, marginBottom: 14 }}>All amounts in USD with JMD equivalents. Exchange rate: US$1 = J${USD_RATE}.</p>
         <div style={{ background: "#fff", borderRadius: 12, overflow: "hidden", border: "1px solid rgba(10,35,66,0.06)" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 110px 110px 110px", padding: "14px 24px", background: S.navy, gap: 8 }} className="group-row">
-            {["Programme", "Standard", "Group Rate", "You Save"].map((h, i) => (
-              <span key={h} style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", fontWeight: 600, textAlign: i > 0 ? "center" : "left" }}>{h}</span>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 130px 130px 130px", padding: "14px 24px", background: S.navy, gap: 8 }} className="group-row">
+            {["Programme", "Standard (USD/JMD)", "Group Rate (USD/JMD)", "You Save"].map((h, i) => (
+              <span key={h} style={{ fontSize: 10, color: "rgba(255,255,255,0.65)", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", fontWeight: 600, textAlign: i > 0 ? "center" : "left" }}>{h}</span>
             ))}
           </div>
           {displayed.map((r, i) => (
-            <div key={r.level} style={{ display: "grid", gridTemplateColumns: "1fr 110px 110px 110px", padding: "12px 24px", background: i % 2 === 0 ? "#fff" : S.lightBg, borderBottom: "1px solid rgba(10,35,66,0.03)", gap: 8 }} className="group-row">
+            <div key={r.level} style={{ display: "grid", gridTemplateColumns: "1fr 130px 130px 130px", padding: "12px 24px", background: i % 2 === 0 ? "#fff" : S.lightBg, borderBottom: "1px solid rgba(10,35,66,0.03)", gap: 8 }} className="group-row">
               <span style={{ fontSize: 13, color: S.navy, fontFamily: S.body, fontWeight: 500 }}>{r.level}</span>
-              <span style={{ fontSize: 13, color: S.gray, fontFamily: S.body, textAlign: "center" }}>{r.standard}</span>
-              <span style={{ fontSize: 13, color: S.navy, fontFamily: S.body, textAlign: "center", fontWeight: 600 }}>{r.group}</span>
-              <span style={{ fontSize: 13, color: "#2E7D32", fontFamily: S.body, textAlign: "center", fontWeight: 700 }}>{r.saving}</span>
+              <span style={{ textAlign: "center" }}><DualPrice amount={r.standard} size={11} /></span>
+              <span style={{ textAlign: "center" }}><DualPrice amount={r.group} size={11} /></span>
+              <span style={{ textAlign: "center" }}><DualPrice amount={r.saving} size={11} style={{ color: "#2E7D32" }} /></span>
             </div>
           ))}
         </div>
@@ -2269,6 +2389,28 @@ function EmployersPage({ setPage }) {
 
 
 // ─── APPLY PAGE ──────────────────────────────────────────────────────
+// Bank Account Details — update with your actual account information
+const BANK_DETAILS = {
+  jmd: {
+    bank: "National Commercial Bank (NCB)",
+    accountName: "CTS Empowerment & Training Solutions",
+    accountNumber: "", // PASTE YOUR JMD ACCOUNT NUMBER
+    branch: "",
+    accountType: "Business Current (JMD)",
+    currency: "JMD",
+  },
+  usd: {
+    bank: "National Commercial Bank (NCB)",
+    accountName: "CTS Empowerment & Training Solutions",
+    accountNumber: "", // PASTE YOUR USD ACCOUNT NUMBER
+    branch: "",
+    accountType: "Business Current (USD)",
+    currency: "USD",
+    swiftCode: "", // For international wire transfers
+    iban: "", // If applicable
+  },
+};
+
 function ApplyPage({ setPage }) {
   const [activeTab, setActiveTab] = useState(() => {
     try { const t = sessionStorage.getItem("cts_apply_tab"); if (t) { sessionStorage.removeItem("cts_apply_tab"); return t; } } catch(_){}
@@ -2277,13 +2419,14 @@ function ApplyPage({ setPage }) {
   const [sector, setSector] = useState("");
   const [publicType, setPublicType] = useState("");
   const [empStatus, setEmpStatus] = useState("");
+  const [applicantType, setApplicantType] = useState(""); // "jamaican" | "caribbean" | "international"
   const [form, setForm] = useState(() => {
     // Restore from sessionStorage
     try { const saved = sessionStorage.getItem("cts_form_draft"); if (saved) return JSON.parse(saved); } catch(_){}
     return {
       firstName: "", middleName: "", lastName: "", email: "", phone: "", dob: "", parish: "", programme: "", level: "",
-      education: "", lastSchool: "", message: "", trn: "", address: "", gender: "", nationality: "Jamaican", maritalStatus: "",
-      specialNeeds: "No", specialNeedsType: "",
+      education: "", lastSchool: "", message: "", trn: "", address: "", gender: "", nationality: "", maritalStatus: "",
+      country: "", specialNeeds: "No", specialNeedsType: "",
       emergencyName: "", emergencyPhone: "",
       emergencyRelation: "", paymentPlan: "", jcfDivision: "", jcfStation: "", jcfRank: "",
       orgName: "", department: "", jobTitle: "", yearsService: "",
@@ -2302,6 +2445,7 @@ function ApplyPage({ setPage }) {
   const [paySubmitted, setPaySubmitted] = useState(false);
   const [paySubmitting, setPaySubmitting] = useState(false);
   const [payMethod, setPayMethod] = useState("online"); // "online" or "upload"
+  const [payCurrency, setPayCurrency] = useState("usd"); // "usd" or "jmd" — which currency the student wants to pay in
   const [payLevel, setPayLevel] = useState("");
   const [payProg, setPayProg] = useState("");
   const [payPlan, setPayPlan] = useState("Gold");
@@ -2512,12 +2656,12 @@ function ApplyPage({ setPage }) {
   const validatePhone = (phone) => { const digits = phone.replace(/\D/g, ""); return digits.length === 10; };
   const validateTRN = (trn) => { const digits = trn.replace(/\D/g, ""); return digits.length === 9; };
 
-  const secA = !!(form.firstName.trim() && form.lastName.trim() && form.email.trim() && validateEmail(form.email) && form.phone.trim() && validatePhone(form.phone) && form.gender && form.parish && form.maritalStatus && form.address.trim() && form.trn.trim() && validateTRN(form.trn));
-  const secB = !!(secA && form.emergencyName.trim() && form.emergencyPhone.trim() && validatePhone(form.emergencyPhone) && form.emergencyRelation);
+  const secA = !!(applicantType && form.firstName.trim() && form.lastName.trim() && form.email.trim() && validateEmail(form.email) && form.phone.trim() && (applicantType === "jamaican" ? validatePhone(form.phone) : form.phone.length >= 7) && form.gender && form.parish && form.maritalStatus && form.address.trim() && (applicantType === "jamaican" ? (form.trn.trim() && validateTRN(form.trn)) : true) && (applicantType !== "jamaican" ? (form.country || form.nationality) : true));
+  const secB = !!(secA && form.emergencyName.trim() && form.emergencyPhone.trim() && (applicantType === "jamaican" ? validatePhone(form.emergencyPhone) : form.emergencyPhone.length >= 7) && form.emergencyRelation);
   const secC = !!(secB && form.level && form.programme);
   const secD = !!(secC && form.education && form.lastSchool.trim());
   const secE = !!(secD && sector);
-  const secF = !!(secE && files.heartForm);
+  const secF = !!(secE && (applicantType === "jamaican" ? files.heartForm : files.photo));
   const secDeclare = secF;
 
   // Generate application receipt PDF
@@ -2590,6 +2734,7 @@ function ApplyPage({ setPage }) {
     apps.push({
       ref, name: form.firstName + " " + form.lastName, email: form.email, phone: form.phone,
       level: form.level, programme: form.programme, status: "Under Review",
+      applicantType: applicantType, country: form.country || "",
       submittedAt: now.toLocaleDateString("en-JM", { day: "numeric", month: "long", year: "numeric" }),
       notes: "Application received. Documents under review. You will be contacted within 24–48 hours.",
       refNumber: ref
@@ -2598,6 +2743,7 @@ function ApplyPage({ setPage }) {
 
     await submitToAppsScript({
       form_type: "New Application", ref,
+      applicantType: applicantType, country: form.country || "",
       firstName: form.firstName, middleName: form.middleName, lastName: form.lastName,
       email: form.email, phone: form.phone,
       trn: form.trn, parish: form.parish, gender: form.gender, dob: form.dob, address: form.address,
@@ -2616,7 +2762,7 @@ function ApplyPage({ setPage }) {
         from_name: form.firstName + " " + form.lastName,
         email: form.email,
         phone: form.phone,
-        message: "Reference: " + ref + "\nLevel: " + form.level + "\nProgramme: " + form.programme + "\nTRN: " + (form.trn || "N/A") + "\nParish: " + (form.parish || "N/A") + "\nPayment Plan: " + (form.paymentPlan || "N/A") + "\nSector: " + (sector || "N/A") + "\nOrganisation: " + (form.orgName || "N/A") + "\nEducation: " + (form.education || "N/A") + "\nDeclaration: " + (declareTimestamp || "N/A"),
+        message: "Reference: " + ref + "\nApplicant Type: " + applicantType + "\nCountry: " + (form.country || "Jamaica") + "\nLevel: " + form.level + "\nProgramme: " + form.programme + "\nTRN: " + (form.trn || "N/A") + "\nParish/Location: " + (form.parish || "N/A") + "\nPayment Plan: " + (form.paymentPlan || "N/A") + "\nSector: " + (sector || "N/A") + "\nOrganisation: " + (form.orgName || "N/A") + "\nEducation: " + (form.education || "N/A") + "\nDeclaration: " + (declareTimestamp || "N/A"),
       }).catch(err => console.error("EmailJS error:", err));
     }
 
@@ -2692,7 +2838,7 @@ function ApplyPage({ setPage }) {
               <span style={{ fontSize: 20, flexShrink: 0 }}>📚</span>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "#2E7D32", fontFamily: S.body }}>Learning Portal</div>
-                <p style={{ fontSize: 12, color: "#4A5568", fontFamily: S.body, lineHeight: 1.6, margin: "4px 0 0" }}>Once enrolled, you'll access your course materials, assessments, and progress tracker through our <a href={CANVAS_URL} target="_blank" rel="noopener noreferrer" style={{ color: S.gold, fontWeight: 700 }}>Learning Portal</a>. Download the <strong>Canvas Student</strong> app on your phone to study on the go.</p>
+                <p style={{ fontSize: 12, color: "#4A5568", fontFamily: S.body, lineHeight: 1.6, margin: "4px 0 0" }}>Once enrolled, you'll access your learning materials through our <a href={PORTAL_URL} target="_blank" rel="noopener noreferrer" style={{ color: S.gold, fontWeight: 700 }}>Student Portal</a>. Your programme includes expert-written learner guides, audio study sessions, an intelligent study assistant, and video summaries — study anytime, anywhere, at your own pace.</p>
               </div>
             </div>
           </div>
@@ -2743,7 +2889,7 @@ function ApplyPage({ setPage }) {
         </div>
         {/* Tabs */}
         <div style={{ display: "flex", gap: 0, justifyContent: "center", marginBottom: 40, background: "#fff", borderRadius: 10, padding: 4, maxWidth: 600, margin: "0 auto 40px", boxShadow: "0 2px 8px rgba(1,30,64,0.06)", border: "1px solid rgba(1,30,64,0.08)" }}>
-          {[["apply", "📝  Apply Now"], ["group", "👥  Group Enrol"], ["download", "📥  HEART Form"], ["status", "🔍  Check Status"], ["payment", "💳  Payment Centre"]].map(([v, l]) => (
+          {[["apply", "📝  Apply Now"], ["group", "👥  Group Enrol"], ...(applicantType === "jamaican" || !applicantType ? [["download", "📥  HEART Form"]] : []), ["status", "🔍  Check Status"], ["payment", "💳  Payment Centre"]].map(([v, l]) => (
             <button key={v} onClick={() => setActiveTab(v)} style={{ flex: 1, padding: "11px 8px", borderRadius: 8, border: "none", background: activeTab === v ? S.navy : "transparent", color: activeTab === v ? "#fff" : S.gray, fontSize: 12, fontWeight: activeTab === v ? 700 : 500, cursor: "pointer", fontFamily: S.body, transition: "all 0.2s", whiteSpace: "nowrap" }}>{l}</button>
           ))}
         </div>
@@ -2780,7 +2926,40 @@ function ApplyPage({ setPage }) {
                 <input type="text" name="_hp" value={form._hp} onChange={e => u("_hp", e.target.value)} tabIndex={-1} autoComplete="off" />
               </div>
 
+              {/* APPLICANT TYPE SELECTOR */}
+              {!applicantType && (
+                <div style={{ marginBottom: 28, padding: "28px 24px", borderRadius: 14, background: "rgba(196,145,18,0.04)", border: "2px solid rgba(196,145,18,0.2)" }}>
+                  <div style={{ fontFamily: S.heading, fontSize: 18, fontWeight: 700, color: S.navy, marginBottom: 6 }}>Where are you applying from?</div>
+                  <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, marginBottom: 18, lineHeight: 1.6 }}>This helps us show you the right fields and document requirements.</p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }} className="resp-grid-3">
+                    {[
+                      ["jamaican", "🇯🇲", "Jamaican", "I live in Jamaica"],
+                      ["caribbean", "🌴", "Caribbean / CARICOM", "I live in the Caribbean"],
+                      ["international", "🌍", "International", "I live outside the Caribbean"],
+                    ].map(([key, icon, title, desc]) => (
+                      <button key={key} onClick={() => { setApplicantType(key); if (key === "jamaican") u("nationality", "Jamaican"); }}
+                        style={{ padding: "20px 16px", borderRadius: 12, border: "2px solid rgba(1,30,64,0.1)", background: "#fff", cursor: "pointer", textAlign: "center", transition: "all 0.2s" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = S.gold; e.currentTarget.style.background = "rgba(196,145,18,0.03)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(1,30,64,0.1)"; e.currentTarget.style.background = "#fff"; }}>
+                        <div style={{ fontSize: 32, marginBottom: 8 }}>{icon}</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 4 }}>{title}</div>
+                        <div style={{ fontSize: 11, color: S.gray, fontFamily: S.body }}>{desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {applicantType && (
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, padding: "10px 16px", borderRadius: 8, background: "rgba(196,145,18,0.04)", border: "1px solid rgba(196,145,18,0.15)" }}>
+                  <span style={{ fontSize: 16 }}>{applicantType === "jamaican" ? "🇯🇲" : applicantType === "caribbean" ? "🌴" : "🌍"}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: S.navy, fontFamily: S.body }}>{applicantType === "jamaican" ? "Jamaican Applicant" : applicantType === "caribbean" ? "Caribbean / CARICOM Applicant" : "International Applicant"}</span>
+                  <button onClick={() => setApplicantType("")} style={{ marginLeft: "auto", padding: "4px 12px", borderRadius: 4, background: "transparent", border: "1px solid rgba(1,30,64,0.15)", fontSize: 11, fontWeight: 600, color: S.gray, cursor: "pointer", fontFamily: S.body }}>Change</button>
+                </div>
+              )}
+
               {/* SECTION A */}
+              {applicantType && (
               <SectionBlock num="A" title="Personal Information" desc="Please provide your personal details exactly as they appear on your official identification." complete={secA}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }} className="resp-grid-2">
                   <div><label style={labelStyle}>First Name(s) {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.firstName ? "#C62828" : undefined }} value={form.firstName} onChange={e => u("firstName", e.target.value)} placeholder="First name(s)" />{errMsg("firstName")}</div>
@@ -2788,8 +2967,16 @@ function ApplyPage({ setPage }) {
                   <div><label style={labelStyle}>Last Name {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.lastName ? "#C62828" : undefined }} value={form.lastName} onChange={e => u("lastName", e.target.value)} placeholder="Last name" />{errMsg("lastName")}</div>
                   <div><label style={labelStyle}>Gender {reqDot}</label><select style={{ ...inputStyle, borderColor: formErrors.gender ? "#C62828" : undefined }} value={form.gender} onChange={e => u("gender", e.target.value)}><option value="">Select</option><option>Male</option><option>Female</option></select>{errMsg("gender")}</div>
                   <div><label style={labelStyle}>Date of Birth {reqDot}</label><input type="date" style={inputStyle} value={form.dob} onChange={e => u("dob", e.target.value)} /></div>
-                  <div><label style={labelStyle}>Nationality</label><input style={inputStyle} value={form.nationality} onChange={e => u("nationality", e.target.value)} placeholder="e.g. Jamaican" /></div>
-                  <div><label style={labelStyle}>TRN {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.trn ? "#C62828" : undefined }} value={form.trn} onChange={e => handleTRN(e.target.value)} placeholder="9-digit Tax Registration Number" maxLength={9} />{errMsg("trn")}</div>
+                  {applicantType === "jamaican" ? (
+                    <div><label style={labelStyle}>Nationality</label><input style={inputStyle} value={form.nationality} onChange={e => u("nationality", e.target.value)} placeholder="Jamaican" /></div>
+                  ) : applicantType === "caribbean" ? (
+                    <div><label style={labelStyle}>Country {reqDot}</label><select style={inputStyle} value={form.country} onChange={e => { u("country", e.target.value); u("nationality", e.target.value); }}><option value="">Select country</option>{["Antigua and Barbuda","Bahamas","Barbados","Belize","Dominica","Grenada","Guyana","Haiti","Montserrat","St. Kitts and Nevis","St. Lucia","St. Vincent and the Grenadines","Suriname","Trinidad and Tobago","Turks and Caicos","Cayman Islands","British Virgin Islands","Anguilla","Bermuda","Other Caribbean"].map(c => <option key={c}>{c}</option>)}</select></div>
+                  ) : (
+                    <div><label style={labelStyle}>Country of Residence {reqDot}</label><input style={inputStyle} value={form.country} onChange={e => { u("country", e.target.value); u("nationality", e.target.value); }} placeholder="e.g. United Kingdom, Canada, Nigeria" /></div>
+                  )}
+                  {applicantType === "jamaican" && (
+                    <div><label style={labelStyle}>TRN {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.trn ? "#C62828" : undefined }} value={form.trn} onChange={e => handleTRN(e.target.value)} placeholder="9-digit Tax Registration Number" maxLength={9} />{errMsg("trn")}</div>
+                  )}
                   <div><label style={labelStyle}>Marital Status {reqDot}</label><select style={{ ...inputStyle, borderColor: formErrors.maritalStatus ? "#C62828" : undefined }} value={form.maritalStatus} onChange={e => u("maritalStatus", e.target.value)}><option value="">Select</option><option>Single</option><option>Married</option><option>Common Law</option><option>Widowed</option><option>Divorced</option></select>{errMsg("maritalStatus")}</div>
                   <div>
                     <label style={labelStyle}>Email Address {reqDot}</label>
@@ -2800,19 +2987,24 @@ function ApplyPage({ setPage }) {
                   <div>
                     <label style={labelStyle}>Mobile Number {reqDot}</label>
                     <div style={{ position: "relative" }}>
-                      <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 11, color: S.gray, fontFamily: S.body, pointerEvents: "none" }}>+1</span>
-                      <input style={{ ...inputStyle, paddingLeft: 34, borderColor: formErrors.phone ? "#C62828" : undefined }} value={form.phone} onChange={e => handlePhone("phone", e.target.value)} placeholder="8765256802" maxLength={10} />
+                      <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 11, color: S.gray, fontFamily: S.body, pointerEvents: "none" }}>{applicantType === "jamaican" ? "+1" : "+"}</span>
+                      <input style={{ ...inputStyle, paddingLeft: applicantType === "jamaican" ? 34 : 24, borderColor: formErrors.phone ? "#C62828" : undefined }} value={form.phone} onChange={e => applicantType === "jamaican" ? handlePhone("phone", e.target.value) : u("phone", e.target.value)} placeholder={applicantType === "jamaican" ? "8765256802" : "Include country code"} maxLength={applicantType === "jamaican" ? 10 : 20} />
                     </div>
                     {errMsg("phone")}
                   </div>
-                  <div><label style={labelStyle}>Parish of Residence {reqDot}</label><select style={{ ...inputStyle, borderColor: formErrors.parish ? "#C62828" : undefined }} value={form.parish} onChange={e => u("parish", e.target.value)}><option value="">Select parish</option>{["Kingston","St. Andrew","St. Thomas","Portland","St. Mary","St. Ann","Trelawny","St. James","Hanover","Westmoreland","St. Elizabeth","Manchester","Clarendon","St. Catherine"].map(p => <option key={p}>{p}</option>)}</select>{errMsg("parish")}</div>
+                  {applicantType === "jamaican" ? (
+                    <div><label style={labelStyle}>Parish of Residence {reqDot}</label><select style={{ ...inputStyle, borderColor: formErrors.parish ? "#C62828" : undefined }} value={form.parish} onChange={e => u("parish", e.target.value)}><option value="">Select parish</option>{["Kingston","St. Andrew","St. Thomas","Portland","St. Mary","St. Ann","Trelawny","St. James","Hanover","Westmoreland","St. Elizabeth","Manchester","Clarendon","St. Catherine"].map(p => <option key={p}>{p}</option>)}</select>{errMsg("parish")}</div>
+                  ) : (
+                    <div><label style={labelStyle}>{applicantType === "caribbean" ? "City / Town" : "City, State/Province"} {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.parish ? "#C62828" : undefined }} value={form.parish} onChange={e => u("parish", e.target.value)} placeholder={applicantType === "caribbean" ? "e.g. Port of Spain, Bridgetown" : "e.g. London, Toronto ON"} />{errMsg("parish")}</div>
+                  )}
                   <div><label style={labelStyle}>Special Needs</label><select style={inputStyle} value={form.specialNeeds} onChange={e => u("specialNeeds", e.target.value)}><option>No</option><option>Yes</option></select></div>
                 </div>
                 {form.specialNeeds === "Yes" && (
                   <div style={{ marginBottom: 14 }}><label style={labelStyle}>Type of Special Need</label><select style={inputStyle} value={form.specialNeedsType} onChange={e => u("specialNeedsType", e.target.value)}><option value="">Select type</option><option>Physical</option><option>Emotional / Behavioural</option><option>Developmental / Learning</option><option>Sensory-Impaired</option><option>Other</option></select></div>
                 )}
-                <div><label style={labelStyle}>Residential Address {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.address ? "#C62828" : undefined }} value={form.address} onChange={e => u("address", e.target.value)} placeholder="Street address, community, parish" />{errMsg("address")}</div>
+                <div><label style={labelStyle}>Residential Address {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.address ? "#C62828" : undefined }} value={form.address} onChange={e => u("address", e.target.value)} placeholder={applicantType === "jamaican" ? "Street address, community, parish" : "Full address including country"} />{errMsg("address")}</div>
               </SectionBlock>
+              )}
 
               {/* SECTION B */}
               <SectionBlock num="B" title="Emergency Contact" desc="Provide the details of a person we can contact in the event of an emergency." locked={!secA} complete={secB}>
@@ -2820,7 +3012,7 @@ function ApplyPage({ setPage }) {
                   <div><label style={labelStyle}>Contact Full Name {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.emergencyName ? "#C62828" : undefined }} value={form.emergencyName} onChange={e => u("emergencyName", e.target.value)} placeholder="Full name" />{errMsg("emergencyName")}</div>
                   <div>
                     <label style={labelStyle}>Contact Number {reqDot}</label>
-                    <input style={{ ...inputStyle, borderColor: formErrors.emergencyPhone ? "#C62828" : undefined }} value={form.emergencyPhone} onChange={e => handlePhone("emergencyPhone", e.target.value)} placeholder="8761234567 (10 digits)" maxLength={10} />
+                    <input style={{ ...inputStyle, borderColor: formErrors.emergencyPhone ? "#C62828" : undefined }} value={form.emergencyPhone} onChange={e => applicantType === "jamaican" ? handlePhone("emergencyPhone", e.target.value) : u("emergencyPhone", e.target.value)} placeholder={applicantType === "jamaican" ? "8761234567 (10 digits)" : "Include country code"} maxLength={applicantType === "jamaican" ? 10 : 20} />
                     {errMsg("emergencyPhone")}
                   </div>
                   <div><label style={labelStyle}>Relationship to Applicant {reqDot}</label><select style={{ ...inputStyle, borderColor: formErrors.emergencyRelation ? "#C62828" : undefined }} value={form.emergencyRelation} onChange={e => u("emergencyRelation", e.target.value)}><option value="">Select</option><option>Parent</option><option>Guardian</option><option>Spouse / Partner</option><option>Sibling</option><option>Relative</option><option>Friend</option></select>{errMsg("emergencyRelation")}</div>
@@ -2841,7 +3033,7 @@ function ApplyPage({ setPage }) {
               {/* SECTION D */}
               <SectionBlock num="D" title="Educational Background" desc="Indicate your highest level of academic or vocational qualification." locked={!secC} complete={secD}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }} className="resp-grid-2">
-                  <div><label style={labelStyle}>Highest Qualification Attained {reqDot}</label><select style={{ ...inputStyle, borderColor: formErrors.education ? "#C62828" : undefined }} value={form.education} onChange={e => u("education", e.target.value)}><option value="">Select</option>{["No formal qualifications","CXC/CSEC (1–4 subjects)","CXC/CSEC (5+ subjects)","CAPE","NVQ-J Level 1 / Job Certificate","NVQ-J Level 2","NVQ-J Level 3 Diploma","Associate Degree","Bachelor's Degree","Postgraduate / Master's","Other"].map(e => <option key={e}>{e}</option>)}</select>{errMsg("education")}</div>
+                  <div><label style={labelStyle}>Highest Qualification Attained {reqDot}</label><select style={{ ...inputStyle, borderColor: formErrors.education ? "#C62828" : undefined }} value={form.education} onChange={e => u("education", e.target.value)}><option value="">Select</option>{(applicantType === "jamaican" ? ["No formal qualifications","CXC/CSEC (1–4 subjects)","CXC/CSEC (5+ subjects)","CAPE","NVQ-J Level 1 / Job Certificate","NVQ-J Level 2","NVQ-J Level 3 Diploma","Associate Degree","Bachelor's Degree","Postgraduate / Master's","Other"] : applicantType === "caribbean" ? ["No formal qualifications","CXC/CSEC (1–4 subjects)","CXC/CSEC (5+ subjects)","CAPE","CVQ / NVQ Level 1–2","CVQ / NVQ Level 3+","Associate Degree","Bachelor's Degree","Postgraduate / Master's","Other"] : ["No formal qualifications","Secondary School Certificate","High School Diploma / GED","GCSEs / O-Levels","A-Levels / IB","Vocational / Trade Certificate","Associate Degree","Bachelor's Degree","Postgraduate / Master's","Other"]).map(e => <option key={e}>{e}</option>)}</select>{errMsg("education")}</div>
                   <div><label style={labelStyle}>Last School / Institution Attended {reqDot}</label><input style={{ ...inputStyle, borderColor: formErrors.lastSchool ? "#C62828" : undefined }} value={form.lastSchool} onChange={e => u("lastSchool", e.target.value)} placeholder="Name of school or institution" />{errMsg("lastSchool")}</div>
                 </div>
               </SectionBlock>
@@ -2918,17 +3110,27 @@ function ApplyPage({ setPage }) {
               <SectionBlock num="F" title="Document Upload" desc="Upload the following required documents. Accepted formats: PDF, JPG, PNG (max 5MB each)." locked={!secE} complete={secF}>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 10, marginBottom: 16 }}>
                   {[
-                    ["heartForm", "📋", "Official HEART/NSTA Trust Application Form", "Download from the Official Form tab, complete and upload here"],
-                    ["trn", "🔢", "Tax Registration Number (TRN)", "TRN card or official TRN letter"],
+                    ...(applicantType === "jamaican" ? [
+                      ["heartForm", "📋", "Official HEART/NSTA Trust Application Form", "Download from the Official Form tab, complete and upload here"],
+                      ["trn", "🔢", "Tax Registration Number (TRN)", "TRN card or official TRN letter"],
+                    ] : []),
                     ["photo", "📷", "Passport-Size Photograph", "Recent colour photo, clear background, plain clothing"],
-                    ["birthCert", "📜", "Birth Certificate", "Original or certified copy"],
-                    ["qualifications", "🎓", "Academic / Vocational Qualifications", "CXC results slip, CAPE, NVQ-J, or other certificates"],
-                    ["nationalId", "🪪", "Government-Issued ID", "National ID card, Passport, or Driver's Licence"],
+                    ["birthCert", "📜", applicantType === "jamaican" ? "Birth Certificate" : "Birth Certificate or Passport Bio Page", applicantType === "jamaican" ? "Original or certified copy" : "Certified copy or clear scan"],
+                    ["qualifications", "🎓", "Academic / Vocational Qualifications",
+                      applicantType === "jamaican" ? "CXC results slip, CAPE, NVQ-J, or other certificates"
+                      : applicantType === "caribbean" ? "CXC/CSEC results, CAPE, CVQ, NVQ, or equivalent certificates"
+                      : "Secondary school transcripts, diplomas, or equivalent qualifications from your country"
+                    ],
+                    ["nationalId", "🪪", "Government-Issued ID",
+                      applicantType === "jamaican" ? "National ID card, Passport, or Driver's Licence"
+                      : applicantType === "caribbean" ? "Passport, National ID, or CARICOM Skills Certificate"
+                      : "Valid passport (photo page)"
+                    ],
                   ].map(([key, icon, label, hint]) => (
                     <div key={key} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", borderRadius: 10, border: "1.5px solid " + (files[key] ? "rgba(46,125,50,0.4)" : "rgba(1,30,64,0.1)"), background: files[key] ? "rgba(46,125,50,0.03)" : "#fff", transition: "all 0.2s" }}>
                       <div style={{ width: 40, height: 40, borderRadius: 8, background: files[key] ? "rgba(46,125,50,0.1)" : "rgba(1,30,64,0.04)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 18 }}>{uploadProgress[key] ? "⏳" : files[key] ? "✅" : icon}</div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body }}>{label} {key === "heartForm" ? reqDot : ""}</div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body }}>{label} {(key === "heartForm" || (key === "photo" && applicantType !== "jamaican")) ? reqDot : ""}</div>
                         <div style={{ fontSize: 11, color: files[key] ? "#2E7D32" : S.gray, fontFamily: S.body, marginTop: 2 }}>
                           {files[key] ? `✓ ${files[key].name} (${(files[key].size / 1024).toFixed(0)} KB)` : hint}
                         </div>
@@ -3159,22 +3361,24 @@ function ApplyPage({ setPage }) {
                         <div>
                           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontFamily: S.body, marginBottom: 4 }}>Per Learner ({groupTotals.count} programme{groupTotals.count !== 1 ? "s" : ""})</div>
                           <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-                            <span style={{ fontSize: 22, fontWeight: 800, color: S.gold, fontFamily: S.heading }}>{fmt(groupTotals.perLearnerGroup)}</span>
-                            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", fontFamily: S.body, textDecoration: "line-through" }}>{fmt(groupTotals.perLearner)}</span>
+                            <span style={{ fontSize: 22, fontWeight: 800, color: S.gold, fontFamily: S.heading }}>{"US$" + Math.round(groupTotals.perLearnerGroup / USD_RATE).toLocaleString()}</span>
+                            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", fontFamily: S.body, textDecoration: "line-through" }}>{"US$" + Math.round(groupTotals.perLearner / USD_RATE).toLocaleString()}</span>
                           </div>
-                          <div style={{ fontSize: 11, color: "#81C784", fontFamily: S.body, marginTop: 2 }}>Save {fmt(groupTotals.savingPer)} per learner</div>
+                          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", fontFamily: S.body, marginTop: 2 }}>{fmt(groupTotals.perLearnerGroup)} JMD</div>
+                          <div style={{ fontSize: 11, color: "#81C784", fontFamily: S.body, marginTop: 2 }}>Save {"US$" + Math.round(groupTotals.savingPer / USD_RATE).toLocaleString()} per learner</div>
                         </div>
                         <div>
                           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontFamily: S.body, marginBottom: 4 }}>Total for {groupTotals.numLearners} Learner{groupTotals.numLearners !== 1 ? "s" : ""}</div>
                           <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-                            <span style={{ fontSize: 22, fontWeight: 800, color: "#fff", fontFamily: S.heading }}>{fmt(groupTotals.allGroup)}</span>
-                            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", fontFamily: S.body, textDecoration: "line-through" }}>{fmt(groupTotals.allStandard)}</span>
+                            <span style={{ fontSize: 22, fontWeight: 800, color: "#fff", fontFamily: S.heading }}>{"US$" + Math.round(groupTotals.allGroup / USD_RATE).toLocaleString()}</span>
+                            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", fontFamily: S.body, textDecoration: "line-through" }}>{"US$" + Math.round(groupTotals.allStandard / USD_RATE).toLocaleString()}</span>
                           </div>
-                          <div style={{ fontSize: 11, color: "#81C784", fontFamily: S.body, marginTop: 2, fontWeight: 700 }}>Total savings: {fmt(groupTotals.savingAll)}</div>
+                          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", fontFamily: S.body, marginTop: 2 }}>{fmt(groupTotals.allGroup)} JMD</div>
+                          <div style={{ fontSize: 11, color: "#81C784", fontFamily: S.body, marginTop: 2, fontWeight: 700 }}>Total savings: {"US$" + Math.round(groupTotals.savingAll / USD_RATE).toLocaleString()} ({fmt(groupTotals.savingAll)} JMD)</div>
                         </div>
                       </div>
                       <div style={{ padding: "10px 14px", borderRadius: 6, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", fontSize: 11, color: "rgba(255,255,255,0.45)", fontFamily: S.body, lineHeight: 1.5 }}>
-                        Estimates based on 15% group discount. Final quotation may vary. Registration fees ($5,000 per learner) included. NCTVET external fees separate.
+                        Estimates based on 15% group discount. Final quotation may vary. Registration fees (US${Math.round(5000/USD_RATE)} / J$5,000 per learner) included. USD at US$1 = J${USD_RATE}. NCTVET external fees separate.
                       </div>
                     </div>
                   </div>
@@ -3331,7 +3535,7 @@ function ApplyPage({ setPage }) {
                   "Under Review": { colour: "#F59E0B", bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.2)", icon: "📋", step: 1, next: "Our admissions team is reviewing your application and documents. You will receive an email within 24–48 hours." },
                   "Documents Needed": { colour: "#E65100", bg: "rgba(230,81,0,0.06)", border: "rgba(230,81,0,0.2)", icon: "📄", step: 1, next: "Additional documents are required. Please upload them using the Upload Documents tab on this page, or email them to info@ctsetsjm.com." },
                   "Accepted": { colour: "#2E7D32", bg: "rgba(46,125,50,0.06)", border: "rgba(46,125,50,0.2)", icon: "✅", step: 2, next: "Congratulations! Complete your payment via the Payment Centre tab to secure your place and receive access to the Learning Portal." },
-                  "Enrolled": { colour: "#0D47A1", bg: "rgba(13,71,161,0.06)", border: "rgba(13,71,161,0.2)", icon: "🎓", step: 3, next: "You're enrolled! Access your course materials at canvas.instructure.com. Download the Canvas Student app to study on the go." },
+                  "Enrolled": { colour: "#0D47A1", bg: "rgba(13,71,161,0.06)", border: "rgba(13,71,161,0.2)", icon: "🎓", step: 3, next: "You're enrolled! Access your learning materials through the Student Portal. Your programme's Interactive Learning Environment is ready — start with the Audio Study Sessions for a great introduction." },
                   "Completed": { colour: "#C49112", bg: "rgba(196,145,18,0.06)", border: "rgba(196,145,18,0.15)", icon: "🏆", step: 4, next: "Congratulations on completing your programme! Your certificate has been emailed to you. NCTVET external assessment details will follow." },
                   "Deferred": { colour: "#6A1B9A", bg: "rgba(106,27,154,0.06)", border: "rgba(106,27,154,0.2)", icon: "⏸️", step: 0, next: "Your application has been deferred. Contact us at info@ctsetsjm.com to discuss options for a future intake." },
                   "Withdrawn": { colour: "#616161", bg: "rgba(97,97,97,0.06)", border: "rgba(97,97,97,0.2)", icon: "↩️", step: 0, next: "Your application has been withdrawn. If you wish to re-apply, you are welcome to submit a new application." },
@@ -3400,7 +3604,7 @@ function ApplyPage({ setPage }) {
                           <button onClick={() => setActiveTab("apply")} style={{ padding: "12px 28px", borderRadius: 8, background: "#E65100", color: "#fff", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>Upload Documents →</button>
                         </div>}
                         {app.status === "Enrolled" && <div style={{ marginTop: 14, textAlign: "center" }}>
-                          <a href={CANVAS_URL} target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", padding: "12px 28px", borderRadius: 8, background: "#2E7D32", color: "#fff", textDecoration: "none", fontSize: 13, fontWeight: 700, fontFamily: S.body }}>📚 Access Learning Portal →</a>
+                          <a href={PORTAL_URL} target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", padding: "12px 28px", borderRadius: 8, background: "#2E7D32", color: "#fff", textDecoration: "none", fontSize: 13, fontWeight: 700, fontFamily: S.body }}>🎓 Access Student Portal →</a>
                         </div>}
                       </div>
                     </div>;
@@ -3458,8 +3662,16 @@ function ApplyPage({ setPage }) {
                 </div>
               </div>
 
-              {/* Method toggle */}
-              <div style={{ display: "flex", justifyContent: "center", marginBottom: 28 }}>
+              {/* Currency + Method toggle */}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, marginBottom: 28 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: S.navy, fontFamily: S.body }}>Pay in:</span>
+                  <div style={{ display: "flex", background: S.lightBg, borderRadius: 8, padding: 3, border: "1px solid rgba(1,30,64,0.08)" }}>
+                    {[["usd", "🇺🇸 USD"], ["jmd", "🇯🇲 JMD"]].map(([v, l]) => (
+                      <button key={v} onClick={() => setPayCurrency(v)} style={{ padding: "8px 20px", borderRadius: 6, border: "none", background: payCurrency === v ? S.navy : "transparent", color: payCurrency === v ? S.gold : S.gray, fontSize: 12, fontWeight: payCurrency === v ? 700 : 500, cursor: "pointer", fontFamily: S.body, transition: "all 0.2s" }}>{l}</button>
+                    ))}
+                  </div>
+                </div>
                 <div style={{ display: "flex", background: S.lightBg, borderRadius: 10, padding: 4, border: "1px solid rgba(1,30,64,0.08)" }}>
                   {[["online", "💳  Pay Online"], ["upload", "📤  Upload Evidence"]].map(([v, l]) => (
                     <button key={v} onClick={() => { setPayMethod(v); setPayConfirm(false); setPayDeclare(false); setPayDeclareTimestamp(null); }} style={{ padding: "11px 24px", borderRadius: 8, border: "none", background: payMethod === v ? S.navy : "transparent", color: payMethod === v ? "#fff" : S.gray, fontSize: 13, fontWeight: payMethod === v ? 700 : 500, cursor: "pointer", fontFamily: S.body, transition: "all 0.2s", whiteSpace: "nowrap" }}>{l}</button>
@@ -3473,13 +3685,14 @@ function ApplyPage({ setPage }) {
                 const payCalcProgs = CALC_DATA.filter(d => d.level === payLevel);
                 const paySelectedProg = payCalcProgs.find(p => p.name === payProg) || payCalcProgs[0];
                 const payIsGoldOnly = paySelectedProg?.goldOnly;
+                const pf = (n) => payCurrency === "usd" ? "US$" + Math.round(n / USD_RATE).toLocaleString() : fmt(n);
                 const payCalcAmount = (() => {
                   if (!paySelectedProg) return null;
                   const t = paySelectedProg.tuition;
                   const plan = payIsGoldOnly ? "Gold" : payPlan;
-                  if (plan === "Gold") return { label: "Full Payment", amount: t + REG_FEE, detail: fmt(t) + " tuition + " + fmt(REG_FEE) + " reg" };
-                  if (plan === "Silver") { const st = t * 1.05, h = st / 2; return { label: "1st Instalment (50%)", amount: Math.round(h) + REG_FEE, detail: fmt(Math.round(h)) + " (50%) + " + fmt(REG_FEE) + " reg" }; }
-                  if (plan === "Bronze") { const bt = t * 1.08, dep = bt * 0.2; return { label: "Deposit (20%)", amount: Math.round(dep) + REG_FEE, detail: fmt(Math.round(dep)) + " (20%) + " + fmt(REG_FEE) + " reg" }; }
+                  if (plan === "Gold") return { label: "Full Payment", amount: t + REG_FEE, detail: pf(t) + " tuition + " + pf(REG_FEE) + " reg" };
+                  if (plan === "Silver") { const st = t * 1.05, h = st / 2; return { label: "1st Instalment (50%)", amount: Math.round(h) + REG_FEE, detail: pf(Math.round(h)) + " (50%) + " + pf(REG_FEE) + " reg" }; }
+                  if (plan === "Bronze") { const bt = t * 1.08, dep = bt * 0.2; return { label: "Deposit (20%)", amount: Math.round(dep) + REG_FEE, detail: pf(Math.round(dep)) + " (20%) + " + pf(REG_FEE) + " reg" }; }
                   return null;
                 })();
 
@@ -3496,25 +3709,28 @@ function ApplyPage({ setPage }) {
                       email: payEmail, name: payName, applicationRef: payAppRef, studentId: payStudentId || "",
                       level: payLevel, programme: paySelectedProg?.name,
                       plan: payIsGoldOnly ? "Gold" : payPlan,
-                      amount: payCalcAmount.amount, currency: "JMD",
+                      amount: payCalcAmount.amount, currency: payCurrency === "usd" ? "USD" : "JMD",
+                      amountDisplay: pf(payCalcAmount.amount),
                       declarationTimestamp: payDeclareTimestamp,
                     }, {});
 
                     if (wipayReady) {
                       // WiPay hosted checkout redirect
+                      const wipayAmount = payCurrency === "usd" ? Math.round(payCalcAmount.amount / USD_RATE) : payCalcAmount.amount;
+                      const wipayCurr = payCurrency === "usd" ? "USD" : "JMD";
                       const formData = new URLSearchParams({
                         account_number: WIPAY_CONFIG.accountNumber,
                         avs: "0",
-                        country_code: WIPAY_CONFIG.country,
-                        currency: WIPAY_CONFIG.currency,
-                        data: JSON.stringify({ email: payEmail, programme: paySelectedProg?.name, level: payLevel, plan: payIsGoldOnly ? "Gold" : payPlan }),
+                        country_code: payCurrency === "usd" ? "TT" : WIPAY_CONFIG.country, // WiPay uses TT for USD processing
+                        currency: wipayCurr,
+                        data: JSON.stringify({ email: payEmail, programme: paySelectedProg?.name, level: payLevel, plan: payIsGoldOnly ? "Gold" : payPlan, payCurrency: wipayCurr }),
                         environment: WIPAY_CONFIG.sandbox ? "sandbox" : "live",
                         fee_structure: "customer_pay",
                         method: "credit_card",
                         order_id: "CTS-" + Date.now(),
                         origin: "CTS ETS Website",
                         response_url: WIPAY_CONFIG.returnUrl,
-                        total: payCalcAmount.amount.toFixed(2),
+                        total: wipayAmount.toFixed(2),
                         version: "1",
                       });
                       window.location.href = WIPAY_CONFIG.baseUrl + "?" + formData.toString();
@@ -3533,12 +3749,13 @@ function ApplyPage({ setPage }) {
 
                 return (
                 <div style={{ maxWidth: 620, margin: "0 auto" }}>
+                  <PaymentSecurityNotice />
                   <div style={{ background: "#fff", borderRadius: 16, padding: "clamp(24px,3vw,40px)", border: "1px solid rgba(10,35,66,0.06)", boxShadow: "0 4px 24px rgba(1,30,64,0.06)" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
                       <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(196,145,18,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>💳</div>
                       <div>
-                        <h3 style={{ fontFamily: S.heading, fontSize: 20, color: S.navy, margin: 0 }}>Pay Online</h3>
-                        <p style={{ fontSize: 12, color: S.gray, fontFamily: S.body, margin: 0 }}>Secure payment via Visa, Mastercard, or bank transfer</p>
+                        <h3 style={{ fontFamily: S.heading, fontSize: 20, color: S.navy, margin: 0 }}>Pay Online — Secure Checkout</h3>
+                        <p style={{ fontSize: 12, color: S.gray, fontFamily: S.body, margin: 0 }}>Pay in {payCurrency === "jmd" ? "JMD" : "USD"} via Visa or Mastercard</p>
                       </div>
                     </div>
 
@@ -3632,9 +3849,9 @@ function ApplyPage({ setPage }) {
                           <div style={{ fontSize: 10, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 4 }}>Amount Due Now — {payCalcAmount.label}</div>
                           <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", fontFamily: S.body, marginBottom: 12 }}>{paySelectedProg.name}</div>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                            <span style={{ fontSize: 32, fontWeight: 800, color: S.gold, fontFamily: S.heading }}>{fmt(payCalcAmount.amount)}</span>
-                            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", fontFamily: S.body }}>JMD</span>
+                            <span style={{ fontSize: 32, fontWeight: 800, color: S.gold, fontFamily: S.heading }}>{pf(payCalcAmount.amount)}</span>
                           </div>
+                          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", fontFamily: S.body, marginTop: 2 }}>{payCurrency === "usd" ? fmt(payCalcAmount.amount) + " JMD" : "US$" + Math.round(payCalcAmount.amount / USD_RATE).toLocaleString()}</div>
                           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontFamily: S.body, marginTop: 4 }}>{payCalcAmount.detail}</div>
                         </div>
                       </div>
@@ -3671,7 +3888,7 @@ function ApplyPage({ setPage }) {
                               ["Level", payLevel],
                               ["Programme", paySelectedProg.name],
                               ["Payment Plan", payIsGoldOnly ? "Gold — Full Payment" : payPlan + " — " + payCalcAmount.label],
-                              ["Amount Due Now", fmt(payCalcAmount.amount) + " JMD"],
+                              ["Amount Due Now", pf(payCalcAmount.amount)],
                               ["Breakdown", payCalcAmount.detail],
                             ].map(([label, val], i) => (
                               <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "10px 16px", borderBottom: i < 7 ? "1px solid rgba(1,30,64,0.04)" : "none", fontSize: 13, fontFamily: S.body }}>
@@ -3692,7 +3909,7 @@ function ApplyPage({ setPage }) {
                               I confirm the following payment details:
                             </p>
                             <div style={{ background: "#fff", borderRadius: 8, border: "1px solid rgba(1,30,64,0.06)", marginBottom: 14, overflow: "hidden" }}>
-                              {[["Application Reference", payAppRef], ...(payStudentId ? [["Student ID", payStudentId]] : []), ["Programme", paySelectedProg.name], ["Level", payLevel], ["Payment Plan", (payIsGoldOnly ? "Gold" : payPlan) + " — " + payCalcAmount.label], ["Amount", fmt(payCalcAmount.amount) + " JMD"]].map(([label, val], i) => (
+                              {[["Application Reference", payAppRef], ...(payStudentId ? [["Student ID", payStudentId]] : []), ["Programme", paySelectedProg.name], ["Level", payLevel], ["Payment Plan", (payIsGoldOnly ? "Gold" : payPlan) + " — " + payCalcAmount.label], ["Amount", pf(payCalcAmount.amount)]].map(([label, val], i) => (
                                 <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "8px 14px", borderBottom: i < 4 ? "1px solid rgba(1,30,64,0.04)" : "none", fontSize: 12, fontFamily: S.body }}>
                                   <span style={{ color: S.gray, fontWeight: 600 }}>{label}</span>
                                   <span style={{ color: label === "Amount" ? "#2E7D32" : S.navy, fontWeight: label === "Amount" ? 800 : 600 }}>{val}</span>
@@ -3702,7 +3919,7 @@ function ApplyPage({ setPage }) {
                             <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", padding: "10px 14px", borderRadius: 8, background: payDeclare ? "rgba(46,125,50,0.06)" : "rgba(1,30,64,0.02)", border: payDeclare ? "1.5px solid rgba(46,125,50,0.3)" : "1.5px solid rgba(1,30,64,0.1)", transition: "all 0.2s" }}>
                               <input type="checkbox" checked={payDeclare} onChange={e => { setPayDeclare(e.target.checked); if (e.target.checked && !payDeclareTimestamp) setPayDeclareTimestamp(new Date().toISOString()); if (!e.target.checked) setPayDeclareTimestamp(null); }} style={{ width: 18, height: 18, marginTop: 1, accentColor: "#2E7D32", cursor: "pointer", flexShrink: 0 }} />
                               <span style={{ fontSize: 12, color: payDeclare ? "#2E7D32" : "#4A5568", fontFamily: S.body, lineHeight: 1.65, fontWeight: payDeclare ? 600 : 400 }}>
-                                I confirm that the payment details above are correct and I authorise this transaction of <strong>{fmt(payCalcAmount.amount)} JMD</strong> for <strong>{paySelectedProg.name}</strong> at CTS Empowerment &amp; Training Solutions. I understand that the registration fee is non-refundable and I agree to the <button onClick={() => setPage("Terms")} style={{ background: "none", border: "none", color: S.gold, fontSize: 12, fontFamily: S.body, cursor: "pointer", textDecoration: "underline", padding: 0 }}>Terms &amp; Conditions</button>.
+                                I confirm that the payment details above are correct and I authorise this transaction of <strong>{pf(payCalcAmount.amount)}</strong> for <strong>{paySelectedProg.name}</strong> at CTS Empowerment &amp; Training Solutions. I understand that the registration fee is non-refundable and I agree to the <button onClick={() => setPage("Terms")} style={{ background: "none", border: "none", color: S.gold, fontSize: 12, fontFamily: S.body, cursor: "pointer", textDecoration: "underline", padding: 0 }}>Terms &amp; Conditions</button>.
                               </span>
                             </label>
                             {payDeclare && payDeclareTimestamp && (
@@ -3719,7 +3936,7 @@ function ApplyPage({ setPage }) {
                             <button onClick={wipayReady ? initiateWiPay : () => { setPayConfirm(false); setPayDeclare(false); setPayDeclareTimestamp(null); setPayMethod("upload"); }} disabled={!payDeclare || paySubmitting} style={{ flex: 2, padding: "14px", borderRadius: 8, background: (!payDeclare || paySubmitting) ? "#4A5568" : "#2E7D32", color: "#fff", border: "none", fontSize: 14, fontWeight: 700, cursor: (!payDeclare || paySubmitting) ? "not-allowed" : "pointer", fontFamily: S.body, letterSpacing: 0.5, opacity: (!payDeclare || paySubmitting) ? 0.5 : 1, transition: "all 0.2s", boxShadow: payDeclare && !paySubmitting ? "0 4px 16px rgba(46,125,50,0.25)" : "none" }}
                               onMouseEnter={e => { if (payDeclare && !paySubmitting) e.currentTarget.style.background = "#1B5E20"; }}
                               onMouseLeave={e => { if (payDeclare && !paySubmitting) e.currentTarget.style.background = (!payDeclare || paySubmitting) ? "#4A5568" : "#2E7D32"; }}>
-                              {paySubmitting ? "⏳ Processing..." : !payDeclare ? "🔒 Accept Declaration to Continue" : wipayReady ? "🔒 Confirm & Pay — " + fmt(payCalcAmount.amount) : "📤 Confirm & Upload Evidence"}
+                              {paySubmitting ? "⏳ Processing..." : !payDeclare ? "🔒 Accept Declaration to Continue" : wipayReady ? "🔒 Confirm & Pay — " + pf(payCalcAmount.amount) : "📤 Confirm & Upload Evidence"}
                             </button>
                           </div>
                         </div>
@@ -3740,19 +3957,29 @@ function ApplyPage({ setPage }) {
                 const upCalcProgs = CALC_DATA.filter(d => d.level === payLevel);
                 const upSelectedProg = upCalcProgs.find(p => p.name === payProg) || upCalcProgs[0];
                 const upIsGoldOnly = upSelectedProg?.goldOnly;
+                const upf = (n) => payCurrency === "usd" ? "US$" + Math.round(n / USD_RATE).toLocaleString() : fmt(n);
                 const upCalcAmount = (() => {
                   if (!upSelectedProg) return null;
                   const t = upSelectedProg.tuition;
                   const plan = upIsGoldOnly ? "Gold" : payPlan;
-                  if (plan === "Gold") return { label: "Full Payment", amount: t + REG_FEE, detail: fmt(t) + " tuition + " + fmt(REG_FEE) + " reg" };
-                  if (plan === "Silver") { const st = t * 1.05, h = st / 2; return { label: "1st Instalment (50%)", amount: Math.round(h) + REG_FEE, detail: fmt(Math.round(h)) + " (50%) + " + fmt(REG_FEE) + " reg" }; }
-                  if (plan === "Bronze") { const bt = t * 1.08, dep = bt * 0.2; return { label: "Deposit (20%)", amount: Math.round(dep) + REG_FEE, detail: fmt(Math.round(dep)) + " (20%) + " + fmt(REG_FEE) + " reg" }; }
+                  if (plan === "Gold") return { label: "Full Payment", amount: t + REG_FEE, detail: upf(t) + " tuition + " + upf(REG_FEE) + " reg" };
+                  if (plan === "Silver") { const st = t * 1.05, h = st / 2; return { label: "1st Instalment (50%)", amount: Math.round(h) + REG_FEE, detail: upf(Math.round(h)) + " (50%) + " + upf(REG_FEE) + " reg" }; }
+                  if (plan === "Bronze") { const bt = t * 1.08, dep = bt * 0.2; return { label: "Deposit (20%)", amount: Math.round(dep) + REG_FEE, detail: upf(Math.round(dep)) + " (20%) + " + upf(REG_FEE) + " reg" }; }
                   return null;
                 })();
                 const upReqComplete = !!(payEmail && payAppRef && payLevel && upSelectedProg && upCalcAmount && files.paymentProof);
 
                 return (
               <div style={{ maxWidth: 620, margin: "0 auto" }}>
+                <PaymentSecurityNotice />
+                <div style={{ marginBottom: 20 }}>
+                  <h4 style={{ fontFamily: S.heading, fontSize: 16, color: S.navy, marginBottom: 12 }}>Bank Transfer Details</h4>
+                  <p style={{ fontFamily: S.body, fontSize: 12, color: S.gray, marginBottom: 14, lineHeight: 1.6 }}>Transfer to the account matching your preferred currency. Use your <strong>Application Reference</strong> as the payment reference.</p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }} className="resp-grid-2">
+                    <BankDetailsCard currency="usd" />
+                    <BankDetailsCard currency="jmd" />
+                  </div>
+                </div>
                 <div style={{ background: S.lightBg, borderRadius: 16, padding: "clamp(24px,3vw,40px)", border: "1px solid rgba(10,35,66,0.06)" }}>
                   <h3 style={{ fontFamily: S.heading, fontSize: 20, color: S.navy, marginBottom: 20 }}>Upload Payment Evidence</h3>
 
@@ -3805,7 +4032,7 @@ function ApplyPage({ setPage }) {
                           ["Level", payLevel],
                           ["Programme", upSelectedProg?.name || "—"],
                           ["Payment Plan", upIsGoldOnly ? "Gold — Full Payment" : payPlan + (upCalcAmount ? " — " + upCalcAmount.label : "")],
-                          ["Amount Due", upCalcAmount ? fmt(upCalcAmount.amount) + " JMD" : "—"],
+                          ["Amount Due", upCalcAmount ? upf(upCalcAmount.amount) : "—"],
                         ].map(([label, val], i, arr) => (
                           <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "10px 16px", borderBottom: i < arr.length - 1 ? "1px solid rgba(1,30,64,0.04)" : "none", fontSize: 13, fontFamily: S.body }}>
                             <span style={{ color: S.gray, fontWeight: 600 }}>{label}</span>
@@ -3863,7 +4090,7 @@ function ApplyPage({ setPage }) {
                       </p>
                       {upCalcAmount && upSelectedProg && (
                         <div style={{ background: "#fff", borderRadius: 8, border: "1px solid rgba(1,30,64,0.06)", marginBottom: 14, overflow: "hidden" }}>
-                          {[["Application Reference", payAppRef], ...(payStudentId ? [["Student ID", payStudentId]] : []), ["Programme", upSelectedProg.name], ["Level", payLevel], ["Payment Plan", (upIsGoldOnly ? "Gold" : payPlan) + " — " + upCalcAmount.label], ["Amount", fmt(upCalcAmount.amount) + " JMD"]].map(([label, val], i) => (
+                          {[["Application Reference", payAppRef], ...(payStudentId ? [["Student ID", payStudentId]] : []), ["Programme", upSelectedProg.name], ["Level", payLevel], ["Payment Plan", (upIsGoldOnly ? "Gold" : payPlan) + " — " + upCalcAmount.label], ["Amount", upf(upCalcAmount.amount)]].map(([label, val], i) => (
                             <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "8px 14px", borderBottom: i < 4 ? "1px solid rgba(1,30,64,0.04)" : "none", fontSize: 12, fontFamily: S.body }}>
                               <span style={{ color: S.gray, fontWeight: 600 }}>{label}</span>
                               <span style={{ color: label === "Amount" ? "#2E7D32" : S.navy, fontWeight: label === "Amount" ? 800 : 600 }}>{val}</span>
@@ -3874,7 +4101,7 @@ function ApplyPage({ setPage }) {
                       <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer", padding: "10px 14px", borderRadius: 8, background: payDeclare ? "rgba(46,125,50,0.06)" : "rgba(1,30,64,0.02)", border: payDeclare ? "1.5px solid rgba(46,125,50,0.3)" : "1.5px solid rgba(1,30,64,0.1)", transition: "all 0.2s" }}>
                         <input type="checkbox" checked={payDeclare} onChange={e => { setPayDeclare(e.target.checked); if (e.target.checked && !payDeclareTimestamp) setPayDeclareTimestamp(new Date().toISOString()); if (!e.target.checked) setPayDeclareTimestamp(null); }} style={{ width: 18, height: 18, marginTop: 1, accentColor: "#2E7D32", cursor: "pointer", flexShrink: 0 }} />
                         <span style={{ fontSize: 12, color: payDeclare ? "#2E7D32" : "#4A5568", fontFamily: S.body, lineHeight: 1.65, fontWeight: payDeclare ? 600 : 400 }}>
-                          I confirm that the uploaded payment evidence is genuine, relates to a payment of <strong>{upCalcAmount ? fmt(upCalcAmount.amount) + " JMD" : "the stated amount"}</strong> for <strong>{upSelectedProg ? upSelectedProg.name : "the selected programme"}</strong> at CTS Empowerment &amp; Training Solutions. I understand that providing fraudulent payment evidence may result in the withdrawal of my application and I agree to the <button onClick={() => setPage("Terms")} style={{ background: "none", border: "none", color: S.gold, fontSize: 12, fontFamily: S.body, cursor: "pointer", textDecoration: "underline", padding: 0 }}>Terms &amp; Conditions</button>.
+                          I confirm that the uploaded payment evidence is genuine, relates to a payment of <strong>{upCalcAmount ? upf(upCalcAmount.amount) : "the stated amount"}</strong> for <strong>{upSelectedProg ? upSelectedProg.name : "the selected programme"}</strong> at CTS Empowerment &amp; Training Solutions. I understand that providing fraudulent payment evidence may result in the withdrawal of my application and I agree to the <button onClick={() => setPage("Terms")} style={{ background: "none", border: "none", color: S.gold, fontSize: 12, fontFamily: S.body, cursor: "pointer", textDecoration: "underline", padding: 0 }}>Terms &amp; Conditions</button>.
                         </span>
                       </label>
                       {payDeclare && payDeclareTimestamp && (
@@ -3905,7 +4132,7 @@ function ApplyPage({ setPage }) {
                         form_type: "Payment Evidence Upload",
                         from_name: payEmail,
                         email: payEmail,
-                        message: "Application Ref: " + (payAppRef || "Not provided") + "\nStudent ID: " + (payStudentId || "Not yet assigned") + "\nLevel: " + payLevel + "\nProgramme: " + (upSelectedProg?.name || "N/A") + "\nPlan: " + (upIsGoldOnly ? "Gold" : payPlan) + "\nAmount: " + (upCalcAmount ? fmt(upCalcAmount.amount) : "N/A") + "\nFile: " + files.paymentProof.name + "\nDeclaration: " + (payDeclareTimestamp || "N/A"),
+                        message: "Application Ref: " + (payAppRef || "Not provided") + "\nStudent ID: " + (payStudentId || "Not yet assigned") + "\nLevel: " + payLevel + "\nProgramme: " + (upSelectedProg?.name || "N/A") + "\nPlan: " + (upIsGoldOnly ? "Gold" : payPlan) + "\nAmount (JMD): " + (upCalcAmount ? fmt(upCalcAmount.amount) : "N/A") + "\nAmount (USD): " + (upCalcAmount ? "US$" + Math.round(upCalcAmount.amount / USD_RATE) : "N/A") + "\nPay Currency: " + payCurrency.toUpperCase() + "\nFile: " + files.paymentProof.name + "\nDeclaration: " + (payDeclareTimestamp || "N/A"),
                       }).catch(err => console.error("EmailJS error:", err));
                     }
                     setPaySubmitted(true);
@@ -3949,21 +4176,21 @@ function StudentJourneyPage({ setPage }) {
       d: <>Complete the <b>online application form</b>. Upload: HEART form, TRN, passport photo, qualifications, and national ID. You receive a <b>confirmation email with a personalised prayer</b> immediately.</>
     },
     { n: "3", t: "Review", s: "We check your application", color: "#633806", bg: "#FAEEDA", icon: "\uD83D\uDCCB",
-      d: <>We review your documents and <b>entry requirements</b>. Job Certificate is open entry. Level 2 needs JC or 2 CXCs. Level 3 needs L2 or 3 CXCs. Level 4 needs L3 Diploma. Level 5 needs L4 Associate. If anything is missing, we email you.</>
+      d: <>We review your documents and <b>entry requirements</b>. Job Certificate is open entry (worldwide). Level 2 needs JC or 2 CXCs (or equivalent). Level 3 needs L2 or 3 CXCs (GCSEs, A-Levels accepted). Level 4 needs L3 Diploma. Level 5 needs L4 Associate. If anything is missing, we email you.</>
     },
     { n: "4", t: "Accepted", s: "Student ID assigned", color: "#085041", bg: "#E1F5EE", icon: "\u2705", tagBg: "#085041", tagColor: "#9FE1CB",
       tags: ["Student ID","Prayer email","14-day window"],
       d: <>You receive your permanent <b>Student ID</b>, an <b>acceptance email with prayer</b>, and payment instructions. You have <b>14 days</b> to pay and secure your place.</>
     },
-    { n: "5", t: "Pay", s: "WiPay or bank transfer", color: "#011E40", bg: "#E6F1FB", icon: "\uD83D\uDCB3",
-      d: <><b>Pay online</b> via WiPay (card) or <b>bank transfer</b> + upload receipt. Plans: <b>Gold</b> (100% upfront, all levels), <b>Silver</b> (50/50 split + 5% fee, L3-5), <b>Bronze</b> (20% deposit + monthly + 8% fee, L3-5).</>
+    { n: "5", t: "Pay", s: "Online (USD/JMD) or bank transfer", color: "#011E40", bg: "#E6F1FB", icon: "\uD83D\uDCB3",
+      d: <><b>Pay online</b> in USD or JMD via secure checkout (Visa/Mastercard) or <b>bank transfer</b> to our USD or JMD account + upload receipt. Plans: <b>Gold</b> (100% upfront, all levels), <b>Silver</b> (50/50 split + 5% fee, L3-5), <b>Bronze</b> (20% deposit + monthly + 8% fee, L3-5).</>
     },
-    { n: "6", t: "Enrolled", s: "Canvas + welcome pack", color: "#085041", bg: "#E1F5EE", icon: "\uD83C\uDF93", tagBg: "#085041", tagColor: "#9FE1CB",
-      tags: ["Canvas login","Welcome packet","Handbook"],
-      d: <>You receive <b>Canvas LMS login</b>, <b>Welcome Packet PDF</b>, Student Handbook, and access to all programme modules. Over 120 days, you get <b>9 welcome emails</b> with tips and guidance.</>
+    { n: "6", t: "Enrolled", s: "Student Portal + study tools", color: "#085041", bg: "#E1F5EE", icon: "\uD83C\uDF93", tagBg: "#085041", tagColor: "#9FE1CB",
+      tags: ["Student Portal","Audio Lessons","Study Assistant","Interactive Tools"],
+      d: <>You receive access to the <b>CTS ETS Student Portal</b>, our exclusive <b>Interactive Learning Environment</b>, <b>Audio Study Sessions</b>, an <b>Intelligent Study Assistant</b>, study guides, flashcards, and your complete programme learner guide. Over the next 4 weeks, you'll receive automated encouragement emails with tips and guidance.</>
     },
-    { n: "7", t: "Learn", s: "Self-paced on Canvas", color: "#3C3489", bg: "#EEEDFE", icon: "\uD83D\uDCDA",
-      d: <>Study at <b>your own pace</b> from anywhere. Complete modules, activities, and assessments online. Log in <b>at least once per week</b>. Durations: JC 2-3 months, L2 3-4, L3 5-6, L4 7-8, L5 8-9 months.</>
+    { n: "7", t: "Learn", s: "Self-paced with exclusive study tools", color: "#3C3489", bg: "#EEEDFE", icon: "\uD83D\uDCDA",
+      d: <>Study at <b>your own pace</b> from anywhere. Work through expert-written learner guides, listen to <b>Audio Study Sessions</b>, ask questions via the <b>Intelligent Study Assistant</b>, and test yourself with flashcards. Durations: JC 2-3 months, L2 3-4, L3 5-6, L4 7-8, L5 8-9 months.</>
     },
     { n: "8", t: "Assessed", s: "Competent or NYC", color: "#3C3489", bg: "#EEEDFE", icon: "\uD83D\uDCDD", tagBg: "#3C3489", tagColor: "#CECBF6",
       tags: ["No grades","Free re-sit","10-day feedback"],
@@ -4110,7 +4337,7 @@ function ContactPage({ setPage }) {
             {[
               { icon: "🎓", title: "General Enquiry", desc: "Questions about programmes, entry requirements, or getting started.", duration: "15 min", who: "Prospective students", url: BOOKING_URLS.general },
               { icon: "💳", title: "Payment & Enrolment", desc: "Guidance on payment plans, the Payment Centre, or enrolment steps.", duration: "20 min", who: "Accepted students", url: BOOKING_URLS.payment },
-              { icon: "📚", title: "Academic Support", desc: "Help with coursework, assessments, Canvas, or programme content.", duration: "30 min", who: "Enrolled students", url: BOOKING_URLS.academic },
+              { icon: "📚", title: "Academic Support", desc: "Help with coursework, assessments, study tools, or programme content.", duration: "30 min", who: "Enrolled students", url: BOOKING_URLS.academic },
               { icon: "👥", title: "Employer Consultation", desc: "Discuss group enrolment, 15% discount, and training plans for your team.", duration: "30 min", who: "Employers & HR", url: BOOKING_URLS.employer },
             ].map((apt, i) => (
               <Reveal key={apt.title} delay={i * 0.1}>
@@ -4238,7 +4465,7 @@ function PrivacyPage() {
 
           <div style={sectionStyle}>
             <h3 style={hStyle}>3. How We Store and Protect Your Data</h3>
-            <p style={pStyle}>Your personal data is stored securely using Google Workspace (Google Drive and Google Sheets) with access restricted to authorised CTS ETS administrative staff only. Uploaded documents are stored in private Google Drive folders organised by student. We use industry-standard security measures including encrypted connections (HTTPS) for all data transmission. Application data is also stored locally in your browser for your convenience in tracking your application status.</p>
+            <p style={pStyle}>Your personal data is stored securely using enterprise-grade cloud infrastructure with access restricted to authorised CTS ETS administrative staff only. Uploaded documents are stored in private, encrypted cloud storage organised by student. We use industry-standard security measures including encrypted connections (HTTPS) for all data transmission. Application data is also stored locally in your browser for your convenience in tracking your application status.</p>
           </div>
 
           <div style={sectionStyle}>
@@ -4302,7 +4529,7 @@ function TermsPage() {
 
           <div style={sectionStyle}>
             <h3 style={hStyle}>3. Fees and Payment</h3>
-            <p style={pStyle}>All fees are quoted in Jamaican Dollars (JMD) and are subject to change with reasonable notice. Confirmed enrolments are honoured at the rate agreed at the time of registration. The registration fee of $5,000 JMD is non-refundable. Payment plans (Gold, Silver, Bronze) are subject to the terms described on our Fees &amp; Calculator page. Silver and Bronze plans include a processing fee of 5% and 8% respectively. Job Certificate and Level 2 programmes require full payment (Gold plan only). NCTVET external assessment and certification fees are separate from tuition and are paid directly to NCTVET. For all fee and payment enquiries, contact the Finance Department at finance@ctsetsjm.com.</p>
+            <p style={pStyle}>All fees are quoted in USD with JMD equivalents and are subject to change with reasonable notice. Confirmed enrolments are honoured at the rate agreed at the time of registration. The registration fee of US${Math.round(5000/USD_RATE)} (J$5,000) is non-refundable. Payment plans (Gold, Silver, Bronze) are subject to the terms described on our Fees &amp; Calculator page. Silver and Bronze plans include a processing fee of 5% and 8% respectively. Job Certificate and Level 2 programmes require full payment (Gold plan only). NCTVET external assessment and certification fees are separate from tuition and are paid directly to NCTVET. For all fee and payment enquiries, contact the Finance Department at finance@ctsetsjm.com.</p>
           </div>
 
           <div style={sectionStyle}>
@@ -4327,9 +4554,9 @@ function TermsPage() {
 
           <div style={sectionStyle}>
             <h3 style={hStyle}>8. Refund &amp; Cancellation Policy</h3>
-            <p style={pStyle}><strong>Cooling-Off Period:</strong> Students may cancel within 7 calendar days of enrolment confirmation and receive a full refund of all tuition fees paid, less a JMD $2,000 administrative processing fee.</p>
+            <p style={pStyle}><strong>Cooling-Off Period:</strong> Students may cancel within 7 calendar days of enrolment confirmation and receive a full refund of all tuition fees paid, less a US${Math.round(2000/USD_RATE)} (J$2,000) administrative processing fee.</p>
             <p style={pStyle}><strong>After the Cooling-Off Period:</strong> Within 14 days of enrolment: 75% refund (less admin fee). 15–30 days: 50% refund. 31–60 days: 25% refund. After 60 days or completion of more than 50% of the programme (whichever comes first): no refund.</p>
-            <p style={pStyle}><strong>Non-refundable items:</strong> NCTVET external assessment fees, the $2,000 administrative fee, WiPay processing fees, and materials already accessed or downloaded.</p>
+            <p style={pStyle}><strong>Non-refundable items:</strong> NCTVET external assessment fees, the US${Math.round(2000/USD_RATE)} (J$2,000) administrative fee, payment processing fees, and materials already accessed or downloaded.</p>
             <p style={pStyle}><strong>Exceptional circumstances</strong> (serious illness, bereavement, natural disaster) are considered individually by the Principal. Instalment plan obligations remain in effect until the date of withdrawal.</p>
             <p style={pStyle}>To request a refund, email finance@ctsetsjm.com with your Student ID, programme name, reason for withdrawal, and preferred refund method. Approved refunds are processed within 15 working days. Appeals may be submitted to quality@ctsetsjm.com within 10 working days.</p>
           </div>
@@ -4373,6 +4600,354 @@ function TermsPage() {
   );
 }
 
+// ─── INTERNATIONAL STUDENTS PAGE ─────────────────────────────────────
+function InternationalPage({ setPage }) {
+  const allProgs = Object.entries(PROGRAMMES).map(([level, progs]) =>
+    progs.map(p => ({ ...p, level, totalNum: parseInt(p.total.replace(/[$,]/g, "")) }))
+  ).flat();
+
+  return (
+    <PageWrapper>
+      <SectionHeader tag="Study From Anywhere" title="International Students" desc="CTS ETS welcomes learners from around the world. Our programmes are 100% online, self-paced, and designed for global applicability." />
+      <Container>
+        <Reveal>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, marginBottom: 40 }} className="resp-grid-3">
+            {[
+              ["🌍", "100% Online", "Study from any country, any timezone. No travel required."],
+              ["🎓", "Internationally Recognised", "NCTVET and City & Guilds aligned qualifications recognised across the Caribbean, UK, Canada, and beyond."],
+              ["⏰", "Self-Paced", "Start when you're ready. Study at your own speed. No fixed class times."],
+              ["🔧", "Exclusive Study Tools", "Audio Study Sessions, an Intelligent Study Assistant, expert-written guides, flashcards, and video summaries — included at no extra cost."],
+              ["💳", "Secure Online Payment", "Pay in USD or JMD online via WiPay (Visa/Mastercard) from anywhere in the world."],
+              ["📜", "Verifiable Certificates", "Employers can verify your certificate online at ctsetsjm.com."],
+            ].map(([icon, title, desc]) => (
+              <div key={title} style={{ padding: 24, borderRadius: 12, background: S.lightBg, border: "1px solid rgba(10,35,66,0.06)" }}>
+                <div style={{ fontSize: 28, marginBottom: 10 }}>{icon}</div>
+                <h4 style={{ fontFamily: S.heading, fontSize: 16, color: S.navy, marginBottom: 6, fontWeight: 700 }}>{title}</h4>
+                <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.6, margin: 0 }}>{desc}</p>
+              </div>
+            ))}
+          </div>
+        </Reveal>
+
+        <Reveal delay={0.1}>
+          <div style={{ marginBottom: 40 }}>
+            <h3 style={{ fontFamily: S.heading, fontSize: 22, color: S.navy, marginBottom: 6 }}>Programme Fees — USD &amp; JMD</h3>
+            <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, marginBottom: 20 }}>All fees shown in USD with Jamaican Dollar (JMD) equivalents. Exchange rate: US$1 = J${USD_RATE}. Actual exchange rate at time of payment may vary.</p>
+
+            <div style={{ background: S.lightBg, borderRadius: 12, overflow: "hidden", border: "1px solid rgba(10,35,66,0.06)" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 140px", padding: "14px 24px", background: S.navy }} className="prog-row">
+                {["Programme", "Level", "Total (USD / JMD)"].map((h, i) => (
+                  <span key={h} style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", fontWeight: 600, textAlign: i > 1 ? "center" : "left" }}>{h}</span>
+                ))}
+              </div>
+              {allProgs.map((p, i) => (
+                <div key={p.name + p.level} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 140px", padding: "12px 24px", background: i % 2 === 0 ? "#fff" : S.lightBg, borderBottom: "1px solid rgba(10,35,66,0.03)" }} className="prog-row">
+                  <span style={{ fontSize: 13, color: S.navy, fontFamily: S.body, fontWeight: 500 }}>{p.name}</span>
+                  <span style={{ fontSize: 12, color: S.gray, fontFamily: S.body }}>{p.level}</span>
+                  <span style={{ textAlign: "center" }}><DualPrice amount={p.totalNum} size={12} /></span>
+                </div>
+              ))}
+              <div style={{ padding: "14px 24px", background: "rgba(196,145,18,0.06)", fontSize: 12, color: "#2D3748", fontFamily: S.body, lineHeight: 1.55 }}>
+                <strong>Total includes {dualPrice(5000)} non-refundable registration fee.</strong> JMD amounts shown for reference. NCTVET external assessment fees are separate.
+              </div>
+            </div>
+            <PaymentSecurityNotice />
+          </div>
+        </Reveal>
+
+        <Reveal delay={0.2}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 40 }} className="resp-grid-2">
+            <div style={{ padding: 28, borderRadius: 12, background: S.lightBg, border: "1px solid rgba(10,35,66,0.06)" }}>
+              <h4 style={{ fontFamily: S.heading, fontSize: 18, color: S.navy, marginBottom: 12, fontWeight: 700 }}>How to Enrol (International)</h4>
+              <div style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.8 }}>
+                <p><strong>1.</strong> Browse programmes and choose your level</p>
+                <p><strong>2.</strong> Click <strong>Apply Now</strong> and complete the online application</p>
+                <p><strong>3.</strong> Receive your acceptance email within 48 hours</p>
+                <p><strong>4.</strong> Pay securely online (Visa/Mastercard — USD or JMD) or via bank transfer</p>
+                <p><strong>5.</strong> Receive your Student Portal access and begin studying immediately</p>
+              </div>
+            </div>
+            <div style={{ padding: 28, borderRadius: 12, background: S.lightBg, border: "1px solid rgba(10,35,66,0.06)" }}>
+              <h4 style={{ fontFamily: S.heading, fontSize: 18, color: S.navy, marginBottom: 12, fontWeight: 700 }}>Frequently Asked Questions</h4>
+              <div style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.8 }}>
+                <p><strong>Can I study from outside Jamaica?</strong> Yes. CTS ETS is 100% online. Students from any country are welcome.</p>
+                <p><strong>What timezone are classes?</strong> There are no live classes. Everything is self-paced — study whenever suits you.</p>
+                <p><strong>Is the certificate valid internationally?</strong> Yes. Our programmes are aligned to NCTVET (NVQ-J) and City &amp; Guilds, which are recognised internationally.</p>
+                <p><strong>What currency do I pay in?</strong> You choose — USD or JMD. We accept Visa and Mastercard online, or bank transfer to our USD or JMD accounts. All transactions are PCI DSS Level 1 secured with 256-bit encryption and 3D Secure authentication.</p>
+              </div>
+            </div>
+          </div>
+        </Reveal>
+
+        <div style={{ textAlign: "center", marginBottom: 20 }}>
+          <Btn primary onClick={() => setPage("Apply")} style={{ color: S.navy, fontSize: 15, padding: "14px 36px" }}>Apply Now — International Students Welcome</Btn>
+        </div>
+      </Container>
+      <PageScripture page="international" />
+    </PageWrapper>
+  );
+}
+
+// ─── CERTIFICATE VERIFICATION PAGE ──────────────────────────────────
+function VerifyCertificatePage({ setPage }) {
+  const [certNumber, setCertNumber] = useState("");
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
+
+  const handleVerify = async () => {
+    if (!certNumber.trim()) return;
+    setLoading(true);
+    setSearched(true);
+    setResult(null);
+    try {
+      const url = APPS_SCRIPT_URL + "?action=verifyCert&cert=" + encodeURIComponent(certNumber.trim().toUpperCase());
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        setResult(data);
+      } else {
+        setResult({ found: false });
+      }
+    } catch (_) {
+      setResult({ found: false });
+    }
+    setLoading(false);
+  };
+
+  return (
+    <PageWrapper bg={S.lightBg}>
+      <SectionHeader tag="Employer Verification" title="Verify a CTS ETS Certificate" desc="Enter a certificate number to verify its authenticity. This service is free and available to employers, institutions, and the public." />
+      <Container>
+        <Reveal>
+          <div style={{ maxWidth: 560, margin: "0 auto" }}>
+            <div style={{ background: "#fff", borderRadius: 16, padding: "clamp(24px,4vw,40px)", boxShadow: "0 4px 24px rgba(1,30,64,0.06)", border: "1px solid rgba(1,30,64,0.05)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+                <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(196,145,18,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>🔍</div>
+                <div>
+                  <h3 style={{ fontFamily: S.heading, fontSize: 18, color: S.navy, margin: 0, fontWeight: 700 }}>Certificate Verification</h3>
+                  <p style={{ fontFamily: S.body, fontSize: 12, color: S.gray, margin: 0 }}>Enter the certificate number exactly as it appears on the document</p>
+                </div>
+              </div>
+              <label style={{ fontFamily: S.body, fontSize: 12, fontWeight: 600, color: S.navy, display: "block", marginBottom: 6 }}>Certificate Number</label>
+              <div style={{ display: "flex", gap: 10 }}>
+                <input value={certNumber} onChange={e => setCertNumber(e.target.value.toUpperCase())} placeholder="e.g. CTSERTS-2026-00001" onKeyDown={e => e.key === "Enter" && handleVerify()}
+                  style={{ flex: 1, padding: "14px 16px", borderRadius: 8, border: "2px solid rgba(10,35,66,0.12)", fontSize: 15, fontFamily: S.body, color: S.navy, letterSpacing: 1, fontWeight: 600 }} />
+                <button onClick={handleVerify} disabled={loading || !certNumber.trim()} style={{ padding: "14px 24px", borderRadius: 8, background: S.navy, color: S.gold, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body, whiteSpace: "nowrap", opacity: loading ? 0.6 : 1 }}>
+                  {loading ? "Checking..." : "Verify"}
+                </button>
+              </div>
+
+              {searched && result && (
+                <div style={{ marginTop: 24 }}>
+                  {result.found ? (
+                    <div style={{ padding: 20, borderRadius: 12, background: "rgba(46,125,50,0.06)", border: "1px solid rgba(46,125,50,0.2)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                        <span style={{ fontSize: 24 }}>✅</span>
+                        <span style={{ fontFamily: S.heading, fontSize: 18, fontWeight: 700, color: "#2E7D32" }}>Certificate Verified</span>
+                      </div>
+                      {[["Certificate Number", result.cert], ["Student Name", result.name], ["Programme", result.programme], ["Date Issued", result.dateIssued], ["Status", result.status || "Valid"]].map(([label, val]) => val && (
+                        <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid rgba(46,125,50,0.1)", fontSize: 13, fontFamily: S.body }}>
+                          <span style={{ color: S.gray, fontWeight: 600 }}>{label}</span>
+                          <span style={{ color: S.navy, fontWeight: 700 }}>{val}</span>
+                        </div>
+                      ))}
+                      <p style={{ fontSize: 11, color: "#2E7D32", fontFamily: S.body, marginTop: 12, lineHeight: 1.5, fontStyle: "italic" }}>This certificate was issued by CTS Empowerment &amp; Training Solutions and is valid as of the date shown above.</p>
+                    </div>
+                  ) : (
+                    <div style={{ padding: 20, borderRadius: 12, background: "rgba(198,40,40,0.06)", border: "1px solid rgba(198,40,40,0.2)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                        <span style={{ fontSize: 24 }}>❌</span>
+                        <span style={{ fontFamily: S.heading, fontSize: 18, fontWeight: 700, color: "#C62828" }}>Certificate Not Found</span>
+                      </div>
+                      <p style={{ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.6 }}>No certificate matching this number was found in our records. Please check the number and try again. If you believe this is an error, contact us at <strong>certificates@ctsetsjm.com</strong>.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!searched && (
+                <div style={{ marginTop: 20, padding: "14px 16px", borderRadius: 8, background: "rgba(1,30,64,0.03)", border: "1px solid rgba(1,30,64,0.06)", fontSize: 12, color: S.gray, fontFamily: S.body, lineHeight: 1.6, textAlign: "center" }}>
+                  The certificate number is printed on every CTS ETS certificate, typically in the format <strong>CTSERTS-YYYY-NNNNN</strong>. If you cannot find it, ask the certificate holder or contact <strong>certificates@ctsetsjm.com</strong>.
+                </div>
+              )}
+            </div>
+          </div>
+        </Reveal>
+      </Container>
+      <PageScripture page="verify" />
+    </PageWrapper>
+  );
+}
+
+// ─── PAYMENT CONFIRMATION PAGE ──────────────────────────────────────
+function PaymentConfirmPage({ setPage }) {
+  const [form, setForm] = useState({ name: "", email: "", programme: "", amount: "", method: "", date: "", reference: "", notes: "" });
+  const [file, setFile] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const u = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const handleSubmit = async () => {
+    if (!form.name || !form.email || !form.programme || !form.amount || !form.method) return;
+    setSubmitting(true);
+    try {
+      const payload = { form_type: "Payment Confirmation", ...form, timestamp: new Date().toISOString() };
+      if (file) {
+        const b64 = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result.split(",")[1]); r.onerror = rej; r.readAsDataURL(file); });
+        payload.files = [{ slot: "receipt", name: file.name, originalName: file.name, type: file.type, data: b64 }];
+      }
+      await fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload), mode: "no-cors" });
+    } catch (_) {}
+    setSubmitted(true);
+    setSubmitting(false);
+  };
+
+  const labelStyle = { fontFamily: S.body, fontSize: 12, fontWeight: 600, color: S.navy, display: "block", marginBottom: 4 };
+  const inputStyle = { width: "100%", padding: "12px 14px", borderRadius: 8, border: "2px solid rgba(10,35,66,0.12)", fontSize: 13, fontFamily: S.body, color: S.navy };
+  const allLevels = Object.entries(PROGRAMMES).flatMap(([level, progs]) => progs.map(p => level.split(" —")[0] + " — " + p.name));
+
+  if (submitted) return (
+    <PageWrapper bg={S.lightBg}>
+      <Container style={{ paddingTop: 72, textAlign: "center" }}>
+        <div style={{ width: 80, height: 80, borderRadius: "50%", background: "rgba(46,125,50,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: 36 }}>✅</div>
+        <h2 style={{ fontFamily: S.heading, fontSize: 28, color: S.navy, marginBottom: 10 }}>Payment Confirmation Received</h2>
+        <p style={{ fontFamily: S.body, fontSize: 15, color: S.gray, maxWidth: 480, margin: "0 auto 28px", lineHeight: 1.75 }}>Thank you, <strong>{form.name}</strong>. Your payment confirmation has been submitted. Our Finance team will verify your payment and update your enrolment status within 24–48 hours.</p>
+        <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray }}>You will receive an email confirmation at <strong>{form.email}</strong> once verified.</p>
+        <div style={{ marginTop: 28 }}>
+          <Btn primary onClick={() => setPage("Home")} style={{ color: S.navy }}>Return to Home</Btn>
+        </div>
+      </Container>
+      <PageScripture page="documents" />
+    </PageWrapper>
+  );
+
+  return (
+    <PageWrapper bg={S.lightBg}>
+      <SectionHeader tag="Finance" title="Payment Confirmation" desc="If you paid via bank transfer or other offline method, upload your receipt here so we can verify your payment and activate your enrolment." />
+      <Container>
+        <Reveal>
+          <div style={{ maxWidth: 560, margin: "0 auto", background: "#fff", borderRadius: 16, padding: "clamp(24px,4vw,40px)", boxShadow: "0 4px 24px rgba(1,30,64,0.06)", border: "1px solid rgba(1,30,64,0.05)" }}>
+            <div style={{ display: "grid", gap: 14 }}>
+              <div><label style={labelStyle}>Full Name *</label><input style={inputStyle} value={form.name} onChange={e => u("name", e.target.value)} placeholder="As per your application" /></div>
+              <div><label style={labelStyle}>Email Address *</label><input type="email" style={inputStyle} value={form.email} onChange={e => u("email", e.target.value)} placeholder="your@email.com" /></div>
+              <div><label style={labelStyle}>Programme *</label><select style={inputStyle} value={form.programme} onChange={e => u("programme", e.target.value)}><option value="">Select programme</option>{allLevels.map(p => <option key={p}>{p}</option>)}</select></div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }} className="resp-grid-2">
+                <div><label style={labelStyle}>Amount Paid (JMD) *</label><input style={inputStyle} value={form.amount} onChange={e => u("amount", e.target.value)} placeholder="e.g. 15000" /></div>
+                <div><label style={labelStyle}>Payment Method *</label><select style={inputStyle} value={form.method} onChange={e => u("method", e.target.value)}><option value="">Select</option><option>Bank Transfer</option><option>NCB Direct</option><option>BNS Transfer</option><option>Cash Deposit</option><option>Other</option></select></div>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }} className="resp-grid-2">
+                <div><label style={labelStyle}>Payment Date</label><input type="date" style={inputStyle} value={form.date} onChange={e => u("date", e.target.value)} /></div>
+                <div><label style={labelStyle}>Bank Reference / Transaction ID</label><input style={inputStyle} value={form.reference} onChange={e => u("reference", e.target.value)} placeholder="If available" /></div>
+              </div>
+              <div>
+                <label style={labelStyle}>Upload Receipt / Screenshot *</label>
+                <input type="file" accept="image/*,.pdf" onChange={e => setFile(e.target.files[0] || null)} style={{ ...inputStyle, padding: "10px 14px", fontSize: 12 }} />
+                <p style={{ fontSize: 11, color: S.gray, fontFamily: S.body, marginTop: 4 }}>Accepted: JPG, PNG, PDF. Max 5MB.</p>
+              </div>
+              <div><label style={labelStyle}>Additional Notes</label><textarea style={{ ...inputStyle, minHeight: 60 }} value={form.notes} onChange={e => u("notes", e.target.value)} placeholder="Optional — any additional information" /></div>
+            </div>
+            <div style={{ marginTop: 24, textAlign: "center" }}>
+              <button onClick={handleSubmit} disabled={submitting || !form.name || !form.email || !form.programme || !form.amount || !form.method}
+                style={{ padding: "14px 40px", borderRadius: 8, background: S.gold, color: S.navy, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body, opacity: submitting ? 0.6 : 1 }}>
+                {submitting ? "Submitting..." : "Submit Payment Confirmation"}
+              </button>
+            </div>
+            <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 8, background: "rgba(46,125,50,0.04)", border: "1px solid rgba(46,125,50,0.1)", fontSize: 11, color: "#2E7D32", fontFamily: S.body, textAlign: "center" }}>
+              🔒 Your information is encrypted and only shared with the CTS ETS Finance department.
+            </div>
+          </div>
+        </Reveal>
+      </Container>
+      <PageScripture page="documents" />
+    </PageWrapper>
+  );
+}
+
+// ─── STUDENT FEEDBACK PAGE ──────────────────────────────────────────
+function FeedbackPage({ setPage }) {
+  const [form, setForm] = useState({ name: "", email: "", programme: "", rating: "", wellDone: "", improve: "", recommend: "", testimonial: "", canShare: "" });
+  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const u = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const allLevels = Object.entries(PROGRAMMES).flatMap(([level, progs]) => progs.map(p => level.split(" —")[0] + " — " + p.name));
+
+  const handleSubmit = async () => {
+    if (!form.programme || !form.rating) return;
+    setSubmitting(true);
+    try {
+      await fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({ form_type: "Student Feedback", ...form, timestamp: new Date().toISOString() }), mode: "no-cors" });
+    } catch (_) {}
+    setSubmitted(true);
+    setSubmitting(false);
+  };
+
+  const labelStyle = { fontFamily: S.body, fontSize: 12, fontWeight: 600, color: S.navy, display: "block", marginBottom: 4 };
+  const inputStyle = { width: "100%", padding: "12px 14px", borderRadius: 8, border: "2px solid rgba(10,35,66,0.12)", fontSize: 13, fontFamily: S.body, color: S.navy };
+
+  if (submitted) return (
+    <PageWrapper bg={S.lightBg}>
+      <Container style={{ paddingTop: 72, textAlign: "center" }}>
+        <div style={{ width: 80, height: 80, borderRadius: "50%", background: "rgba(46,125,50,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: 36 }}>🙏</div>
+        <h2 style={{ fontFamily: S.heading, fontSize: 28, color: S.navy, marginBottom: 10 }}>Thank You for Your Feedback</h2>
+        <p style={{ fontFamily: S.body, fontSize: 15, color: S.gray, maxWidth: 480, margin: "0 auto 28px", lineHeight: 1.75 }}>Your feedback is invaluable. It helps us improve the experience for every learner who comes after you. We appreciate you taking the time.</p>
+        {form.canShare === "Yes" && <p style={{ fontFamily: S.body, fontSize: 13, color: S.gold, fontWeight: 600 }}>Thank you for agreeing to share a testimonial! We may reach out to you.</p>}
+        <div style={{ marginTop: 28 }}>
+          <Btn primary onClick={() => setPage("Home")} style={{ color: S.navy }}>Return to Home</Btn>
+        </div>
+      </Container>
+      <PageScripture page="feedback" />
+    </PageWrapper>
+  );
+
+  return (
+    <PageWrapper bg={S.lightBg}>
+      <SectionHeader tag="Your Voice Matters" title="Student Feedback" desc="Help us improve. Your honest feedback shapes the experience for future learners." />
+      <Container>
+        <Reveal>
+          <div style={{ maxWidth: 560, margin: "0 auto", background: "#fff", borderRadius: 16, padding: "clamp(24px,4vw,40px)", boxShadow: "0 4px 24px rgba(1,30,64,0.06)", border: "1px solid rgba(1,30,64,0.05)" }}>
+            <div style={{ display: "grid", gap: 14 }}>
+              <div><label style={labelStyle}>Your Name (optional)</label><input style={inputStyle} value={form.name} onChange={e => u("name", e.target.value)} placeholder="First and last name" /></div>
+              <div><label style={labelStyle}>Email (optional)</label><input type="email" style={inputStyle} value={form.email} onChange={e => u("email", e.target.value)} placeholder="your@email.com" /></div>
+              <div><label style={labelStyle}>Programme Completed *</label><select style={inputStyle} value={form.programme} onChange={e => u("programme", e.target.value)}><option value="">Select programme</option>{allLevels.map(p => <option key={p}>{p}</option>)}</select></div>
+              <div>
+                <label style={labelStyle}>Overall Experience *</label>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {["1 — Poor", "2 — Fair", "3 — Good", "4 — Very Good", "5 — Excellent"].map(r => (
+                    <button key={r} onClick={() => u("rating", r)} style={{ padding: "10px 16px", borderRadius: 8, border: "2px solid", borderColor: form.rating === r ? S.gold : "rgba(10,35,66,0.1)", background: form.rating === r ? S.gold : "transparent", color: form.rating === r ? S.navy : S.gray, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: S.body, transition: "all 0.2s" }}>{r}</button>
+                  ))}
+                </div>
+              </div>
+              <div><label style={labelStyle}>What worked well?</label><textarea style={{ ...inputStyle, minHeight: 80 }} value={form.wellDone} onChange={e => u("wellDone", e.target.value)} placeholder="What did you enjoy most about your experience?" /></div>
+              <div><label style={labelStyle}>What could be improved?</label><textarea style={{ ...inputStyle, minHeight: 80 }} value={form.improve} onChange={e => u("improve", e.target.value)} placeholder="How can we make the experience better for future learners?" /></div>
+              <div><label style={labelStyle}>Would you recommend CTS ETS?</label><select style={inputStyle} value={form.recommend} onChange={e => u("recommend", e.target.value)}><option value="">Select</option><option>Definitely</option><option>Probably</option><option>Not sure</option><option>Probably not</option></select></div>
+              <div style={{ padding: 16, borderRadius: 10, background: "rgba(196,145,18,0.04)", border: "1px solid rgba(196,145,18,0.15)" }}>
+                <label style={{ ...labelStyle, color: S.gold }}>Would you like to share a short testimonial? (optional)</label>
+                <textarea style={{ ...inputStyle, minHeight: 70 }} value={form.testimonial} onChange={e => u("testimonial", e.target.value)} placeholder="Share your story in a few sentences — it inspires others to take the step you took." />
+                <div style={{ marginTop: 10 }}>
+                  <label style={{ ...labelStyle, fontSize: 11 }}>May we share your testimonial on our website and social media?</label>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    {["Yes", "No"].map(o => (
+                      <button key={o} onClick={() => u("canShare", o)} style={{ padding: "8px 20px", borderRadius: 6, border: "1px solid", borderColor: form.canShare === o ? S.gold : "rgba(10,35,66,0.1)", background: form.canShare === o ? S.gold : "transparent", color: form.canShare === o ? S.navy : S.gray, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: S.body }}>{o}</button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div style={{ marginTop: 24, textAlign: "center" }}>
+              <button onClick={handleSubmit} disabled={submitting || !form.programme || !form.rating}
+                style={{ padding: "14px 40px", borderRadius: 8, background: S.gold, color: S.navy, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body, opacity: submitting ? 0.6 : 1 }}>
+                {submitting ? "Sending..." : "Submit Feedback"}
+              </button>
+            </div>
+          </div>
+        </Reveal>
+      </Container>
+      <PageScripture page="feedback" />
+    </PageWrapper>
+  );
+}
+
 // ─── FOOTER ──────────────────────────────────────────────────────────
 function Footer({ setPage }) {
   return (
@@ -4410,10 +4985,11 @@ function Footer({ setPage }) {
           {/* Quick Links */}
           <div>
             <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600, marginBottom: 16 }}>Quick Links</div>
-            {["About","Programmes","Careers","Blog","Student Journey","Fees & Calculator","Apply","Contact"].map(p => (
+            {["About","Programmes","International","Careers","Blog","Student Journey","Fees & Calculator","Apply","Contact"].map(p => (
               <button key={p} onClick={() => setPage(p)} style={{ display: "block", background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 13, fontFamily: S.body, cursor: "pointer", padding: "4px 0", textAlign: "left" }}>{p}</button>
             ))}
-            <a href={CANVAS_URL} target="_blank" rel="noopener noreferrer" style={{ display: "block", color: "#81C784", fontSize: 13, fontFamily: S.body, padding: "4px 0", textDecoration: "none", fontWeight: 600 }}>📚 Learning Portal</a>
+            <button onClick={() => setPage("Verify Certificate")} style={{ display: "block", background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 13, fontFamily: S.body, cursor: "pointer", padding: "4px 0", textAlign: "left" }}>Verify a Certificate</button>
+            <a href={PORTAL_URL} target="_blank" rel="noopener noreferrer" style={{ display: "block", color: "#81C784", fontSize: 13, fontFamily: S.body, padding: "4px 0", textDecoration: "none", fontWeight: 600 }}>🎓 Student Portal</a>
           </div>
           {/* Partners */}
           <div>
@@ -4472,7 +5048,7 @@ function WhatsAppBtn() {
     </svg>
   );
   return (
-    <div style={{ position: "fixed", bottom: 80, right: 24, zIndex: 9997, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
+    <div style={{ position: "fixed", bottom: 80, left: 24, zIndex: 9997, display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 10 }}>
       {open && (
         <div style={{ background: "#fff", borderRadius: 12, boxShadow: "0 8px 32px rgba(0,0,0,0.15)", padding: "14px 0", minWidth: 230, marginBottom: 4 }}>
           <div style={{ padding: "6px 18px 10px", fontSize: 11, fontWeight: 700, color: "#666", fontFamily: "sans-serif", textTransform: "uppercase", letterSpacing: 1, borderBottom: "1px solid #f0f0f0" }}>Chat with us on WhatsApp</div>
@@ -4923,7 +5499,7 @@ export default function CTSApp() {
 
   // Page titles
   useEffect(() => {
-    const titles = { Home: "CTS ETS — Build Real Skills. Earn Recognised Qualifications.", About: "About Us — CTS ETS", "Why Choose": "Why Choose CTS ETS", Programmes: "Programmes — CTS ETS", Certification: "Certification — CTS ETS", "Fees & Calculator": "Fees & Payment Calculator — CTS ETS", "For Employers": "For Employers — CTS ETS", "Student Journey": "Your Student Journey — CTS ETS", Careers: "Career Outcomes — CTS ETS", Blog: "Blog & News — CTS ETS", Apply: "Apply Now — CTS ETS", Contact: "Contact Us — CTS ETS", Privacy: "Privacy Policy — CTS ETS", Terms: "Terms & Conditions — CTS ETS" };
+    const titles = { Home: "CTS ETS — Build Real Skills. Earn Recognised Qualifications.", About: "About Us — CTS ETS", "Why Choose": "Why Choose CTS ETS", Programmes: "Programmes — CTS ETS", Certification: "Certification — CTS ETS", "Fees & Calculator": "Fees & Payment Calculator — CTS ETS", "For Employers": "For Employers — CTS ETS", "Student Journey": "Your Student Journey — CTS ETS", Careers: "Career Outcomes — CTS ETS", Blog: "Blog & News — CTS ETS", Apply: "Apply Now — CTS ETS", Contact: "Contact Us — CTS ETS", International: "International Students — CTS ETS", "Verify Certificate": "Verify a Certificate — CTS ETS", "Payment Confirm": "Payment Confirmation — CTS ETS", Feedback: "Student Feedback — CTS ETS", Privacy: "Privacy Policy — CTS ETS", Terms: "Terms & Conditions — CTS ETS" };
     document.title = titles[page] || "CTS Empowerment & Training Solutions";
   }, [page]);
 
@@ -4996,6 +5572,10 @@ export default function CTSApp() {
       case "Blog": return <BlogPage setPage={navigate} />;
       case "Apply": return <ApplyPage setPage={navigate} />;
       case "Contact": return <ContactPage setPage={navigate} />;
+      case "International": return <InternationalPage setPage={navigate} />;
+      case "Verify Certificate": return <VerifyCertificatePage setPage={navigate} />;
+      case "Payment Confirm": return <PaymentConfirmPage setPage={navigate} />;
+      case "Feedback": return <FeedbackPage setPage={navigate} />;
       case "Privacy": return <PrivacyPage />;
       case "Terms": return <TermsPage />;
       case "Admin": return <AdminAnalyticsPanel />;
