@@ -48,6 +48,20 @@ const PROGRAMMES = {
 
 const REG_FEE = 5000;
 
+// ─── FOUNDING COHORT PACKAGE ─────────────────────────────────────────
+const FOUNDING_DISCOUNT = 0.25; // 25% off tuition
+const FOUNDING_SPOTS = 15; // per programme
+const FOUNDING_REFERRAL = 0.05; // 5% per referral
+const FOUNDING_COHORT = Object.entries(PROGRAMMES).map(([level, progs]) => ({
+  level,
+  programmes: progs.map(p => {
+    const tuitionNum = parseInt(p.tuition.replace(/[$,]/g, ""));
+    const foundingTuition = Math.round(tuitionNum * (1 - FOUNDING_DISCOUNT));
+    const saving = tuitionNum - foundingTuition;
+    return { ...p, tuitionNum, foundingTuition, saving };
+  }),
+}));
+
 // International pricing — USD to JMD conversion rate (update periodically)
 const USD_RATE = 155; // JMD per 1 USD — last updated March 2026
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwuwSUVojJFZh1gnhuZQOCqAtuGHJ1LfT-CCg9MFewRx13rOibb5xDF-9GCNissgh_GpQ/exec";
@@ -109,7 +123,7 @@ const GROUP_DISCOUNTS = [
   { level: "L5: Bus Admin Mgmt", standard: "$155,000", group: "$131,750", saving: "$23,250" },
 ];
 
-const PAGES = ["Home","About","Why Choose","Programmes","Certification","Fees & Calculator","For Employers","International","Student Journey","Careers","Blog","Apply","Contact","Verify Certificate","Payment Confirm","Feedback"];
+const PAGES = ["Home","About","Why Choose","Programmes","Certification","Fees & Calculator","For Employers","International","Student Journey","Careers","Blog","Apply","Contact","Verify Certificate","Payment Confirm","Feedback","Founding Cohort"];
 
 // CTS ETS Student Portal — Update this URL after publishing your student portal
 // TIP: Set portal.ctsetsjm.com as a custom domain redirect to hide the hosting platform
@@ -151,6 +165,7 @@ const SCRIPTURES = {
   international: { text: "For from the rising of the sun to the place of its setting, my name will be great among the nations.", ref: "Malachi 1:11", meaning: "CTS ETS was built to serve learners everywhere. No matter where you are in the world, excellence knows no borders." },
   verify: { text: "Let your light shine before others, that they may see your good deeds and glorify your Father in heaven.", ref: "Matthew 5:16", meaning: "Your certificate is a light — proof of your dedication, your skill, and your commitment to excellence. Let it shine." },
   feedback: { text: "As iron sharpens iron, so one person sharpens another.", ref: "Proverbs 27:17", meaning: "Your honest feedback makes us better. Every word you share helps shape the experience for the learners who come after you." },
+  founding: { text: "See, I am doing a new thing! Now it springs up; do you not perceive it? I am making a way in the wilderness and streams in the wasteland.", ref: "Isaiah 43:19", meaning: "You are part of something new. As a founding student, you are not just joining a school — you are helping to build one. This is the beginning of a movement, and you are in it from day one." },
 };
 
 function PageScripture({ page }) {
@@ -742,14 +757,14 @@ function ScrollNav() {
 }
 
 // Announcement Bar
-function AnnouncementBar({ onDismiss }) {
+function AnnouncementBar({ onDismiss, setPage }) {
   const [dismissed, setDismissed] = useState(() => sessionStorage.getItem("cts_announcement_dismissed") === "true");
   if (dismissed) return null;
-  const dismiss = () => { sessionStorage.setItem("cts_announcement_dismissed", "true"); setDismissed(true); if (onDismiss) onDismiss(); };
+  const dismiss = (e) => { e.stopPropagation(); sessionStorage.setItem("cts_announcement_dismissed", "true"); setDismissed(true); if (onDismiss) onDismiss(); };
   return (
-    <div style={{ background: S.gold, padding: "8px 20px", display: "flex", alignItems: "center", justifyContent: "center", gap: 12, flexWrap: "wrap", position: "relative", zIndex: 1001 }}>
+    <div onClick={() => setPage && setPage("Founding Cohort")} style={{ background: S.gold, padding: "8px 20px", display: "flex", alignItems: "center", justifyContent: "center", gap: 12, flexWrap: "wrap", position: "relative", zIndex: 1001, cursor: "pointer" }}>
       <span style={{ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body, textAlign: "center" }}>
-        🎓 Enrolment is NOW OPEN — Start anytime, study at your own pace!
+        🎓 FOUNDING COHORT — 25% Off Tuition for the First 15 Students! <span style={{ textDecoration: "underline", cursor: "pointer" }}>Learn More →</span>
       </span>
       <button onClick={dismiss} aria-label="Dismiss announcement" style={{ background: "rgba(1,30,64,0.1)", border: "none", borderRadius: "50%", width: 22, height: 22, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: S.navy, fontWeight: 700, flexShrink: 0 }}>✕</button>
     </div>
@@ -1334,6 +1349,7 @@ const NAV_GROUPS = [
     { label: "Certification", page: "Certification" },
   ]},
   { label: "Admissions", children: [
+    { label: "🎓 Founding Cohort — 25% Off", page: "Founding Cohort" },
     { label: "Fees & Calculator", page: "Fees & Calculator" },
     { label: "Student Journey", page: "Student Journey" },
     { label: "Apply Now", page: "Apply" },
@@ -1462,6 +1478,32 @@ function HomePage({ setPage }) {
       <section style={{ background: S.lightBg, borderBottom: "1px solid rgba(10,35,66,0.06)" }}>
         <Container style={{ padding: "32px clamp(16px,3vw,48px)" }}>
           <PartnerLogos />
+        </Container>
+      </section>
+
+      {/* Founding Cohort CTA */}
+      <section style={{ background: `linear-gradient(135deg, ${S.gold} 0%, #D4A832 100%)`, padding: "48px 0", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 80% 50%, rgba(1,30,64,0.08) 0%, transparent 60%)" }} />
+        <Container style={{ position: "relative", zIndex: 2 }}>
+          <Reveal>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 32, flexWrap: "wrap" }}>
+              <div style={{ flex: 1, minWidth: 280 }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(1,30,64,0.1)", borderRadius: 20, padding: "6px 16px", marginBottom: 14 }}>
+                  <span style={{ fontSize: 14 }}>🎓</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: S.navy, fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase" }}>Limited Offer</span>
+                </div>
+                <h2 style={{ fontFamily: S.heading, fontSize: "clamp(24px,3.5vw,36px)", color: S.navy, fontWeight: 800, lineHeight: 1.2, marginBottom: 12 }}>Founding Cohort Package</h2>
+                <p style={{ fontFamily: S.body, fontSize: 16, color: "rgba(1,30,64,0.8)", lineHeight: 1.6, marginBottom: 8 }}>
+                  <strong>25% off tuition</strong> for the first 15 students per programme. Plus <strong>0% surcharge</strong> on Silver payment plans and a <strong>5% referral bonus</strong>.
+                </p>
+                <p style={{ fontFamily: S.body, fontSize: 13, color: "rgba(1,30,64,0.6)" }}>April 2026 intake — founding spots are filling fast.</p>
+              </div>
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                <Btn primary onClick={() => setPage("Founding Cohort")} style={{ background: S.navy, color: S.gold, fontSize: 15, padding: "16px 32px" }}>View Founding Prices</Btn>
+                <Btn onClick={() => setPage("Apply")} style={{ border: "2px solid " + S.navy, color: S.navy, fontSize: 14 }}>Apply Now</Btn>
+              </div>
+            </div>
+          </Reveal>
         </Container>
       </section>
 
@@ -2436,6 +2478,7 @@ function ApplyPage({ setPage }) {
       emergencyName: "", emergencyPhone: "",
       emergencyRelation: "", paymentPlan: "", jcfDivision: "", jcfStation: "", jcfRank: "",
       orgName: "", department: "", jobTitle: "", yearsService: "",
+      referralCode: new URLSearchParams(window.location.search).get("ref") || "",
       _hp: "", // honeypot
     };
   });
@@ -2765,6 +2808,7 @@ function ApplyPage({ setPage }) {
       sector, orgName: form.orgName, department: form.department, jobTitle: form.jobTitle,
       emergencyName: form.emergencyName, emergencyPhone: form.emergencyPhone, emergencyRelation: form.emergencyRelation,
       education: form.education, lastSchool: form.lastSchool, message: form.message,
+      referralCode: form.referralCode || "",
       declarationTimestamp: declareTimestamp,
     }, { heartForm: files.heartForm, trn: files.trn, photo: files.photo, qualifications: files.qualifications, nationalId: files.nationalId, birthCert: files.birthCert });
 
@@ -2805,7 +2849,7 @@ function ApplyPage({ setPage }) {
   // ── Confirmation screen ──
   if (submitted) {
     const savedRef = JSON.parse(localStorage.getItem("cts_applications") || "[]").slice(-1)[0]?.ref || "CTS-PENDING";
-    const shareMsg = `I just applied to CTS ETS for ${form.level} — ${form.programme}! 🎓\nReference: ${savedRef}\nApply too: https://ctsetsjm.com`;
+    const shareMsg = `I just applied to CTS ETS for ${form.level} — ${form.programme}! 🎓\nFounding Cohort — 25% Off Tuition!\nReference: ${savedRef}\nApply too: https://ctsetsjm.com/#founding-cohort`;
     return (
       <PageWrapper>
         <Container style={{ paddingTop: 72, paddingBottom: 72, textAlign: "center" }}>
@@ -2823,6 +2867,16 @@ function ApplyPage({ setPage }) {
             </div>
             <div style={{ padding: "14px 24px", borderRadius: 10, background: "rgba(46,125,50,0.06)", border: "1px solid rgba(46,125,50,0.15)" }}>
               <div style={{ fontSize: 12, color: "#2E7D32", fontFamily: S.body, lineHeight: 1.6, textAlign: "center" }}>📧 A confirmation email has been sent to <strong>{form.email}</strong>. Your permanent Student ID will be issued upon acceptance.</div>
+            </div>
+            {/* Founding Cohort Badge */}
+            <div style={{ padding: "14px 24px", borderRadius: 10, background: "rgba(196,145,18,0.08)", border: "1px solid rgba(196,145,18,0.2)", marginTop: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center", marginBottom: 4 }}>
+                <span style={{ fontSize: 14 }}>🎓</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: S.navy, fontFamily: S.body }}>Founding Cohort Applicant</span>
+              </div>
+              <div style={{ fontSize: 11, color: S.gray, fontFamily: S.body, lineHeight: 1.6, textAlign: "center" }}>
+                You may qualify for <strong>25% off tuition</strong> as a founding cohort student. Your founding pricing and personal referral code will be confirmed in your acceptance email.
+              </div>
             </div>
           </div>
 
@@ -3070,6 +3124,25 @@ function ApplyPage({ setPage }) {
                 </div>
                 {form.level && !form.level.includes("Job") && !form.level.includes("Level 2") && (
                   <div><label style={labelStyle}>Preferred Payment Plan</label><select style={inputStyle} value={form.paymentPlan} onChange={e => u("paymentPlan", e.target.value)}><option value="">Select plan</option><option>Gold — Full payment (0% surcharge)</option><option>Silver — 50/50 instalments (+5%)</option><option>Bronze — 20% deposit + monthly payments (+8%)</option></select></div>
+                )}
+                {/* Founding Cohort Referral Code */}
+                <div style={{ marginTop: 14 }}>
+                  <label style={labelStyle}>Referral Code <span style={{ fontWeight: 400, color: S.gray }}>(optional — if someone referred you)</span></label>
+                  <input style={inputStyle} value={form.referralCode || ""} onChange={e => u("referralCode", e.target.value.toUpperCase())} placeholder="e.g. CTS-REF-XXXX" maxLength={12} />
+                  {form.referralCode && form.referralCode.length >= 12 && (
+                    <div style={{ fontSize: 11, color: "#2E7D32", fontFamily: S.body, marginTop: 4 }}>🎁 Referral code entered — your referrer will receive a 5% tuition bonus when you enrol!</div>
+                  )}
+                </div>
+                {form.level && form.programme && (
+                  <div style={{ marginTop: 14, padding: "12px 16px", borderRadius: 10, background: "rgba(196,145,18,0.06)", border: "1px solid rgba(196,145,18,0.15)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                      <span style={{ fontSize: 14 }}>🎓</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: S.navy, fontFamily: S.body }}>Founding Cohort Eligible</span>
+                    </div>
+                    <p style={{ fontSize: 11, color: S.gray, fontFamily: S.body, lineHeight: 1.6, margin: 0 }}>
+                      As a founding cohort applicant, you may qualify for <strong>25% off tuition</strong>. Founding pricing is confirmed upon acceptance (subject to spot availability — first 15 students per programme).
+                    </p>
+                  </div>
                 )}
               </SectionBlock>
 
@@ -4992,6 +5065,246 @@ function FeedbackPage({ setPage }) {
 }
 
 // ─── FOOTER ──────────────────────────────────────────────────────────
+// ─── FOUNDING COHORT PAGE ────────────────────────────────────────────
+function FoundingCohortPage({ setPage }) {
+  const [activeLevel, setActiveLevel] = useState(null);
+  const [spotsData, setSpotsData] = useState(null);
+  const levels = Object.keys(PROGRAMMES);
+
+  // Fetch live spots data from backend
+  useEffect(() => {
+    fetch(APPS_SCRIPT_URL + "?action=foundingSpots")
+      .then(r => r.json())
+      .then(d => { if (d.success) setSpotsData(d.programmes); })
+      .catch(() => {}); // Silently fail — show static data instead
+  }, []);
+
+  // Helper: get remaining spots for a programme
+  const getSpots = (level, name) => {
+    if (!spotsData) return null;
+    const key = Object.keys(spotsData).find(k =>
+      k.toLowerCase().includes(name.toLowerCase().substring(0, 15))
+    );
+    return key ? spotsData[key] : null;
+  };
+
+  return (
+    <PageWrapper bg={S.lightBg}>
+      {/* Hero */}
+      <section style={{ background: S.navy, padding: "clamp(48px,8vw,80px) 0", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 30% 50%, rgba(196,145,18,0.1) 0%, transparent 65%)" }} />
+        <Container style={{ position: "relative", zIndex: 2, textAlign: "center" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "rgba(196,145,18,0.15)", border: "1px solid rgba(196,145,18,0.4)", borderRadius: 30, padding: "8px 24px", marginBottom: 24 }}>
+            <span style={{ fontSize: 16 }}>🎓</span>
+            <span style={{ fontSize: 12, color: S.gold, fontFamily: S.body, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}>First 15 Students Per Programme</span>
+          </div>
+          <h1 style={{ fontFamily: S.heading, fontSize: "clamp(30px,5vw,52px)", color: "#fff", fontWeight: 800, lineHeight: 1.15, marginBottom: 16 }}>
+            Founding Cohort Package<br /><span style={{ color: S.gold }}>25% Off Tuition</span>
+          </h1>
+          <p style={{ fontFamily: S.body, fontSize: "clamp(15px,1.8vw,18px)", color: "rgba(255,255,255,0.7)", lineHeight: 1.7, maxWidth: 600, margin: "0 auto 32px" }}>
+            Be among the first students to study with CTS ETS. Lock in your founding rate before spots fill up. Apply online — it takes less than 10 minutes.
+          </p>
+          <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap", marginBottom: 36 }}>
+            <Btn primary onClick={() => setPage("Apply")} style={{ fontSize: 16, padding: "16px 40px", color: S.navy }}>Apply Online Now</Btn>
+          </div>
+          {/* Countdown */}
+          <div style={{ marginBottom: 8 }}>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", fontFamily: S.body, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>April 2026 Intake Starts In</div>
+            <CountdownTimer targetDate="2026-04-06T09:00:00" />
+          </div>
+        </Container>
+      </section>
+
+      {/* 3 Key Benefits */}
+      <section style={{ background: "#fff", padding: "48px 0", borderBottom: "1px solid rgba(10,35,66,0.06)" }}>
+        <Container>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }} className="resp-grid-3">
+            {[
+              { icon: "🎓", title: "25% Off Tuition", desc: "Founding students get 25% off the standard tuition price on any programme, any level. The discount is applied before any payment plan surcharges.", bg: "#E6F4EA", accent: "#1B7A3D" },
+              { icon: "🤝", title: "5% Referral Bonus", desc: "Refer a friend who enrols and you get an additional 5% off YOUR tuition. Multiple referrals stack — the more friends you bring, the more you save.", bg: "#F3E8F9", accent: "#7B1FA2" },
+              { icon: "💳", title: "Silver Plan — 0% Surcharge", desc: "Founding cohort students pay NO surcharge on the Silver payment plan (normally +5%). Split your tuition 50/50 at zero extra cost.", bg: "#FEF3E0", accent: "#C49112" },
+            ].map((b, i) => (
+              <Reveal key={i} delay={i * 0.1}>
+                <div style={{ padding: 28, borderRadius: 16, background: b.bg, border: "1px solid " + b.accent + "20", textAlign: "center", height: "100%" }}>
+                  <div style={{ fontSize: 36, marginBottom: 12 }}>{b.icon}</div>
+                  <h3 style={{ fontFamily: S.heading, fontSize: 20, color: S.navy, fontWeight: 700, marginBottom: 10 }}>{b.title}</h3>
+                  <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.7 }}>{b.desc}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </Container>
+      </section>
+
+      {/* Pricing Table */}
+      <section style={{ padding: "56px 0" }}>
+        <SectionHeader tag="Founding Cohort Pricing" title="Every Programme, Every Level" desc="All prices shown in USD with JMD equivalent. Registration fee US$32 (J$5,000) applies to all programmes, all levels." />
+        <Container>
+          {/* Level filter tabs */}
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", marginBottom: 32 }}>
+            <button onClick={() => setActiveLevel(null)} style={{ padding: "8px 18px", borderRadius: 20, border: "2px solid " + (!activeLevel ? S.gold : "rgba(10,35,66,0.12)"), background: !activeLevel ? S.gold : "#fff", color: !activeLevel ? S.navy : S.gray, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: S.body, transition: "all 0.2s" }}>All Levels</button>
+            {levels.map(l => (
+              <button key={l} onClick={() => setActiveLevel(l)} style={{ padding: "8px 18px", borderRadius: 20, border: "2px solid " + (activeLevel === l ? S.gold : "rgba(10,35,66,0.12)"), background: activeLevel === l ? S.gold : "#fff", color: activeLevel === l ? S.navy : S.gray, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: S.body, transition: "all 0.2s", whiteSpace: "nowrap" }}>{l}</button>
+            ))}
+          </div>
+
+          {/* Programme rows */}
+          {FOUNDING_COHORT.filter(g => !activeLevel || g.level === activeLevel).map((group, gi) => (
+            <Reveal key={gi} delay={gi * 0.05}>
+              <div style={{ marginBottom: 24 }}>
+                <div style={{ background: S.navy, color: S.gold, padding: "10px 16px", borderRadius: "10px 10px 0 0", fontSize: 13, fontWeight: 700, fontFamily: S.body, letterSpacing: 0.5 }}>{group.level}</div>
+                {/* Header row */}
+                <div className="prog-row" style={{ display: "grid", gridTemplateColumns: "1fr 80px 120px 120px 90px 90px", padding: "8px 16px", background: "rgba(10,35,66,0.03)", borderBottom: "2px solid rgba(10,35,66,0.08)", gap: 4 }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: S.gray, fontFamily: S.body, textTransform: "uppercase", letterSpacing: 0.5 }}>Programme</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: S.gray, fontFamily: S.body, textTransform: "uppercase", letterSpacing: 0.5, textAlign: "center" }}>Duration</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: S.gray, fontFamily: S.body, textTransform: "uppercase", letterSpacing: 0.5, textAlign: "right" }}>Standard</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: S.gray, fontFamily: S.body, textTransform: "uppercase", letterSpacing: 0.5, textAlign: "right" }}>Founding</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: S.gray, fontFamily: S.body, textTransform: "uppercase", letterSpacing: 0.5, textAlign: "right" }}>Reg Fee</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: S.gray, fontFamily: S.body, textTransform: "uppercase", letterSpacing: 0.5, textAlign: "center" }}>Save</span>
+                </div>
+                {group.programmes.map((p, pi) => (
+                  <div key={pi} className="prog-row" style={{ display: "grid", gridTemplateColumns: "1fr 80px 120px 120px 90px 90px", padding: "12px 16px", background: pi % 2 ? "rgba(10,35,66,0.015)" : "#fff", borderBottom: "1px solid rgba(10,35,66,0.04)", gap: 4, alignItems: "center" }}>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: S.navy, fontFamily: S.body }}>{p.name}</div>
+                      <div style={{ fontSize: 10, color: S.gray, fontFamily: S.body, marginTop: 2 }}>{p.desc}</div>
+                    </div>
+                    <div style={{ fontSize: 11, color: S.gray, fontFamily: S.body, textAlign: "center" }}>{p.duration}</div>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontSize: 12, color: "#aaa", fontFamily: S.body, textDecoration: "line-through" }}>{dualPrice(p.tuitionNum)}</div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <DualPrice amount={p.foundingTuition} size={14} />
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <span style={{ fontSize: 11, color: S.gray, fontFamily: S.body }}>{dualPrice(REG_FEE)}</span>
+                    </div>
+                    <div style={{ textAlign: "center" }}>
+                      <span style={{ display: "inline-block", background: "#E6F4EA", color: "#1B7A3D", fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 10, fontFamily: S.body }}>{dualPrice(p.saving)}</span>
+                      {(() => {
+                        const spots = getSpots(group.level, p.name);
+                        if (!spots) return null;
+                        const r = spots.remaining;
+                        const color = r <= 3 ? "#C62828" : r <= 7 ? "#E65100" : "#2E7D32";
+                        return <div style={{ fontSize: 9, color, fontFamily: S.body, fontWeight: 700, marginTop: 3 }}>{r <= 0 ? "FULL" : r + " spots left"}</div>;
+                      })()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Reveal>
+          ))}
+        </Container>
+      </section>
+
+      {/* Payment Plans */}
+      <section style={{ background: "#fff", padding: "56px 0", borderTop: "1px solid rgba(10,35,66,0.06)" }}>
+        <SectionHeader tag="Flexible Payments" title="Founding Cohort Payment Plans" desc={"Choose how you pay. Registration fee " + dualPrice(REG_FEE) + " always paid at enrolment."} />
+        <Container>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }} className="resp-grid-3">
+            {[
+              { name: "Gold", rate: "0%", desc: "Full payment at enrolment", detail: "Pay your founding tuition in full plus the registration fee. No surcharge — the lowest total cost.", badge: "Best Value", badgeColor: S.gold, note: null },
+              { name: "Silver", rate: "0%", desc: "50% at enrolment, 50% at mid-point", detail: "Pay registration plus 50% of founding tuition at enrolment. Pay the remaining 50% at the programme mid-point. Same total as Gold.", badge: "Surcharge Waived!", badgeColor: "#2E7D32", note: "Normally +5% — waived for founding cohort students" },
+              { name: "Bronze", rate: "+5%", desc: "20% deposit, then monthly payments", detail: "Pay registration plus 20% of founding tuition at enrolment. Remaining balance in equal monthly instalments.", badge: "Reduced!", badgeColor: "#1565C0", note: "Reduced from +8% to +5% for founding cohort students" },
+            ].map((plan, i) => (
+              <Reveal key={i} delay={i * 0.1}>
+                <div style={{ borderRadius: 16, border: i === 0 ? "2px solid " + S.gold : "1px solid rgba(10,35,66,0.08)", overflow: "hidden", background: "#fff", height: "100%", display: "flex", flexDirection: "column", position: "relative" }}>
+                  {plan.badge && <div style={{ position: "absolute", top: 12, right: 12, background: plan.badgeColor, color: "#fff", fontSize: 9, fontWeight: 700, padding: "3px 10px", borderRadius: 10, fontFamily: S.body, letterSpacing: 0.5 }}>{plan.badge}</div>}
+                  <div style={{ padding: "28px 24px 20px", textAlign: "center" }}>
+                    <div style={{ fontSize: 11, color: S.gold, fontFamily: S.body, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase" }}>{plan.name}</div>
+                    <div style={{ fontFamily: S.heading, fontSize: 42, fontWeight: 800, color: S.navy, margin: "8px 0" }}>{plan.rate}</div>
+                    <div style={{ fontSize: 12, color: S.gray, fontFamily: S.body }}>{plan.desc}</div>
+                  </div>
+                  <div style={{ padding: "16px 24px 24px", background: S.lightBg, flex: 1, borderTop: "1px solid rgba(10,35,66,0.06)" }}>
+                    <p style={{ fontSize: 13, color: "#2D3748", fontFamily: S.body, lineHeight: 1.7, marginBottom: plan.note ? 12 : 0 }}>{plan.detail}</p>
+                    {plan.note && <p style={{ fontSize: 11, color: plan.badgeColor, fontFamily: S.body, fontWeight: 600, fontStyle: "italic" }}>🎁 {plan.note}</p>}
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </Container>
+      </section>
+
+      {/* Referral Bonus */}
+      <section style={{ background: `linear-gradient(135deg, #F3E8F9, #EDE7F6)`, padding: "48px 0" }}>
+        <Container>
+          <Reveal>
+            <div style={{ maxWidth: 700, margin: "0 auto", textAlign: "center" }}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>🤝</div>
+              <h2 style={{ fontFamily: S.heading, fontSize: "clamp(24px,3.5vw,34px)", color: S.navy, fontWeight: 700, marginBottom: 16 }}>Refer & Save — 5% Bonus</h2>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 24 }} className="resp-grid-4">
+                {[
+                  { step: "1", text: "Enrol at the founding price" },
+                  { step: "2", text: "Refer a friend or colleague" },
+                  { step: "3", text: "They enrol & pay registration" },
+                  { step: "4", text: "You get 5% off your tuition" },
+                ].map((s, i) => (
+                  <div key={i} style={{ background: "#fff", borderRadius: 12, padding: "16px 12px", textAlign: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: S.navy, color: S.gold, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, margin: "0 auto 8px", fontFamily: S.body }}>{s.step}</div>
+                    <div style={{ fontSize: 12, color: S.navy, fontFamily: S.body, fontWeight: 500, lineHeight: 1.5 }}>{s.text}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ background: "#fff", borderRadius: 12, padding: "18px 24px", border: "1px solid rgba(123,31,162,0.15)", textAlign: "left" }}>
+                <p style={{ fontFamily: S.body, fontSize: 13, color: "#2D3748", lineHeight: 1.7 }}>
+                  <strong>Example:</strong> Supervisory Management L3 founding tuition = <DualPrice amount={33750} size={13} />. Refer one person → your tuition drops to <DualPrice amount={32063} size={13} />. Refer two → <DualPrice amount={30375} size={13} />. <strong>Multiple referrals stack</strong> — there's no limit!
+                </p>
+              </div>
+            </div>
+          </Reveal>
+        </Container>
+      </section>
+
+      {/* How It Works */}
+      <section style={{ background: "#fff", padding: "56px 0" }}>
+        <SectionHeader tag="Simple Process" title="How to Join the Founding Cohort" desc="Apply online in under 10 minutes. We'll confirm your founding cohort spot and send you payment details." />
+        <Container>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 20, maxWidth: 800, margin: "0 auto" }} className="resp-grid-4">
+            {[
+              { icon: "📝", title: "Apply Online", desc: "Complete the application at ctsetsjm.com. Select your programme and level." },
+              { icon: "✅", title: "Get Accepted", desc: "We review your application and confirm your founding cohort spot." },
+              { icon: "💳", title: "Pay Registration", desc: "Pay the US$32 (J$5,000) non-refundable registration fee to lock in your price." },
+              { icon: "🎓", title: "Start Studying", desc: "Access your learner guides and the CTS ETS Interactive Learning System." },
+            ].map((s, i) => (
+              <Reveal key={i} delay={i * 0.12}>
+                <div style={{ textAlign: "center", padding: "0 8px" }}>
+                  <div style={{ width: 56, height: 56, borderRadius: "50%", background: i === 3 ? S.gold + "20" : S.navy + "08", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, margin: "0 auto 14px" }}>{s.icon}</div>
+                  <h4 style={{ fontFamily: S.body, fontSize: 14, fontWeight: 700, color: S.navy, marginBottom: 6 }}>{s.title}</h4>
+                  <p style={{ fontFamily: S.body, fontSize: 12, color: S.gray, lineHeight: 1.6 }}>{s.desc}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </Container>
+      </section>
+
+      {/* Final CTA */}
+      <section style={{ background: S.navy, padding: "64px 0", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 50% 50%, rgba(196,145,18,0.08) 0%, transparent 60%)" }} />
+        <Container style={{ position: "relative", zIndex: 2, textAlign: "center" }}>
+          <Reveal>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>🎓</div>
+            <h2 style={{ fontFamily: S.heading, fontSize: "clamp(26px,4vw,40px)", color: "#fff", fontWeight: 800, marginBottom: 12 }}>Don't Miss Your Founding Spot</h2>
+            <p style={{ fontFamily: S.body, fontSize: 16, color: "rgba(255,255,255,0.7)", lineHeight: 1.7, maxWidth: 500, margin: "0 auto 32px" }}>
+              Only 15 spots per programme at the founding rate. Once they're gone, future students pay full price.
+            </p>
+            <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap", marginBottom: 28 }}>
+              <Btn primary onClick={() => setPage("Apply")} style={{ fontSize: 16, padding: "18px 48px", color: S.navy }}>Apply Online at ctsetsjm.com</Btn>
+            </div>
+            <div style={{ display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap", fontSize: 13, fontFamily: S.body }}>
+              <span style={{ color: "rgba(255,255,255,0.6)" }}>📞 876-381-9771</span>
+              <span style={{ color: "rgba(255,255,255,0.6)" }}>📧 info@ctsetsjm.com</span>
+              <span style={{ color: "rgba(255,255,255,0.6)" }}>🌐 ctsetsjm.com</span>
+            </div>
+          </Reveal>
+        </Container>
+      </section>
+
+      <PageScripture page="founding" />
+    </PageWrapper>
+  );
+}
+
 function Footer({ setPage }) {
   return (
     <footer style={{ background: S.navy, padding: "40px 20px 28px", borderTop: "3px solid " + S.gold }}>
@@ -5031,6 +5344,7 @@ function Footer({ setPage }) {
             {["About","Programmes","International","Careers","Blog","Student Journey","Fees & Calculator","Apply","Contact"].map(p => (
               <button key={p} onClick={() => setPage(p)} style={{ display: "block", background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 13, fontFamily: S.body, cursor: "pointer", padding: "4px 0", textAlign: "left" }}>{p}</button>
             ))}
+            <button onClick={() => setPage("Founding Cohort")} style={{ display: "block", background: "none", border: "none", color: S.gold, fontSize: 13, fontFamily: S.body, cursor: "pointer", padding: "4px 0", textAlign: "left", fontWeight: 700 }}>🎓 Founding Cohort — 25% Off</button>
             <button onClick={() => setPage("Verify Certificate")} style={{ display: "block", background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 13, fontFamily: S.body, cursor: "pointer", padding: "4px 0", textAlign: "left" }}>Verify a Certificate</button>
             <a href={PORTAL_URL} target="_blank" rel="noopener noreferrer" style={{ display: "block", color: "#81C784", fontSize: 13, fontFamily: S.body, padding: "4px 0", textDecoration: "none", fontWeight: 600 }}>🎓 Student Portal</a>
           </div>
@@ -5619,6 +5933,7 @@ export default function CTSApp() {
       case "Verify Certificate": return <VerifyCertificatePage setPage={navigate} />;
       case "Payment Confirm": return <PaymentConfirmPage setPage={navigate} />;
       case "Feedback": return <FeedbackPage setPage={navigate} />;
+      case "Founding Cohort": return <FoundingCohortPage setPage={navigate} />;
       case "Privacy": return <PrivacyPage />;
       case "Terms": return <TermsPage />;
       case "Admin": return <AdminAnalyticsPanel />;
@@ -5678,7 +5993,7 @@ export default function CTSApp() {
           }
         `}</style>
         <OfflineBanner />
-        <AnnouncementBar />
+        <AnnouncementBar setPage={navigate} />
         <Navbar page={page} setPage={navigate} />
         <div key={page} style={{ opacity: transitioning ? 0 : 1, transform: transitioning ? "translateY(8px)" : "translateY(0)", transition: "opacity 0.3s ease, transform 0.3s ease" }}>
           {renderPage()}
