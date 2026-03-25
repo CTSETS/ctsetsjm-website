@@ -13,52 +13,55 @@ const PROGRAMMES = {
     { name: "Basic Digital Literacy Skills Proficiency", duration: "3 months", tuition: "$10,000", total: "$15,000", desc: "Build essential computer and internet skills for today's digital workplace." },
     { name: "Customer Service Rep — Admin Asst.", duration: "3 months", tuition: "$10,000", total: "$15,000", desc: "Gain front-line customer service and office administration capabilities." },
     { name: "Customer Service Rep — Office Admin", duration: "3 months", tuition: "$10,000", total: "$15,000", desc: "Develop professional office administration and client-facing skills." },
-    { name: "Data Entry Processor", duration: "2 months", tuition: "$8,000", total: "$13,000", desc: "Master accurate, efficient data entry and basic records management." },
-    { name: "Data Entry Advanced Processor", duration: "2 months", tuition: "$8,000", total: "$13,000", desc: "Take your data processing skills to the next level with advanced techniques." },
-    { name: "Introduction to ICT Proficiency", duration: "2 months", tuition: "$8,000", total: "$13,000", desc: "A foundational course in information and communication technology." },
+    { name: "Data Entry Processor", duration: "2 months", tuition: "$10,000", total: "$15,000", desc: "Master accurate, efficient data entry and basic records management." },
+    { name: "Data Entry Advanced Processor", duration: "2 months", tuition: "$10,000", total: "$15,000", desc: "Take your data processing skills to the next level with advanced techniques." },
+    { name: "Introduction to ICT Proficiency", duration: "2 months", tuition: "$10,000", total: "$15,000", desc: "A foundational course in information and communication technology." },
     { name: "Team Leader", duration: "2.5 months", tuition: "$10,000", total: "$15,000", desc: "Learn to lead, motivate, and manage small teams effectively." },
-    { name: "Industrial Security Ops Manager", duration: "3 months", tuition: "$12,000", total: "$17,000", desc: "Prepare for supervisory roles in security operations and risk management." },
-    { name: "Data Protection Officer", duration: "3 months", tuition: "$15,000", total: "$20,000", desc: "Understand data privacy regulations and organisational compliance requirements." },
-    { name: "Human Resource Administrator", duration: "4 months", tuition: "$18,000", total: "$23,000", desc: "Build foundational HR skills including recruitment, records, and compliance." },
+    { name: "Industrial Security Ops Manager", duration: "3 months", tuition: "$10,000", total: "$15,000", desc: "Prepare for supervisory roles in security operations and risk management." },
+    { name: "Data Protection Officer", duration: "3 months", tuition: "$10,000", total: "$15,000", desc: "Understand data privacy regulations and organisational compliance requirements." },
+    { name: "Human Resource Administrator", duration: "4 months", tuition: "$10,000", total: "$15,000", desc: "Build foundational HR skills including recruitment, records, and compliance." },
   ],
   "Level 2 — Vocational Certificate": [
-    { name: "Customer Service", duration: "6 months", tuition: "$15,000", total: "$20,000", desc: "Develop structured customer service delivery and communication skills." },
-    { name: "Entrepreneurship", duration: "6 months", tuition: "$15,000", total: "$20,000", desc: "Learn to plan, launch, and manage a small business venture." },
-    { name: "Administrative Assistance", duration: "6 months", tuition: "$18,000", total: "$23,000", desc: "Gain professional skills for office management and administrative support." },
+    { name: "Customer Service", duration: "6 months", tuition: "$20,000", total: "$25,000", desc: "Develop structured customer service delivery and communication skills." },
+    { name: "Entrepreneurship", duration: "6 months", tuition: "$20,000", total: "$25,000", desc: "Learn to plan, launch, and manage a small business venture." },
+    { name: "Administrative Assistance", duration: "6 months", tuition: "$20,000", total: "$25,000", desc: "Gain professional skills for office management and administrative support." },
     { name: "Business Administration (Secretarial)", duration: "6 months", tuition: "$20,000", total: "$25,000", desc: "Comprehensive secretarial and business administration training." },
     { name: "Industrial Security Operations", duration: "6 months", tuition: "$20,000", total: "$25,000", desc: "Formalise your security industry experience with recognised certification." },
   ],
   "Level 3 — Diploma": [
-    { name: "Customer Service", duration: "7 months", tuition: "$25,000", total: "$30,000", desc: "Advanced customer service strategy, quality assurance, and team coordination." },
+    { name: "Customer Service", duration: "7 months", tuition: "$30,000", total: "$35,000", desc: "Advanced customer service strategy, quality assurance, and team coordination." },
     { name: "Customer Service Supervision", duration: "7 months", tuition: "$30,000", total: "$35,000", desc: "Prepare to lead and supervise customer-facing teams with confidence." },
     { name: "Business Administration — Management", duration: "7 months", tuition: "$30,000", total: "$35,000", desc: "Core business management principles for aspiring mid-level managers." },
-    { name: "Entrepreneurship", duration: "7 months", tuition: "$35,000", total: "$40,000", desc: "Advanced business planning, financial management, and growth strategy." },
-    { name: "Industrial Security Operations", duration: "7 months", tuition: "$40,000", total: "$45,000", desc: "Senior-level security operations management and risk assessment." },
-    { name: "Supervisory Management", duration: "7 months", tuition: "$45,000", total: "$50,000", desc: "Develop leadership, decision-making, and people management skills." },
+    { name: "Entrepreneurship", duration: "7 months", tuition: "$30,000", total: "$35,000", desc: "Advanced business planning, financial management, and growth strategy." },
+    { name: "Industrial Security Operations", duration: "7 months", tuition: "$30,000", total: "$35,000", desc: "Senior-level security operations management and risk assessment." },
+    { name: "Supervisory Management", duration: "7 months", tuition: "$30,000", total: "$35,000", desc: "Develop leadership, decision-making, and people management skills." },
   ],
   "Level 4 — Associate Equivalent": [
     { name: "Human Resource Management", duration: "8 months", tuition: "$60,000", total: "$65,000", desc: "Strategic HR management including workforce planning and labour relations." },
-    { name: "Business Administration — Management", duration: "9 months", tuition: "$70,000", total: "$75,000", desc: "Advanced business strategy, operations, and organisational leadership." },
+    { name: "Business Administration — Management", duration: "9 months", tuition: "$60,000", total: "$65,000", desc: "Advanced business strategy, operations, and organisational leadership." },
   ],
   "Level 5 — Bachelor's Equivalent": [
-    { name: "Human Resource Management", duration: "6 months", tuition: "$110,000", total: "$115,000", desc: "Executive-level HR strategy, policy development, and organisational change." },
-    { name: "Business Administration Management", duration: "9 months", tuition: "$150,000", total: "$155,000", desc: "Comprehensive senior management and executive leadership programme." },
+    { name: "Human Resource Management", duration: "6 months", tuition: "$100,000", total: "$105,000", desc: "Executive-level HR strategy, policy development, and organisational change." },
+    { name: "Business Administration Management", duration: "9 months", tuition: "$100,000", total: "$105,000", desc: "Comprehensive senior management and executive leadership programme." },
   ],
 };
 
 const REG_FEE = 5000;
 
 // ─── FOUNDING COHORT PACKAGE ─────────────────────────────────────────
-const FOUNDING_DISCOUNT = 0.25; // 25% off tuition
-const FOUNDING_SPOTS = 15; // per programme
+const FOUNDING_TUITION_DISCOUNT = 5000; // $5,000 off tuition for Level 3+
+const FOUNDING_SPOTS = 15; // total founding cohort spots
 const FOUNDING_REFERRAL = 0.05; // 5% per referral
+const FOUNDING_LEVEL3_PLUS = ["Level 3 — Diploma", "Level 4 — Associate Equivalent", "Level 5 — Bachelor's Equivalent"];
 const FOUNDING_COHORT = Object.entries(PROGRAMMES).map(([level, progs]) => ({
   level,
   programmes: progs.map(p => {
     const tuitionNum = parseInt(p.tuition.replace(/[$,]/g, ""));
-    const foundingTuition = Math.round(tuitionNum * (1 - FOUNDING_DISCOUNT));
-    const saving = tuitionNum - foundingTuition;
-    return { ...p, tuitionNum, foundingTuition, saving };
+    const isLevel3Plus = FOUNDING_LEVEL3_PLUS.includes(level);
+    const foundingTuition = isLevel3Plus ? tuitionNum - FOUNDING_TUITION_DISCOUNT : tuitionNum;
+    const regWaived = REG_FEE;
+    const saving = regWaived + (isLevel3Plus ? FOUNDING_TUITION_DISCOUNT : 0);
+    return { ...p, tuitionNum, foundingTuition, saving, regWaived: true };
   }),
 }));
 
@@ -80,47 +83,39 @@ const WIPAY_CONFIG = {
   cancelUrl: "https://www.ctsetsjm.com/#apply",
 };
 const CALC_DATA = [
-  { level: "Job Certificate", name: "Data Entry / ICT Proficiency", tuition: 8000, goldOnly: true },
-  { level: "Job Certificate", name: "Digital Literacy / CSR / Admin Asst.", tuition: 10000, goldOnly: true },
+  { level: "Job Certificate", name: "Basic Digital Literacy Skills Proficiency", tuition: 10000, goldOnly: true },
+  { level: "Job Certificate", name: "Customer Service Rep — Admin Asst.", tuition: 10000, goldOnly: true },
+  { level: "Job Certificate", name: "Customer Service Rep — Office Admin", tuition: 10000, goldOnly: true },
+  { level: "Job Certificate", name: "Data Entry Processor", tuition: 10000, goldOnly: true },
+  { level: "Job Certificate", name: "Data Entry Advanced Processor", tuition: 10000, goldOnly: true },
+  { level: "Job Certificate", name: "Introduction to ICT Proficiency", tuition: 10000, goldOnly: true },
   { level: "Job Certificate", name: "Team Leader", tuition: 10000, goldOnly: true },
-  { level: "Job Certificate", name: "Industrial Security Ops Manager", tuition: 12000, goldOnly: true },
-  { level: "Job Certificate", name: "Data Protection Officer", tuition: 15000, goldOnly: true },
-  { level: "Job Certificate", name: "Human Resource Administrator", tuition: 18000, goldOnly: true },
-  { level: "Level 2 — Vocational", name: "Customer Service", tuition: 15000, goldOnly: true },
-  { level: "Level 2 — Vocational", name: "Entrepreneurship", tuition: 15000, goldOnly: true },
-  { level: "Level 2 — Vocational", name: "Administrative Assistance", tuition: 18000, goldOnly: true },
+  { level: "Job Certificate", name: "Industrial Security Ops Manager", tuition: 10000, goldOnly: true },
+  { level: "Job Certificate", name: "Data Protection Officer", tuition: 10000, goldOnly: true },
+  { level: "Job Certificate", name: "Human Resource Administrator", tuition: 10000, goldOnly: true },
+  { level: "Level 2 — Vocational", name: "Customer Service", tuition: 20000, goldOnly: true },
+  { level: "Level 2 — Vocational", name: "Entrepreneurship", tuition: 20000, goldOnly: true },
+  { level: "Level 2 — Vocational", name: "Administrative Assistance", tuition: 20000, goldOnly: true },
   { level: "Level 2 — Vocational", name: "Business Admin (Secretarial)", tuition: 20000, goldOnly: true },
   { level: "Level 2 — Vocational", name: "Industrial Security Operations", tuition: 20000, goldOnly: true },
-  { level: "Level 3 — Diploma", name: "Customer Service", tuition: 25000, bronzeMonths: 6 },
+  { level: "Level 3 — Diploma", name: "Customer Service", tuition: 30000, bronzeMonths: 6 },
   { level: "Level 3 — Diploma", name: "Customer Service Supervision", tuition: 30000, bronzeMonths: 6 },
   { level: "Level 3 — Diploma", name: "Bus Admin — Management", tuition: 30000, bronzeMonths: 6 },
-  { level: "Level 3 — Diploma", name: "Entrepreneurship", tuition: 35000, bronzeMonths: 6 },
-  { level: "Level 3 — Diploma", name: "Industrial Security Ops", tuition: 40000, bronzeMonths: 6 },
-  { level: "Level 3 — Diploma", name: "Supervisory Management", tuition: 45000, bronzeMonths: 6 },
+  { level: "Level 3 — Diploma", name: "Entrepreneurship", tuition: 30000, bronzeMonths: 6 },
+  { level: "Level 3 — Diploma", name: "Industrial Security Ops", tuition: 30000, bronzeMonths: 6 },
+  { level: "Level 3 — Diploma", name: "Supervisory Management", tuition: 30000, bronzeMonths: 6 },
   { level: "Level 4 — Associate", name: "Human Resource Management", tuition: 60000, bronzeMonths: 7 },
-  { level: "Level 4 — Associate", name: "Bus Admin — Management", tuition: 70000, bronzeMonths: 8 },
-  { level: "Level 5 — Bachelor's", name: "Human Resource Management", tuition: 110000, bronzeMonths: 5 },
-  { level: "Level 5 — Bachelor's", name: "Bus Admin Management", tuition: 150000, bronzeMonths: 8 },
+  { level: "Level 4 — Associate", name: "Bus Admin — Management", tuition: 60000, bronzeMonths: 8 },
+  { level: "Level 5 — Bachelor's", name: "Human Resource Management", tuition: 100000, bronzeMonths: 5 },
+  { level: "Level 5 — Bachelor's", name: "Bus Admin Management", tuition: 100000, bronzeMonths: 8 },
 ];
 
 const GROUP_DISCOUNTS = [
-  { level: "JC: Data Entry / ICT", standard: "$13,000", group: "$11,050", saving: "$1,950" },
-  { level: "JC: Digital Literacy / CSR / Team Leader", standard: "$15,000", group: "$12,750", saving: "$2,250" },
-  { level: "JC: Security Ops Manager", standard: "$17,000", group: "$14,450", saving: "$2,550" },
-  { level: "JC: Data Protection Officer", standard: "$20,000", group: "$17,000", saving: "$3,000" },
-  { level: "JC: HR Administrator", standard: "$23,000", group: "$19,550", saving: "$3,450" },
-  { level: "L2: Customer Service / Entrepreneurship", standard: "$20,000", group: "$17,000", saving: "$3,000" },
-  { level: "L2: Admin Assistance", standard: "$23,000", group: "$19,550", saving: "$3,450" },
-  { level: "L2: Bus Admin / Ind Security", standard: "$25,000", group: "$21,250", saving: "$3,750" },
-  { level: "L3: Customer Service", standard: "$30,000", group: "$25,500", saving: "$4,500" },
-  { level: "L3: Cust Serv Supervision / Bus Admin", standard: "$35,000", group: "$29,750", saving: "$5,250" },
-  { level: "L3: Entrepreneurship", standard: "$40,000", group: "$34,000", saving: "$6,000" },
-  { level: "L3: Industrial Security Ops", standard: "$45,000", group: "$38,250", saving: "$6,750" },
-  { level: "L3: Supervisory Management", standard: "$50,000", group: "$42,500", saving: "$7,500" },
-  { level: "L4: Human Resource Mgmt", standard: "$65,000", group: "$55,250", saving: "$9,750" },
-  { level: "L4: Bus Admin — Mgmt", standard: "$75,000", group: "$63,750", saving: "$11,250" },
-  { level: "L5: Human Resource Mgmt", standard: "$115,000", group: "$97,750", saving: "$17,250" },
-  { level: "L5: Bus Admin Mgmt", standard: "$155,000", group: "$131,750", saving: "$23,250" },
+  { level: "Job Certificate (all programmes)", standard: "$15,000", group: "$12,750", saving: "$2,250" },
+  { level: "Level 2 (all programmes)", standard: "$25,000", group: "$21,250", saving: "$3,750" },
+  { level: "Level 3 (all programmes)", standard: "$35,000", group: "$29,750", saving: "$5,250" },
+  { level: "Level 4 (all programmes)", standard: "$65,000", group: "$55,250", saving: "$9,750" },
+  { level: "Level 5 (all programmes)", standard: "$105,000", group: "$89,250", saving: "$15,750" },
 ];
 
 const PAGES = ["Home","About","Why Choose","Programmes","Certification","Fees & Calculator","For Employers","International","Student Journey","Careers","Blog","Apply","Contact","Verify Certificate","Payment Confirm","Feedback","Founding Cohort"];
@@ -269,10 +264,10 @@ const FAQS = [
   { q: "What certifications will I receive?", a: "Each programme is aligned to either NCTVET (NVQ-J) or City & Guilds — not both simultaneously. Upon successful completion of your programme and all required assessments, you will receive: (1) A CTS ETS Institutional Certificate of Completion, confirming your achievement with us; and (2) The relevant programme-aligned qualification — either an NVQ-J certificate issued through NCTVET, or a City & Guilds qualification. The specific awarding body is confirmed at enrolment. Both are nationally and internationally recognised." },
   { q: "What is the NCTVET external assessment fee?", a: "NCTVET external assessment and certification fees are separate from tuition and are paid directly to NCTVET. You will be advised of the applicable fees before the assessment stage." },
   { q: "Can my employer pay for my training?", a: "Yes! We offer a 15% group discount for 8 or more learners. Employers can enrol teams under the employer application option. Contact us for a group quotation." },
-  { q: "What payment plans are available?", a: "Gold (full payment, 0% surcharge) is available for all levels. Silver (50/50) and Bronze (monthly instalments) are available for Levels 3–5 only. Job Certificate and Level 2 require full payment." },
+  { q: "What payment plans are available?", a: "Gold (full payment, 0% surcharge) is available for all levels. Silver (60/40 split, 10% surcharge) and Bronze (30% deposit + monthly instalments, 15% surcharge) are available for Levels 3–5 only. Job Certificate and Level 2 require full payment." },
   { q: "How do I submit my application?", a: "Complete the online application form on ctsetsjm.com. When you start, you'll select whether you're a Jamaican, Caribbean, or International applicant — the form will adapt to show the right fields and document requirements for your location. Jamaican applicants also upload the HEART/NSTA application form. Once received, payment information will be sent to you via email." },
   { q: "What documents do I need to apply?", a: "Documents vary by location. Jamaican applicants: HEART/NSTA application form, TRN, passport photo, qualifications (CXC/CAPE), birth certificate, and national ID. Caribbean applicants: passport photo, qualifications (CXC/CSEC or CVQ), birth certificate or passport, and government ID. International applicants: passport photo, secondary school transcripts or equivalent qualifications, passport bio page, and proof of identity. All documents can be uploaded digitally — no physical copies needed." },
-  { q: "How do I contact CTS ETS?", a: "Email us at info@ctsetsjm.com, call 876-525-6802 or 876-381-9771, or WhatsApp us using the chat button on this page. We aim to respond within 24–48 hours." },
+  { q: "How do I contact CTS ETS?", a: "Email us at info@ctsetsjm.com, call 876-381-9771, or WhatsApp us using the chat button on this page. We aim to respond within 24–48 hours." },
 ];
 
 const TESTIMONIALS = [
@@ -764,7 +759,7 @@ function AnnouncementBar({ onDismiss, setPage }) {
   return (
     <div onClick={() => setPage && setPage("Founding Cohort")} style={{ background: S.gold, padding: "8px 20px", display: "flex", alignItems: "center", justifyContent: "center", gap: 12, flexWrap: "wrap", position: "relative", zIndex: 1001, cursor: "pointer" }}>
       <span style={{ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body, textAlign: "center" }}>
-        🎓 FOUNDING COHORT — 25% Off Tuition for the First 15 Students! <span style={{ textDecoration: "underline", cursor: "pointer" }}>Learn More →</span>
+        🎓 FOUNDING COHORT — Registration Free + $5K Off Tuition (Level 3+) for the First 15 Students! <span style={{ textDecoration: "underline", cursor: "pointer" }}>Learn More →</span>
       </span>
       <button onClick={dismiss} aria-label="Dismiss announcement" style={{ background: "rgba(1,30,64,0.1)", border: "none", borderRadius: "50%", width: 22, height: 22, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: S.navy, fontWeight: 700, flexShrink: 0 }}>✕</button>
     </div>
@@ -1349,7 +1344,7 @@ const NAV_GROUPS = [
     { label: "Certification", page: "Certification" },
   ]},
   { label: "Admissions", children: [
-    { label: "🎓 Founding Cohort — 25% Off", page: "Founding Cohort" },
+    { label: "🎓 Founding Cohort — Save Up to $10K", page: "Founding Cohort" },
     { label: "Fees & Calculator", page: "Fees & Calculator" },
     { label: "Student Journey", page: "Student Journey" },
     { label: "Apply Now", page: "Apply" },
@@ -1438,9 +1433,26 @@ function HomePage({ setPage }) {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 32, flexWrap: "wrap" }}>
               <img src={NAV_LOGO} alt="CTS ETS" style={{ width: 88, height: 98, objectFit: "contain" }} />
-              <div>
+              <div style={{ flex: 1, minWidth: 200 }}>
                 <div style={{ fontFamily: S.heading, fontSize: "clamp(22px,3vw,32px)", fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>CTS Empowerment &amp;<br />Training Solutions</div>
                 <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, fontFamily: S.body, marginTop: 6, textTransform: "uppercase" }}>Called To Serve — Committed to Excellence</div>
+              </div>
+              <div onClick={() => setPage("Founding Cohort")} style={{ cursor: "pointer", padding: "24px 32px", borderRadius: 18, background: "linear-gradient(135deg, rgba(196,145,18,0.25) 0%, rgba(196,145,18,0.08) 100%)", border: "3px solid " + S.gold, textAlign: "center", minWidth: 240, position: "relative", overflow: "hidden", boxShadow: "0 8px 32px rgba(196,145,18,0.2)" }}>
+                <div style={{ position: "absolute", top: -15, right: -15, width: 80, height: 80, borderRadius: "50%", background: "rgba(196,145,18,0.1)" }} />
+                <div style={{ position: "absolute", bottom: -20, left: -20, width: 60, height: 60, borderRadius: "50%", background: "rgba(196,145,18,0.06)" }} />
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 10 }}>
+                  <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#2E7D32", boxShadow: "0 0 10px rgba(46,125,50,0.7)", animation: "pulse 2s infinite" }} />
+                  <span style={{ fontSize: 13, fontWeight: 800, color: S.gold, fontFamily: S.body, letterSpacing: 2, textTransform: "uppercase" }}>Founding Cohort</span>
+                </div>
+                <div style={{ fontFamily: S.heading, fontSize: "clamp(32px,4vw,44px)", fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: 8 }}>
+                  Save <span style={{ color: S.gold }}>$10K</span>
+                </div>
+                <div style={{ fontFamily: S.body, fontSize: 14, color: "rgba(255,255,255,0.8)", lineHeight: 1.5, marginBottom: 10 }}>
+                  Registration free for the first 15 students.<br />Level 3+ get $5,000 off tuition too.
+                </div>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 14, color: S.gold, fontFamily: S.body, fontWeight: 800, padding: "8px 20px", borderRadius: 24, border: "2px solid " + S.gold, background: "rgba(196,145,18,0.1)" }}>
+                  View Founding Prices <span style={{ fontSize: 18 }}>→</span>
+                </div>
               </div>
             </div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "rgba(196,145,18,0.12)", border: "1px solid rgba(196,145,18,0.3)", borderRadius: 30, padding: "8px 20px", marginBottom: 20 }}>
@@ -1494,7 +1506,7 @@ function HomePage({ setPage }) {
                 </div>
                 <h2 style={{ fontFamily: S.heading, fontSize: "clamp(24px,3.5vw,36px)", color: S.navy, fontWeight: 800, lineHeight: 1.2, marginBottom: 12 }}>Founding Cohort Package</h2>
                 <p style={{ fontFamily: S.body, fontSize: 16, color: "rgba(1,30,64,0.8)", lineHeight: 1.6, marginBottom: 8 }}>
-                  <strong>25% off tuition</strong> for the first 15 students per programme. Plus <strong>0% surcharge</strong> on Silver payment plans and a <strong>5% referral bonus</strong>.
+                  <strong>Registration free</strong> for the first 15 students. Level 3 and above also get <strong>$5,000 off tuition</strong>. Plus a <strong>5% referral bonus</strong>.
                 </p>
                 <p style={{ fontFamily: S.body, fontSize: 13, color: "rgba(1,30,64,0.6)" }}>April 2026 intake — founding spots are filling fast.</p>
               </div>
@@ -1875,8 +1887,8 @@ function WhyChoosePage({ setPage }) {
     { icon: "🕐", title: "Study On Your Terms", desc: "No fixed class times. No commuting. Log in when it suits you — mornings, evenings, weekends." },
     { icon: "💼", title: "Prove You Can Do The Job", desc: "Our CBET model means you build a portfolio of practical evidence employers want." },
     { icon: "⚡", title: "Finish Faster", desc: "At 2 topics per week, most programmes complete in 2–9 months." },
-    { icon: "💰", title: "Pay A Fraction", desc: "Programmes from as low as US$52 (J$8,000) — up to 50–81% less than traditional institutions." },
-    { icon: "📋", title: "Flexible Payments", desc: "Gold (full), Silver (50/50), or Bronze (20% deposit + monthly instalments)." },
+    { icon: "💰", title: "Pay A Fraction", desc: "Programmes from as low as US$65 (J$10,000) — up to 50–81% less than traditional institutions." },
+    { icon: "📋", title: "Flexible Payments", desc: "Gold (full), Silver (60/40, 10% surcharge), or Bronze (30% deposit + monthly, 15% surcharge)." },
     { icon: "🌍", title: "Internationally Recognised", desc: "City & Guilds and NCTVET qualifications recognised across Jamaica, CARICOM, and beyond." },
   ];
   const audiences = [
@@ -2271,9 +2283,9 @@ function FeesPage({ setPage }) {
     if (!prog) return null;
     const t = prog.tuition, gd = isGroup ? 0.85 : 1;
     if (selPlan === "Gold") { const tt = t * gd, ae = tt + REG_FEE; return { plan: "Gold", grandTotal: fmt(ae), steps: [{ label: "At Enrolment", amount: fmt(ae), detail: fmt(tt) + " tuition + " + fmt(REG_FEE) + " reg" }], savings: isGroup ? fmt(t * 0.15) : null }; }
-    if (selPlan === "Silver") { const st = t * 1.05 * gd, h = st / 2, ae = h + REG_FEE; return { plan: "Silver", grandTotal: fmt(ae + h), steps: [{ label: "At Enrolment", amount: fmt(ae), detail: fmt(h) + " (50%) + " + fmt(REG_FEE) + " reg" }, { label: "At Mid-Point", amount: fmt(h), detail: "Remaining 50%" }], savings: isGroup ? fmt(t * 1.05 * 0.15) : null }; }
-    const bt = t * 1.08 * gd, dep = bt * 0.2, ae = dep + REG_FEE, rem = bt - dep, m = prog.bronzeMonths || 6, mo = Math.round(rem / m);
-    return { plan: "Bronze", grandTotal: fmt(ae + mo * m), steps: [{ label: "At Enrolment", amount: fmt(ae), detail: fmt(dep) + " (20%) + " + fmt(REG_FEE) + " reg" }, { label: m + " Monthly Payments", amount: fmt(mo) + "/mth", detail: fmt(rem) + " over " + m + " months" }], savings: isGroup ? fmt(t * 1.08 * 0.15) : null };
+    if (selPlan === "Silver") { const st = t * 1.10 * gd, enrolPart = st * 0.6, midPart = st * 0.4, ae = enrolPart + REG_FEE; return { plan: "Silver", grandTotal: fmt(ae + midPart), steps: [{ label: "At Enrolment", amount: fmt(ae), detail: fmt(enrolPart) + " (60%) + " + fmt(REG_FEE) + " reg" }, { label: "At Mid-Point", amount: fmt(midPart), detail: "Remaining 40%" }], savings: isGroup ? fmt(t * 1.10 * 0.15) : null }; }
+    const bt = t * 1.15 * gd, dep = bt * 0.3, ae = dep + REG_FEE, rem = bt - dep, m = prog.bronzeMonths || 6, mo = Math.round(rem / m);
+    return { plan: "Bronze", grandTotal: fmt(ae + mo * m), steps: [{ label: "At Enrolment", amount: fmt(ae), detail: fmt(dep) + " (30%) + " + fmt(REG_FEE) + " reg" }, { label: m + " Monthly Payments", amount: fmt(mo) + "/mth", detail: fmt(rem) + " over " + m + " months" }], savings: isGroup ? fmt(t * 1.15 * 0.15) : null };
   };
   const result = calc();
   const planColors = { Gold: S.gold, Silver: "#8A96A8", Bronze: "#CD7F32" };
@@ -2284,7 +2296,7 @@ function FeesPage({ setPage }) {
     const grandJMD = parseInt(result.grandTotal.replace(/[$,]/g, ""));
     const grandUSD = "US$" + Math.round(grandJMD / USD_RATE).toLocaleString();
     const w = window.open("", "_blank");
-    w.document.write(`<html><head><title>CTS ETS Fee Breakdown</title><style>body{font-family:sans-serif;padding:40px;max-width:600px;margin:0 auto}h1{color:#011E40;font-size:24px}h2{color:#C49112;font-size:18px}.row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee}.label{color:#666}.amount{font-weight:700;color:#011E40}.total{font-size:22px;font-weight:800}.usd{font-size:18px;font-weight:700;color:#C49112}.note{font-size:12px;color:#666;margin-top:20px;line-height:1.6}</style></head><body><h1>CTS Empowerment & Training Solutions</h1><h2>Fee Breakdown — ${result.plan} Plan</h2><p><strong>Programme:</strong> ${prog.name}</p><p><strong>Level:</strong> ${selLevel}</p>${isGroup ? "<p><strong>Group Discount:</strong> 15% applied</p>" : ""}${result.steps.map(s => `<div class="row"><span class="label">${s.label}</span><span class="amount">${s.amount}</span></div><div style="font-size:12px;color:#888;padding-bottom:8px">${s.detail}</div>`).join("")}<div class="row" style="border-top:2px solid #011E40;margin-top:12px;padding-top:16px"><span class="label" style="font-size:16px">Total (USD)</span><span class="total" style="color:#C49112">${grandUSD}</span></div><div class="row"><span class="label" style="font-size:14px">JMD Equivalent</span><span class="amount" style="font-size:18px">${result.grandTotal}</span></div>${result.savings ? `<p style="color:#2E7D32;font-weight:600">Group discount saves ${result.savings}</p>` : ""}<p class="note">⚠️ USD amounts are approximate at US$1 = J$${USD_RATE}. Fees shown are current as of 2026 and are subject to change. NCTVET external assessment fees are separate.</p><p class="note">CTS ETS | ctsetsjm.com | finance@ctsetsjm.com | 876-525-6802</p></body></html>`);
+    w.document.write(`<html><head><title>CTS ETS Fee Breakdown</title><style>body{font-family:sans-serif;padding:40px;max-width:600px;margin:0 auto}h1{color:#011E40;font-size:24px}h2{color:#C49112;font-size:18px}.row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #eee}.label{color:#666}.amount{font-weight:700;color:#011E40}.total{font-size:22px;font-weight:800}.usd{font-size:18px;font-weight:700;color:#C49112}.note{font-size:12px;color:#666;margin-top:20px;line-height:1.6}</style></head><body><h1>CTS Empowerment & Training Solutions</h1><h2>Fee Breakdown — ${result.plan} Plan</h2><p><strong>Programme:</strong> ${prog.name}</p><p><strong>Level:</strong> ${selLevel}</p>${isGroup ? "<p><strong>Group Discount:</strong> 15% applied</p>" : ""}${result.steps.map(s => `<div class="row"><span class="label">${s.label}</span><span class="amount">${s.amount}</span></div><div style="font-size:12px;color:#888;padding-bottom:8px">${s.detail}</div>`).join("")}<div class="row" style="border-top:2px solid #011E40;margin-top:12px;padding-top:16px"><span class="label" style="font-size:16px">Total (USD)</span><span class="total" style="color:#C49112">${grandUSD}</span></div><div class="row"><span class="label" style="font-size:14px">JMD Equivalent</span><span class="amount" style="font-size:18px">${result.grandTotal}</span></div>${result.savings ? `<p style="color:#2E7D32;font-weight:600">Group discount saves ${result.savings}</p>` : ""}<p class="note">⚠️ USD amounts are approximate at US$1 = J$${USD_RATE}. Fees shown are current as of 2026 and are subject to change. NCTVET external assessment fees are separate.</p><p class="note">CTS ETS | ctsetsjm.com | finance@ctsetsjm.com | 876-381-9771</p></body></html>`);
     w.document.close();
     w.print();
   };
@@ -2296,7 +2308,7 @@ function FeesPage({ setPage }) {
       <SectionHeader tag="Plan Your Investment" title="Fees & Payment Calculator" desc="Select your programme and plan to see exactly what you'll pay and when." />
       <Container>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 18, marginBottom: 48 }} className="resp-grid-3">
-          {[{ n: "Gold", f: "0%", d: "Full payment at enrolment. Best value." }, { n: "Silver", f: "+5%", d: "50% at enrolment, 50% at mid-point." }, { n: "Bronze", f: "+8%", d: "20% deposit, then equal monthly payments." }].map(p => (
+          {[{ n: "Gold", f: "0%", d: "Full payment at enrolment. Best value." }, { n: "Silver", f: "+10%", d: "60% at enrolment, 40% at mid-point." }, { n: "Bronze", f: "+15%", d: "30% deposit, then equal monthly payments." }].map(p => (
             <div key={p.n} style={{ background: p.n === "Gold" ? "rgba(196,145,18,0.06)" : S.lightBg, borderRadius: 12, padding: "24px 20px", border: "1px solid " + (p.n === "Gold" ? "rgba(196,145,18,0.2)" : "rgba(10,35,66,0.06)"), textAlign: "center" }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: planColors[p.n], fontFamily: S.body, letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>{p.n}</div>
               <div style={{ fontSize: 28, fontWeight: 700, color: S.navy, fontFamily: S.heading }}>{p.f}</div>
@@ -2734,7 +2746,7 @@ function ApplyPage({ setPage }) {
     w.document.write(`<div class="row"><span class="label">Sector</span><span class="val">${sector}</span></div>`);
     if (form.orgName) w.document.write(`<div class="row"><span class="label">Organisation</span><span class="val">${form.orgName}</span></div>`);
     w.document.write(`<div class="stamp">✅ Declaration accepted on ${dt}<br/>All information declared accurate and complete.</div>`);
-    w.document.write(`<div class="footer"><strong>CTS Empowerment & Training Solutions</strong><br/>6 Newark Avenue, Kingston 11, Jamaica W.I.<br/>finance@ctsetsjm.com | 876-525-6802<br/>ctsetsjm.com | Reg. No. 16007/2025<br/><br/>This receipt confirms submission only. Acceptance and enrolment are subject to document review and payment.</div>`);
+    w.document.write(`<div class="footer"><strong>CTS Empowerment & Training Solutions</strong><br/>6 Newark Avenue, Kingston 11, Jamaica W.I.<br/>finance@ctsetsjm.com | 876-381-9771<br/>ctsetsjm.com | Reg. No. 16007/2025<br/><br/>This receipt confirms submission only. Acceptance and enrolment are subject to document review and payment.</div>`);
     w.document.write(`</body></html>`);
     w.document.close();
     w.print();
@@ -2758,7 +2770,7 @@ function ApplyPage({ setPage }) {
     if (!form.email.trim()) errors.email = "Email is required";
     else if (!validateEmail(form.email)) errors.email = "Please enter a valid email";
     if (!form.phone.trim()) errors.phone = "Phone number is required (digits only, no dashes)";
-    else if (applicantType === "jamaican" && !validatePhone(form.phone)) errors.phone = "Phone must be exactly 10 digits (e.g. 8765256802)";
+    else if (applicantType === "jamaican" && !validatePhone(form.phone)) errors.phone = "Phone must be exactly 10 digits (e.g. 8763819771)";
     else if (applicantType !== "jamaican" && form.phone.replace(/\D/g, "").length < 7) errors.phone = "Phone must be at least 7 digits (digits only, no dashes)";
     if (applicantType === "jamaican") {
       if (!form.trn.trim()) errors.trn = "TRN is required (9 digits, no dashes)";
@@ -2849,7 +2861,7 @@ function ApplyPage({ setPage }) {
   // ── Confirmation screen ──
   if (submitted) {
     const savedRef = JSON.parse(localStorage.getItem("cts_applications") || "[]").slice(-1)[0]?.ref || "CTS-PENDING";
-    const shareMsg = `I just applied to CTS ETS for ${form.level} — ${form.programme}! 🎓\nFounding Cohort — 25% Off Tuition!\nReference: ${savedRef}\nApply too: https://ctsetsjm.com/#founding-cohort`;
+    const shareMsg = `I just applied to CTS ETS for ${form.level} — ${form.programme}! 🎓\nFounding Cohort — Registration Free + Save Up to $10K!\nReference: ${savedRef}\nApply too: https://ctsetsjm.com/#founding-cohort`;
     return (
       <PageWrapper>
         <Container style={{ paddingTop: 72, paddingBottom: 72, textAlign: "center" }}>
@@ -2875,7 +2887,7 @@ function ApplyPage({ setPage }) {
                 <span style={{ fontSize: 12, fontWeight: 700, color: S.navy, fontFamily: S.body }}>Founding Cohort Applicant</span>
               </div>
               <div style={{ fontSize: 11, color: S.gray, fontFamily: S.body, lineHeight: 1.6, textAlign: "center" }}>
-                You may qualify for <strong>25% off tuition</strong> as a founding cohort student. Your founding pricing and personal referral code will be confirmed in your acceptance email.
+                You may qualify for <strong>registration free + $5,000 off tuition (Level 3+)</strong> as a founding cohort student. Your founding pricing and personal referral code will be confirmed in your acceptance email.
               </div>
             </div>
           </div>
@@ -2894,7 +2906,7 @@ function ApplyPage({ setPage }) {
             ))}
           </div>
           <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, marginBottom: 16 }}>
-            Questions? Email <strong>info@ctsetsjm.com</strong> or call <strong>876-525-6802</strong> (Flow) / <strong>876-381-9771</strong> (Digicel)
+            Questions? Email <strong>info@ctsetsjm.com</strong> or call <strong>876-381-9771</strong>
           </p>
           <div style={{ padding: "14px 24px", borderRadius: 10, background: "rgba(46,125,50,0.06)", border: "1px solid rgba(46,125,50,0.15)", marginBottom: 24, maxWidth: 500, margin: "0 auto 24px" }}>
             <div style={{ fontSize: 13, color: "#2E7D32", fontFamily: S.body, lineHeight: 1.6, textAlign: "center" }}>📧 A confirmation email with your <strong>Student ID</strong> and application details has been sent to <strong>{form.email}</strong></div>
@@ -3085,7 +3097,7 @@ function ApplyPage({ setPage }) {
                     <label style={labelStyle}>Mobile Number {reqDot}</label>
                     <div style={{ position: "relative" }}>
                       <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 11, color: S.gray, fontFamily: S.body, pointerEvents: "none" }}>{applicantType === "jamaican" ? "+1" : "+"}</span>
-                      <input style={{ ...inputStyle, paddingLeft: applicantType === "jamaican" ? 34 : 24, borderColor: formErrors.phone ? "#C62828" : undefined }} value={form.phone} onChange={e => handlePhone("phone", e.target.value)} placeholder={applicantType === "jamaican" ? "8765256802" : "Include country code, digits only"} maxLength={applicantType === "jamaican" ? 10 : 15} />
+                      <input style={{ ...inputStyle, paddingLeft: applicantType === "jamaican" ? 34 : 24, borderColor: formErrors.phone ? "#C62828" : undefined }} value={form.phone} onChange={e => handlePhone("phone", e.target.value)} placeholder={applicantType === "jamaican" ? "8763819771" : "Include country code, digits only"} maxLength={applicantType === "jamaican" ? 10 : 15} />
                     </div>
                     {errMsg("phone")}
                   </div>
@@ -3123,7 +3135,7 @@ function ApplyPage({ setPage }) {
                   <div><label style={labelStyle}>Programme {reqDot}</label><select style={{ ...inputStyle, borderColor: formErrors.programme ? "#C62828" : undefined }} value={form.programme} onChange={e => u("programme", e.target.value)}><option value="">Select programme</option>{(PROGRAMMES[form.level] || []).map(p => <option key={p.name}>{p.name}</option>)}</select>{errMsg("programme")}</div>
                 </div>
                 {form.level && !form.level.includes("Job") && !form.level.includes("Level 2") && (
-                  <div><label style={labelStyle}>Preferred Payment Plan</label><select style={inputStyle} value={form.paymentPlan} onChange={e => u("paymentPlan", e.target.value)}><option value="">Select plan</option><option>Gold — Full payment (0% surcharge)</option><option>Silver — 50/50 instalments (+5%)</option><option>Bronze — 20% deposit + monthly payments (+8%)</option></select></div>
+                  <div><label style={labelStyle}>Preferred Payment Plan</label><select style={inputStyle} value={form.paymentPlan} onChange={e => u("paymentPlan", e.target.value)}><option value="">Select plan</option><option>Gold — Full payment (0% surcharge)</option><option>Silver — 60/40 instalments (+10%)</option><option>Bronze — 30% deposit + monthly payments (+15%)</option></select></div>
                 )}
                 {/* Founding Cohort Referral Code */}
                 <div style={{ marginTop: 14 }}>
@@ -3140,7 +3152,7 @@ function ApplyPage({ setPage }) {
                       <span style={{ fontSize: 12, fontWeight: 700, color: S.navy, fontFamily: S.body }}>Founding Cohort Eligible</span>
                     </div>
                     <p style={{ fontSize: 11, color: S.gray, fontFamily: S.body, lineHeight: 1.6, margin: 0 }}>
-                      As a founding cohort applicant, you may qualify for <strong>25% off tuition</strong>. Founding pricing is confirmed upon acceptance (subject to spot availability — first 15 students per programme).
+                      As a founding cohort applicant, you may qualify for <strong>registration free + $5,000 off tuition (Level 3+)</strong>. Founding pricing is confirmed upon acceptance (subject to spot availability — first 15 students).
                     </p>
                   </div>
                 )}
@@ -3330,7 +3342,7 @@ function ApplyPage({ setPage }) {
               <div style={{ padding: "16px 24px", borderRadius: 10, background: "rgba(46,125,50,0.06)", border: "1px solid rgba(46,125,50,0.15)", maxWidth: 420, margin: "0 auto 24px" }}>
                 <div style={{ fontSize: 13, color: "#2E7D32", fontFamily: S.body, lineHeight: 1.6 }}>📧 A confirmation has been sent to <strong>{groupForm.contactEmail}</strong></div>
               </div>
-              <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray }}>📧 finance@ctsetsjm.com &nbsp;|&nbsp; 📞 876-525-6802</p>
+              <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray }}>📧 finance@ctsetsjm.com &nbsp;|&nbsp; 📞 876-381-9771</p>
             </div>
           ) : (() => {
             const groupReqComplete = !!(groupForm.companyName.trim() && groupForm.contactName.trim() && groupForm.contactPosition.trim() && groupForm.contactEmail.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(groupForm.contactEmail) && groupForm.contactPhone.trim() && groupForm.contactPhone.replace(/\D/g,"").length === 10 && groupForm.sector && groupForm.numLearners && parseInt(groupForm.numLearners) >= 1 && groupForm.selectedProgs.length > 0);
@@ -3412,7 +3424,7 @@ function ApplyPage({ setPage }) {
                   <div><label style={labelStyle}>Contact Person (Full Name) {reqDot}</label><input style={inputStyle} value={groupForm.contactName} onChange={e => ug("contactName", e.target.value)} placeholder="e.g. John Smith" /></div>
                   <div><label style={labelStyle}>Position / Job Title {reqDot}</label><input style={inputStyle} value={groupForm.contactPosition} onChange={e => ug("contactPosition", e.target.value)} placeholder="e.g. HR Manager" /></div>
                   <div><label style={labelStyle}>Contact Email {reqDot}</label><input type="email" style={inputStyle} value={groupForm.contactEmail} onChange={e => ug("contactEmail", e.target.value)} placeholder="john@company.com" /></div>
-                  <div><label style={labelStyle}>Contact Phone {reqDot}</label><input style={inputStyle} value={groupForm.contactPhone} onChange={e => ug("contactPhone", e.target.value.replace(/\D/g, "").slice(0, 10))} placeholder="8765256802" maxLength={10} /></div>
+                  <div><label style={labelStyle}>Contact Phone {reqDot}</label><input style={inputStyle} value={groupForm.contactPhone} onChange={e => ug("contactPhone", e.target.value.replace(/\D/g, "").slice(0, 10))} placeholder="8763819771" maxLength={10} /></div>
                   <div><label style={labelStyle}>Number of Learners {reqDot}</label><input type="number" min="1" style={inputStyle} value={groupForm.numLearners} onChange={e => ug("numLearners", e.target.value)} placeholder="e.g. 12" /></div>
                 </div>
 
@@ -3727,7 +3739,7 @@ function ApplyPage({ setPage }) {
                   })}
 
                   <div style={{ marginTop: 20, padding: "14px 16px", borderRadius: 8, background: "rgba(1,30,64,0.03)", border: "1px solid rgba(1,30,64,0.06)", fontSize: 12, color: S.gray, fontFamily: S.body, lineHeight: 1.6, textAlign: "center" }}>
-                    For urgent queries: <strong>info@ctsetsjm.com</strong> | <strong>876-525-6802</strong> (Flow) | <strong>876-381-9771</strong> (Digicel)<br />
+                    For urgent queries: <strong>info@ctsetsjm.com</strong> | <strong>876-381-9771</strong><br />
                     Payment queries: <strong>finance@ctsetsjm.com</strong>
                   </div>
                 </div>;
@@ -3755,7 +3767,7 @@ function ApplyPage({ setPage }) {
                   ? "Thank you. If your payment was successful, your enrolment will be confirmed within 24–48 hours. Check your email for a receipt from WiPay."
                   : "Thank you. We have received your payment evidence and will confirm your enrolment within 48 hours."}
               </p>
-              <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray }}>📧 finance@ctsetsjm.com &nbsp;|&nbsp; 📞 876-525-6802</p>
+              <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray }}>📧 finance@ctsetsjm.com &nbsp;|&nbsp; 📞 876-381-9771</p>
             </div>
           ) : (
             <div>
@@ -3807,8 +3819,8 @@ function ApplyPage({ setPage }) {
                   const t = paySelectedProg.tuition;
                   const plan = payIsGoldOnly ? "Gold" : payPlan;
                   if (plan === "Gold") return { label: "Full Payment", amount: t + REG_FEE, detail: pf(t) + " tuition + " + pf(REG_FEE) + " reg" };
-                  if (plan === "Silver") { const st = t * 1.05, h = st / 2; return { label: "1st Instalment (50%)", amount: Math.round(h) + REG_FEE, detail: pf(Math.round(h)) + " (50%) + " + pf(REG_FEE) + " reg" }; }
-                  if (plan === "Bronze") { const bt = t * 1.08, dep = bt * 0.2; return { label: "Deposit (20%)", amount: Math.round(dep) + REG_FEE, detail: pf(Math.round(dep)) + " (20%) + " + pf(REG_FEE) + " reg" }; }
+                  if (plan === "Silver") { const st = t * 1.10, enrolPart = Math.round(st * 0.6); return { label: "1st Instalment (60%)", amount: enrolPart + REG_FEE, detail: pf(enrolPart) + " (60%) + " + pf(REG_FEE) + " reg" }; }
+                  if (plan === "Bronze") { const bt = t * 1.15, dep = Math.round(bt * 0.3); return { label: "Deposit (30%)", amount: dep + REG_FEE, detail: pf(dep) + " (30%) + " + pf(REG_FEE) + " reg" }; }
                   return null;
                 })();
 
@@ -3946,7 +3958,7 @@ function ApplyPage({ setPage }) {
                           </button>
                         )}
                         <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 6, background: "rgba(196,145,18,0.04)", border: "1px solid rgba(196,145,18,0.12)", fontSize: 11, color: S.gray, fontFamily: S.body, lineHeight: 1.6 }}>
-                          Details incorrect? Contact the Finance Department at <a href="mailto:finance@ctsetsjm.com" style={{ color: S.gold, fontWeight: 700 }}>finance@ctsetsjm.com</a> or call <strong>876-525-6802</strong>.
+                          Details incorrect? Contact the Finance Department at <a href="mailto:finance@ctsetsjm.com" style={{ color: S.gold, fontWeight: 700 }}>finance@ctsetsjm.com</a> or call <strong>876-381-9771</strong>.
                         </div>
                       </div>
                     )}
@@ -4079,8 +4091,8 @@ function ApplyPage({ setPage }) {
                   const t = upSelectedProg.tuition;
                   const plan = upIsGoldOnly ? "Gold" : payPlan;
                   if (plan === "Gold") return { label: "Full Payment", amount: t + REG_FEE, detail: upf(t) + " tuition + " + upf(REG_FEE) + " reg" };
-                  if (plan === "Silver") { const st = t * 1.05, h = st / 2; return { label: "1st Instalment (50%)", amount: Math.round(h) + REG_FEE, detail: upf(Math.round(h)) + " (50%) + " + upf(REG_FEE) + " reg" }; }
-                  if (plan === "Bronze") { const bt = t * 1.08, dep = bt * 0.2; return { label: "Deposit (20%)", amount: Math.round(dep) + REG_FEE, detail: upf(Math.round(dep)) + " (20%) + " + upf(REG_FEE) + " reg" }; }
+                  if (plan === "Silver") { const st = t * 1.10, enrolPart = Math.round(st * 0.6); return { label: "1st Instalment (60%)", amount: enrolPart + REG_FEE, detail: upf(enrolPart) + " (60%) + " + upf(REG_FEE) + " reg" }; }
+                  if (plan === "Bronze") { const bt = t * 1.15, dep = Math.round(bt * 0.3); return { label: "Deposit (30%)", amount: dep + REG_FEE, detail: upf(dep) + " (30%) + " + upf(REG_FEE) + " reg" }; }
                   return null;
                 })();
                 const upReqComplete = !!(payEmail && payAppRef && payLevel && upSelectedProg && upCalcAmount && files.paymentProof);
@@ -4162,7 +4174,7 @@ function ApplyPage({ setPage }) {
                         </button>
                       )}
                       <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 6, background: "rgba(196,145,18,0.04)", border: "1px solid rgba(196,145,18,0.12)", fontSize: 11, color: S.gray, fontFamily: S.body, lineHeight: 1.6 }}>
-                        Details incorrect? Contact the Finance Department at <a href="mailto:finance@ctsetsjm.com" style={{ color: S.gold, fontWeight: 700 }}>finance@ctsetsjm.com</a> or call <strong>876-525-6802</strong>.
+                        Details incorrect? Contact the Finance Department at <a href="mailto:finance@ctsetsjm.com" style={{ color: S.gold, fontWeight: 700 }}>finance@ctsetsjm.com</a> or call <strong>876-381-9771</strong>.
                       </div>
                     </div>
                   )}
@@ -4286,7 +4298,7 @@ function StudentJourneyPage({ setPage }) {
   const steps = [
     { n: "1", t: "Enquire", s: "Browse programmes & fees", color: "#011E40", bg: "#E6F1FB", icon: "\uD83D\uDD0D", tagBg: "#011E40", tagColor: "#C49112",
       tags: ["Website","WhatsApp","Fee calculator"],
-      d: <>Visit <b>ctsetsjm.com</b> and browse our 25 programmes across 5 qualification levels. Use the <b>Fee Calculator</b> to see exact costs. <b>WhatsApp us</b> on 876-525-6802 or email info@ctsetsjm.com.</>
+      d: <>Visit <b>ctsetsjm.com</b> and browse our 25 programmes across 5 qualification levels. Use the <b>Fee Calculator</b> to see exact costs. <b>WhatsApp us</b> on 876-381-9771 or email info@ctsetsjm.com.</>
     },
     { n: "2", t: "Apply", s: "Online form + documents", color: "#011E40", bg: "#E6F1FB", icon: "\uD83D\uDCDD",
       d: <>Complete the <b>online application form</b>. Upload: HEART form, TRN, passport photo, qualifications, and national ID. You receive a <b>confirmation email with a personalised prayer</b> immediately.</>
@@ -4299,7 +4311,7 @@ function StudentJourneyPage({ setPage }) {
       d: <>You receive your permanent <b>Student ID</b>, an <b>acceptance email with prayer</b>, and payment instructions. You have <b>14 days</b> to pay and secure your place.</>
     },
     { n: "5", t: "Pay", s: "Online (USD/JMD) or bank transfer", color: "#011E40", bg: "#E6F1FB", icon: "\uD83D\uDCB3",
-      d: <><b>Pay online</b> in USD or JMD via secure checkout (Visa/Mastercard) or <b>bank transfer</b> to our USD or JMD account + upload receipt. Plans: <b>Gold</b> (100% upfront, all levels), <b>Silver</b> (50/50 split + 5% fee, L3-5), <b>Bronze</b> (20% deposit + monthly + 8% fee, L3-5).</>
+      d: <><b>Pay online</b> in USD or JMD via secure checkout (Visa/Mastercard) or <b>bank transfer</b> to our USD or JMD account + upload receipt. Plans: <b>Gold</b> (100% upfront, all levels), <b>Silver</b> (60/40 split + 10% surcharge, L3-5), <b>Bronze</b> (30% deposit + monthly + 15% surcharge, L3-5).</>
     },
     { n: "6", t: "Enrolled", s: "Student Portal + study tools", color: "#085041", bg: "#E1F5EE", icon: "\uD83C\uDF93", tagBg: "#085041", tagColor: "#9FE1CB",
       tags: ["Student Portal","Audio Lessons","Study Assistant","Interactive Tools"],
@@ -4429,7 +4441,7 @@ function ContactPage({ setPage }) {
       <SectionHeader tag="Get In Touch" title="Contact Us" desc="Whether you're an individual or an employer, we're here to help you get started." />
       <Container>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 20, marginBottom: 40 }} className="resp-grid-2">
-          {[["📧","General Enquiries","info@ctsetsjm.com","mailto:info@ctsetsjm.com"], ["💰","Finance Department","finance@ctsetsjm.com","mailto:finance@ctsetsjm.com"], ["📞","Call / WhatsApp","876-525-6802","tel:8765256802"], ["📞","Also Reach Us","876-381-9771","tel:8763819771"], ["📍","Visit Us (By Appointment)","6 Newark Avenue, Kingston 11, Jamaica W.I.","https://maps.google.com/?q=6+Newark+Avenue+Kingston+11+Jamaica"]].map(([icon, label, value, href], i) => (
+          {[["📧","General Enquiries","info@ctsetsjm.com","mailto:info@ctsetsjm.com"], ["💰","Finance Department","finance@ctsetsjm.com","mailto:finance@ctsetsjm.com"], ["📞","Call / WhatsApp","876-381-9771","tel:8763819771"], ["📍","Visit Us (By Appointment)","6 Newark Avenue, Kingston 11, Jamaica W.I.","https://maps.google.com/?q=6+Newark+Avenue+Kingston+11+Jamaica"]].map(([icon, label, value, href], i) => (
             <Reveal key={label} delay={i * 0.06}>
             <a href={href} style={{ textDecoration: "none", display: "block" }} target={label === "Visit Us" ? "_blank" : undefined} rel={label === "Visit Us" ? "noopener noreferrer" : undefined}>
               <div style={{ background: S.lightBg, borderRadius: 10, padding: "28px 20px", textAlign: "center", border: "1px solid rgba(10,35,66,0.06)" }}>
@@ -4500,7 +4512,7 @@ function ContactPage({ setPage }) {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }} className="resp-grid-2">
                 <div><label style={labelStyle}>Full Name {reqDot}</label><input style={inputStyle} value={cForm.name} onChange={e => cu("name", e.target.value)} placeholder="Your full name" /></div>
                 <div><label style={labelStyle}>Email Address {reqDot}</label><input type="email" style={inputStyle} value={cForm.email} onChange={e => cu("email", e.target.value)} placeholder="your@email.com" /></div>
-                <div><label style={labelStyle}>Phone Number</label><input style={inputStyle} value={cForm.phone} onChange={e => cu("phone", e.target.value.replace(/\D/g, "").slice(0, 10))} placeholder="8765256802 (optional)" maxLength={10} /></div>
+                <div><label style={labelStyle}>Phone Number</label><input style={inputStyle} value={cForm.phone} onChange={e => cu("phone", e.target.value.replace(/\D/g, "").slice(0, 10))} placeholder="8763819771 (optional)" maxLength={10} /></div>
                 <div><label style={labelStyle}>Subject</label><select style={inputStyle} value={cForm.subject} onChange={e => cu("subject", e.target.value)}>
                   <option value="">Select a topic</option>
                   <option>General Enquiry</option>
@@ -4607,7 +4619,7 @@ function PrivacyPage() {
           <div style={sectionStyle}>
             <h3 style={hStyle}>8. Contact</h3>
             <p style={pStyle}>If you have questions about this Privacy Policy or your personal data, contact us at:</p>
-            <p style={pStyle}>CTS Empowerment &amp; Training Solutions, 6 Newark Avenue, Kingston 11, Jamaica W.I. Email: info@ctsetsjm.com. Phone: 876-525-6802.</p>
+            <p style={pStyle}>CTS Empowerment &amp; Training Solutions, 6 Newark Avenue, Kingston 11, Jamaica W.I. Email: info@ctsetsjm.com. Phone: 876-381-9771.</p>
           </div>
 
           <div style={{ padding: "14px 18px", borderRadius: 8, background: "rgba(10,35,66,0.03)", border: "1px solid rgba(10,35,66,0.06)", fontSize: 12, color: S.gray, fontFamily: S.body, lineHeight: 1.6 }}>
@@ -4704,7 +4716,7 @@ function TermsPage() {
 
           <div style={sectionStyle}>
             <h3 style={hStyle}>14. Contact</h3>
-            <p style={pStyle}>For questions about these terms, contact us at: CTS Empowerment &amp; Training Solutions, 6 Newark Avenue, Kingston 11, Jamaica W.I. Email: info@ctsetsjm.com. Phone: 876-525-6802.</p>
+            <p style={pStyle}>For questions about these terms, contact us at: CTS Empowerment &amp; Training Solutions, 6 Newark Avenue, Kingston 11, Jamaica W.I. Email: info@ctsetsjm.com. Phone: 876-381-9771.</p>
           </div>
 
           <div style={{ padding: "14px 18px", borderRadius: 8, background: "rgba(10,35,66,0.03)", border: "1px solid rgba(10,35,66,0.06)", fontSize: 12, color: S.gray, fontFamily: S.body, lineHeight: 1.6 }}>
@@ -5099,7 +5111,7 @@ function FoundingCohortPage({ setPage }) {
             <span style={{ fontSize: 12, color: S.gold, fontFamily: S.body, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}>First 15 Students Per Programme</span>
           </div>
           <h1 style={{ fontFamily: S.heading, fontSize: "clamp(30px,5vw,52px)", color: "#fff", fontWeight: 800, lineHeight: 1.15, marginBottom: 16 }}>
-            Founding Cohort Package<br /><span style={{ color: S.gold }}>25% Off Tuition</span>
+            Founding Cohort Package<br /><span style={{ color: S.gold }}>Save Up to $10,000</span>
           </h1>
           <p style={{ fontFamily: S.body, fontSize: "clamp(15px,1.8vw,18px)", color: "rgba(255,255,255,0.7)", lineHeight: 1.7, maxWidth: 600, margin: "0 auto 32px" }}>
             Be among the first students to study with CTS ETS. Lock in your founding rate before spots fill up. Apply online — it takes less than 10 minutes.
@@ -5120,9 +5132,9 @@ function FoundingCohortPage({ setPage }) {
         <Container>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }} className="resp-grid-3">
             {[
-              { icon: "🎓", title: "25% Off Tuition", desc: "Founding students get 25% off the standard tuition price on any programme, any level. The discount is applied before any payment plan surcharges.", bg: "#E6F4EA", accent: "#1B7A3D" },
+              { icon: "🎓", title: "Registration Free", desc: "Founding students pay no registration fee on any programme, any level. That's $5,000 saved instantly — before you even start.", bg: "#E6F4EA", accent: "#1B7A3D" },
               { icon: "🤝", title: "5% Referral Bonus", desc: "Refer a friend who enrols and you get an additional 5% off YOUR tuition. Multiple referrals stack — the more friends you bring, the more you save.", bg: "#F3E8F9", accent: "#7B1FA2" },
-              { icon: "💳", title: "Silver Plan — 0% Surcharge", desc: "Founding cohort students pay NO surcharge on the Silver payment plan (normally +5%). Split your tuition 50/50 at zero extra cost.", bg: "#FEF3E0", accent: "#C49112" },
+              { icon: "💰", title: "$5,000 Off Tuition (Level 3+)", desc: "Enrolling in a Level 3, 4, or 5 programme? Founding cohort students get an additional $5,000 off tuition — that's up to $10,000 total savings.", bg: "#FEF3E0", accent: "#C49112" },
             ].map((b, i) => (
               <Reveal key={i} delay={i * 0.1}>
                 <div style={{ padding: 28, borderRadius: 16, background: b.bg, border: "1px solid " + b.accent + "20", textAlign: "center", height: "100%" }}>
@@ -5138,7 +5150,7 @@ function FoundingCohortPage({ setPage }) {
 
       {/* Pricing Table */}
       <section style={{ padding: "56px 0" }}>
-        <SectionHeader tag="Founding Cohort Pricing" title="Every Programme, Every Level" desc="All prices shown in USD with JMD equivalent. Registration fee US$32 (J$5,000) applies to all programmes, all levels." />
+        <SectionHeader tag="Founding Cohort Pricing" title="Every Programme, Every Level" desc="All prices shown in USD with JMD equivalent. Registration fee waived for founding cohort students. Level 3+ also get $5,000 off tuition." />
         <Container>
           {/* Level filter tabs */}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", marginBottom: 32 }}>
@@ -5176,7 +5188,7 @@ function FoundingCohortPage({ setPage }) {
                       <DualPrice amount={p.foundingTuition} size={14} />
                     </div>
                     <div style={{ textAlign: "right" }}>
-                      <span style={{ fontSize: 11, color: S.gray, fontFamily: S.body }}>{dualPrice(REG_FEE)}</span>
+                      <span style={{ fontSize: 11, color: "#1B7A3D", fontFamily: S.body, fontWeight: 700 }}>Waived</span>
                     </div>
                     <div style={{ textAlign: "center" }}>
                       <span style={{ display: "inline-block", background: "#E6F4EA", color: "#1B7A3D", fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 10, fontFamily: S.body }}>{dualPrice(p.saving)}</span>
@@ -5198,13 +5210,13 @@ function FoundingCohortPage({ setPage }) {
 
       {/* Payment Plans */}
       <section style={{ background: "#fff", padding: "56px 0", borderTop: "1px solid rgba(10,35,66,0.06)" }}>
-        <SectionHeader tag="Flexible Payments" title="Founding Cohort Payment Plans" desc={"Choose how you pay. Registration fee " + dualPrice(REG_FEE) + " always paid at enrolment."} />
+        <SectionHeader tag="Flexible Payments" title="Founding Cohort Payment Plans" desc={"Registration fee waived for all founding cohort students. Surcharges apply to reduced founding tuition."} />
         <Container>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }} className="resp-grid-3">
             {[
-              { name: "Gold", rate: "0%", desc: "Full payment at enrolment", detail: "Pay your founding tuition in full plus the registration fee. No surcharge — the lowest total cost.", badge: "Best Value", badgeColor: S.gold, note: null },
-              { name: "Silver", rate: "0%", desc: "50% at enrolment, 50% at mid-point", detail: "Pay registration plus 50% of founding tuition at enrolment. Pay the remaining 50% at the programme mid-point. Same total as Gold.", badge: "Surcharge Waived!", badgeColor: "#2E7D32", note: "Normally +5% — waived for founding cohort students" },
-              { name: "Bronze", rate: "+5%", desc: "20% deposit, then monthly payments", detail: "Pay registration plus 20% of founding tuition at enrolment. Remaining balance in equal monthly instalments.", badge: "Reduced!", badgeColor: "#1565C0", note: "Reduced from +8% to +5% for founding cohort students" },
+              { name: "Gold", rate: "0%", desc: "Full payment at enrolment", detail: "Pay your founding tuition in full. No registration fee, no surcharge — the absolute lowest total cost.", badge: "Best Value", badgeColor: S.gold, note: null },
+              { name: "Silver", rate: "+10%", desc: "60% at enrolment, 40% at mid-point", detail: "Pay 60% of founding tuition at enrolment (no reg fee). Pay the remaining 40% at the programme mid-point. 10% surcharge on tuition.", badge: "Level 3+ Only", badgeColor: "#1565C0", note: null },
+              { name: "Bronze", rate: "+15%", desc: "30% deposit, then monthly payments", detail: "Pay 30% of founding tuition at enrolment (no reg fee). Remaining balance in equal monthly instalments. 15% surcharge on tuition.", badge: "Level 3+ Only", badgeColor: "#E65100", note: null },
             ].map((plan, i) => (
               <Reveal key={i} delay={i * 0.1}>
                 <div style={{ borderRadius: 16, border: i === 0 ? "2px solid " + S.gold : "1px solid rgba(10,35,66,0.08)", overflow: "hidden", background: "#fff", height: "100%", display: "flex", flexDirection: "column", position: "relative" }}>
@@ -5236,7 +5248,7 @@ function FoundingCohortPage({ setPage }) {
                 {[
                   { step: "1", text: "Enrol at the founding price" },
                   { step: "2", text: "Refer a friend or colleague" },
-                  { step: "3", text: "They enrol & pay registration" },
+                  { step: "3", text: "They enrol as a founding student" },
                   { step: "4", text: "You get 5% off your tuition" },
                 ].map((s, i) => (
                   <div key={i} style={{ background: "#fff", borderRadius: 12, padding: "16px 12px", textAlign: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
@@ -5247,7 +5259,7 @@ function FoundingCohortPage({ setPage }) {
               </div>
               <div style={{ background: "#fff", borderRadius: 12, padding: "18px 24px", border: "1px solid rgba(123,31,162,0.15)", textAlign: "left" }}>
                 <p style={{ fontFamily: S.body, fontSize: 13, color: "#2D3748", lineHeight: 1.7 }}>
-                  <strong>Example:</strong> Supervisory Management L3 founding tuition = <DualPrice amount={33750} size={13} />. Refer one person → your tuition drops to <DualPrice amount={32063} size={13} />. Refer two → <DualPrice amount={30375} size={13} />. <strong>Multiple referrals stack</strong> — there's no limit!
+                  <strong>Example:</strong> Supervisory Management L3 founding tuition = <DualPrice amount={25000} size={13} />. Refer one person → your tuition drops to <DualPrice amount={23750} size={13} />. Refer two → <DualPrice amount={22500} size={13} />. <strong>Multiple referrals stack</strong> — there's no limit!
                 </p>
               </div>
             </div>
@@ -5263,7 +5275,7 @@ function FoundingCohortPage({ setPage }) {
             {[
               { icon: "📝", title: "Apply Online", desc: "Complete the application at ctsetsjm.com. Select your programme and level." },
               { icon: "✅", title: "Get Accepted", desc: "We review your application and confirm your founding cohort spot." },
-              { icon: "💳", title: "Pay Registration", desc: "Pay the US$32 (J$5,000) non-refundable registration fee to lock in your price." },
+              { icon: "💳", title: "Pay Tuition", desc: "Your registration fee is waived. Simply pay your founding tuition to lock in your place." },
               { icon: "🎓", title: "Start Studying", desc: "Access your learner guides and the CTS ETS Interactive Learning System." },
             ].map((s, i) => (
               <Reveal key={i} delay={i * 0.12}>
@@ -5286,7 +5298,7 @@ function FoundingCohortPage({ setPage }) {
             <div style={{ fontSize: 48, marginBottom: 16 }}>🎓</div>
             <h2 style={{ fontFamily: S.heading, fontSize: "clamp(26px,4vw,40px)", color: "#fff", fontWeight: 800, marginBottom: 12 }}>Don't Miss Your Founding Spot</h2>
             <p style={{ fontFamily: S.body, fontSize: 16, color: "rgba(255,255,255,0.7)", lineHeight: 1.7, maxWidth: 500, margin: "0 auto 32px" }}>
-              Only 15 spots per programme at the founding rate. Once they're gone, future students pay full price.
+              Only 15 founding cohort spots available. Once they're gone, future students pay standard rates.
             </p>
             <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap", marginBottom: 28 }}>
               <Btn primary onClick={() => setPage("Apply")} style={{ fontSize: 16, padding: "18px 48px", color: S.navy }}>Apply Online at ctsetsjm.com</Btn>
@@ -5344,7 +5356,7 @@ function Footer({ setPage }) {
             {["About","Programmes","International","Careers","Blog","Student Journey","Fees & Calculator","Apply","Contact"].map(p => (
               <button key={p} onClick={() => setPage(p)} style={{ display: "block", background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 13, fontFamily: S.body, cursor: "pointer", padding: "4px 0", textAlign: "left" }}>{p}</button>
             ))}
-            <button onClick={() => setPage("Founding Cohort")} style={{ display: "block", background: "none", border: "none", color: S.gold, fontSize: 13, fontFamily: S.body, cursor: "pointer", padding: "4px 0", textAlign: "left", fontWeight: 700 }}>🎓 Founding Cohort — 25% Off</button>
+            <button onClick={() => setPage("Founding Cohort")} style={{ display: "block", background: "none", border: "none", color: S.gold, fontSize: 13, fontFamily: S.body, cursor: "pointer", padding: "4px 0", textAlign: "left", fontWeight: 700 }}>🎓 Founding Cohort — Save Up to $10K</button>
             <button onClick={() => setPage("Verify Certificate")} style={{ display: "block", background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 13, fontFamily: S.body, cursor: "pointer", padding: "4px 0", textAlign: "left" }}>Verify a Certificate</button>
             <a href={PORTAL_URL} target="_blank" rel="noopener noreferrer" style={{ display: "block", color: "#81C784", fontSize: 13, fontFamily: S.body, padding: "4px 0", textDecoration: "none", fontWeight: 600 }}>🎓 Student Portal</a>
           </div>
@@ -5410,8 +5422,7 @@ function WhatsAppBtn() {
         <div style={{ background: "#fff", borderRadius: 12, boxShadow: "0 8px 32px rgba(0,0,0,0.15)", padding: "14px 0", minWidth: 230, marginBottom: 4 }}>
           <div style={{ padding: "6px 18px 10px", fontSize: 11, fontWeight: 700, color: "#666", fontFamily: "sans-serif", textTransform: "uppercase", letterSpacing: 1, borderBottom: "1px solid #f0f0f0" }}>Chat with us on WhatsApp</div>
           {[
-            { label: "876-525-6802", tag: "Flow", num: "8765256802", color: "#1565C0" },
-            { label: "876-381-9771", tag: "Digicel", num: "8763819771", color: "#E53935" },
+            { label: "876-381-9771", tag: "WhatsApp", num: "8763819771", color: "#25D366" },
           ].map(n => (
             <a key={n.num} href={"https://wa.me/" + n.num + "?text=Hello%20CTS%20ETS%2C%20I%20am%20interested%20in%20your%20programmes."} target="_blank" rel="noopener noreferrer"
               style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 18px", textDecoration: "none", transition: "background 0.15s" }}
