@@ -8,7 +8,7 @@ import { APPS_SCRIPT_URL, EMAILJS_SERVICE, EMAILJS_TEMPLATE } from "../constants
 // ── BREVO (Sendinblue) TRANSACTIONAL API ──
 // Sign up free at https://www.brevo.com — 300 emails/day free
 // Get your API key from: Settings → SMTP & API → API Keys
-const BREVO_API_KEY = "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";
+const BREVO_API_KEY = import.meta.env.VITE_BREVO_KEY || "";
 const BREVO_SENDER = { name: "CTS ETS", email: "noreply@ctsetsjm.com" };
 const BREVO_ENABLED = !!BREVO_API_KEY;
 
