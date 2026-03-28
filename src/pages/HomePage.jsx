@@ -26,7 +26,7 @@ export default function HomePage({ setPage }) {
               <img src={NAV_LOGO} alt="CTS ETS" style={{ width: 88, height: 98, objectFit: "contain" }} width={88} height={98} />
               <div style={{ flex: 1, minWidth: 200 }}>
                 <div style={{ fontFamily: S.heading, fontSize: "clamp(22px,3vw,32px)", fontWeight: 700, lineHeight: 1.2 }}>CTS Empowerment &amp; Training Solutions</div>
-                <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, fontFamily: S.body, marginTop: 6, textTransform: "uppercase" }}>Called To Serve — Committed to Excellence</div>
+                <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, fontFamily: S.body, marginTop: 6, textTransform: "uppercase" }}>Called To Serve — Excellence Through Service</div>
               </div>
               {/* Founding CTA card */}
               <div onClick={() => setPage("Founding Cohort")} style={{ cursor: "pointer", padding: "24px 32px", borderRadius: 18, background: `linear-gradient(135deg, ${S.coral}30 0%, ${S.gold}18 100%)`, border: "3px solid " + S.coral, textAlign: "center", minWidth: 240, boxShadow: "0 8px 32px " + S.coral + "30" }}>

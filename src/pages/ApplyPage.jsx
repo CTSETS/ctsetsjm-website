@@ -30,7 +30,7 @@ const DOC_REQUIREMENTS = {
   jamaican: [
     { slot: "passportPhoto", label: "Passport-Size Photo", required: true, accept: "image/*" },
     { slot: "birthCert", label: "Birth Certificate", required: true, accept: "image/*,.pdf" },
-    { slot: "nationalId", label: "National ID (Voter's ID / Passport)", required: true, accept: "image/*,.pdf" },
+    { slot: "proofId", label: "Proof of Identity (National ID / Passport / Driver's Licence)", required: true, accept: "image/*,.pdf" },
     { slot: "trn", label: "TRN Card", required: true, accept: "image/*,.pdf" },
     { slot: "qualifications", label: "Qualifications (CXC, Diplomas, etc.)", required: false, accept: "image/*,.pdf" },
     { slot: "heartForm", label: "HEART/NSTA Application Form", required: false, accept: "image/*,.pdf" },
@@ -38,14 +38,14 @@ const DOC_REQUIREMENTS = {
   caribbean: [
     { slot: "passportPhoto", label: "Passport-Size Photo", required: true, accept: "image/*" },
     { slot: "birthCertOrPassport", label: "Birth Certificate or Passport", required: true, accept: "image/*,.pdf" },
-    { slot: "govId", label: "Government-Issued ID", required: true, accept: "image/*,.pdf" },
+    { slot: "proofId", label: "Proof of Identity (National ID / Passport / Driver's Licence)", required: true, accept: "image/*,.pdf" },
     { slot: "qualifications", label: "Academic Qualifications", required: false, accept: "image/*,.pdf" },
   ],
   international: [
     { slot: "passportPhoto", label: "Passport-Size Photo", required: true, accept: "image/*" },
     { slot: "passportBio", label: "Passport Bio Page", required: true, accept: "image/*,.pdf" },
     { slot: "transcripts", label: "Secondary School Transcripts", required: true, accept: "image/*,.pdf" },
-    { slot: "proofId", label: "Proof of Identity", required: false, accept: "image/*,.pdf" },
+    { slot: "proofId", label: "Proof of Identity (National ID / Passport / Driver's Licence)", required: true, accept: "image/*,.pdf" },
   ],
 };
 
@@ -119,7 +119,7 @@ function PrayerModal({ prayer, onClose }) {
 export default function ApplyPage({ setPage }) {
   // ── State ──
   const [applicantType, setApplicantType] = useState("");
-  const [form, setForm] = useState({ firstName: "", lastName: "", email: "", phone: "", gender: "", dob: "", parish: "", country: "", address: "", trn: "", level: "", programme: "", referralCode: "", hearAbout: "", message: "" });
+  const [form, setForm] = useState({ firstName: "", middleName: "", lastName: "", email: "", phone: "", gender: "", dob: "", nationality: "", maritalStatus: "", parish: "", country: "", address: "", trn: "", nis: "", highestQualification: "", schoolLastAttended: "", yearCompleted: "", employmentStatus: "", employer: "", jobTitle: "", yearsExperience: "", industry: "", emergencyName: "", emergencyRelationship: "", emergencyPhone: "", level: "", programme: "", referralCode: "", hearAbout: "", message: "" });
   const [files, setFiles] = useState({});
   const [errors, setErrors] = useState({});
   const [emailSuggestion, setEmailSuggestion] = useState(null);
@@ -127,23 +127,33 @@ export default function ApplyPage({ setPage }) {
   const [hp, setHp] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [submittedRef, setSubmittedRef] = useState("");
   const [prayer, setPrayer] = useState(null);
   const [referralValid, setReferralValid] = useState(null);
   const [referralChecking, setReferralChecking] = useState(false);
   const [heartFormDone, setHeartFormDone] = useState(false);
+  // Application number — generated once when the page loads, stays the same throughout
+  const appRef = useRef(generateRef());
   const startTime = useRef(Date.now());
 
   // ── Derived ──
   const isJamaican = applicantType === "jamaican";
   const availableProgrammes = form.level ? (PROGRAMMES[form.level] || []) : [];
   const s1Done = !!applicantType;
-  const s2Done = s1Done && form.firstName && form.lastName && validateEmail(form.email) && validatePhone(form.phone) && form.gender && form.dob && (isJamaican ? form.parish : form.country);
+  const s2Done = s1Done && form.firstName && form.lastName && validateEmail(form.email) && validatePhone(form.phone) && form.gender && form.dob && form.address && (isJamaican ? (form.parish && form.trn && validateTRN(form.trn)) : form.country) && form.employmentStatus && form.emergencyName && form.emergencyPhone && form.highestQualification;
   const s3Done = s2Done && form.level && form.programme;
   // Jamaican applicants must complete HEART form before docs; others skip straight to docs
   const sHeartDone = isJamaican ? heartFormDone : true;
   const sDocGate = s3Done && sHeartDone;
-  const requiredDocs = applicantType ? DOC_REQUIREMENTS[applicantType].filter(d => d.required) : [];
+  // Qualifications upload is required unless "No Formal Qualification" selected
+  const qualsRequired = form.highestQualification && form.highestQualification !== "No Formal Qualification";
+  const getDocs = () => {
+    if (!applicantType) return [];
+    return DOC_REQUIREMENTS[applicantType].map(d =>
+      d.slot === "qualifications" ? { ...d, required: qualsRequired } : d
+    );
+  };
+  const currentDocs = getDocs();
+  const requiredDocs = currentDocs.filter(d => d.required);
   const s4Done = sDocGate && requiredDocs.every(d => files[d.slot] && validateFileSize(files[d.slot]));
   const s5Done = s4Done && captchaOk;
   // Dynamic section numbers (Jamaican gets extra HEART section)
@@ -189,9 +199,15 @@ export default function ApplyPage({ setPage }) {
     if (!validatePhone(form.phone)) errs.phone = "Valid 10-digit phone number is required";
     if (!form.gender) errs.gender = "Please select your gender";
     if (!form.dob) errs.dob = "Date of birth is required";
+    if (!form.address) errs.address = "Address is required";
     if (applicantType === "jamaican" && !form.parish) errs.parish = "Parish is required";
     if (applicantType !== "jamaican" && !form.country) errs.country = "Country is required";
+    if (applicantType === "jamaican" && !form.trn) errs.trn = "TRN is required for Jamaican applicants";
     if (applicantType === "jamaican" && form.trn && !validateTRN(form.trn)) errs.trn = "TRN must be 9 digits";
+    if (!form.highestQualification) errs.highestQualification = "Please select your highest qualification";
+    if (!form.employmentStatus) errs.employmentStatus = "Please select your employment status";
+    if (!form.emergencyName) errs.emergencyName = "Emergency contact name is required";
+    if (!form.emergencyPhone) errs.emergencyPhone = "Emergency contact phone is required";
     if (!form.level) errs.level = "Please select a qualification level";
     if (!form.programme) errs.programme = "Please select a programme";
     requiredDocs.forEach(d => { if (!files[d.slot]) errs[d.slot] = d.label + " is required"; else if (!validateFileSize(files[d.slot])) errs[d.slot] = "File too large (max 5 MB)"; });
@@ -200,7 +216,7 @@ export default function ApplyPage({ setPage }) {
     if (Object.keys(errs).length > 0) { setErrors(errs); window.scrollTo({ top: 200, behavior: "smooth" }); return; }
 
     setSubmitting(true);
-    const ref = generateRef();
+    const ref = appRef.current;
     const fullName = form.firstName.trim() + " " + form.lastName.trim();
     const formData = {
       form_type: "Student Application",
@@ -208,15 +224,30 @@ export default function ApplyPage({ setPage }) {
       applicantType,
       fullName,
       firstName: form.firstName.trim(),
+      middleName: form.middleName.trim(),
       lastName: form.lastName.trim(),
       email: form.email.trim(),
       phone: form.phone.trim(),
       gender: form.gender,
       dob: form.dob,
+      nationality: form.nationality || "",
+      maritalStatus: form.maritalStatus || "",
       parish: form.parish || "",
       country: form.country || "",
-      address: form.address || "",
+      address: form.address.trim(),
       trn: form.trn || "",
+      nis: form.nis || "",
+      highestQualification: form.highestQualification || "",
+      schoolLastAttended: form.schoolLastAttended || "",
+      yearCompleted: form.yearCompleted || "",
+      employmentStatus: form.employmentStatus || "",
+      employer: form.employer || "",
+      jobTitle: form.jobTitle || "",
+      industry: form.industry || "",
+      yearsExperience: form.yearsExperience || "",
+      emergencyName: form.emergencyName || "",
+      emergencyRelationship: form.emergencyRelationship || "",
+      emergencyPhone: form.emergencyPhone || "",
       level: form.level,
       programme: form.programme,
       referralCode: form.referralCode || "",
@@ -246,7 +277,6 @@ export default function ApplyPage({ setPage }) {
     const g = genderPronouns(form.gender);
     setPrayer(PRAYERS.application(form.firstName.trim(), g));
 
-    setSubmittedRef(ref);
     setSubmitting(false);
     setSubmitted(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -271,7 +301,7 @@ export default function ApplyPage({ setPage }) {
               <div style={{ background: "#fff", borderRadius: 16, padding: "28px 32px", border: "1px solid " + S.border, textAlign: "left", marginBottom: 28 }}>
                 <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 16 }}>Application Summary</div>
                 {[
-                  ["Reference", submittedRef],
+                  ["Reference", appRef.current],
                   ["Name", form.firstName + " " + form.lastName],
                   ["Email", form.email],
                   ["Programme", form.level + " — " + form.programme],
@@ -300,6 +330,7 @@ export default function ApplyPage({ setPage }) {
               </div>
 
               <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
+                <Btn primary onClick={() => setPage("Pay")} style={{ background: S.emerald, color: "#fff" }}>Make a Payment</Btn>
                 <Btn primary onClick={() => setPage("Programmes")} style={{ background: S.coral, color: "#fff" }}>View All Programmes</Btn>
                 <a href={BOOKING_URLS.general} target="_blank" rel="noopener noreferrer" style={{ padding: "14px 28px", borderRadius: 8, border: "2px solid " + S.teal, color: S.teal, fontSize: 14, fontWeight: 700, fontFamily: S.body, textDecoration: "none" }}>Book a Consultation</a>
               </div>
@@ -319,6 +350,20 @@ export default function ApplyPage({ setPage }) {
       <SectionHeader tag="Start Here" title="Apply in Under 10 Minutes" desc="Complete the form, upload your documents, and we'll review within 24–48 hours." accentColor={S.coral} />
       <Container>
         <SocialProofBar />
+
+        {/* Application Number — visible immediately */}
+        <div style={{ background: S.navy, borderRadius: 12, padding: "18px 24px", marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 10, background: S.gold + "20", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>📋</div>
+            <div>
+              <div style={{ fontSize: 10, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700 }}>Your Application Number</div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", fontFamily: S.heading, letterSpacing: 1, marginTop: 2 }}>{appRef.current}</div>
+            </div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontFamily: S.body, lineHeight: 1.5 }}>Save this number. You will need it<br />to make payments and check your status.</div>
+          </div>
+        </div>
 
         {/* Applicant Type Info Bar */}
         <div style={{ background: S.skyLight, borderRadius: 12, padding: "16px 20px", border: "1px solid " + S.sky + "25", marginBottom: 32, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
@@ -357,9 +402,12 @@ export default function ApplyPage({ setPage }) {
           {/* SECTION 2: PERSONAL INFORMATION */}
           {/* ════════════════════════════════════════════════ */}
           <SectionBlock num={secN.personal} title="Personal Information" locked={!s1Done} complete={s2Done}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }} className="resp-grid-2">
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0 20px" }} className="resp-grid-3">
               <Field label="First Name" required error={errors.firstName}>
                 <input style={inputStyle} value={form.firstName} onChange={e => set("firstName", e.target.value)} placeholder="e.g. Marcus" />
+              </Field>
+              <Field label="Middle Name">
+                <input style={inputStyle} value={form.middleName} onChange={e => set("middleName", e.target.value)} placeholder="e.g. Anthony" />
               </Field>
               <Field label="Last Name" required error={errors.lastName}>
                 <input style={inputStyle} value={form.lastName} onChange={e => set("lastName", e.target.value)} placeholder="e.g. Campbell" />
@@ -385,11 +433,25 @@ export default function ApplyPage({ setPage }) {
                 </select>
               </Field>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }} className="resp-grid-2">
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0 20px" }} className="resp-grid-3">
               <Field label="Date of Birth" required error={errors.dob}>
                 <input type="date" style={inputStyle} value={form.dob} onChange={e => set("dob", e.target.value)} max="2012-01-01" />
               </Field>
-              {applicantType === "jamaican" ? (
+              <Field label="Nationality">
+                <input style={inputStyle} value={form.nationality} onChange={e => set("nationality", e.target.value)} placeholder={isJamaican ? "Jamaican" : "e.g. Trinidadian"} />
+              </Field>
+              <Field label="Marital Status">
+                <select style={selectStyle} value={form.maritalStatus} onChange={e => set("maritalStatus", e.target.value)}>
+                  <option value="">Select...</option>
+                  {["Single", "Married", "Divorced", "Widowed", "Separated", "Common-Law"].map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </Field>
+            </div>
+            <Field label="Address" required error={errors.address}>
+              <input style={inputStyle} value={form.address} onChange={e => set("address", e.target.value)} placeholder="Street, City, Parish/State" />
+            </Field>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }} className="resp-grid-2">
+              {isJamaican ? (
                 <Field label="Parish" required error={errors.parish}>
                   <select style={selectStyle} value={form.parish} onChange={e => set("parish", e.target.value)}>
                     <option value="">Select parish...</option>
@@ -401,15 +463,97 @@ export default function ApplyPage({ setPage }) {
                   <input style={inputStyle} value={form.country} onChange={e => set("country", e.target.value)} placeholder={applicantType === "caribbean" ? "e.g. Trinidad & Tobago" : "e.g. United Kingdom"} />
                 </Field>
               )}
+              {isJamaican && (
+                <Field label="TRN (Tax Registration Number)" required error={errors.trn} hint="9 digits — for NCTVET registration">
+                  <input style={inputStyle} value={form.trn} onChange={e => set("trn", e.target.value)} placeholder="123456789" maxLength={11} />
+                </Field>
+              )}
             </div>
-            <Field label="Address" hint="Street address (optional but recommended)">
-              <input style={inputStyle} value={form.address} onChange={e => set("address", e.target.value)} placeholder="Street, City" />
-            </Field>
-            {applicantType === "jamaican" && (
-              <Field label="TRN (Tax Registration Number)" error={errors.trn} hint="9 digits — used for NCTVET registration">
-                <input style={inputStyle} value={form.trn} onChange={e => set("trn", e.target.value)} placeholder="123456789" maxLength={11} />
+            {isJamaican && (
+              <Field label="NIS Number (National Insurance Scheme)" hint="Optional — if you have one">
+                <input style={inputStyle} value={form.nis} onChange={e => set("nis", e.target.value)} placeholder="NIS number" />
               </Field>
             )}
+
+            {/* Education Background */}
+            <div style={{ marginTop: 8, paddingTop: 20, borderTop: "1px solid " + S.border }}>
+              <div style={{ fontSize: 11, color: S.violet, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 16 }}>Education Background</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }} className="resp-grid-2">
+                <Field label="Highest Qualification Obtained" required error={errors.highestQualification}>
+                  <select style={selectStyle} value={form.highestQualification} onChange={e => set("highestQualification", e.target.value)}>
+                    <option value="">Select...</option>
+                    {["No Formal Qualification", "Primary School Certificate", "CXC/CSEC (1–2 subjects)", "CXC/CSEC (3–4 subjects)", "CXC/CSEC (5+ subjects)", "CAPE / A-Levels", "HEART Certificate / NVQ-J", "Diploma", "Associate Degree", "Bachelor's Degree", "Master's Degree", "Other"].map(o => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                </Field>
+                <Field label="Year Completed">
+                  <input style={inputStyle} value={form.yearCompleted} onChange={e => set("yearCompleted", e.target.value)} placeholder="e.g. 2020" maxLength={4} />
+                </Field>
+              </div>
+              <Field label="Last School / Institution Attended">
+                <input style={inputStyle} value={form.schoolLastAttended} onChange={e => set("schoolLastAttended", e.target.value)} placeholder="e.g. Kingston Technical High School" />
+              </Field>
+              {qualsRequired && (
+                <div style={{ padding: "10px 14px", borderRadius: 8, background: S.amberLight, border: "1px solid " + S.amber + "30", fontSize: 11, color: S.amberDark, fontFamily: S.body, lineHeight: 1.6 }}>
+                  You will need to upload your qualification documents (certificates, transcripts) in the Documents section below.
+                </div>
+              )}
+            </div>
+
+            {/* Employment Information */}
+            <div style={{ marginTop: 8, paddingTop: 20, borderTop: "1px solid " + S.border }}>
+              <div style={{ fontSize: 11, color: S.teal, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 16 }}>Employment Information</div>
+              <Field label="Employment Status" required error={errors.employmentStatus}>
+                <select style={selectStyle} value={form.employmentStatus} onChange={e => set("employmentStatus", e.target.value)}>
+                  <option value="">Select...</option>
+                  {["Employed (Full-Time)", "Employed (Part-Time)", "Self-Employed", "Unemployed", "Student", "Retired"].map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </Field>
+              {(form.employmentStatus && form.employmentStatus !== "Unemployed" && form.employmentStatus !== "Student" && form.employmentStatus !== "Retired") && (
+                <Reveal>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }} className="resp-grid-2">
+                    <Field label="Current Employer / Business Name">
+                      <input style={inputStyle} value={form.employer} onChange={e => set("employer", e.target.value)} placeholder="e.g. National Commercial Bank" />
+                    </Field>
+                    <Field label="Job Title / Position">
+                      <input style={inputStyle} value={form.jobTitle} onChange={e => set("jobTitle", e.target.value)} placeholder="e.g. Customer Service Officer" />
+                    </Field>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }} className="resp-grid-2">
+                    <Field label="Industry / Sector">
+                      <select style={selectStyle} value={form.industry} onChange={e => set("industry", e.target.value)}>
+                        <option value="">Select...</option>
+                        {["Agriculture", "Banking & Finance", "BPO / Call Centre", "Construction", "Education", "Government / Public Sector", "Healthcare", "Hospitality / Tourism", "Information Technology", "Manufacturing", "Media & Entertainment", "Mining & Energy", "Retail / Wholesale", "Security", "Telecommunications", "Transportation & Logistics", "Other"].map(o => <option key={o} value={o}>{o}</option>)}
+                      </select>
+                    </Field>
+                    <Field label="Years of Work Experience">
+                      <select style={selectStyle} value={form.yearsExperience} onChange={e => set("yearsExperience", e.target.value)}>
+                        <option value="">Select...</option>
+                        {["Less than 1 year", "1–2 years", "3–5 years", "6–10 years", "11–15 years", "16–20 years", "Over 20 years"].map(o => <option key={o} value={o}>{o}</option>)}
+                      </select>
+                    </Field>
+                  </div>
+                </Reveal>
+              )}
+            </div>
+
+            {/* Emergency Contact */}
+            <div style={{ marginTop: 8, paddingTop: 20, borderTop: "1px solid " + S.border }}>
+              <div style={{ fontSize: 11, color: S.coral, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 16 }}>Emergency Contact</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0 20px" }} className="resp-grid-3">
+                <Field label="Contact Name" required error={errors.emergencyName}>
+                  <input style={inputStyle} value={form.emergencyName} onChange={e => set("emergencyName", e.target.value)} placeholder="e.g. Sandra Campbell" />
+                </Field>
+                <Field label="Relationship">
+                  <select style={selectStyle} value={form.emergencyRelationship} onChange={e => set("emergencyRelationship", e.target.value)}>
+                    <option value="">Select...</option>
+                    {["Spouse", "Parent", "Sibling", "Child", "Aunt/Uncle", "Cousin", "Friend", "Employer", "Other"].map(o => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                </Field>
+                <Field label="Contact Phone" required error={errors.emergencyPhone}>
+                  <input type="tel" style={inputStyle} value={form.emergencyPhone} onChange={e => set("emergencyPhone", e.target.value)} placeholder="8761234567" />
+                </Field>
+              </div>
+            </div>
           </SectionBlock>
 
           {/* ════════════════════════════════════════════════ */}
@@ -472,10 +616,10 @@ export default function ApplyPage({ setPage }) {
           {/* DOCUMENT UPLOADS */}
           {/* ════════════════════════════════════════════════ */}
           <SectionBlock num={secN.docs} title="Upload Your Documents" desc={`Required documents for ${APPLICANT_TYPES.find(t => t.key === applicantType)?.label || "your"} applicants. Max 5 MB per file.${isJamaican ? " Include the signed HEART form you just downloaded." : ""}`} locked={!sDocGate} complete={s4Done}>
-            {applicantType && DOC_REQUIREMENTS[applicantType].map(doc => (
+            {applicantType && currentDocs.map(doc => (
               <FileUpload key={doc.slot} doc={doc} file={files[doc.slot]} onFileChange={onFileChange} />
             ))}
-            {Object.keys(errors).filter(k => DOC_REQUIREMENTS[applicantType]?.some(d => d.slot === k)).map(k => (
+            {Object.keys(errors).filter(k => currentDocs.some(d => d.slot === k)).map(k => (
               <div key={k} style={{ fontSize: 11, color: S.error, fontFamily: S.body, marginTop: -6, marginBottom: 10 }}>⚠️ {errors[k]}</div>
             ))}
           </SectionBlock>

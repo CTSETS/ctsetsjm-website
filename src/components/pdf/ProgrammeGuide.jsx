@@ -64,7 +64,7 @@ tr:nth-child(even) { background: #fafaf7; }
 <p>📍 6 Newark Avenue, Kingston 11, Jamaica W.I. &nbsp;|&nbsp; Reg. No. 16007/2025</p>
 
 <div class="footer">
-<p>CTS Empowerment & Training Solutions — Called To Serve, Committed to Excellence</p>
+<p>CTS Empowerment & Training Solutions — Called To Serve, Excellence Through Service</p>
 <p>This guide is for informational purposes. Fees are current as of 2026 and subject to change. Confirmed enrolments honoured at agreed rates.</p>
 </div>
 </body></html>`);

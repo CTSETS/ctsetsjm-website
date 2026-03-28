@@ -8,7 +8,7 @@ import { APPS_SCRIPT_URL, EMAILJS_SERVICE, EMAILJS_TEMPLATE } from "../constants
 // ── BREVO (Sendinblue) TRANSACTIONAL API ──
 // Sign up free at https://www.brevo.com — 300 emails/day free
 // Get your API key from: Settings → SMTP & API → API Keys
-const BREVO_API_KEY = ""; // PASTE YOUR BREVO API KEY HERE
+const BREVO_API_KEY = "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";
 const BREVO_SENDER = { name: "CTS ETS", email: "noreply@ctsetsjm.com" };
 const BREVO_ENABLED = !!BREVO_API_KEY;
 
@@ -63,7 +63,7 @@ export const sendApplicationConfirmation = async ({ name, email, ref, programme,
     <div style="font-family: 'DM Sans', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #fff;">
       <div style="background: #011E40; padding: 24px 32px; text-align: center;">
         <h1 style="color: #D4A017; font-size: 22px; margin: 0;">CTS Empowerment & Training Solutions</h1>
-        <p style="color: rgba(255,255,255,0.6); font-size: 11px; margin: 4px 0 0; letter-spacing: 2px;">CALLED TO SERVE — COMMITTED TO EXCELLENCE</p>
+        <p style="color: rgba(255,255,255,0.6); font-size: 11px; margin: 4px 0 0; letter-spacing: 2px;">CALLED TO SERVE — EXCELLENCE THROUGH SERVICE</p>
       </div>
       <div style="padding: 32px;">
         <h2 style="color: #011E40; font-size: 20px;">Application Received, ${name}!</h2>

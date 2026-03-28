@@ -6,7 +6,7 @@ const NAV_GROUPS = [
   { label: "Home", page: "Home" },
   { label: "About", children: [{ label: "Our Story", page: "About" }, { label: "Why Choose CTS ETS", page: "Why Choose" }] },
   { label: "Programmes", children: [{ label: "All Programmes", page: "Programmes" }, { label: "Career Outcomes", page: "Careers" }, { label: "Certification", page: "Certification" }] },
-  { label: "Admissions", children: [{ label: "🎓 Founding Cohort — Save $10K", page: "Founding Cohort" }, { label: "Fees & Calculator", page: "Fees & Calculator" }, { label: "Student Journey", page: "Student Journey" }, { label: "Apply Now", page: "Apply" }, { label: "For Employers", page: "For Employers" }, { label: "🌍 International Students", page: "International" }] },
+  { label: "Admissions", children: [{ label: "🎓 Founding Cohort — Save $10K", page: "Founding Cohort" }, { label: "Fees & Calculator", page: "Fees & Calculator" }, { label: "Student Journey", page: "Student Journey" }, { label: "Apply Now", page: "Apply" }, { label: "💳 Make a Payment", page: "Pay" }, { label: "For Employers", page: "For Employers" }, { label: "🌍 International Students", page: "International" }] },
   { label: "Updates", page: "Announcements" },
   { label: "Contact", page: "Contact" },
 ];
@@ -32,7 +32,7 @@ export default function Navbar({ page, setPage }) {
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 20px", display: "flex", alignItems: "center", height: 72, justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14, cursor: "pointer" }} onClick={() => setPage("Home")} role="link" tabIndex={0} onKeyDown={e => e.key === "Enter" && setPage("Home")} aria-label="CTS ETS Home">
             <img src={NAV_LOGO} alt="CTS ETS" style={{ width: 52, height: 58, objectFit: "contain", borderRadius: 4 }} width={52} height={58} />
-            <div className="nav-brand-text"><div style={{ fontFamily: S.heading, fontSize: 17, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>CTS Empowerment &amp; Training Solutions</div><div className="nav-tagline" style={{ fontSize: 9, color: S.gold, fontFamily: S.body, letterSpacing: 1, marginTop: 2 }}>CALLED TO SERVE — COMMITTED TO EXCELLENCE</div></div>
+            <div className="nav-brand-text"><div style={{ fontFamily: S.heading, fontSize: 17, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>CTS Empowerment &amp; Training Solutions</div><div className="nav-tagline" style={{ fontSize: 9, color: S.gold, fontFamily: S.body, letterSpacing: 1, marginTop: 2 }}>CALLED TO SERVE — EXCELLENCE THROUGH SERVICE</div></div>
           </div>
           <div className="desktop-nav" style={{ display: "flex", gap: 2, alignItems: "center" }} role="menubar">{NAV_GROUPS.map(g => <NavDropdown key={g.label} group={g} page={page} setPage={setPage} />)}<a href={PORTAL_URL} target="_blank" rel="noopener noreferrer" style={{ padding: "8px 14px", borderRadius: 6, background: S.emerald, color: "#fff", fontSize: 11, fontWeight: 700, fontFamily: S.body, textDecoration: "none", whiteSpace: "nowrap", marginLeft: 4 }}>🎓 Student Portal</a></div>
           <button className="mobile-menu-btn" onClick={() => setOpen(!open)} aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} style={{ display: "none", flexDirection: "column", gap: 4, background: "none", border: "none", cursor: "pointer", padding: 8 }}>{[0,1,2].map(i => <div key={i} style={{ width: 22, height: 2, background: "#fff", borderRadius: 2 }} />)}</button>

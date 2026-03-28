@@ -9,7 +9,7 @@ export default function Footer({ setPage }) {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer", marginBottom: 16 }} onClick={() => setPage("Home")}>
               <img src={NAV_LOGO} alt="CTS ETS" style={{ width: 44, height: 48, objectFit: "contain" }} width={44} height={48} loading="lazy" />
-              <div><div style={{ fontFamily: S.heading, fontSize: 14, fontWeight: 700, color: "#fff" }}>CTS Empowerment &amp; Training Solutions</div><div style={{ fontSize: 10, color: S.gold, fontFamily: S.body, marginTop: 2, letterSpacing: 1 }}>Called To Serve — Committed to Excellence</div></div>
+              <div><div style={{ fontFamily: S.heading, fontSize: 14, fontWeight: 700, color: "#fff" }}>CTS Empowerment &amp; Training Solutions</div><div style={{ fontSize: 10, color: S.gold, fontFamily: S.body, marginTop: 2, letterSpacing: 1 }}>Called To Serve — Excellence Through Service</div></div>
             </div>
             <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", fontFamily: S.body, lineHeight: 1.6, marginBottom: 10 }}>25 programmes aligned to NCTVET &amp; City &amp; Guilds. 100% online, self-paced.</p>
             <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", fontFamily: S.body, marginBottom: 4 }}>📍 6 Newark Avenue, Kingston 11, Jamaica W.I.</p>
@@ -17,7 +17,7 @@ export default function Footer({ setPage }) {
           </div>
           <div>
             <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600, marginBottom: 16 }}>Quick Links</div>
-            {["About","Why Choose","Programmes","Certification","Careers","Student Journey","Fees & Calculator","For Employers","International","Apply","Contact","Announcements","Feedback"].map(p => <button key={p} onClick={() => setPage(p)} style={{ display: "block", background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 13, fontFamily: S.body, cursor: "pointer", padding: "4px 0", textAlign: "left" }}>{p}</button>)}
+            {["About","Why Choose","Programmes","Certification","Careers","Student Journey","Fees & Calculator","For Employers","International","Apply","Pay","Contact","Announcements","Feedback"].map(p => <button key={p} onClick={() => setPage(p)} style={{ display: "block", background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 13, fontFamily: S.body, cursor: "pointer", padding: "4px 0", textAlign: "left" }}>{p === "Pay" ? "💳 Make a Payment" : p}</button>)}
             <button onClick={() => setPage("Founding Cohort")} style={{ display: "block", background: "none", border: "none", color: S.coral, fontSize: 13, fontFamily: S.body, cursor: "pointer", padding: "4px 0", textAlign: "left", fontWeight: 700 }}>🎓 Founding Cohort — Save Up to $10K</button>
             <button onClick={() => setPage("Verify Certificate")} style={{ display: "block", background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 13, fontFamily: S.body, cursor: "pointer", padding: "4px 0", textAlign: "left" }}>Verify a Certificate</button>
             <a href={PORTAL_URL} target="_blank" rel="noopener noreferrer" style={{ display: "block", color: S.emerald, fontSize: 13, fontFamily: S.body, padding: "4px 0", textDecoration: "none", fontWeight: 600 }}>🎓 Student Portal</a>

@@ -19,6 +19,7 @@ const AnnouncementsPage = lazy(() => import("./pages/AnnouncementsPage"));
 const WhyChoosePage = lazy(() => import("./pages/WhyChoosePage"));
 const CertificationPage = lazy(() => import("./pages/CertificationPage"));
 const ApplyPage = lazy(() => import("./pages/ApplyPage"));
+const PaymentPage = lazy(() => import("./pages/PaymentPage"));
 const EmployersPage = lazy(() => import("./pages/EmployersPage"));
 const InternationalPage = lazy(() => import("./pages/InternationalPage"));
 const StudentJourneyPage = lazy(() => import("./pages/StudentJourneyPage"));
@@ -43,7 +44,7 @@ class ErrorBoundary extends Component {
   }
 }
 
-const TITLES = { Home: "CTS ETS — Build Real Skills. Earn Recognised Qualifications.", About: "About CTS ETS", "Why Choose": "Why Choose CTS ETS", Programmes: "25 Programmes | CTS ETS", Certification: "Certification | CTS ETS", "Fees & Calculator": "Fees & Calculator | CTS ETS", "For Employers": "For Employers | CTS ETS", "Student Journey": "Student Journey | CTS ETS", Careers: "Career Outcomes | CTS ETS", Announcements: "Updates | CTS ETS", Apply: "Apply Now | CTS ETS", Contact: "Contact Us | CTS ETS", International: "International Students | CTS ETS", "Verify Certificate": "Verify Certificate | CTS ETS", Feedback: "Feedback | CTS ETS", "Founding Cohort": "Founding Cohort — Save $10K | CTS ETS", Privacy: "Privacy Policy | CTS ETS", Terms: "Terms & Conditions | CTS ETS" };
+const TITLES = { Home: "CTS ETS — Build Real Skills. Earn Recognised Qualifications.", About: "About CTS ETS", "Why Choose": "Why Choose CTS ETS", Programmes: "25 Programmes | CTS ETS", Certification: "Certification | CTS ETS", "Fees & Calculator": "Fees & Calculator | CTS ETS", "For Employers": "For Employers | CTS ETS", "Student Journey": "Student Journey | CTS ETS", Careers: "Career Outcomes | CTS ETS", Announcements: "Updates | CTS ETS", Apply: "Apply Now | CTS ETS", Pay: "Make a Payment | CTS ETS", Contact: "Contact Us | CTS ETS", International: "International Students | CTS ETS", "Verify Certificate": "Verify Certificate | CTS ETS", Feedback: "Feedback | CTS ETS", "Founding Cohort": "Founding Cohort — Save $10K | CTS ETS", Privacy: "Privacy Policy | CTS ETS", Terms: "Terms & Conditions | CTS ETS" };
 
 export default function CTSApp() {
   const [page, setPage] = useState(() => {
@@ -84,6 +85,7 @@ export default function CTSApp() {
       case "Careers": return <CareerOutcomesPage {...p} />;
       case "Announcements": return <AnnouncementsPage {...p} />;
       case "Apply": return <ApplyPage {...p} />;
+      case "Pay": return <PaymentPage {...p} />;
       case "Contact": return <ContactPage {...p} />;
       case "International": return <InternationalPage {...p} />;
       case "Verify Certificate": return <VerifyCertificatePage {...p} />;

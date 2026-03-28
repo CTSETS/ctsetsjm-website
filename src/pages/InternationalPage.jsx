@@ -47,10 +47,10 @@ export default function InternationalPage({ setPage }) {
           <div style={{ background: S.navy, borderRadius: 16, padding: "36px 32px", marginBottom: 40 }}>
             <h3 style={{ fontFamily: S.heading, fontSize: 22, color: "#fff", fontWeight: 700, marginBottom: 20, textAlign: "center" }}>Documents Required</h3>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }} className="resp-grid-2">
-              {["Passport-size photo", "Passport bio page", "Secondary school transcripts", "Proof of identity (optional)"].map((doc, i) => (
+              {["Passport-size photo", "Passport bio page", "Secondary school transcripts", "Proof of identity (National ID / Passport / Driver's Licence)"].map((doc) => (
                 <div key={doc} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderRadius: 8, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                  <span style={{ color: S.gold, fontSize: 14 }}>{i < 3 ? "📄" : "📋"}</span>
-                  <span style={{ fontSize: 13, color: "#fff", fontFamily: S.body }}>{doc} {i < 3 && <span style={{ color: S.coral, fontSize: 10, fontWeight: 700 }}>Required</span>}</span>
+                  <span style={{ color: S.gold, fontSize: 14 }}>📄</span>
+                  <span style={{ fontSize: 13, color: "#fff", fontFamily: S.body }}>{doc} <span style={{ color: S.coral, fontSize: 10, fontWeight: 700 }}>Required</span></span>
                 </div>
               ))}
             </div>

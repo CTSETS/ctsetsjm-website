@@ -132,24 +132,45 @@ function HeartFormPreview({ data, signature }) {
         {/* Section A: Personal */}
         <div style={{ fontSize: 11, fontWeight: 700, color: "#D4A017", letterSpacing: 1, textTransform: "uppercase", marginBottom: 6, marginTop: 4 }}>Section A — Personal Information</div>
         {row("Surname", data.lastName)}
-        {row("First Name(s)", data.firstName)}
+        {row("First Name(s)", [data.firstName, data.middleName].filter(Boolean).join(" "))}
         {row("Date of Birth", data.dob ? new Date(data.dob + "T00:00:00").toLocaleDateString("en-JM", { year: "numeric", month: "long", day: "numeric" }) : "")}
         {row("Gender", data.gender)}
+        {row("Nationality", data.nationality)}
+        {row("Marital Status", data.maritalStatus)}
         {row("TRN", data.trn)}
+        {data.nis && row("NIS Number", data.nis)}
         {row("Address", data.address)}
         {row("Parish", data.parish)}
         {row("Telephone", data.phone)}
         {row("Email", data.email)}
 
-        {/* Section B: Programme */}
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#D4A017", letterSpacing: 1, textTransform: "uppercase", marginBottom: 6, marginTop: 14 }}>Section B — Programme Details</div>
+        {/* Education */}
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#D4A017", letterSpacing: 1, textTransform: "uppercase", marginBottom: 6, marginTop: 14 }}>Section B — Education Background</div>
+        {row("Highest Qualification", data.highestQualification)}
+        {row("School / Institution", data.schoolLastAttended)}
+        {row("Year Completed", data.yearCompleted)}
+
+        {/* Employment */}
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#D4A017", letterSpacing: 1, textTransform: "uppercase", marginBottom: 6, marginTop: 14 }}>Section C — Employment Information</div>
+        {row("Employment Status", data.employmentStatus)}
+        {data.employer && row("Employer / Business", data.employer)}
+        {data.jobTitle && row("Job Title / Position", data.jobTitle)}
+
+        {/* Emergency Contact */}
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#D4A017", letterSpacing: 1, textTransform: "uppercase", marginBottom: 6, marginTop: 14 }}>Section D — Emergency Contact</div>
+        {row("Contact Name", data.emergencyName)}
+        {row("Relationship", data.emergencyRelationship)}
+        {row("Contact Phone", data.emergencyPhone)}
+
+        {/* Section E: Programme */}
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#D4A017", letterSpacing: 1, textTransform: "uppercase", marginBottom: 6, marginTop: 14 }}>Section E — Programme Details</div>
         {row("Qualification Level", data.level)}
         {row("Programme", data.programme)}
         {row("Training Provider", "CTS Empowerment & Training Solutions")}
         {row("Mode of Delivery", "Online (100%)")}
 
-        {/* Section C: Declaration */}
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#D4A017", letterSpacing: 1, textTransform: "uppercase", marginBottom: 6, marginTop: 14 }}>Section C — Declaration</div>
+        {/* Section F: Declaration */}
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#D4A017", letterSpacing: 1, textTransform: "uppercase", marginBottom: 6, marginTop: 14 }}>Section F — Declaration</div>
         <div style={{ padding: "10px 8px", fontSize: 11, color: "#333", lineHeight: 1.7, background: "#fafaf7", border: "1px solid #eee", borderRadius: 4 }}>
           I, <strong>{data.firstName} {data.lastName}</strong>, declare that the information provided in this application is true and correct to the best of my knowledge. I understand that any false information may result in the cancellation of my application or enrolment. I agree to abide by the rules and regulations of the training institution and the HEART/NSTA Trust.
         </div>
@@ -213,22 +234,40 @@ body{font-family:'DM Sans',sans-serif;color:#111;max-width:700px;margin:0 auto;p
 
 <div class="section-title">Section A — Personal Information</div>
 <div class="row"><div class="label">Surname</div><div class="value">${data.lastName || "—"}</div></div>
-<div class="row"><div class="label">First Name(s)</div><div class="value">${data.firstName || "—"}</div></div>
+<div class="row"><div class="label">First Name(s)</div><div class="value">${[data.firstName, data.middleName].filter(Boolean).join(" ") || "—"}</div></div>
 <div class="row"><div class="label">Date of Birth</div><div class="value">${dobFormatted}</div></div>
 <div class="row"><div class="label">Gender</div><div class="value">${data.gender || "—"}</div></div>
+<div class="row"><div class="label">Nationality</div><div class="value">${data.nationality || "—"}</div></div>
+<div class="row"><div class="label">Marital Status</div><div class="value">${data.maritalStatus || "—"}</div></div>
 <div class="row"><div class="label">TRN</div><div class="value">${data.trn || "—"}</div></div>
+${data.nis ? '<div class="row"><div class="label">NIS Number</div><div class="value">' + data.nis + '</div></div>' : ''}
 <div class="row"><div class="label">Address</div><div class="value">${data.address || "—"}</div></div>
 <div class="row"><div class="label">Parish</div><div class="value">${data.parish || "—"}</div></div>
 <div class="row"><div class="label">Telephone</div><div class="value">${data.phone || "—"}</div></div>
 <div class="row"><div class="label">Email</div><div class="value">${data.email || "—"}</div></div>
 
-<div class="section-title">Section B — Programme Details</div>
+<div class="section-title">Section B — Education Background</div>
+<div class="row"><div class="label">Highest Qualification</div><div class="value">${data.highestQualification || "—"}</div></div>
+<div class="row"><div class="label">School / Institution</div><div class="value">${data.schoolLastAttended || "—"}</div></div>
+<div class="row"><div class="label">Year Completed</div><div class="value">${data.yearCompleted || "—"}</div></div>
+
+<div class="section-title">Section C — Employment Information</div>
+<div class="row"><div class="label">Employment Status</div><div class="value">${data.employmentStatus || "—"}</div></div>
+${data.employer ? '<div class="row"><div class="label">Employer / Business</div><div class="value">' + data.employer + '</div></div>' : ''}
+${data.jobTitle ? '<div class="row"><div class="label">Job Title / Position</div><div class="value">' + data.jobTitle + '</div></div>' : ''}
+
+<div class="section-title">Section D — Emergency Contact</div>
+<div class="row"><div class="label">Contact Name</div><div class="value">${data.emergencyName || "—"}</div></div>
+<div class="row"><div class="label">Relationship</div><div class="value">${data.emergencyRelationship || "—"}</div></div>
+<div class="row"><div class="label">Contact Phone</div><div class="value">${data.emergencyPhone || "—"}</div></div>
+
+<div class="section-title">Section E — Programme Details</div>
 <div class="row"><div class="label">Qualification Level</div><div class="value">${data.level || "—"}</div></div>
 <div class="row"><div class="label">Programme</div><div class="value">${data.programme || "—"}</div></div>
 <div class="row"><div class="label">Training Provider</div><div class="value">CTS Empowerment & Training Solutions</div></div>
 <div class="row"><div class="label">Mode of Delivery</div><div class="value">Online (100%)</div></div>
 
-<div class="section-title">Section C — Declaration</div>
+<div class="section-title">Section F — Declaration</div>
 <div class="declaration">
 I, <strong>${data.firstName} ${data.lastName}</strong>, declare that the information provided in this application is true and correct to the best of my knowledge. I understand that any false information may result in the cancellation of my application or enrolment. I agree to abide by the rules and regulations of the training institution and the HEART/NSTA Trust.
 </div>
@@ -257,14 +296,27 @@ export default function HeartFormBuilder({ formData, onComplete }) {
 
   const data = {
     firstName: formData.firstName || "",
+    middleName: formData.middleName || "",
     lastName: formData.lastName || "",
     email: formData.email || "",
     phone: formData.phone || "",
     gender: formData.gender || "",
     dob: formData.dob || "",
+    nationality: formData.nationality || "",
+    maritalStatus: formData.maritalStatus || "",
     parish: formData.parish || "",
     address: formData.address || "",
     trn: formData.trn || "",
+    nis: formData.nis || "",
+    highestQualification: formData.highestQualification || "",
+    schoolLastAttended: formData.schoolLastAttended || "",
+    yearCompleted: formData.yearCompleted || "",
+    employmentStatus: formData.employmentStatus || "",
+    employer: formData.employer || "",
+    jobTitle: formData.jobTitle || "",
+    emergencyName: formData.emergencyName || "",
+    emergencyRelationship: formData.emergencyRelationship || "",
+    emergencyPhone: formData.emergencyPhone || "",
     level: formData.level || "",
     programme: formData.programme || "",
   };
