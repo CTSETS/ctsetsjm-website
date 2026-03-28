@@ -631,7 +631,7 @@ export default function ApplyPage({ setPage }) {
             {/* Referral Code */}
             <Field label="Referral Code" hint="If a CTS ETS student referred you, enter their code for a 5% discount.">
               <div style={{ display: "flex", gap: 8 }}>
-                <input style={{ ...inputStyle, flex: 1 }} value={form.referralCode} onChange={e => set("referralCode", e.target.value.toUpperCase())} placeholder="CTS-REF-XXXXX" />
+                <input style={{ ...inputStyle, flex: 1 }} value={form.referralCode} onChange={e => set("referralCode", e.target.value.toUpperCase())} placeholder="CTSETS-REF-XXXXX" />
                 <button onClick={checkReferral} disabled={referralChecking} style={{ padding: "12px 20px", borderRadius: 8, background: S.teal, color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: S.body, opacity: referralChecking ? 0.6 : 1 }}>
                   {referralChecking ? "..." : "Verify"}
                 </button>

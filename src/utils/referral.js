@@ -7,9 +7,9 @@ import { APPS_SCRIPT_URL } from "../constants/config";
 
 // Generate a unique referral code for a student
 export const generateReferralCode = (studentRef) => {
-  // Format: CTS-REF-XXXXX (based on their application reference)
-  const suffix = studentRef.replace("CTS-", "").replace(/-/g, "").slice(-5);
-  return "CTS-REF-" + suffix;
+  // Format: CTSETS-REF-XXXXX (based on their application reference)
+  const suffix = studentRef.replace("CTSETS-", "").replace(/-/g, "").slice(-5);
+  return "CTSETS-REF-" + suffix;
 };
 
 // Check if a referral code is valid (call Apps Script)

@@ -12,7 +12,7 @@ export const submitToAppsScript = async (formData, fileMap) => {
     return { success: false };
   } catch (err) { console.error("Submit error:", err); return { success: false }; }
 };
-export const generateRef = () => "CTS-" + new Date().getFullYear() + "-" + Math.floor(10000 + Math.random() * 90000);
+export const generateRef = () => { var d = new Date(); var yr = d.getFullYear(); var mth = String(d.getMonth() + 1).padStart(2, "0"); var num = String(Math.floor(10000 + Math.random() * 90000)); return "CTSETS-" + yr + "-" + mth + "-" + num; };
 // Retry queued submissions on load
 export const retryQueuedSubmissions = async () => {
   try {

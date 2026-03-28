@@ -9,7 +9,10 @@ import { APPS_SCRIPT_URL, EMAILJS_SERVICE, EMAILJS_TEMPLATE } from "../constants
 // Sign up free at https://www.brevo.com — 300 emails/day free
 // Get your API key from: Settings → SMTP & API → API Keys
 const BREVO_API_KEY = import.meta.env.VITE_BREVO_KEY || "";
-const BREVO_SENDER = { name: "CTS ETS", email: "noreply@ctsetsjm.com" };
+// Sender — MUST be verified in Brevo Dashboard → Settings → Senders & IPs
+// Option 1: Use info@ctsetsjm.com (verify your domain in Brevo)
+// Option 2: Use the email you signed up to Brevo with (already verified)
+const BREVO_SENDER = { name: "CTS ETS", email: "info@ctsetsjm.com" };
 const BREVO_ENABLED = !!BREVO_API_KEY;
 
 // Send email via Brevo API
@@ -90,6 +93,44 @@ export const sendApplicationConfirmation = async ({ name, email, ref, programme,
     to: email, toName: name, subject, htmlContent: html,
     emailjsParams: { form_type: "Application Confirmation", from_name: name, email, message: `Ref: ${ref}\nLevel: ${level}\nProgramme: ${programme}` },
   });
+};
+
+// ── PAYMENT CONFIRMATION EMAIL ──
+export const sendPaymentConfirmation = async ({ name, email, ref, programme, level, amount, feeType, paymentPlan, isFoundingMember, foundingNumber }) => {
+  const subject = `CTS ETS — Payment Received (${ref})`;
+  const foundingBadge = isFoundingMember
+    ? `<div style="background: linear-gradient(135deg, #C49112, #D4A017); color: #fff; padding: 12px 20px; border-radius: 8px; text-align: center; margin: 16px 0; font-weight: 700;">⭐ Founding Member #${foundingNumber || ""} of 15 — Thank you for believing in us from the start!</div>`
+    : "";
+  const html = `
+    <div style="font-family: 'DM Sans', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #fff;">
+      <div style="background: #011E40; padding: 24px 32px; text-align: center;">
+        <h1 style="color: #D4A017; font-size: 22px; margin: 0;">CTS Empowerment & Training Solutions</h1>
+        <p style="color: rgba(255,255,255,0.6); font-size: 11px; margin: 4px 0 0; letter-spacing: 2px;">CALLED TO SERVE — EXCELLENCE THROUGH SERVICE</p>
+      </div>
+      <div style="padding: 32px;">
+        <h2 style="color: #011E40; font-size: 20px;">Payment Received, ${name}!</h2>
+        <p style="color: #4A5568; line-height: 1.7;">Thank you for your payment. We are processing it now.</p>
+        ${foundingBadge}
+        <div style="background: #FAFAF7; border-radius: 10px; padding: 20px; margin: 20px 0; border-left: 4px solid #2D8B61;">
+          <p style="margin: 0 0 8px;"><strong>Reference:</strong> ${ref}</p>
+          <p style="margin: 0 0 8px;"><strong>Paying For:</strong> ${feeType || "Payment"}</p>
+          <p style="margin: 0 0 8px;"><strong>Amount:</strong> J$${amount || "N/A"}</p>
+          <p style="margin: 0 0 8px;"><strong>Plan:</strong> ${paymentPlan || "N/A"}</p>
+          <p style="margin: 0;"><strong>Programme:</strong> ${level || ""} — ${programme || ""}</p>
+        </div>
+        <h3 style="color: #011E40; font-size: 16px;">What Happens Next?</h3>
+        <ol style="color: #4A5568; line-height: 1.8;">
+          <li>Our finance team verifies your payment (24–48 hours)</li>
+          <li>You receive enrolment confirmation + Student Portal access</li>
+          <li>Start studying immediately — self-paced, 100% online</li>
+        </ol>
+        <p style="color: #4A5568; line-height: 1.7;">Need help? WhatsApp us at <strong>876-381-9771</strong> or email <strong>finance@ctsetsjm.com</strong>.</p>
+      </div>
+      <div style="background: #011E40; padding: 16px 32px; text-align: center;">
+        <p style="color: rgba(255,255,255,0.4); font-size: 11px; margin: 0;">CTS ETS | ctsetsjm.com | info@ctsetsjm.com | 876-381-9771</p>
+      </div>
+    </div>`;
+  return sendEmail({ to: email, toName: name, subject, htmlContent: html });
 };
 
 // ── AUTOMATED DRIP SEQUENCE ──

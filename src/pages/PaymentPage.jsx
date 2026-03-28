@@ -1,6 +1,6 @@
 // ─── PAYMENT / FINANCE PAGE ─────────────────────────────────────────
 // Strict ID lookup → auto-populate → founding member detection → pricing → pay
-// Backend endpoint: ?action=lookupStudent&ref=CTS-2026-XXXXX
+// Backend endpoint: ?action=lookupStudent&ref=CTSETS-2026-03-XXXXX
 //   Returns: { found, ref, name, email, programme, level, status, amountDue, paymentPlan, foundingCount }
 // Backend endpoint: ?action=getFoundingCount&programme=X&level=Y
 //   Returns: { count: N }
@@ -12,6 +12,7 @@ import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture } fro
 import { PaymentSecurityNotice, HoneypotField } from "../components/shared/DisplayComponents";
 import { PaymentMethodSelector, PaymentSetupNotice, isOnlinePaymentAvailable } from "../components/apply/SmartPayment";
 import { fmt } from "../utils/formatting";
+import { sendPaymentConfirmation } from "../utils/email";
 
 // ── Tuition by level ──
 var TUITION_MAP = {
@@ -177,9 +178,9 @@ export default function PaymentPage({ setPage }) {
   var handleLookup = async function() {
     var val = refInput.trim().toUpperCase();
     if (!val) return;
-    if (!val.startsWith("CTS-")) {
+    if (!val.startsWith("CTSETS-")) {
       setLookupState("not_found");
-      setLookupMsg("Application numbers start with CTS- (e.g. CTS-2026-12345).");
+      setLookupMsg("Application numbers start with CTSETS- (e.g. CTSETS-2026-03-12345).");
       return;
     }
     setLookupState("loading");
@@ -273,6 +274,16 @@ export default function PaymentPage({ setPage }) {
       } catch (e2) { /* silent */ }
     }
     setSubmitting(false);
+    // Send payment confirmation email to student
+    if (student && student.email) {
+      sendPaymentConfirmation({
+        name: student.name, email: student.email, ref: student.ref,
+        programme: student.programme, level: student.level,
+        amount: payAmount, feeType: feeLabel, paymentPlan: selectedPlan,
+        isFoundingMember: isFoundingMember,
+        foundingNumber: isFoundingMember && foundingCount !== null ? foundingCount + 1 : "",
+      });
+    }
     setSubmitted(true);
   };
 
@@ -459,14 +470,14 @@ export default function PaymentPage({ setPage }) {
               </div>
 
               <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.6, marginBottom: 16 }}>
-                Your application number was assigned when you started your application. It appears at the top of your Apply page and in your confirmation email: <strong>CTS-2026-XXXXX</strong>
+                Your application number was assigned when you started your application. It appears at the top of your Apply page and in your confirmation email: <strong>CTSETS-2026-03-XXXXX</strong>
               </p>
 
               <div style={{ display: "flex", gap: 10 }}>
                 <input type="text" value={refInput}
                   onChange={function(e) { setRefInput(e.target.value.toUpperCase()); setLookupState("idle"); setLookupMsg(""); setDisputeSent(false); }}
                   onKeyDown={function(e) { if (e.key === "Enter") handleLookup(); }}
-                  placeholder="CTS-2026-XXXXX"
+                  placeholder="CTSETS-2026-03-XXXXX"
                   disabled={lookupState === "found"}
                   style={{ flex: 1, padding: "14px 16px", borderRadius: 8, border: "2px solid " + (lookupState === "found" ? S.emerald : "rgba(1,30,64,0.12)"), fontSize: 18, fontFamily: "'DM Sans', sans-serif", color: S.navy, fontWeight: 700, outline: "none", letterSpacing: 1, background: lookupState === "found" ? S.emeraldLight + "40" : "#fff" }}
                 />
