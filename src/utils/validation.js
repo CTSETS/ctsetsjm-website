@@ -1,5 +1,5 @@
 export const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-export const validatePhone = (phone) => phone.replace(/\D/g, "").length === 10;
+export const validatePhone = (phone) => { var d = phone.replace(/\D/g, ""); return d.length >= 10 && d.length <= 15 && /^\d{3}/.test(d); };
 export const validateTRN = (trn) => trn.replace(/\D/g, "").length === 9;
 export const MAX_FILE_SIZE = 5 * 1024 * 1024;
 export const validateFileSize = (file) => file && file.size <= MAX_FILE_SIZE;

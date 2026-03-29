@@ -138,7 +138,8 @@ export default function ApplyPage({ setPage }) {
   const isJamaican = applicantType === "jamaican";
   const availableProgrammes = form.level ? (PROGRAMMES[form.level] || []) : [];
   const s1Done = !!applicantType;
-  const s2Done = s1Done && form.firstName && form.lastName && validateEmail(form.email) && validatePhone(form.phone) && form.gender && form.dob && form.address && form.country && (isJamaican ? (form.parish && form.trn && validateTRN(form.trn)) : true) && form.employmentStatus && form.emergencyName && form.emergencyPhone && form.highestQualification;
+  const hasQualification = form.highestQualification && form.highestQualification !== "No Formal Qualification";
+  const s2Done = s1Done && form.firstName && form.lastName && validateEmail(form.email) && validatePhone(form.phone) && form.gender && form.dob && form.nationality && form.address && form.country && (isJamaican ? (form.parish && form.trn && validateTRN(form.trn)) : true) && form.employmentStatus && form.emergencyName && form.emergencyPhone && form.emergencyRelationship && form.highestQualification && (!hasQualification || (form.schoolLastAttended && form.yearCompleted));
   const s3Done = s2Done && ((form.level && form.programme) || appQueue.length > 0);
   // Jamaican applicants must complete HEART form before docs; others skip straight to docs
   const sHeartDone = isJamaican ? heartFormDone : true;
@@ -211,18 +212,24 @@ export default function ApplyPage({ setPage }) {
     if (!form.firstName) errs.firstName = "First name is required";
     if (!form.lastName) errs.lastName = "Last name is required";
     if (!validateEmail(form.email)) errs.email = "Valid email is required";
-    if (!validatePhone(form.phone)) errs.phone = "Valid 10-digit phone number is required";
+    if (!validatePhone(form.phone)) errs.phone = "Valid phone number required (10+ digits starting with country code, e.g. 876XXXXXXX)";
     if (!form.gender) errs.gender = "Please select your gender";
     if (!form.dob) errs.dob = "Date of birth is required";
+    if (!form.nationality) errs.nationality = "Nationality is required";
     if (!form.address) errs.address = "Address is required";
     if (applicantType === "jamaican" && !form.parish) errs.parish = "Parish is required";
     if (!form.country) errs.country = "Country is required";
     if (applicantType === "jamaican" && !form.trn) errs.trn = "TRN is required for Jamaican applicants";
     if (applicantType === "jamaican" && form.trn && !validateTRN(form.trn)) errs.trn = "TRN must be 9 digits";
     if (!form.highestQualification) errs.highestQualification = "Please select your highest qualification";
+    if (form.highestQualification && form.highestQualification !== "No Formal Qualification") {
+      if (!form.schoolLastAttended) errs.schoolLastAttended = "School/institution is required when a qualification is selected";
+      if (!form.yearCompleted) errs.yearCompleted = "Year completed is required when a qualification is selected";
+    }
     if (!form.employmentStatus) errs.employmentStatus = "Please select your employment status";
     if (!form.emergencyName) errs.emergencyName = "Emergency contact name is required";
     if (!form.emergencyPhone) errs.emergencyPhone = "Emergency contact phone is required";
+    if (!form.emergencyRelationship) errs.emergencyRelationship = "Emergency contact relationship is required";
     requiredDocs.forEach(d => { if (!files[d.slot]) errs[d.slot] = d.label + " is required"; else if (!validateFileSize(files[d.slot])) errs[d.slot] = "File too large (max 5 MB)"; });
     if (!captchaOk) errs.captcha = "Please complete the verification";
 
@@ -482,7 +489,7 @@ export default function ApplyPage({ setPage }) {
               )}
             </Field>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }} className="resp-grid-2">
-              <Field label="Phone Number" required error={errors.phone} hint="10 digits, e.g. 876XXXXXXX">
+              <Field label="Phone Number" required error={errors.phone} hint="10 digits starting with country code, e.g. 8761234567">
                 <input type="tel" style={inputStyle} value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="8763819771" />
               </Field>
               <Field label="Phone 2" hint="Optional alternate number">
@@ -501,7 +508,7 @@ export default function ApplyPage({ setPage }) {
               <Field label="Date of Birth" required error={errors.dob}>
                 <input type="date" style={inputStyle} value={form.dob} onChange={e => set("dob", e.target.value)} max="2012-01-01" />
               </Field>
-              <Field label="Nationality">
+              <Field label="Nationality" required error={errors.nationality}>
                 <input style={inputStyle} value={form.nationality} onChange={e => set("nationality", e.target.value)} placeholder={isJamaican ? "Jamaican" : "e.g. Trinidadian"} />
               </Field>
               <Field label="Marital Status">
@@ -579,11 +586,11 @@ export default function ApplyPage({ setPage }) {
                     {["No Formal Qualification", "Primary School Certificate", "CXC/CSEC (1–2 subjects)", "CXC/CSEC (3–4 subjects)", "CXC/CSEC (5+ subjects)", "CAPE / A-Levels", "HEART Certificate / NVQ-J", "Diploma", "Associate Degree", "Bachelor's Degree", "Master's Degree", "Other"].map(o => <option key={o} value={o}>{o}</option>)}
                   </select>
                 </Field>
-                <Field label="Year Completed">
+                <Field label="Year Completed" required={hasQualification} error={errors.yearCompleted}>
                   <input style={inputStyle} value={form.yearCompleted} onChange={e => set("yearCompleted", e.target.value)} placeholder="e.g. 2020" maxLength={4} />
                 </Field>
               </div>
-              <Field label="Last School / Institution Attended">
+              <Field label="Last School / Institution Attended" required={hasQualification} error={errors.schoolLastAttended}>
                 <input style={inputStyle} value={form.schoolLastAttended} onChange={e => set("schoolLastAttended", e.target.value)} placeholder="e.g. Kingston Technical High School" />
               </Field>
               {qualsRequired && (
@@ -637,7 +644,7 @@ export default function ApplyPage({ setPage }) {
                 <Field label="Contact Name" required error={errors.emergencyName}>
                   <input style={inputStyle} value={form.emergencyName} onChange={e => set("emergencyName", e.target.value)} placeholder="e.g. Sandra Campbell" />
                 </Field>
-                <Field label="Relationship">
+                <Field label="Relationship" required error={errors.emergencyRelationship}>
                   <select style={selectStyle} value={form.emergencyRelationship} onChange={e => set("emergencyRelationship", e.target.value)}>
                     <option value="">Select...</option>
                     {["Parent", "Guardian", "Spouse", "Relative", "Friend"].map(o => <option key={o} value={o}>{o}</option>)}
@@ -670,18 +677,24 @@ export default function ApplyPage({ setPage }) {
               if (!form.firstName) missing.push("First Name");
               if (!form.lastName) missing.push("Last Name");
               if (!validateEmail(form.email)) missing.push("Valid Email");
-              if (!validatePhone(form.phone)) missing.push("Phone Number");
+              if (!validatePhone(form.phone)) missing.push("Phone (10+ digits with country code)");
               if (!form.gender) missing.push("Gender");
               if (!form.dob) missing.push("Date of Birth");
+              if (!form.nationality) missing.push("Nationality");
               if (!form.address) missing.push("Street Address");
               if (!form.country) missing.push("Country");
               if (isJamaican && !form.parish) missing.push("Parish");
               if (isJamaican && !form.trn) missing.push("TRN");
               if (isJamaican && form.trn && !validateTRN(form.trn)) missing.push("Valid TRN (9 digits)");
               if (!form.highestQualification) missing.push("Highest Qualification");
+              if (form.highestQualification && form.highestQualification !== "No Formal Qualification") {
+                if (!form.schoolLastAttended) missing.push("Last School / Institution");
+                if (!form.yearCompleted) missing.push("Year Completed");
+              }
               if (!form.employmentStatus) missing.push("Employment Status");
               if (!form.emergencyName) missing.push("Emergency Contact Name");
               if (!form.emergencyPhone) missing.push("Emergency Contact Phone");
+              if (!form.emergencyRelationship) missing.push("Emergency Contact Relationship");
               if (missing.length === 0) return null;
               return (
                 <div style={{ marginTop: 20, padding: "14px 18px", borderRadius: 10, background: S.amberLight, border: "1px solid " + S.amber + "40", display: "flex", alignItems: "flex-start", gap: 10 }}>
