@@ -161,6 +161,7 @@ export default function HomePage({ setPage }) {
           <Reveal><div style={{ textAlign: "center", marginBottom: 36 }}>
             <span style={{ fontSize: 11, color: S.emerald, letterSpacing: 3, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600 }}>Where Can This Take You?</span>
             <h2 style={{ fontFamily: S.heading, fontSize: "clamp(24px,3.5vw,36px)", color: S.navy, margin: "10px 0 0", fontWeight: 700 }}>Real Career Outcomes at Every Level</h2>
+            <p style={{ fontFamily: S.body, fontSize: 12, color: S.grayLight, fontStyle: "italic", marginTop: 8 }}>Estimated salary ranges based on Jamaican labour market data (2025). Actual salaries vary by employer, experience, and location.</p>
           </div></Reveal>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 14 }} className="resp-grid-3">
             {Object.entries(CAREER_OUTCOMES).map(function(entry, i) {
@@ -172,7 +173,6 @@ export default function HomePage({ setPage }) {
                     <div style={{ fontSize: 10, color: colors[i], letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 6 }}>{level}</div>
                     <div style={{ fontFamily: S.heading, fontSize: 20, fontWeight: 800, color: S.navy, marginBottom: 6 }}>{data.salaryRange}</div>
                     <p style={{ fontFamily: S.body, fontSize: 11, color: S.gray, lineHeight: 1.5, margin: 0 }}>{data.outlook}</p>
-                    <div style={{ fontSize: 9, color: S.grayLight, fontFamily: S.body, marginTop: 8, fontStyle: "italic" }}>Est. ranges based on JM labour market data (2025)</div>
                   </div>
                 </Reveal>
               );

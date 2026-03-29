@@ -16,9 +16,9 @@ export default function SiteTour({ onClose, setPage }) {
   var isLast = step === STEPS.length - 1;
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 10000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99999, display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: "clamp(60px,10vh,120px)", padding: "clamp(60px,10vh,120px) 20px 20px" }}>
       {/* Backdrop */}
-      <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(1,30,64,0.85)", backdropFilter: "blur(4px)" }} />
+      <div onClick={onClose} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(1,30,64,0.85)", backdropFilter: "blur(4px)" }} />
 
       {/* Card */}
       <div style={{ position: "relative", background: "#fff", borderRadius: 20, padding: "clamp(28px,4vw,44px)", maxWidth: 480, width: "100%", boxShadow: "0 24px 80px rgba(0,0,0,0.3)", textAlign: "center" }}>
@@ -43,7 +43,7 @@ export default function SiteTour({ onClose, setPage }) {
         <div style={{ fontSize: 11, color: S.grayLight, fontFamily: S.body, marginBottom: 16 }}>{"Step " + (step + 1) + " of " + STEPS.length}</div>
 
         {/* Navigation */}
-        <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+        <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
           {step > 0 && (
             <button onClick={function() { setStep(step - 1); }}
               style={{ padding: "12px 28px", borderRadius: 8, border: "2px solid " + S.border, background: "#fff", color: S.navy, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>
@@ -56,10 +56,16 @@ export default function SiteTour({ onClose, setPage }) {
               Next
             </button>
           ) : (
-            <button onClick={function() { onClose(); setPage("Apply"); }}
-              style={{ padding: "12px 36px", borderRadius: 8, border: "none", background: S.emerald, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>
-              Start My Application
-            </button>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
+              <button onClick={function() { onClose(); setPage("Apply"); }}
+                style={{ width: "100%", padding: "14px 36px", borderRadius: 8, border: "none", background: S.emerald, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>
+                Start My Application
+              </button>
+              <button onClick={onClose}
+                style={{ width: "100%", padding: "12px 36px", borderRadius: 8, border: "2px solid " + S.border, background: "#fff", color: S.navy, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: S.body }}>
+                Continue Browsing
+              </button>
+            </div>
           )}
         </div>
       </div>

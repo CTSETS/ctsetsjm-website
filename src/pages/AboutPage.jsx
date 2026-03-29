@@ -1,6 +1,6 @@
 import S from "../constants/styles";
 import { FOUNDER_PHOTO } from "../constants/config";
-import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture, TalkToGraduate } from "../components/shared/CoreComponents";
+import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture } from "../components/shared/CoreComponents";
 import { PartnerLogos } from "../components/shared/DisplayComponents";
 import { TrustSection } from "../components/trust/TrustElements";
 
@@ -33,26 +33,21 @@ export default function AboutPage({ setPage }) {
         <Reveal>
           <div style={{ background: "#fff", borderRadius: 16, padding: "32px clamp(20px,4vw,36px)", border: "1px solid " + S.border, marginBottom: 40 }}>
             <h3 style={{ fontFamily: S.heading, fontSize: 22, color: S.navy, fontWeight: 700, textAlign: "center", marginBottom: 24 }}>What CTS ETS Stands For</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }} className="resp-grid-3">
-              <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 12 }}>CTS — What It Stands For</div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 20 }} className="resp-grid-3">
-              {[{ word: "Called", meaning: "We believe this work is a calling, not just a career.", color: S.violet },{ word: "To", meaning: "Every decision is directed toward our students' success.", color: S.teal },{ word: "Serve", meaning: "Service to our students comes before everything else.", color: S.coral }].map(v => (
-                <div key={v.word} style={{ padding: "18px 14px", borderRadius: 12, background: v.color + "08", border: "1px solid " + v.color + "25", textAlign: "center" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }} className="resp-grid-3">
+              {[
+                { word: "Called", meaning: "We believe this work is a calling, not just a career.", color: S.violet },
+                { word: "To", meaning: "Every decision is directed toward our students' success.", color: S.teal },
+                { word: "Serve", meaning: "Service to our students comes before everything else.", color: S.coral },
+                { word: "Excellence", meaning: "NCTVET alignment means our standards are nationally recognised.", color: S.emerald },
+                { word: "Through", meaning: "We deliver results through technology, innovation, and care.", color: S.amber },
+                { word: "Service", meaning: "Everything we build serves one purpose — your success.", color: S.sky },
+              ].map(function(v) { return (
+                <div key={v.word + v.color} style={{ padding: "20px 16px", borderRadius: 12, background: v.color + "08", border: "1px solid " + v.color + "25", borderTop: "3px solid " + v.color, textAlign: "center" }}>
                   <div style={{ fontFamily: S.heading, fontSize: 22, fontWeight: 800, color: v.color, marginBottom: 6 }}>{v.word}</div>
                   <p style={{ fontFamily: S.body, fontSize: 12, color: S.gray, lineHeight: 1.5, margin: 0 }}>{v.meaning}</p>
                 </div>
-              ))}
-              </div>
-              <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 12 }}>Our Tagline</div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }} className="resp-grid-3">
-              {[{ word: "Excellence", meaning: "NCTVET alignment means our standards are nationally recognised.", color: S.emerald },{ word: "Through", meaning: "We deliver results through technology, innovation, and care.", color: S.amber },{ word: "Service", meaning: "Everything we build serves one purpose — your success.", color: S.sky }].map(v => (
-                <div key={v.word} style={{ padding: "20px", borderRadius: 12, border: "1px solid " + v.color + "20", borderTop: "3px solid " + v.color }}>
-                  <div style={{ fontFamily: S.heading, fontSize: 17, fontWeight: 700, color: S.navy, marginBottom: 6 }}>{v.word}</div>
-                  <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.6, margin: 0 }}>{v.meaning}</p>
-                </div>
-              ))}
-              </div>
-              </div>
+              ); })}
+            </div>
           </div>
         </Reveal>
 
@@ -70,7 +65,6 @@ export default function AboutPage({ setPage }) {
         </Reveal>
 
         <PartnerLogos />
-        <TalkToGraduate setPage={setPage} />
         <TrustSection />
 
         <div style={{ display: "flex", justifyContent: "center", gap: 14, marginTop: 32, flexWrap: "wrap" }}>

@@ -1,7 +1,7 @@
 // ─── WHY CHOOSE CTS ETS ─────────────────────────────────────────────
 import S from "../constants/styles";
 import { TESTIMONIALS } from "../constants/content";
-import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture, SocialProofBar, TestimonialCard, TalkToGraduate } from "../components/shared/CoreComponents";
+import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture, SocialProofBar, TestimonialCard } from "../components/shared/CoreComponents";
 import { PartnerLogos } from "../components/shared/DisplayComponents";
 
 const FEATURES = [
@@ -177,7 +177,6 @@ export default function WhyChoosePage({ setPage }) {
           </div>
         </Reveal>
 
-        <TalkToGraduate setPage={setPage} />
 
         {/* CTA */}
         <Reveal delay={0.2}>

@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import S from "../constants/styles";
 import { BOOKING_URLS } from "../constants/config";
 import { FAQS } from "../constants/content";
-import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture, TalkToGraduate } from "../components/shared/CoreComponents";
+import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture } from "../components/shared/CoreComponents";
 import { CaptchaChallenge, HoneypotField } from "../components/shared/DisplayComponents";
 import { submitToAppsScript } from "../utils/submission";
 import { trackContactFormSent, trackBookingClicked } from "../utils/analytics";
@@ -94,7 +94,6 @@ export default function ContactPage({ setPage }) {
           ))}
         </div>
 
-        <TalkToGraduate setPage={setPage} />
         <TrustSection />
         <PageScripture page="contact" />
       </Container>
