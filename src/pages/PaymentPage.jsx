@@ -1,13 +1,10 @@
 // ─── PAYMENT / FINANCE PAGE ─────────────────────────────────────────
-// Strict ID lookup → auto-populate → founding member detection → pricing → pay
+// Strict ID lookup → auto-populate → pricing → pay
 // Backend endpoint: ?action=lookupStudent&ref=CTSETS-2026-03-XXXXX
-//   Returns: { found, ref, name, email, programme, level, status, amountDue, paymentPlan, foundingCount }
-// Backend endpoint: ?action=getFoundingCount&programme=X&level=Y
 //   Returns: { count: N }
 import { useState, useRef, useEffect } from "react";
 import S from "../constants/styles";
 import { APPS_SCRIPT_URL, BANK_DETAILS, BOOKING_URLS, REG_FEE, USD_RATE, WIPAY_CONFIG } from "../constants/config";
-import { FOUNDING_TUITION_DISCOUNT, FOUNDING_SPOTS, FOUNDING_LEVEL3_PLUS } from "../constants/programmes";
 import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture } from "../components/shared/CoreComponents";
 import { PaymentSecurityNotice, HoneypotField } from "../components/shared/DisplayComponents";
 import { PaymentMethodSelector, PaymentSetupNotice, isOnlinePaymentAvailable } from "../components/apply/SmartPayment";
@@ -16,11 +13,11 @@ import { sendPaymentConfirmation } from "../utils/email";
 
 // ── Tuition by level ──
 var TUITION_MAP = {
-  "Job / Professional Certificates": 10000,
-  "Level 2 \u2014 Vocational Certificate": 20000,
-  "Level 3 \u2014 Diploma": 30000,
-  "Level 4 \u2014 Associate Equivalent": 60000,
-  "Level 5 \u2014 Bachelor's Equivalent": 100000,
+  "Job / Professional Certificates": 5000,
+  "Level 2 \u2014 Vocational Certificate": 15000,
+  "Level 3 \u2014 Diploma": 25000,
+  "Level 4 \u2014 Associate Equivalent": 35000,
+  "Level 5 \u2014 Bachelor's Equivalent": 45000,
 };
 
 function getTuition(level) {
@@ -29,63 +26,61 @@ function getTuition(level) {
   }
   // Fallback: try matching level number
   if (level) {
-    if (level.indexOf("5") >= 0) return 100000;
-    if (level.indexOf("4") >= 0) return 60000;
-    if (level.indexOf("3") >= 0) return 30000;
-    if (level.indexOf("2") >= 0) return 20000;
+    if (level.indexOf("5") >= 0) return 45000;
+    if (level.indexOf("4") >= 0) return 35000;
+    if (level.indexOf("3") >= 0) return 25000;
+    if (level.indexOf("2") >= 0) return 15000;
   }
-  return 10000;
+  return 5000;
 }
 
 function isLevel3Plus(level) {
   if (!level) return false;
-  for (var i = 0; i < FOUNDING_LEVEL3_PLUS.length; i++) {
-    if (level === FOUNDING_LEVEL3_PLUS[i] || level.toLowerCase().indexOf(FOUNDING_LEVEL3_PLUS[i].toLowerCase().split(" ")[0]) >= 0) return true;
+  var l3levels = ["Level 3", "Level 4", "Level 5"];
+  for (var i = 0; i < l3levels.length; i++) {
+    if (level.indexOf(l3levels[i]) >= 0) return true;
   }
   return false;
 }
 
 // ── Pricing calculator ──
-function calcPricing(level, isFoundingMember) {
+function calcPricing(level) {
   var tuition = getTuition(level);
   var l3plus = isLevel3Plus(level);
-  var regFee = isFoundingMember ? 0 : REG_FEE;
-  var tuitionDiscount = (isFoundingMember && l3plus) ? FOUNDING_TUITION_DISCOUNT : 0;
-  var effectiveTuition = tuition - tuitionDiscount;
-  var total = regFee + effectiveTuition;
+  var regFee = REG_FEE;
+  var total = regFee + tuition;
 
   var plans = [];
   // Gold — always available
   plans.push({ name: "Gold", label: "Pay in Full", surcharge: 0, total: total, payments: [{ label: "Full Payment", amount: total }] });
 
-  // Silver — L3+ only
+  // Silver — L3+ only, +10% on tuition
   if (l3plus) {
-    var silverTotal = Math.round(total * 1.10);
-    var silver1 = Math.round(silverTotal * 0.6);
+    var silverTuition = Math.round(tuition * 1.10);
+    var silverTotal = regFee + silverTuition;
+    var silver1 = regFee + Math.round(silverTuition * 0.6);
     var silver2 = silverTotal - silver1;
     plans.push({ name: "Silver", label: "60/40 Split", surcharge: 10, total: silverTotal, payments: [{ label: "First Payment (60%)", amount: silver1 }, { label: "Second Payment (40%)", amount: silver2 }] });
   }
 
-  // Bronze — L3+ only
+  // Bronze — L3+ only, rounded monthly amounts
   if (l3plus) {
-    var bronzeTotal = Math.round(total * 1.15);
-    var bronze1 = Math.round(bronzeTotal * 0.3);
-    var remaining = bronzeTotal - bronze1;
     var months = level && level.indexOf("5") >= 0 ? 8 : level && level.indexOf("4") >= 0 ? 7 : 6;
-    var monthly = Math.round(remaining / months);
-    var bronzePayments = [{ label: "Deposit (30%)", amount: bronze1 }];
+    var roundedMonthly = level && level.indexOf("5") >= 0 ? 4500 : level && level.indexOf("4") >= 0 ? 4000 : 3500;
+    var monthlyTotal = roundedMonthly * months;
+    var bronzeDeposit = level && level.indexOf("5") >= 0 ? 15500 : level && level.indexOf("4") >= 0 ? 12000 : 8500;
+    var bronzeTotal = regFee + bronzeDeposit + monthlyTotal;
+    var bronzePayments = [{ label: "Deposit", amount: bronzeDeposit }];
     for (var m = 1; m <= months; m++) {
-      bronzePayments.push({ label: "Month " + m, amount: m === months ? remaining - (monthly * (months - 1)) : monthly });
+      bronzePayments.push({ label: "Month " + m, amount: roundedMonthly });
     }
-    plans.push({ name: "Bronze", label: "30% + Monthly", surcharge: 15, total: bronzeTotal, payments: bronzePayments });
+    plans.push({ name: "Bronze", label: "30% Deposit + Monthly", surcharge: 15, total: bronzeTotal, payments: bronzePayments });
   }
 
   return {
     tuition: tuition,
     regFee: regFee,
-    tuitionDiscount: tuitionDiscount,
-    effectiveTuition: effectiveTuition,
-    totalSavings: (isFoundingMember ? REG_FEE : 0) + tuitionDiscount,
+    total: total,
     plans: plans,
   };
 }
@@ -97,10 +92,6 @@ export default function PaymentPage({ setPage }) {
   var _s3 = useState(null); var student = _s3[0]; var setStudent = _s3[1];
   var _s4 = useState(""); var lookupMsg = _s4[0]; var setLookupMsg = _s4[1];
   var _s5 = useState(false); var disputeSent = _s5[0]; var setDisputeSent = _s5[1];
-
-  // ── Founding ──
-  var _s6 = useState(null); var foundingCount = _s6[0]; var setFoundingCount = _s6[1];
-  var _s7 = useState(false); var isFoundingMember = _s7[0]; var setIsFoundingMember = _s7[1];
 
   // ── Pricing ──
   var _s8 = useState(null); var pricing = _s8[0]; var setPricing = _s8[1];
@@ -151,25 +142,10 @@ export default function PaymentPage({ setPage }) {
     }
   }, []);
 
-  // ── Fetch founding count when student found ──
+  // ── Calculate pricing when student found ──
   useEffect(function() {
-    if (!student || !student.programme) return;
-    setFoundingCount(null);
-    fetch(APPS_SCRIPT_URL + "?action=getFoundingCount&programme=" + encodeURIComponent(student.programme) + "&level=" + encodeURIComponent(student.level || ""))
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        var count = data.count || 0;
-        setFoundingCount(count);
-        var isFounding = count < FOUNDING_SPOTS;
-        setIsFoundingMember(isFounding);
-        setPricing(calcPricing(student.level, isFounding));
-      })
-      .catch(function() {
-        // If count endpoint fails, assume standard pricing
-        setFoundingCount(null);
-        setIsFoundingMember(false);
-        setPricing(calcPricing(student.level, false));
-      });
+    if (!student || !student.level) return;
+    setPricing(calcPricing(student.level));
   }, [student]);
 
   var inputStyle = { width: "100%", padding: "12px 16px", borderRadius: 8, border: "1.5px solid rgba(1,30,64,0.12)", fontSize: 14, fontFamily: "'DM Sans', sans-serif", color: "#1A202C", outline: "none", background: "#fff", boxSizing: "border-box" };
@@ -253,8 +229,8 @@ export default function PaymentPage({ setPage }) {
           email: student.email,
           programme: student.programme || "",
           level: student.level || "",
-          isFoundingMember: isFoundingMember,
-          foundingMemberNumber: isFoundingMember && foundingCount !== null ? foundingCount + 1 : null,
+          
+          
           paymentPlan: selectedPlan,
           feeType: feeLabel,
           payingRegistration: payingReg,
@@ -270,7 +246,7 @@ export default function PaymentPage({ setPage }) {
       });
     } catch (e) {
       try {
-        await fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({ form_type: "Payment Evidence", ref: student.ref, studentName: student.name, email: student.email, amountPaid: payAmount, feeType: feeLabel, paymentPlan: selectedPlan, isFoundingMember: isFoundingMember, timestamp: new Date().toISOString() }), mode: "no-cors" });
+        await fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({ form_type: "Payment Evidence", ref: student.ref, studentName: student.name, email: student.email, amountPaid: payAmount, feeType: feeLabel, paymentPlan: selectedPlan,  timestamp: new Date().toISOString() }), mode: "no-cors" });
       } catch (e2) { /* silent */ }
     }
     setSubmitting(false);
@@ -280,8 +256,8 @@ export default function PaymentPage({ setPage }) {
         name: student.name, email: student.email, ref: student.ref,
         programme: student.programme, level: student.level,
         amount: payAmount, feeType: feeLabel, paymentPlan: selectedPlan,
-        isFoundingMember: isFoundingMember,
-        foundingNumber: isFoundingMember && foundingCount !== null ? foundingCount + 1 : "",
+        
+        
       });
     }
     setSubmitted(true);
@@ -302,7 +278,7 @@ export default function PaymentPage({ setPage }) {
           email: student.email,
           programme: student.programme || "",
           level: student.level || "",
-          isFoundingMember: isFoundingMember,
+          
           paymentPlan: selectedPlan,
           feeType: feeLabel,
           payingRegistration: payingReg,
@@ -420,11 +396,6 @@ export default function PaymentPage({ setPage }) {
             <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center" }}>
               <div style={{ width: 72, height: 72, borderRadius: "50%", background: S.emeraldLight, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, margin: "0 auto 20px", border: "3px solid " + S.emerald }}>{"\u2713"}</div>
               <h2 style={{ fontFamily: S.heading, fontSize: 28, color: S.navy, fontWeight: 700, marginBottom: 12 }}>Payment Evidence Submitted</h2>
-              {isFoundingMember && (
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 20px", borderRadius: 20, background: "linear-gradient(135deg, " + S.gold + " 0%, " + S.amber + " 100%)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: S.body, marginBottom: 16 }}>
-                  {"\u2B50 Founding Member #" + (foundingCount !== null ? foundingCount + 1 : "") + " of " + FOUNDING_SPOTS}
-                </div>
-              )}
               <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, lineHeight: 1.7, marginBottom: 6 }}>{"Thank you, " + (student ? student.name : "") + "."}</p>
               <div style={{ background: "#fff", borderRadius: 12, padding: "20px 24px", border: "1px solid " + S.border, textAlign: "left", marginBottom: 24 }}>
                 {[
@@ -487,7 +458,7 @@ export default function PaymentPage({ setPage }) {
                     {lookupState === "loading" ? "Searching..." : "Look Up"}
                   </button>
                 ) : (
-                  <button onClick={function() { setStudent(null); setLookupState("idle"); setRefInput(""); setReceipt(null); setPricing(null); setFoundingCount(null); }}
+                  <button onClick={function() { setStudent(null); setLookupState("idle"); setRefInput(""); setReceipt(null); setPricing(null); }}
                     style={{ padding: "14px 20px", borderRadius: 8, background: S.lightBg, color: S.gray, border: "1px solid " + S.border, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: S.body, whiteSpace: "nowrap" }}>Change</button>
                 )}
               </div>
@@ -520,40 +491,7 @@ export default function PaymentPage({ setPage }) {
               {/* ── STUDENT FOUND CARD ── */}
               {lookupState === "found" && student && (
                 <div style={{ marginTop: 20 }}>
-                  {/* Founding member badge */}
-                  {isFoundingMember && foundingCount !== null && (
-                    <div style={{ marginBottom: 16, padding: "16px 20px", borderRadius: 12, background: "linear-gradient(135deg, #011E40 0%, #0A2342 100%)", border: "2px solid " + S.gold, position: "relative", overflow: "hidden" }}>
-                      <div style={{ position: "absolute", top: -20, right: -20, width: 80, height: 80, borderRadius: "50%", background: S.gold + "10" }} />
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-                        <div>
-                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                            <span style={{ fontSize: 22 }}>{"\u2B50"}</span>
-                            <span style={{ fontSize: 14, fontWeight: 800, color: S.gold, fontFamily: S.heading, letterSpacing: 1 }}>FOUNDING MEMBER</span>
-                          </div>
-                          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", fontFamily: S.body }}>Registration fee waived{isLevel3Plus(student.level) ? " + J$5,000 tuition discount" : ""}</div>
-                        </div>
-                        <div style={{ textAlign: "center" }}>
-                          <div style={{ fontSize: 32, fontWeight: 800, color: S.gold, fontFamily: S.heading }}>{"#" + (foundingCount + 1)}</div>
-                          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", fontFamily: S.body }}>{"of " + FOUNDING_SPOTS + " spots"}</div>
-                        </div>
-                      </div>
-                      <div style={{ marginTop: 10 }}>
-                        <div style={{ display: "flex", gap: 2 }}>
-                          {Array.from({ length: FOUNDING_SPOTS }).map(function(_, i) {
-                            return <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: i <= foundingCount ? S.gold : "rgba(255,255,255,0.1)" }} />;
-                          })}
-                        </div>
-                        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", fontFamily: S.body, marginTop: 4, textAlign: "right" }}>{foundingCount + " of " + FOUNDING_SPOTS + " spots taken in " + (student.programme || "this programme")}</div>
-                      </div>
-                    </div>
-                  )}
 
-                  {/* Standard (non-founding) notice */}
-                  {!isFoundingMember && foundingCount !== null && (
-                    <div style={{ marginBottom: 16, padding: "12px 18px", borderRadius: 10, background: S.lightBg, border: "1px solid " + S.border, fontSize: 12, color: S.gray, fontFamily: S.body }}>
-                      {"All " + FOUNDING_SPOTS + " founding spots for " + (student.programme || "this programme") + " have been filled. Standard pricing applies."}
-                    </div>
-                  )}
 
                   {/* Student details */}
                   <div style={{ padding: "20px 24px", borderRadius: 12, background: S.emeraldLight + "60", border: "2px solid " + S.emerald + "40" }}>
@@ -590,30 +528,15 @@ export default function PaymentPage({ setPage }) {
                     <span style={{ color: S.gray }}>Tuition</span>
                     <span style={{ color: S.navy, fontWeight: 600 }}>{fmt(pricing.tuition)}</span>
                   </div>
-                  {pricing.tuitionDiscount > 0 && (
-                    <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", fontSize: 13, fontFamily: S.body }}>
-                      <span style={{ color: S.emerald }}>{"\u2B50 Founding Tuition Discount"}</span>
-                      <span style={{ color: S.emerald, fontWeight: 700 }}>{"-" + fmt(pricing.tuitionDiscount)}</span>
-                    </div>
-                  )}
                   <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", fontSize: 13, fontFamily: S.body }}>
-                    <span style={{ color: S.gray }}>Registration Fee</span>
-                    {pricing.regFee === 0 ? (
-                      <span style={{ color: S.emerald, fontWeight: 700 }}><s style={{ color: S.gray, fontWeight: 400, marginRight: 6 }}>{fmt(REG_FEE)}</s>{"\u2B50 WAIVED"}</span>
-                    ) : (
-                      <span style={{ color: S.navy, fontWeight: 600 }}>{fmt(pricing.regFee)}</span>
-                    )}
+                    <span style={{ color: S.gray }}>Registration Fee (non-refundable)</span>
+                    <span style={{ color: S.navy, fontWeight: 600 }}>{fmt(pricing.regFee)}</span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0 4px", borderTop: "2px solid " + S.border, fontSize: 15, fontFamily: S.heading, marginTop: 8 }}>
                     <span style={{ color: S.navy, fontWeight: 700 }}>Total (Gold)</span>
-                    <span style={{ color: S.navy, fontWeight: 800 }}>{fmt(pricing.plans[0].total)}</span>
+                    <span style={{ color: S.navy, fontWeight: 800 }}>{fmt(pricing.total)}</span>
                   </div>
-                  <div style={{ fontSize: 11, color: S.gray, fontFamily: S.body, textAlign: "right" }}>{"US$" + Math.round(pricing.plans[0].total / USD_RATE)}</div>
-                  {pricing.totalSavings > 0 && (
-                    <div style={{ marginTop: 10, padding: "8px 14px", borderRadius: 8, background: S.emeraldLight, border: "1px solid " + S.emerald + "30", textAlign: "center" }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: S.emeraldDark, fontFamily: S.body }}>{"\u2B50 You save " + fmt(pricing.totalSavings) + " as a Founding Member!"}</span>
-                    </div>
-                  )}
+                  <div style={{ fontSize: 11, color: S.gray, fontFamily: S.body, textAlign: "right" }}>{"US$" + Math.round(pricing.total / USD_RATE)}</div>
                 </div>
 
                 {/* Plan selection */}
@@ -681,7 +604,6 @@ export default function PaymentPage({ setPage }) {
                       ) : (
                         <div>
                           <div style={{ fontSize: 14, fontWeight: 700, color: S.emerald, fontFamily: S.body }}>{"\u2B50 WAIVED"}</div>
-                          <div style={{ fontSize: 11, color: S.gray, fontFamily: S.body }}>Founding member benefit</div>
                         </div>
                       )}
                       <div style={{ fontSize: 10, color: S.gray, fontFamily: S.body, marginTop: 4 }}>One-time fee — paid once at registration</div>

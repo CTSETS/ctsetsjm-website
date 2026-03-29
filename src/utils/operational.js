@@ -41,7 +41,7 @@ to Bachelor's Equivalent, all 100% online. Visit
 ctsetsjm.com/programmes for the full list with fees.
 Would you like help choosing the right one?"
 
-/fees → "Tuition starts from J$10,000 (US$65). Payment plans
+/fees → "Total starts from J$10,000 (US$65). Payment plans
 available for Level 3+. Use our calculator at
 ctsetsjm.com/#fees-&-calculator. Questions? Just ask!"
 
@@ -60,9 +60,7 @@ account), or upload receipt at ctsetsjm.com/#apply →
 Payment Centre. Contact finance@ctsetsjm.com for
 payment instructions."
 
-/founding → "Founding Cohort: Registration free + $5,000 off
 tuition (Level 3+) for the first 15 students. Plus 5%
-referral bonus! Details: ctsetsjm.com/#founding-cohort"
 
 STEP 4: SET UP LABELS (ORGANISE CHATS)
 ────────────────────────────────────────

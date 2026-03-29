@@ -13,7 +13,6 @@ import { CaptchaChallenge, HoneypotField } from "../components/shared/DisplayCom
 import { validateEmail, validatePhone, validateTRN, suggestEmail, MAX_FILE_SIZE, validateFileSize } from "../utils/validation";
 import { submitToAppsScript, generateRef } from "../utils/submission";
 import { fmt } from "../utils/formatting";
-import { validateReferralCode, registerReferral } from "../utils/referral";
 import { sendApplicationConfirmation, registerDripSequence } from "../utils/email";
 import HeartFormBuilder from "../components/apply/HeartFormBuilder";
 
@@ -119,7 +118,7 @@ function PrayerModal({ prayer, onClose }) {
 export default function ApplyPage({ setPage }) {
   // ── State ──
   const [applicantType, setApplicantType] = useState("");
-  const [form, setForm] = useState({ firstName: "", middleName: "", lastName: "", email: "", phone: "", gender: "", dob: "", nationality: "", maritalStatus: "", parish: "", country: "", address: "", trn: "", nis: "", highestQualification: "", schoolLastAttended: "", yearCompleted: "", employmentStatus: "", employer: "", jobTitle: "", yearsExperience: "", industry: "", emergencyName: "", emergencyRelationship: "", emergencyPhone: "", level: "", programme: "", referralCode: "", hearAbout: "", message: "" });
+  const [form, setForm] = useState({ firstName: "", middleName: "", lastName: "", email: "", phone: "", gender: "", dob: "", nationality: "", maritalStatus: "", parish: "", country: "", address: "", trn: "", nis: "", highestQualification: "", schoolLastAttended: "", yearCompleted: "", employmentStatus: "", employer: "", jobTitle: "", yearsExperience: "", industry: "", emergencyName: "", emergencyRelationship: "", emergencyPhone: "", level: "", programme: "", hearAbout: "", message: "" });
   const [files, setFiles] = useState({});
   const [errors, setErrors] = useState({});
   const [emailSuggestion, setEmailSuggestion] = useState(null);
@@ -128,8 +127,6 @@ export default function ApplyPage({ setPage }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [prayer, setPrayer] = useState(null);
-  const [referralValid, setReferralValid] = useState(null);
-  const [referralChecking, setReferralChecking] = useState(false);
   const [heartFormDone, setHeartFormDone] = useState(false);
   // Application number — generated once when the page loads, stays the same throughout
   const appRef = useRef(generateRef());
@@ -177,14 +174,6 @@ export default function ApplyPage({ setPage }) {
   // Reset programme when level changes
   useEffect(() => { set("programme", ""); }, [form.level]);
 
-  // Validate referral code
-  const checkReferral = async () => {
-    if (!form.referralCode || form.referralCode.length < 8) { setReferralValid(null); return; }
-    setReferralChecking(true);
-    const result = await validateReferralCode(form.referralCode);
-    setReferralValid(result);
-    setReferralChecking(false);
-  };
 
   // ── Submit ──
   const handleSubmit = async () => {
@@ -250,7 +239,6 @@ export default function ApplyPage({ setPage }) {
       emergencyPhone: form.emergencyPhone || "",
       level: form.level,
       programme: form.programme,
-      referralCode: form.referralCode || "",
       hearAbout: form.hearAbout || "",
       message: form.message || "",
       timestamp: new Date().toISOString(),
@@ -262,11 +250,6 @@ export default function ApplyPage({ setPage }) {
       setErrors({ submit: `An application with this email already exists (Ref: ${result.existingRef || "—"}). Contact info@ctsetsjm.com if this is unexpected.` });
       setSubmitting(false);
       return;
-    }
-
-    // Register referral if valid
-    if (referralValid?.valid && form.referralCode) {
-      registerReferral({ referralCode: form.referralCode, referredName: fullName, referredEmail: form.email, referredRef: ref, referredProgramme: form.programme });
     }
 
     // Send confirmation email + register drip
@@ -594,8 +577,6 @@ export default function ApplyPage({ setPage }) {
                         <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontFamily: S.body }}>+ {fmt(REG_FEE)} registration</div>
                       </div>
                     </div>
-                    <button onClick={() => setPage("Founding Cohort")} style={{ marginTop: 14, padding: "8px 16px", borderRadius: 6, background: S.coral + "20", border: "1px solid " + S.coral + "40", color: S.coral, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>
-                      🎓 Founding Cohort? Save up to $10K →
                     </button>
                   </div>
                 </Reveal>
@@ -628,18 +609,6 @@ export default function ApplyPage({ setPage }) {
           {/* REVIEW & SUBMIT */}
           {/* ════════════════════════════════════════════════ */}
           <SectionBlock num={secN.review} title="Review & Submit" locked={!s4Done} complete={false}>
-            {/* Referral Code */}
-            <Field label="Referral Code" hint="If a CTS ETS student referred you, enter their code for a 5% discount.">
-              <div style={{ display: "flex", gap: 8 }}>
-                <input style={{ ...inputStyle, flex: 1 }} value={form.referralCode} onChange={e => set("referralCode", e.target.value.toUpperCase())} placeholder="CTSETS-REF-XXXXX" />
-                <button onClick={checkReferral} disabled={referralChecking} style={{ padding: "12px 20px", borderRadius: 8, background: S.teal, color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: S.body, opacity: referralChecking ? 0.6 : 1 }}>
-                  {referralChecking ? "..." : "Verify"}
-                </button>
-              </div>
-              {referralValid?.valid && <div style={{ fontSize: 12, color: S.emerald, fontFamily: S.body, marginTop: 6, fontWeight: 600 }}>✓ Valid referral from {referralValid.referrerName} — 5% discount will be applied!</div>}
-              {referralValid && !referralValid.valid && form.referralCode.length >= 8 && <div style={{ fontSize: 12, color: S.error, fontFamily: S.body, marginTop: 6 }}>Referral code not found. Check and try again.</div>}
-            </Field>
-
             {/* How did you hear about us */}
             <Field label="How did you hear about us?">
               <select style={selectStyle} value={form.hearAbout} onChange={e => set("hearAbout", e.target.value)}>
@@ -650,7 +619,7 @@ export default function ApplyPage({ setPage }) {
 
             {/* Additional message */}
             <Field label="Anything else you'd like us to know?" hint="Optional — special requests, questions, etc.">
-              <textarea style={{ ...inputStyle, height: 80, resize: "vertical" }} value={form.message} onChange={e => set("message", e.target.value)} placeholder="e.g. I'm interested in the Founding Cohort pricing..." />
+              <textarea style={{ ...inputStyle, height: 80, resize: "vertical" }} value={form.message} onChange={e => set("message", e.target.value)} placeholder="e.g. I have a question about payment plans..." />
             </Field>
 
             {/* Captcha */}

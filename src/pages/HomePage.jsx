@@ -1,10 +1,10 @@
 import { useState, useRef } from "react";
 import S from "../constants/styles";
-import { NAV_LOGO, HERO_LOGO, PORTAL_URL, APPS_SCRIPT_URL } from "../constants/config";
+import { NAV_LOGO, PORTAL_URL, APPS_SCRIPT_URL } from "../constants/config";
 import { TESTIMONIALS, SOCIAL_PROOF, ANNOUNCEMENTS } from "../constants/content";
 import { CAREER_OUTCOMES } from "../constants/programmes";
 import { Container, Btn, Reveal, PageScripture, SocialProofBar, TalkToGraduate, TestimonialCard } from "../components/shared/CoreComponents";
-import { AnimatedStat, CountdownTimer, PartnerLogos, HoneypotField } from "../components/shared/DisplayComponents";
+import { PartnerLogos, HoneypotField } from "../components/shared/DisplayComponents";
 
 function InterestCapture() {
   const [email, setEmail] = useState(""); const [sent, setSent] = useState(false); const [hp, setHp] = useState(""); const start = useRef(Date.now());
@@ -16,38 +16,118 @@ function InterestCapture() {
 export default function HomePage({ setPage }) {
   return (
     <div>
-      {/* ══ HERO — Student-facing copy, no internal language ══ */}
-      <section style={{ background: S.navy, color: "#fff", position: "relative", overflow: "hidden", minHeight: "88vh", display: "flex", alignItems: "center" }}>
+      {/* ══ HERO — Digital School, 100% Online, Self-Paced ══ */}
+      <section style={{ background: S.navy, color: "#fff", position: "relative", overflow: "hidden", minHeight: "90vh", display: "flex", alignItems: "center" }}>
         <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at 70% 50%, ${S.coral}12 0%, transparent 65%)` }} />
         <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at 20% 80%, ${S.teal}10 0%, transparent 55%)` }} />
-        <Container style={{ position: "relative", zIndex: 2, display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(32px,5vw,80px)", alignItems: "center", padding: "clamp(40px,6vw,80px) clamp(16px,3vw,48px)" }} className="resp-grid-2">
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 32, flexWrap: "wrap" }}>
-              <img src={NAV_LOGO} alt="CTS ETS" style={{ width: 88, height: 98, objectFit: "contain" }} width={88} height={98} />
-              <div style={{ flex: 1, minWidth: 200 }}>
-                <div style={{ fontFamily: S.heading, fontSize: "clamp(22px,3vw,32px)", fontWeight: 700, lineHeight: 1.2 }}>CTS Empowerment &amp; Training Solutions</div>
-                <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, fontFamily: S.body, marginTop: 6, textTransform: "uppercase" }}>Called To Serve — Excellence Through Service</div>
+        <Container style={{ position: "relative", zIndex: 2, padding: "clamp(40px,6vw,80px) clamp(16px,3vw,48px)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "clamp(32px,5vw,80px)", alignItems: "center" }} className="resp-grid-2">
+            <div>
+              {/* Logo + name */}
+              <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 24, flexWrap: "wrap" }}>
+                <img src={NAV_LOGO} alt="CTS ETS" style={{ width: 88, height: 98, objectFit: "contain" }} width={88} height={98} />
+                <div style={{ flex: 1, minWidth: 200 }}>
+                  <div style={{ fontFamily: S.heading, fontSize: "clamp(22px,3vw,32px)", fontWeight: 700, lineHeight: 1.2 }}>CTS Empowerment &amp; Training Solutions</div>
+                  <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, fontFamily: S.body, marginTop: 6, textTransform: "uppercase" }}>Called To Serve — Excellence Through Service</div>
+                </div>
               </div>
-              {/* Founding CTA card */}
-              <div onClick={() => setPage("Founding Cohort")} style={{ cursor: "pointer", padding: "24px 32px", borderRadius: 18, background: `linear-gradient(135deg, ${S.coral}30 0%, ${S.gold}18 100%)`, border: "3px solid " + S.coral, textAlign: "center", minWidth: 240, boxShadow: "0 8px 32px " + S.coral + "30" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 10 }}><div style={{ width: 12, height: 12, borderRadius: "50%", background: S.emerald, boxShadow: "0 0 10px " + S.emerald, animation: "pulse 2s infinite" }} /><span style={{ fontSize: 13, fontWeight: 800, color: S.coral, fontFamily: S.body, letterSpacing: 2, textTransform: "uppercase" }}>Founding Cohort</span></div>
-                <div style={{ fontFamily: S.heading, fontSize: "clamp(32px,4vw,44px)", fontWeight: 800, lineHeight: 1.15, marginBottom: 8 }}>Save <span style={{ color: S.coral }}>$10K</span></div>
-                <div style={{ fontFamily: S.body, fontSize: 14, color: "rgba(255,255,255,0.8)", lineHeight: 1.5, marginBottom: 10 }}>Registration free for the first 15 students.<br />Level 3+ get $5,000 off tuition.</div>
-                <div style={{ display: "inline-flex", fontSize: 14, color: S.coral, fontFamily: S.body, fontWeight: 800, padding: "8px 20px", borderRadius: 24, border: "2px solid " + S.coral }}>View Founding Prices →</div>
+
+              {/* Primary badge — this is what they see FIRST */}
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: S.emerald + "25", border: "2px solid " + S.emerald + "60", borderRadius: 30, padding: "10px 24px", marginBottom: 22 }}>
+                <div style={{ width: 10, height: 10, borderRadius: "50%", background: S.emerald, boxShadow: "0 0 12px " + S.emerald, animation: "pulse 2s infinite" }} />
+                <span style={{ fontSize: 13, color: S.emerald, fontFamily: S.body, fontWeight: 800, letterSpacing: 1 }}>100% ONLINE &bull; SELF-PACED &bull; NO CLASS DAYS</span>
+              </div>
+
+              {/* Headline */}
+              <h1 style={{ fontFamily: S.heading, fontSize: "clamp(28px,4.5vw,50px)", fontWeight: 800, lineHeight: 1.15, marginBottom: 18 }}>
+                Jamaica's <span style={{ color: S.coral }}>Digital</span><br />Vocational School.
+              </h1>
+
+              {/* What self-paced really means */}
+              <p style={{ fontFamily: S.body, fontSize: "clamp(14px,1.5vw,17px)", color: "rgba(255,255,255,0.9)", lineHeight: 1.8, marginBottom: 10, maxWidth: 500 }}>
+                Everything happens online. There are no classroom days, no fixed timetable, and no need to travel. You log in from your phone or laptop, study at whatever time suits you — morning, night, weekend — and move through the material at your own speed.
+              </p>
+              <p style={{ fontFamily: S.body, fontSize: "clamp(13px,1.3vw,15px)", color: "rgba(255,255,255,0.6)", lineHeight: 1.7, marginBottom: 28, maxWidth: 480 }}>
+                When you are finished, we arrange your NCTVET assessment through HEART/NSTA — at no additional cost. You receive the same nationally recognised NVQ-J qualification.
+              </p>
+
+              {/* CTAs */}
+              <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+                <Btn primary onClick={() => setPage("Apply")} style={{ fontSize: 15, padding: "16px 36px", color: "#fff", background: S.coral }} ariaLabel="Apply now">Apply Now — Start Anytime</Btn>
+                <Btn onClick={() => setPage("Programmes")} style={{ border: "2px solid " + S.teal, color: S.teal, fontSize: 14 }} ariaLabel="View programmes">View 25 Programmes</Btn>
               </div>
             </div>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: S.teal + "20", border: "1px solid " + S.teal + "50", borderRadius: 30, padding: "8px 20px", marginBottom: 20 }}><div style={{ width: 8, height: 8, borderRadius: "50%", background: S.teal, animation: "pulse 2s infinite" }} /><span style={{ fontSize: 12, color: S.teal, fontFamily: S.body, fontWeight: 600, letterSpacing: 1 }}>ROLLING ENROLMENT — START ANYTIME</span></div>
-            <div style={{ marginBottom: 28 }}><div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", fontFamily: S.body, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>Intake Starts In</div><CountdownTimer targetDate="2026-04-06T09:00:00" /></div>
-            <h1 style={{ fontFamily: S.heading, fontSize: "clamp(28px,4.5vw,52px)", fontWeight: 800, lineHeight: 1.15, marginBottom: 20 }}>Build Real Skills.<br /><span style={{ color: S.coral }}>Earn Recognised</span><br />Qualifications.</h1>
-            <p style={{ fontFamily: S.body, fontSize: "clamp(14px,1.5vw,17px)", color: "rgba(255,255,255,0.75)", lineHeight: 1.7, marginBottom: 32, maxWidth: 480 }}>25 programmes from Job Certificate to Bachelor's Equivalent — aligned to NCTVET &amp; City &amp; Guilds. Study online, at your pace, with audio lessons, an AI study assistant, and expert-written guides.</p>
-            <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-              <Btn primary onClick={() => setPage("Apply")} style={{ fontSize: 15, padding: "16px 36px", color: "#fff", background: S.coral }} ariaLabel="Apply now">Apply Now</Btn>
-              <Btn onClick={() => setPage("Programmes")} style={{ border: "2px solid " + S.teal, color: S.teal, fontSize: 14 }} ariaLabel="View programmes">View Programmes</Btn>
+
+            {/* Right column — Real-life study scenarios */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {/* Scenario cards — paint the picture */}
+              {[
+                { time: "7:15 AM", emoji: "\uD83D\uDE8C", scene: "On the bus to work", desc: "Kezia opens her phone, plugs in earphones, and listens to her Business Administration audio lesson during the 40-minute commute. By the time she reaches work, she's finished a whole module.", bg: S.teal },
+                { time: "12:30 PM", emoji: "\uD83C\uDF5B", scene: "Lunch break at the office", desc: "Devon pulls up a quiz on his phone while eating. 10 questions, 8 minutes. He scores 90% and moves on to the next unit. Nobody at work even knows he's studying.", bg: S.coral },
+                { time: "9:45 PM", emoji: "\uD83D\uDECB\uFE0F", scene: "Kids asleep, studying in bed", desc: "Tamara props up her laptop on the pillow. The house is quiet. She reads through her Human Resource Management guide, highlights key points, and asks the AI study assistant a question. No rush — she'll finish tomorrow if she wants.", bg: S.violet },
+                { time: "5:30 AM", emoji: "\u2615", scene: "Early riser — before the world wakes up", desc: "Marcus is up before dawn. Coffee in hand, he logs into Canvas on his tablet and completes two exercises. By 6:30 he's done for the day. Self-paced means he sets the schedule.", bg: S.gold },
+                { time: "Sunday", emoji: "\uD83C\uDFE0", scene: "Weekend catch-up from the verandah", desc: "Anika hasn't studied all week — life was busy. No problem. She sits on the verandah with her phone and does three lessons back-to-back. No penalty for the missed days. That's what self-paced means.", bg: S.emerald },
+              ].map(function(s, i) {
+                return (
+                  <div key={i} style={{ display: "flex", gap: 14, padding: "16px 18px", borderRadius: 14, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", transition: "all 0.3s" }}>
+                    <div style={{ flexShrink: 0, textAlign: "center", minWidth: 52 }}>
+                      <div style={{ fontSize: 28, lineHeight: 1, marginBottom: 4 }}>{s.emoji}</div>
+                      <div style={{ fontSize: 10, fontWeight: 800, color: s.bg, fontFamily: S.body, letterSpacing: 0.5 }}>{s.time}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", fontFamily: S.body, marginBottom: 3 }}>{s.scene}</div>
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", fontFamily: S.body, lineHeight: 1.5 }}>{s.desc}</div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <img src={HERO_LOGO} alt="CTS ETS crest" style={{ width: "100%", maxWidth: 420, margin: "0 auto", borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.4)", display: "block" }} loading="lazy" />
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>{[["25","Programmes"],["5","Levels"],["3","Payment Plans"],["15%","Group Discount"]].map(([v,l]) => <AnimatedStat key={l} value={v} label={l} />)}</div>
+
+          {/* Bottom stat bar */}
+          <div style={{ display: "flex", justifyContent: "center", gap: "clamp(20px,4vw,48px)", flexWrap: "wrap", marginTop: 40, paddingTop: 28, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+            {[["100%", "Online"], ["25", "Programmes"], ["Self-Paced", "No Deadlines"], ["From J$10K", "Total Cost"], ["NCTVET", "Certified"]].map(function(s) {
+              return (
+                <div key={s[1]} style={{ textAlign: "center", minWidth: 80 }}>
+                  <div style={{ fontFamily: S.heading, fontSize: 22, fontWeight: 800, color: S.coral }}>{s[0]}</div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase", marginTop: 4 }}>{s[1]}</div>
+                </div>
+              );
+            })}
+          </div>
+        </Container>
+      </section>
+
+      {/* ══ WHAT SELF-PACED MEANS — full explainer section ══ */}
+      <section style={{ background: "#fff", padding: "64px 0", borderBottom: "1px solid " + S.border }}>
+        <Container>
+          <Reveal><div style={{ textAlign: "center", marginBottom: 40 }}>
+            <span style={{ fontSize: 11, color: S.emerald, letterSpacing: 3, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600 }}>How It Works</span>
+            <h2 style={{ fontFamily: S.heading, fontSize: "clamp(26px,4vw,40px)", color: S.navy, margin: "10px 0 0", fontWeight: 700 }}>What Does "Self-Paced" <span style={{ color: S.coral }}>Actually Mean?</span></h2>
+            <p style={{ fontFamily: S.body, fontSize: 15, color: S.gray, lineHeight: 1.7, maxWidth: 600, margin: "14px auto 0" }}>It means there is no timetable. No class days. No one telling you when to study. You decide everything.</p>
+          </div></Reveal>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }} className="resp-grid-3">
+            {[
+              { icon: "\uD83D\uDCF1", title: "Your device is your classroom", desc: "All you need is a phone, tablet, or laptop and an internet connection. Every lesson, quiz, audio session, and study guide is available online — 24 hours a day, 7 days a week. There is no building to go to.", color: S.teal },
+              { icon: "\u23F0", title: "You choose when to study", desc: "5am before work? Lunch break? 11pm after the kids are asleep? It does not matter. The material is always there waiting for you. Study when your mind is sharpest — not when a timetable tells you to.", color: S.coral },
+              { icon: "\uD83D\uDCC8", title: "You move at your speed", desc: "If you understand a topic quickly, skip ahead. If something is difficult, go back and repeat it. There are no deadlines, no exams on a fixed date, and no pressure to keep up with a class.", color: S.violet },
+              { icon: "\uD83C\uDFE2", title: "Keep your job. Keep your life.", desc: "You do not need to take time off work. You do not need to arrange childcare. You do not need to travel anywhere. Your studies fit around your life — not the other way around.", color: S.emerald },
+              { icon: "\uD83C\uDFA7", title: "Listen like a podcast", desc: "Every lesson has an Audio Study Session. Plug in your earphones on the bus, in the car, at the gym, or while cooking. Learning does not have to mean sitting at a desk.", color: S.gold },
+              { icon: "\uD83C\uDF93", title: "Same qualification at the end", desc: "Whether you finish in 2 months or 6, you earn the same nationally recognised NCTVET qualification. Your certificate does not say 'online' — it says NVQ-J, just like any classroom student.", color: S.rose },
+            ].map(function(card, i) {
+              return (
+                <Reveal key={i} delay={i * 0.08}>
+                  <div style={{ background: S.lightBg, borderRadius: 16, padding: "28px 24px", border: "1px solid " + S.border, borderTop: "4px solid " + card.color, height: "100%" }}>
+                    <div style={{ fontSize: 36, marginBottom: 14 }}>{card.icon}</div>
+                    <h3 style={{ fontFamily: S.heading, fontSize: 18, color: S.navy, fontWeight: 700, marginBottom: 10 }}>{card.title}</h3>
+                    <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.7, margin: 0 }}>{card.desc}</p>
+                  </div>
+                </Reveal>
+              );
+            })}
+          </div>
+          <div style={{ textAlign: "center", marginTop: 32 }}>
+            <Btn primary onClick={() => setPage("Apply")} style={{ color: "#fff", background: S.emerald, fontSize: 15, padding: "16px 36px" }}>Ready? Apply Now — Start Anytime</Btn>
           </div>
         </Container>
       </section>
@@ -77,18 +157,18 @@ export default function HomePage({ setPage }) {
         </Container>
       </section>
 
-      {/* ══ FOUNDING COHORT CTA ══ */}
+      {/* ══ PRICING CTA ══ */}
       <section style={{ background: `linear-gradient(135deg, ${S.coral} 0%, ${S.gold} 100%)`, padding: "48px 0" }}>
         <Container>
           <Reveal>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 32, flexWrap: "wrap" }}>
               <div style={{ flex: 1, minWidth: 280 }}>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(1,30,64,0.15)", borderRadius: 20, padding: "6px 16px", marginBottom: 14 }}><span>🎓</span><span style={{ fontSize: 11, fontWeight: 700, color: "#fff", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase" }}>Limited — First 15 Students</span></div>
-                <h2 style={{ fontFamily: S.heading, fontSize: "clamp(24px,3.5vw,36px)", color: "#fff", fontWeight: 800, lineHeight: 1.2, marginBottom: 12 }}>Founding Cohort Package</h2>
-                <p style={{ fontFamily: S.body, fontSize: 16, color: "rgba(255,255,255,0.9)", lineHeight: 1.6 }}><strong>Registration free</strong> for the first 15 students. Level 3+ also get <strong>$5,000 off tuition</strong>. Plus a <strong>5% referral bonus</strong>.</p>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(1,30,64,0.15)", borderRadius: 20, padding: "6px 16px", marginBottom: 14 }}><span>🎓</span><span style={{ fontSize: 11, fontWeight: 700, color: "#fff", fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase" }}>April Intake — Now Open</span></div>
+                <h2 style={{ fontFamily: S.heading, fontSize: "clamp(24px,3.5vw,36px)", color: "#fff", fontWeight: 800, lineHeight: 1.2, marginBottom: 12 }}>Start From Just J$10,000</h2>
+                <p style={{ fontFamily: S.body, fontSize: 16, color: "rgba(255,255,255,0.9)", lineHeight: 1.6 }}>25 programmes from Job Certificate to Bachelor's Equivalent. <strong>100% online, self-paced</strong>. Payment plans available for Levels 3–5. Your fee covers training — <strong>NCTVET assessment at no extra cost</strong>.</p>
               </div>
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                <Btn primary onClick={() => setPage("Founding Cohort")} style={{ background: S.navy, color: "#fff", fontSize: 15, padding: "16px 32px" }}>View Founding Prices</Btn>
+                <Btn primary onClick={() => setPage("Fees & Calculator")} style={{ background: S.navy, color: "#fff", fontSize: 15, padding: "16px 32px" }}>View Pricing</Btn>
                 <Btn onClick={() => setPage("Apply")} style={{ border: "2px solid #fff", color: "#fff" }}>Apply Now</Btn>
               </div>
             </div>

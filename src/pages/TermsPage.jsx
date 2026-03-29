@@ -21,7 +21,6 @@ const SECTIONS = [
     "Payment plans: Gold (full payment, 0% surcharge), Silver (60/40 split, +10% surcharge — Levels 3–5 only), Bronze (30% deposit + monthly instalments, +15% surcharge — Levels 3–5 only).",
     "Failure to complete payment plan instalments by the agreed dates may result in suspension of access to learning materials until payment is current.",
     "NCTVET and City & Guilds external assessment and certification fees are separate from CTS ETS tuition and are payable directly to the respective awarding body.",
-    "Founding Cohort pricing, group discounts, and promotional offers are subject to specific terms communicated at the time of the offer and may be withdrawn at any time.",
   ]},
   { title: "4. Refund Policy", content: [
     "Registration fees are non-refundable under any circumstances.",

@@ -57,7 +57,7 @@ export function PageScripture({ page }) {
     </div></Reveal>
   );
 }
-// Social proof bar — use on decision pages (Apply, Fees, Founding Cohort)
+// Social proof bar — use on decision pages (Apply, Fees)
 export function SocialProofBar() {
   return (
     <div style={{ display: "flex", justifyContent: "center", gap: "clamp(16px,3vw,40px)", flexWrap: "wrap", padding: "20px 0", borderRadius: 12, background: S.navy, marginBottom: 32 }}>

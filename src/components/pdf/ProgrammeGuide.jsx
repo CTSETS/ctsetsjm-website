@@ -104,11 +104,6 @@ export const WARM_CTAS = {
     warm: "See how affordable it is",
     encouraging: "Check what you'll pay — no surprises",
   },
-  founding: {
-    formal: "View Founding Prices",
-    warm: "Lock in your savings",
-    encouraging: "See how much you can save",
-  },
   contact: {
     formal: "Contact Us",
     warm: "Talk to us — we're here",

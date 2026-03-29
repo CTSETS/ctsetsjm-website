@@ -18,7 +18,6 @@ export default function Footer({ setPage }) {
           <div>
             <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600, marginBottom: 16 }}>Quick Links</div>
             {["About","Why Choose","Programmes","Certification","Careers","Student Journey","Fees & Calculator","For Employers","International","Apply","Pay","Contact","Announcements","Feedback"].map(p => <button key={p} onClick={() => setPage(p)} style={{ display: "block", background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 13, fontFamily: S.body, cursor: "pointer", padding: "4px 0", textAlign: "left" }}>{p === "Pay" ? "💳 Make a Payment" : p}</button>)}
-            <button onClick={() => setPage("Founding Cohort")} style={{ display: "block", background: "none", border: "none", color: S.coral, fontSize: 13, fontFamily: S.body, cursor: "pointer", padding: "4px 0", textAlign: "left", fontWeight: 700 }}>🎓 Founding Cohort — Save Up to $10K</button>
             <button onClick={() => setPage("Verify Certificate")} style={{ display: "block", background: "none", border: "none", color: "rgba(255,255,255,0.6)", fontSize: 13, fontFamily: S.body, cursor: "pointer", padding: "4px 0", textAlign: "left" }}>Verify a Certificate</button>
             <a href={PORTAL_URL} target="_blank" rel="noopener noreferrer" style={{ display: "block", color: S.emerald, fontSize: 13, fontFamily: S.body, padding: "4px 0", textDecoration: "none", fontWeight: 600 }}>🎓 Student Portal</a>
           </div>

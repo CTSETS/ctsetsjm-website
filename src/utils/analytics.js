@@ -54,8 +54,6 @@ export const trackProgrammeSelected = (level, programme) =>
 export const trackWhatsAppClicked = (page) =>
   trackEvent("whatsapp_clicked", { page, event_category: "engagement" });
 
-export const trackFoundingCTAClicked = (source) =>
-  trackEvent("founding_cta_clicked", { source, event_category: "engagement" });
 
 export const trackQuizCompleted = (recommendedLevel) =>
   trackEvent("quiz_completed", { recommended_level: recommendedLevel, event_category: "engagement" });
@@ -72,5 +70,3 @@ export const trackContactFormSent = (subject) =>
 export const trackGroupEnquirySent = (company, numLearners) =>
   trackEvent("group_enquiry_sent", { company, num_learners: numLearners, event_category: "conversion" });
 
-export const trackReferralCodeEntered = (code) =>
-  trackEvent("referral_code_entered", { code, event_category: "conversion" });

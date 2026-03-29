@@ -18,8 +18,7 @@ export const TESTIMONIALS = [
 ];
 export const SOCIAL_PROOF = { enrolled: "120+", programmes: "25", completionRate: "94%", satisfaction: "4.8/5", countries: "6" };
 export const ANNOUNCEMENTS = [
-  { id: 1, date: "March 25, 2026", type: "intake", title: "April 2026 Intake Now Open", body: "Rolling enrolment is open for all 25 programmes. Founding cohort spots are filling fast.", cta: "Apply Now", ctaPage: "Apply" },
-  { id: 2, date: "March 20, 2026", type: "offer", title: "Founding Cohort — Save Up to $10,000", body: "First 15 students get registration free + $5,000 off tuition at Level 3+. Plus a 5% referral bonus.", cta: "View Founding Prices", ctaPage: "Founding Cohort" },
+  { id: 1, date: "March 25, 2026", type: "intake", title: "April 2026 Intake Now Open", body: "Rolling enrolment is open for all 25 programmes. Start anytime — study at your own pace.", cta: "Apply Now", ctaPage: "Apply" },
   { id: 3, date: "March 15, 2026", type: "feature", title: "Interactive Learning System Launched", body: "All students now have Audio Study Sessions, an Intelligent Study Assistant, video summaries, and flashcards — included free.", cta: "Explore Programmes", ctaPage: "Programmes" },
   { id: 4, date: "March 10, 2026", type: "milestone", title: "CTS ETS Officially Registered", body: "Registered with Companies of Jamaica (Reg. No. 16007/2025). MOE registration in progress.", cta: "About CTS ETS", ctaPage: "About" },
 ];
@@ -38,7 +37,6 @@ export const SCRIPTURES = {
   international: { text: "From the rising of the sun to its setting, my name will be great.", ref: "Malachi 1:11" },
   verify: { text: "Let your light shine before others.", ref: "Matthew 5:16" },
   feedback: { text: "As iron sharpens iron, so one person sharpens another.", ref: "Proverbs 27:17" },
-  founding: { text: "See, I am doing a new thing!", ref: "Isaiah 43:19" },
 };
 export function genderPronouns(g) { if (g === "Male") return { he:"he", him:"him", his:"his" }; if (g === "Female") return { he:"she", him:"her", his:"her" }; return { he:"they", him:"them", his:"their" }; }
 export const PRAYERS = {

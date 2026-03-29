@@ -6,7 +6,7 @@
 //
 // Pages:
 //   HomePage, AboutPage, AnnouncementsPage, ProgrammesPage, FeesPage,
-//   ContactPage, FoundingCohortPage, ApplyPage, WhyChoosePage,
+//   ContactPage, ApplyPage, WhyChoosePage,
 //   CertificationPage, EmployersPage, InternationalPage,
 //   StudentJourneyPage, CareerOutcomesPage, VerifyCertificatePage,
 //   FeedbackPage, PrivacyPage, TermsPage, NotFoundPage

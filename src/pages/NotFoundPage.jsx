@@ -26,7 +26,6 @@ export default function NotFoundPage({ setPage }) {
                 {[
                   ["Apply Now", "Apply", S.coral],
                   ["Fees & Calculator", "Fees & Calculator", S.teal],
-                  ["Founding Cohort", "Founding Cohort", S.violet],
                   ["Contact Us", "Contact", S.emerald],
                   ["About CTS ETS", "About", S.sky],
                   ["Career Outcomes", "Careers", S.amber],
