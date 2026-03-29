@@ -25,6 +25,7 @@ export default function Footer({ setPage }) {
             <p style={{ fontSize: 10, color: "rgba(255,255,255,0.25)", fontFamily: S.body }}>Reg. No. 16007/2025</p>
             {/* Partners */}
             <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+              {[[NCTVET_LOGO,"NCTVET"],[HEART_LOGO,"HEART/NSTA"]].map(function(p) {
                 return <img key={p[1]} src={p[0]} alt={p[1]} style={{ height: 28, objectFit: "contain", background: "#fff", borderRadius: 4, padding: "2px 4px" }} loading="lazy" />;
               })}
             </div>
