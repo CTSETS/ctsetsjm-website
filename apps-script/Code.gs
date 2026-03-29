@@ -785,6 +785,22 @@ function handleApp(data) {
     }
   } catch(emailErr) { Logger.log("Confirmation email error: " + emailErr.message); }
 
+  // NOTIFY ADMIN of new application
+  try {
+    MailApp.sendEmail({to: ADMIN_EMAIL, subject: "📋 New Application — " + ref + " — " + (data.firstName||"") + " " + (data.lastName||""),
+      htmlBody: "<h2>New Application Received</h2>"
+        + "<p><b>Ref:</b> " + ref + "</p>"
+        + "<p><b>Name:</b> " + (data.firstName||"") + " " + (data.lastName||"") + "</p>"
+        + "<p><b>Email:</b> " + (data.email||"") + "</p>"
+        + "<p><b>Phone:</b> " + (data.phone||"") + "</p>"
+        + "<p><b>Programme:</b> " + (data.level||"") + " — " + (data.programme||"") + "</p>"
+        + "<p><b>Payment Plan:</b> " + (data.paymentPlan||"Gold") + "</p>"
+        + "<p><b>Type:</b> " + (data.applicantType||"") + "</p>"
+        + "<p><b>Country:</b> " + (data.country||"") + "</p>"
+        + "<p style='margin-top:16px;font-size:12px;color:#666'>Review in your <a href='https://docs.google.com/spreadsheets'>Google Sheets</a> → Applications tab.<br>Change Status to <b>Accepted</b> to auto-enrol.</p>"
+    });
+  } catch(ae) {}
+
   return {success:true,ref:ref};
 }
 
