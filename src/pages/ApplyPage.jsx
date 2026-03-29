@@ -577,7 +577,6 @@ export default function ApplyPage({ setPage }) {
                         <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontFamily: S.body }}>+ {fmt(REG_FEE)} registration</div>
                       </div>
                     </div>
-                    </button>
                   </div>
                 </Reveal>
               );
