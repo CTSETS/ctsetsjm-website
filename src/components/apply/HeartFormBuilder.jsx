@@ -1,6 +1,6 @@
 // ─── HEART/NSTA APPLICATION FORM BUILDER ────────────────────────────
 // Auto-fills the HEART form from application data
-// Canvas signature pad for digital signature
+// Signature pad for digital signature
 // Print-to-PDF download (no external libraries needed)
 import { useState, useRef, useEffect } from "react";
 import S from "../../constants/styles";

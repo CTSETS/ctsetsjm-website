@@ -74,7 +74,7 @@ export default function VerifyCertificatePage({ setPage }) {
                         <div>
                           <div style={{ fontFamily: S.body, fontSize: 14, fontWeight: 700, color: S.roseDark }}>Certificate Not Found</div>
                           <p style={{ fontFamily: S.body, fontSize: 12, color: S.gray, margin: "4px 0 0", lineHeight: 1.6 }}>
-                            This certificate number was not found in our system. Check the number and try again, or contact info@ctsetsjm.com for assistance.
+                            This certificate number was not found in our system. Check the number and try again, or contact admin@ctsetsjm.com for assistance.
                           </p>
                         </div>
                       </div>

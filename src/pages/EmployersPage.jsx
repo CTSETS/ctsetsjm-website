@@ -7,7 +7,7 @@ import { PartnerLogos } from "../components/shared/DisplayComponents";
 
 const BENEFITS = [
   { icon: "💰", title: "15% Group Discount", desc: "Enrol 8 or more learners and save 15% on every enrolment. The more you invest, the more you save.", color: S.gold },
-  { icon: "🎓", title: "Recognised Qualifications", desc: "Your team earns NCTVET or City & Guilds qualifications — trusted by employers across Jamaica and internationally.", color: S.teal },
+  { icon: "🎓", title: "Recognised Qualifications", desc: "Your team earns NCTVET qualifications — trusted by employers across Jamaica and internationally.", color: S.teal },
   { icon: "💻", title: "Zero Disruption", desc: "100% online, self-paced learning. Staff study evenings and weekends — no lost work hours, no travel.", color: S.violet },
   { icon: "📊", title: "Progress Tracking", desc: "Receive progress updates on each enrolled learner. Know who's on track and who needs support.", color: S.coral },
   { icon: "📝", title: "Dedicated Account Manager", desc: "Your group gets a named contact at CTS ETS for enrolment, support, and reporting.", color: S.emerald },

@@ -80,7 +80,7 @@ export function TrustSection() {
         {/* Google Maps */}
         <div style={{ borderRadius: 14, overflow: "hidden", border: "1px solid " + S.border, height: 300 }}>
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3794.2!2d-76.78!3d18.02!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2s6+Newark+Avenue+Kingston+11+Jamaica!5e0!3m2!1sen!2sjm!4v1"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3794.2!2d-76.78!3d18.02!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2s6+Newark+Avenue+Kingston+2+Jamaica!5e0!3m2!1sen!2sjm!4v1"
             width="100%" height="300" style={{ border: 0 }} allowFullScreen="" loading="lazy"
             referrerPolicy="no-referrer-when-downgrade" title="CTS ETS Location"
           />
@@ -101,10 +101,9 @@ export function TrustSection() {
             </div>
             <div style={{ padding: "14px 16px", borderRadius: 10, background: S.violetLight, border: "1px solid " + S.violet + "30" }}>
               <div style={{ fontSize: 11, color: S.violet, fontFamily: S.body, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 }}>Qualification Alignment</div>
-              <div style={{ fontFamily: S.body, fontSize: 13, color: S.navy }}>NCTVET (NVQ-J) and City & Guilds</div>
             </div>
           </div>
-          <p style={{ fontFamily: S.body, fontSize: 12, color: S.gray, marginTop: 14, lineHeight: 1.6 }}>📍 6 Newark Avenue, Kingston 11, Jamaica W.I.</p>
+          <p style={{ fontFamily: S.body, fontSize: 12, color: S.gray, marginTop: 14, lineHeight: 1.6 }}>📍 6, Newark Avenue, Kingston 2, Jamaica W.I.</p>
         </div>
       </div>
     </Reveal>

@@ -43,7 +43,7 @@ export function PaymentSetupNotice() {
         <span style={{ fontSize: 12, fontWeight: 700, color: S.amberDark, fontFamily: S.body }}>Payment Options</span>
       </div>
       <p style={{ fontSize: 12, color: S.gray, fontFamily: S.body, lineHeight: 1.6, margin: 0 }}>
-        Pay by <strong>bank transfer</strong> (NCB — JMD or USD account) then upload your receipt below. Online card payments will be available soon. Contact <strong>finance@ctsetsjm.com</strong> or <strong>876-381-9771</strong> for payment assistance.
+        Pay by <strong>bank transfer</strong> (NCB — JMD or USD account) then upload your receipt below. Online card payments will be available soon. Contact <strong>admin@ctsetsjm.com</strong> or <strong>876-381-9771</strong> for payment assistance.
       </p>
     </div>
   );

@@ -10,9 +10,9 @@ import { APPS_SCRIPT_URL, EMAILJS_SERVICE, EMAILJS_TEMPLATE } from "../constants
 // Get your API key from: Settings → SMTP & API → API Keys
 const BREVO_API_KEY = import.meta.env.VITE_BREVO_KEY || "";
 // Sender — MUST be verified in Brevo Dashboard → Settings → Senders & IPs
-// Option 1: Use info@ctsetsjm.com (verify your domain in Brevo)
+// Option 1: Use admin@ctsetsjm.com (verify your domain in Brevo)
 // Option 2: Use the email you signed up to Brevo with (already verified)
-const BREVO_SENDER = { name: "CTS ETS", email: "info@ctsetsjm.com" };
+const BREVO_SENDER = { name: "CTS ETS", email: "admin@ctsetsjm.com" };
 const BREVO_ENABLED = !!BREVO_API_KEY;
 
 // Send email via Brevo API
@@ -78,15 +78,15 @@ export const sendApplicationConfirmation = async ({ name, email, ref, programme,
         </div>
         <h3 style="color: #011E40; font-size: 16px;">What Happens Next?</h3>
         <ol style="color: #4A5568; line-height: 1.8;">
-          <li>Our admissions team reviews your documents (24–48 hours)</li>
+          <li>Our admissions team reviews your documents (48–72 hours)</li>
           <li>You receive an acceptance email with payment instructions</li>
           <li>Complete payment within 48 hours to secure your place</li>
-          <li>Receive Student Portal access and start studying</li>
+          <li>Receive Learning Portal access and start studying</li>
         </ol>
         <p style="color: #4A5568; line-height: 1.7;">Questions? Reply to this email or WhatsApp us at <strong>876-381-9771</strong>.</p>
       </div>
       <div style="background: #011E40; padding: 16px 32px; text-align: center;">
-        <p style="color: rgba(255,255,255,0.4); font-size: 11px; margin: 0;">CTS ETS | ctsetsjm.com | info@ctsetsjm.com | 876-381-9771</p>
+        <p style="color: rgba(255,255,255,0.4); font-size: 11px; margin: 0;">CTS ETS | ctsetsjm.com | admin@ctsetsjm.com | 876-381-9771</p>
       </div>
     </div>`;
   return sendEmail({
@@ -116,14 +116,14 @@ export const sendPaymentConfirmation = async ({ name, email, ref, programme, lev
         </div>
         <h3 style="color: #011E40; font-size: 16px;">What Happens Next?</h3>
         <ol style="color: #4A5568; line-height: 1.8;">
-          <li>Our finance team verifies your payment (24–48 hours)</li>
-          <li>You receive enrolment confirmation + Student Portal access</li>
+          <li>Our finance team verifies your payment (48–72 hours)</li>
+          <li>You receive enrolment confirmation + Learning Portal access</li>
           <li>Start studying immediately — self-paced, 100% online</li>
         </ol>
-        <p style="color: #4A5568; line-height: 1.7;">Need help? WhatsApp us at <strong>876-381-9771</strong> or email <strong>finance@ctsetsjm.com</strong>.</p>
+        <p style="color: #4A5568; line-height: 1.7;">Need help? WhatsApp us at <strong>876-381-9771</strong> or email <strong>admin@ctsetsjm.com</strong>.</p>
       </div>
       <div style="background: #011E40; padding: 16px 32px; text-align: center;">
-        <p style="color: rgba(255,255,255,0.4); font-size: 11px; margin: 0;">CTS ETS | ctsetsjm.com | info@ctsetsjm.com | 876-381-9771</p>
+        <p style="color: rgba(255,255,255,0.4); font-size: 11px; margin: 0;">CTS ETS | ctsetsjm.com | admin@ctsetsjm.com | 876-381-9771</p>
       </div>
     </div>`;
   return sendEmail({ to: email, toName: name, subject, htmlContent: html });
@@ -172,10 +172,10 @@ export const DRIP_EMAILS = [
     subject: "CTS ETS — Your Spot is Waiting",
     template: (name) => `
       <h2>${name}, just checking in.</h2>
-      <p>It's been a week since you applied. If you've already paid — welcome aboard! Your Student Portal access is on its way.</p>
+      <p>It's been a week since you applied. If you've already paid — welcome aboard! Your Learning Portal access is on its way.</p>
       <p>If you haven't paid yet, your place is still reserved. Here's what you need:</p>
       <ul>
-        <li>Check your email for the payment instructions from finance@ctsetsjm.com</li>
+        <li>Check your email for the payment instructions from admin@ctsetsjm.com</li>
         <li>Pay online (Visa/Mastercard) or upload a bank transfer receipt</li>
         <li>Need a payment plan? Gold, Silver, or Bronze — details in your acceptance email</li>
       </ul>
@@ -189,7 +189,7 @@ export const DRIP_EMAILS = [
       <p>We know life gets busy. But we wanted you to know: your application is still active and your spot is still available.</p>
       <p>Here's what you'll get when you enrol:</p>
       <ul>
-        <li>✅ Immediate access to the CTS ETS Student Portal</li>
+        <li>✅ Immediate access to the CTS ETS Learning Portal</li>
         <li>🎧 Audio Study Sessions you can listen to like a podcast</li>
         <li>🤖 An AI study assistant that answers your questions 24/7</li>
         <li>🎓 A nationally and internationally recognised qualification</li>

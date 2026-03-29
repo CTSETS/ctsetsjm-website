@@ -62,7 +62,7 @@ export function SocialProofBar() {
   return (
     <div style={{ display: "flex", justifyContent: "center", gap: "clamp(16px,3vw,40px)", flexWrap: "wrap", padding: "20px 0", borderRadius: 12, background: S.navy, marginBottom: 32 }}>
       {[
-        [SOCIAL_PROOF.enrolled, "Students Enrolled", S.coral],
+        [SOCIAL_PROOF.enrolled, "Training Professionals", S.coral],
         [SOCIAL_PROOF.programmes, "Programmes", S.teal],
         [SOCIAL_PROOF.completionRate, "Completion Rate", S.emerald],
         [SOCIAL_PROOF.satisfaction, "Satisfaction", S.violet],

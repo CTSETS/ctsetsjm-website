@@ -34,20 +34,32 @@ export default function AboutPage({ setPage }) {
           <div style={{ background: "#fff", borderRadius: 16, padding: "32px clamp(20px,4vw,36px)", border: "1px solid " + S.border, marginBottom: 40 }}>
             <h3 style={{ fontFamily: S.heading, fontSize: 22, color: S.navy, fontWeight: 700, textAlign: "center", marginBottom: 24 }}>What CTS ETS Stands For</h3>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }} className="resp-grid-3">
-              {[{ word: "Called", meaning: "We believe this work is a calling, not just a career.", color: S.violet },{ word: "To Serve", meaning: "Service to our students comes before everything else.", color: S.teal },{ word: "Empowerment", meaning: "We give people the tools to change their own lives.", color: S.coral },{ word: "Training", meaning: "Practical, applied skills — not just theory.", color: S.emerald },{ word: "Solutions", meaning: "We solve the access problem — online, affordable, flexible.", color: S.amber },{ word: "Excellence", meaning: "NCTVET and City & Guilds alignment means our standards are international.", color: S.sky }].map(v => (
+              <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 12 }}>CTS — What It Stands For</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 20 }} className="resp-grid-3">
+              {[{ word: "Called", meaning: "We believe this work is a calling, not just a career.", color: S.violet },{ word: "To", meaning: "Every decision is directed toward our students' success.", color: S.teal },{ word: "Serve", meaning: "Service to our students comes before everything else.", color: S.coral }].map(v => (
+                <div key={v.word} style={{ padding: "18px 14px", borderRadius: 12, background: v.color + "08", border: "1px solid " + v.color + "25", textAlign: "center" }}>
+                  <div style={{ fontFamily: S.heading, fontSize: 22, fontWeight: 800, color: v.color, marginBottom: 6 }}>{v.word}</div>
+                  <p style={{ fontFamily: S.body, fontSize: 12, color: S.gray, lineHeight: 1.5, margin: 0 }}>{v.meaning}</p>
+                </div>
+              ))}
+              </div>
+              <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 12 }}>Our Tagline</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }} className="resp-grid-3">
+              {[{ word: "Excellence", meaning: "NCTVET alignment means our standards are nationally recognised.", color: S.emerald },{ word: "Through", meaning: "We deliver results through technology, innovation, and care.", color: S.amber },{ word: "Service", meaning: "Everything we build serves one purpose — your success.", color: S.sky }].map(v => (
                 <div key={v.word} style={{ padding: "20px", borderRadius: 12, border: "1px solid " + v.color + "20", borderTop: "3px solid " + v.color }}>
                   <div style={{ fontFamily: S.heading, fontSize: 17, fontWeight: 700, color: S.navy, marginBottom: 6 }}>{v.word}</div>
                   <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.6, margin: 0 }}>{v.meaning}</p>
                 </div>
               ))}
-            </div>
+              </div>
+              </div>
           </div>
         </Reveal>
 
         {/* Institutional structure */}
         <Reveal>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginBottom: 40 }} className="resp-grid-3">
-            {[{ num: "25", label: "Programmes", sub: "Job Cert to Bachelor's", color: S.coral },{ num: "5", label: "NVQ-J Levels", sub: "Nationally recognised", color: S.teal },{ num: "100%", label: "Online", sub: "Study from anywhere", color: S.violet }].map(s => (
+            {[{ num: "25", label: "Programmes", sub: "Job Cert to Bachelor's Equiv.", color: S.coral },{ num: "5", label: "NVQ-J Levels", sub: "Nationally recognised", color: S.teal },{ num: "100%", label: "Online", sub: "Study from anywhere", color: S.violet }].map(s => (
               <div key={s.label} style={{ background: S.navy, borderRadius: 14, padding: "28px 20px", textAlign: "center" }}>
                 <div style={{ fontFamily: S.heading, fontSize: "clamp(28px,4vw,40px)", fontWeight: 800, color: s.color }}>{s.num}</div>
                 <div style={{ fontFamily: S.body, fontSize: 14, fontWeight: 700, color: "#fff", marginTop: 6 }}>{s.label}</div>

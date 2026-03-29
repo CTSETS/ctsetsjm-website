@@ -37,9 +37,9 @@ tr:nth-child(even) { background: #fafaf7; }
 </style></head><body>
 <div class="header">
   <div><h1>CTS Empowerment & Training Solutions</h1><p style="color:#D4A017;font-size:12px;letter-spacing:2px;margin:4px 0 0">PROGRAMME GUIDE 2026</p></div>
-  <div style="text-align:right;font-size:11px;color:#4A5568"><p>ctsetsjm.com</p><p>info@ctsetsjm.com</p><p>876-381-9771</p></div>
+  <div style="text-align:right;font-size:11px;color:#4A5568"><p>ctsetsjm.com</p><p>admin@ctsetsjm.com</p><p>876-381-9771</p></div>
 </div>
-<p>25 online programmes from Job Certificate to Bachelor's Equivalent. Aligned to NCTVET (NVQ-J) and City & Guilds. 100% online, self-paced. Study from anywhere.</p>
+<p>Online programmes from Job Certificate to Bachelor's Equivalent. Aligned to NCTVET (NVQ-J) . 100% online, self-paced. Study from anywhere.</p>
 
 <h2>All Programmes & Fees</h2>
 <table><thead><tr><th>Programme</th><th>Level</th><th>Duration</th><th>Total (USD)</th><th>Total (JMD)</th></tr></thead><tbody>${progRows}</tbody></table>
@@ -49,7 +49,7 @@ tr:nth-child(even) { background: #fafaf7; }
 <table><thead><tr><th>Plan</th><th>Structure</th><th>Surcharge</th><th>Available For</th></tr></thead><tbody>
 <tr><td><strong>Gold</strong></td><td>Full payment at enrolment</td><td>0%</td><td>All levels</td></tr>
 <tr><td><strong>Silver</strong></td><td>60% at enrolment, 40% at mid-point</td><td>+10%</td><td>Levels 3–5 only</td></tr>
-<tr><td><strong>Bronze</strong></td><td>30% deposit + monthly instalments</td><td>+15%</td><td>Levels 3–5 only</td></tr>
+<tr><td><strong>Bronze</strong></td><td>20% deposit + monthly instalments</td><td>+15%</td><td>Levels 3–5 only</td></tr>
 </tbody></table>
 <p><strong>Employer group discount:</strong> 15% off for 8 or more learners.</p>
 
@@ -60,8 +60,8 @@ tr:nth-child(even) { background: #fafaf7; }
 <p>1. Visit <strong>ctsetsjm.com</strong> → 2. Click <strong>Apply Now</strong> → 3. Complete the online form (10 minutes) → 4. Upload your documents → 5. Receive acceptance within 48 hours → 6. Pay and start studying.</p>
 
 <h2>Contact</h2>
-<p>📧 info@ctsetsjm.com &nbsp;|&nbsp; 📞 876-381-9771 &nbsp;|&nbsp; 💬 WhatsApp: 876-381-9771</p>
-<p>📍 6 Newark Avenue, Kingston 11, Jamaica W.I. &nbsp;|&nbsp; Reg. No. 16007/2025</p>
+<p>📧 admin@ctsetsjm.com &nbsp;|&nbsp; 📞 876-381-9771 &nbsp;|&nbsp; 💬 WhatsApp: 876-381-9771</p>
+<p>📍 6, Newark Avenue, Kingston 2, Jamaica W.I. &nbsp;|&nbsp; Reg. No. 16007/2025</p>
 
 <div class="footer">
 <p>CTS Empowerment & Training Solutions — Called To Serve, Excellence Through Service</p>

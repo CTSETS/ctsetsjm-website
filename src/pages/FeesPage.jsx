@@ -31,7 +31,7 @@ export default function FeesPage({ setPage }) {
     const m = prog.bronzeMonths || 6;
     const isL5 = selLevel.indexOf("5") >= 0, isL4 = selLevel.indexOf("4") >= 0;
     const roundedMonthly = isL5 ? 4500 : isL4 ? 4000 : 3500;
-    const bronzeDeposit = isL5 ? 15500 : isL4 ? 12000 : 8500;
+    const bronzeDeposit = isL5 ? 12000 : isL4 ? 10000 : 7000;
     const ae = bronzeDeposit + REG_FEE;
     const monthlyTotal = roundedMonthly * m;
     const gt = ae + monthlyTotal;
@@ -65,8 +65,8 @@ export default function FeesPage({ setPage }) {
                     ["Job Certificate", "$5,000", "$5,000", "$10,000"],
                     ["Level 2 — Vocational", "$15,000", "$5,000", "$20,000"],
                     ["Level 3 — Diploma", "$25,000", "$5,000", "$30,000"],
-                    ["Level 4 — Associate", "$35,000", "$5,000", "$40,000"],
-                    ["Level 5 — Bachelor's", "$45,000", "$5,000", "$50,000"],
+                    ["Level 4 — Associate Equiv.", "$35,000", "$5,000", "$40,000"],
+                    ["Level 5 — Bachelor's Equiv.", "$45,000", "$5,000", "$50,000"],
                   ].map(function(row, ri) { return (
                     <tr key={ri} style={{ background: ri % 2 === 0 ? "#fff" : S.lightBg }}>
                       <td style={{ padding: "11px 16px", fontWeight: 700, color: S.navy, borderTop: "1px solid " + S.border, fontSize: 12 }}>{row[0]}</td>
@@ -82,8 +82,8 @@ export default function FeesPage({ setPage }) {
               {[
                 ["Registration fee", "$5,000 non-refundable — paid once at registration"],
                 ["Training fee", "Covers online instruction, study materials, audio sessions, AI assistant"],
-                ["NCTVET assessment", "Arranged through HEART/NSTA at no additional cost"],
-                ["Payment plans", "Silver (+10%) and Bronze (+15%) surcharge applies to training fee only"],
+                ["NCTVET assessment", "Arranged through HEART/NSTA at no additional cost, unless required. NCTVET registration and assessment fees are set by NCTVET where necessary"],
+                ["Payment plans", "Silver (+10%) and Bronze (+15%) surcharge applies to training fee only — Levels 3–5 only"],
               ].map(function(note, i) { return (
                 <div key={i} style={{ fontSize: 11, fontFamily: S.body, color: S.gray, lineHeight: 1.4, padding: "6px 12px", background: S.lightBg, borderRadius: 6, border: "1px solid " + S.border }}>
                   <strong style={{ color: S.navy }}>{note[0]}:</strong> {note[1]}
@@ -95,7 +95,7 @@ export default function FeesPage({ setPage }) {
 
         {/* Plan cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginBottom: 40 }} className="resp-grid-3">
-          {[{ n: "Gold", f: "0%", d: "Pay training + reg fee in full. Best value.", color: S.gold, bg: S.goldLight }, { n: "Silver", f: "+10%", d: "+10% on training fee. 60/40 split.", color: "#64748B", bg: "#F1F5F9" }, { n: "Bronze", f: "+15%", d: "+15% on training fee. Deposit + monthly.", color: "#CD7F32", bg: S.amberLight }].map(p => (
+          {[{ n: "Gold", f: "0%", d: "Pay registration + training fee in full. Best value.", color: S.gold, bg: S.goldLight }, { n: "Silver", f: "+10%", d: "+10% on training fee. 60/40 split. Levels 3–5 only.", color: "#64748B", bg: "#F1F5F9" }, { n: "Bronze", f: "+15%", d: "+15% on training fee. 20% deposit + monthly. Levels 3–5 only.", color: "#CD7F32", bg: S.amberLight }].map(p => (
             <div key={p.n} style={{ background: p.bg, borderRadius: 12, padding: "24px 20px", border: "1px solid " + p.color + "30", textAlign: "center" }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: p.color, fontFamily: S.body, letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>{p.n}</div>
               <div style={{ fontSize: 28, fontWeight: 700, color: S.navy, fontFamily: S.heading }}>{p.f}</div>
@@ -138,7 +138,7 @@ export default function FeesPage({ setPage }) {
                 {result.note && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontFamily: S.body, marginTop: 8, textAlign: "right", fontStyle: "italic" }}>{result.note}</div>}
               </div>
               <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", fontSize: 10, color: "rgba(255,255,255,0.4)", fontFamily: S.body, lineHeight: 1.6, textAlign: "center" }}>
-                {"The $5,000 registration fee is non-refundable. All surcharges apply to the training fee only, not the registration fee. Your training fee covers full online instruction, study materials, audio sessions, and AI study assistant. NCTVET assessment is arranged through HEART/NSTA at no additional cost."}
+                {"The $5,000 registration fee is non-refundable. All surcharges apply to the training fee only, not the registration fee. Your training fee covers full online instruction, study materials, audio sessions, and AI study assistant. NCTVET registration and assessment fees are not included as they are set by NCTVET where necessary."}
               </div>
               <div style={{ marginTop: 16, display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <Btn primary onClick={() => setPage("Apply")} style={{ color: "#fff", background: S.coral, flex: 1 }}>Apply Now</Btn>

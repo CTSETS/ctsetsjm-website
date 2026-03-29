@@ -20,10 +20,10 @@ STEP 2: SET UP YOUR BUSINESS PROFILE
 • Business Name: CTS Empowerment & Training Solutions
 • Category: Education
 • Description: "25 online programmes from Job Certificate to
-  Bachelor's Equivalent. Aligned to NCTVET & City & Guilds.
+  Bachelor's Equivalent. Aligned to NCTVET.
   100% online, self-paced. Apply at ctsetsjm.com"
-• Address: 6 Newark Avenue, Kingston 11, Jamaica W.I.
-• Email: info@ctsetsjm.com
+• Address: 6, Newark Avenue, Kingston 2, Jamaica W.I.
+• Email: admin@ctsetsjm.com
 • Website: https://ctsetsjm.com
 • Hours: Mon–Fri 9AM–5PM, Sat 10AM–2PM
 
@@ -36,7 +36,7 @@ help you today? You can: 1) Ask about programmes 2) Check
 your application status 3) Get payment information 4) Speak
 with an advisor. Just reply with a number or your question."
 
-/programmes → "We offer 25 programmes from Job Certificate
+/programmes → "We offer Programmes from Job Certificate
 to Bachelor's Equivalent, all 100% online. Visit
 ctsetsjm.com/programmes for the full list with fees.
 Would you like help choosing the right one?"
@@ -48,7 +48,7 @@ ctsetsjm.com/#fees-&-calculator. Questions? Just ask!"
 /apply → "Apply online at ctsetsjm.com/#apply — it takes
 about 10 minutes. You'll need: passport photo, qualifications,
 national ID, and TRN (Jamaican applicants). We review
-within 24–48 hours."
+within 48–72 hours."
 
 /status → "To check your application status, visit
 ctsetsjm.com/#apply and click the 'Check Status' tab.
@@ -57,7 +57,7 @@ Send us your application reference and we'll check for you."
 
 /payment → "Payment options: Bank transfer (NCB — JMD or USD
 account), or upload receipt at ctsetsjm.com/#apply →
-Payment Centre. Contact finance@ctsetsjm.com for
+Payment Centre. Contact admin@ctsetsjm.com for
 payment instructions."
 
 tuition (Level 3+) for the first 15 students. Plus 5%
@@ -75,9 +75,9 @@ Create these labels to track conversations:
 STEP 5: SET AWAY MESSAGE
 ────────────────────────────────────────
 "Thank you for messaging CTS ETS. We're currently away but
-will respond within 24 hours. In the meantime, visit
+will respond within 48–72 hours. In the meantime, visit
 ctsetsjm.com for programme info, fees, and to apply online.
-For urgent matters, email info@ctsetsjm.com."
+For urgent matters, email admin@ctsetsjm.com."
 
 STEP 6: SET GREETING MESSAGE
 ────────────────────────────────────────
@@ -108,7 +108,7 @@ export const INTERNATIONAL_PRIVACY_CLAUSES = [
   },
   {
     title: "GDPR Compliance (UK/EU Applicants)",
-    content: "If you are applying from the United Kingdom or European Union, you have additional rights under the General Data Protection Regulation (GDPR). These include: the right to access your data, the right to rectification, the right to erasure ('right to be forgotten'), the right to restrict processing, the right to data portability, and the right to object to processing. To exercise any of these rights, email info@ctsetsjm.com with the subject line 'GDPR Request'. We will respond within 30 days."
+    content: "If you are applying from the United Kingdom or European Union, you have additional rights under the General Data Protection Regulation (GDPR). These include: the right to access your data, the right to rectification, the right to erasure ('right to be forgotten'), the right to restrict processing, the right to data portability, and the right to object to processing. To exercise any of these rights, email admin@ctsetsjm.com with the subject line 'GDPR Request'. We will respond within 30 days."
   },
   {
     title: "Data Retention for Non-Enrolled Applicants",
@@ -120,10 +120,10 @@ export const INTERNATIONAL_PRIVACY_CLAUSES = [
   },
   {
     title: "Third-Party Data Processors",
-    content: "Your data may be processed by the following third-party services: Google (Apps Script — form processing, Analytics — usage statistics), Brevo (transactional emails), WiPay (payment processing — PCI DSS Level 1 certified), and EmailJS (notification emails). Each processor is contractually bound to protect your data and process it only for the stated purpose."
+    content: "Your data may be processed by the following third-party services: secure third-party service providers for form processing, usage analytics, transactional emails, payment processing (PCI DSS Level 1 certified), and notification emails. Each processor is contractually bound to protect your data and process it only for the stated purpose."
   },
   {
     title: "Data Protection Contact",
-    content: "For all data protection enquiries, including international requests, contact: CTS Empowerment & Training Solutions, Data Protection, 6 Newark Avenue, Kingston 11, Jamaica W.I. Email: info@ctsetsjm.com. We aim to respond to all data protection requests within 30 days."
+    content: "For all data protection enquiries, including international requests, contact: CTS Empowerment & Training Solutions, Data Protection, 6, Newark Avenue, Kingston 2, Jamaica W.I. Email: admin@ctsetsjm.com. We aim to respond to all data protection requests within 30 days."
   },
 ];

@@ -247,7 +247,7 @@ export default function ApplyPage({ setPage }) {
     const result = await submitToAppsScript(formData, files);
 
     if (result.duplicate) {
-      setErrors({ submit: `An application with this email already exists (Ref: ${result.existingRef || "—"}). Contact info@ctsetsjm.com if this is unexpected.` });
+      setErrors({ submit: `An application with this email already exists (Ref: ${result.existingRef || "—"}). Contact admin@ctsetsjm.com if this is unexpected.` });
       setSubmitting(false);
       return;
     }
@@ -300,7 +300,7 @@ export default function ApplyPage({ setPage }) {
               <div style={{ background: S.tealLight, borderRadius: 12, padding: "20px 24px", border: "1px solid " + S.teal + "30", textAlign: "left", marginBottom: 28 }}>
                 <div style={{ fontFamily: S.heading, fontSize: 16, color: S.navy, fontWeight: 700, marginBottom: 10 }}>What Happens Next?</div>
                 {[
-                  ["1", "Our admissions team reviews your documents (24–48 hours)"],
+                  ["1", "Our admissions team reviews your documents (48–72 hours)"],
                   ["2", "You receive an acceptance email with payment instructions"],
                   ["3", "Complete payment to secure your place"],
                   ["4", "Receive Student Portal access and start studying"],
@@ -330,7 +330,7 @@ export default function ApplyPage({ setPage }) {
   // ══════════════════════════════════════════════════════════════════
   return (
     <PageWrapper bg={S.lightBg}>
-      <SectionHeader tag="Start Here" title="Apply in Under 10 Minutes" desc="Complete the form, upload your documents, and we'll review within 24–48 hours." accentColor={S.coral} />
+      <SectionHeader tag="Start Here" title="Apply in Under 10 Minutes" desc="Complete the form, upload your documents, and we'll review within 48–72 hours." accentColor={S.coral} />
       <Container>
         <SocialProofBar />
 
@@ -668,7 +668,7 @@ export default function ApplyPage({ setPage }) {
               <div style={{ width: 44, height: 44, borderRadius: 10, background: S.skyLight, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>💬</div>
               <div style={{ flex: 1, minWidth: 200 }}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.body }}>Need help with your application?</div>
-                <div style={{ fontSize: 12, color: S.gray, fontFamily: S.body, marginTop: 2 }}>WhatsApp us at 876-381-9771 or email info@ctsetsjm.com. We respond within 24 hours.</div>
+                <div style={{ fontSize: 12, color: S.gray, fontFamily: S.body, marginTop: 2 }}>WhatsApp us at 876-381-9771 or email admin@ctsetsjm.com. We respond within 48–72 hours.</div>
               </div>
               <a href="https://wa.me/8763819771?text=Hi%2C%20I%20need%20help%20with%20my%20CTS%20ETS%20application." target="_blank" rel="noopener noreferrer"
                 style={{ padding: "10px 20px", borderRadius: 8, background: S.emerald, color: "#fff", fontSize: 12, fontWeight: 700, fontFamily: S.body, textDecoration: "none", whiteSpace: "nowrap" }}>

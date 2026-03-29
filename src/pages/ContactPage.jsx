@@ -29,7 +29,7 @@ export default function ContactPage({ setPage }) {
       await submitToAppsScript({ form_type: "Contact Enquiry", contactName: form.name, email: form.email, phone: form.phone || "N/A", subject: form.subject || "General", message: form.message }, {});
       trackContactFormSent(form.subject || "General");
       setSent(true);
-    } catch { alert("Something went wrong. Try info@ctsetsjm.com."); }
+    } catch { alert("Something went wrong. Try admin@ctsetsjm.com."); }
     finally { setSending(false); }
   };
 
@@ -39,7 +39,7 @@ export default function ContactPage({ setPage }) {
       <Container>
         {/* Contact cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 16, marginBottom: 40 }} className="resp-grid-2">
-          {[["📧","General Enquiries","info@ctsetsjm.com","mailto:info@ctsetsjm.com",S.teal],["💰","Finance","finance@ctsetsjm.com","mailto:finance@ctsetsjm.com",S.amber],["📞","Call / WhatsApp","876-381-9771","tel:8763819771",S.coral],["📍","Visit Us","6 Newark Avenue, Kingston 11","https://maps.google.com/?q=6+Newark+Avenue+Kingston+11+Jamaica",S.violet]].map(([icon,label,value,href,color],i) => (
+          {[["📧","General Enquiries","admin@ctsetsjm.com","mailto:admin@ctsetsjm.com",S.teal],["📞","Call / WhatsApp","876-381-9771","tel:8763819771",S.coral],["📍","Visit Us","6, Newark Avenue, Kingston 2 (By Appointment Only)","https://maps.google.com/?q=6+Newark+Avenue+Kingston+2+Jamaica",S.violet]].map(([icon,label,value,href,color],i) => (
             <Reveal key={label} delay={i * 0.06}><a href={href} style={{ textDecoration: "none" }} target={label.includes("Visit") ? "_blank" : undefined} rel={label.includes("Visit") ? "noopener noreferrer" : undefined}><div style={{ background: "#fff", borderRadius: 10, padding: "28px 20px", textAlign: "center", border: "1px solid " + color + "20", transition: "all 0.2s" }} onMouseEnter={e => { e.currentTarget.style.borderColor = color; e.currentTarget.style.boxShadow = "0 4px 16px " + color + "15"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = color + "20"; e.currentTarget.style.boxShadow = "none"; }}><div style={{ fontSize: 28, marginBottom: 10 }}>{icon}</div><div style={{ fontSize: 10, color, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, marginBottom: 6 }}>{label}</div><div style={{ fontSize: 15, color: S.navy, fontWeight: 700, fontFamily: S.body }}>{value}</div></div></a></Reveal>
           ))}
         </div>
@@ -61,7 +61,7 @@ export default function ContactPage({ setPage }) {
             <div style={{ background: "#fff", borderRadius: 16, padding: "48px 32px", border: "1px solid " + S.emerald + "30", textAlign: "center" }}>
               <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
               <h3 style={{ fontFamily: S.heading, fontSize: 22, color: S.navy, marginBottom: 10 }}>Message Sent!</h3>
-              <p style={{ fontFamily: S.body, fontSize: 14, color: "#4A5568", lineHeight: 1.7, maxWidth: 400, margin: "0 auto 20px" }}>Thank you, <strong>{form.name}</strong>. We'll respond within 24–48 hours.</p>
+              <p style={{ fontFamily: S.body, fontSize: 14, color: "#4A5568", lineHeight: 1.7, maxWidth: 400, margin: "0 auto 20px" }}>Thank you, <strong>{form.name}</strong>. We'll respond within 48–72 hours.</p>
               <Btn primary onClick={() => { setSent(false); setForm({ name: "", email: "", phone: "", subject: "", message: "" }); setCaptcha(false); }} style={{ color: "#fff", background: S.teal }}>Send Another</Btn>
             </div>
           ) : (
@@ -70,7 +70,7 @@ export default function ContactPage({ setPage }) {
                 <div><label style={lbl}>Full Name *</label><input style={inp} value={form.name} onChange={e => u("name", e.target.value)} placeholder="Your full name" /></div>
                 <div><label style={lbl}>Email *</label><input type="email" style={inp} value={form.email} onChange={e => u("email", e.target.value)} placeholder="your@email.com" /></div>
                 <div><label style={lbl}>Phone</label><input style={inp} value={form.phone} onChange={e => u("phone", e.target.value.replace(/\D/g, "").slice(0, 10))} placeholder="Optional" /></div>
-                <div><label style={lbl}>Subject</label><select style={inp} value={form.subject} onChange={e => u("subject", e.target.value)}><option value="">Select topic</option>{["General Enquiry","Programme Info","Fees & Payment","Application Help","Employer / Group","Certification","Technical Issue","Feedback"].map(s => <option key={s}>{s}</option>)}</select></div>
+                <div><label style={lbl}>Subject</label><select style={inp} value={form.subject} onChange={e => u("subject", e.target.value)}><option value="">Select topic</option>{["General Enquiry","Programme Info","Fees & Payment","Application Help","Employer / Group","Programmes","Technical Issue","Feedback"].map(s => <option key={s}>{s}</option>)}</select></div>
               </div>
               <div style={{ marginBottom: 20 }}><label style={lbl}>Message *</label><textarea style={{ ...inp, minHeight: 120, resize: "vertical" }} value={form.message} onChange={e => u("message", e.target.value)} placeholder="How can we help?" /></div>
               <HoneypotField value={hp} onChange={e => setHp(e.target.value)} />

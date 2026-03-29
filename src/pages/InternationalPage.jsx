@@ -13,12 +13,12 @@ const REGIONS = [
 export default function InternationalPage({ setPage }) {
   return (
     <PageWrapper>
-      <SectionHeader tag="Study From Anywhere" title="International Students Welcome" desc="100% online. Pay in USD or JMD. Qualifications recognised in 80+ countries through City & Guilds." accentColor={S.violet} />
+      <SectionHeader tag="Study From Anywhere" title="International Students Welcome" desc="100% online. Pay in USD or JMD. Qualifications aligned to NCTVET — nationally recognised." accentColor={S.violet} />
       <Container>
         {/* Key facts */}
         <Reveal>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 40 }} className="resp-grid-2">
-            {[["100%", "Online", S.teal], ["80+", "Countries", S.violet], ["USD & JMD", "Payment", S.gold], ["24hr", "Support", S.coral]].map(([val, label, color]) => (
+            {[["100%", "Online", S.teal], ["80+", "Countries", S.violet], ["USD & JMD", "Payment", S.gold], ["48-72hr", "Support", S.coral]].map(([val, label, color]) => (
               <div key={label} style={{ textAlign: "center", padding: "20px 16px", borderRadius: 12, background: "#fff", border: "1px solid " + S.border }}>
                 <div style={{ fontFamily: S.heading, fontSize: 26, fontWeight: 800, color }}>{val}</div>
                 <div style={{ fontSize: 11, color: S.gray, fontFamily: S.body, marginTop: 4, textTransform: "uppercase", letterSpacing: 1 }}>{label}</div>

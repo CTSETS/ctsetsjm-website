@@ -40,8 +40,8 @@ export const CAREER_OUTCOMES = {
   "Job Certificate": { salaryRange: "J$600K – J$1.2M/yr", outlook: "High demand — digital literacy and customer service roles expanding across BPO, retail, government." },
   "Level 2": { salaryRange: "J$800K – J$1.5M/yr", outlook: "Strong — vocational holders prioritised for entry-level supervisory and admin positions." },
   "Level 3": { salaryRange: "J$1.2M – J$2.2M/yr", outlook: "Very strong — diploma holders qualify for supervisory, management, specialist roles." },
-  "Level 4": { salaryRange: "J$1.8M – J$3.5M/yr", outlook: "Excellent — qualified HR managers, operations managers, business analysts in high demand." },
-  "Level 5": { salaryRange: "J$2.5M – J$5M+/yr", outlook: "Senior management and executive roles. Eligible for director-level positions." },
+  "Level 4 (Associate Equiv.)": { salaryRange: "J$1.8M – J$3.5M/yr", outlook: "Excellent — qualified HR managers, operations managers, business analysts in high demand." },
+  "Level 5 (Bachelor's Equiv.)": { salaryRange: "J$2.5M – J$5M+/yr", outlook: "Senior management and executive roles. Eligible for director-level positions." },
 };
 export const CALC_DATA = [
   { level: "Job Certificate", name: "Basic Digital Literacy Skills Proficiency", tuition: 5000, goldOnly: true },
@@ -65,17 +65,17 @@ export const CALC_DATA = [
   { level: "Level 3 — Diploma", name: "Entrepreneurship", tuition: 25000, bronzeMonths: 6 },
   { level: "Level 3 — Diploma", name: "Industrial Security Ops", tuition: 25000, bronzeMonths: 6 },
   { level: "Level 3 — Diploma", name: "Supervisory Management", tuition: 25000, bronzeMonths: 6 },
-  { level: "Level 4 — Associate", name: "Human Resource Management", tuition: 35000, bronzeMonths: 7 },
-  { level: "Level 4 — Associate", name: "Bus Admin — Management", tuition: 35000, bronzeMonths: 8 },
-  { level: "Level 5 — Bachelor's", name: "Human Resource Management", tuition: 45000, bronzeMonths: 5 },
-  { level: "Level 5 — Bachelor's", name: "Bus Admin Management", tuition: 45000, bronzeMonths: 8 },
+  { level: "Level 4 — Associate Equiv.", name: "Human Resource Management", tuition: 35000, bronzeMonths: 7 },
+  { level: "Level 4 — Associate Equiv.", name: "Bus Admin — Management", tuition: 35000, bronzeMonths: 8 },
+  { level: "Level 5 — Bachelor's Equiv.", name: "Human Resource Management", tuition: 45000, bronzeMonths: 5 },
+  { level: "Level 5 — Bachelor's Equiv.", name: "Bus Admin Management", tuition: 45000, bronzeMonths: 8 },
 ];
 export const GROUP_DISCOUNTS = [
   { level: "Job Certificate", standard: "$10,000", group: "$8,500", saving: "$1,500" },
   { level: "Level 2", standard: "$20,000", group: "$17,000", saving: "$3,000" },
   { level: "Level 3", standard: "$30,000", group: "$25,500", saving: "$4,500" },
-  { level: "Level 4", standard: "$40,000", group: "$34,000", saving: "$6,000" },
-  { level: "Level 5", standard: "$50,000", group: "$42,500", saving: "$7,500" },
+  { level: "Level 4 (Associate Equiv.)", standard: "$40,000", group: "$34,000", saving: "$6,000" },
+  { level: "Level 5 (Bachelor's Equiv.)", standard: "$50,000", group: "$42,500", saving: "$7,500" },
 ];
 
 // ── Programme details for the modal on ProgrammesPage ──

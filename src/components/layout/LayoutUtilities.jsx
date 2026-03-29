@@ -32,7 +32,7 @@ export function AnnouncementBar({ setPage }) {
   if (dismissed) return null;
   return (
     <div onClick={() => setPage?.("Apply")} role="banner" style={{ background: `linear-gradient(135deg, ${S.coral}, ${S.gold})`, padding: "8px 20px", display: "flex", alignItems: "center", justifyContent: "center", gap: 12, flexWrap: "wrap", cursor: "pointer", position: "relative", zIndex: 1001 }}>
-      <span style={{ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body, textAlign: "center" }}>🎓 APRIL INTAKE NOW OPEN — 25 Programmes, 100% Online, From J$10,000 <span style={{ textDecoration: "underline" }}>Apply Now →</span></span>
+      <span style={{ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body, textAlign: "center" }}>🎓 NEXT TERM — ENROL NOW — Multiple Programmes, 100% Online, From J$10,000 <span style={{ textDecoration: "underline" }}>Apply Now →</span></span>
       <button onClick={e => { e.stopPropagation(); try { sessionStorage.setItem("cts_ann_off", "1"); } catch {} setDismissed(true); }} aria-label="Dismiss" style={{ background: "rgba(1,30,64,0.1)", border: "none", borderRadius: "50%", width: 22, height: 22, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: S.navy, fontWeight: 700, flexShrink: 0 }}>✕</button>
     </div>
   );

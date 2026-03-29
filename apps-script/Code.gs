@@ -6,7 +6,7 @@
 // This auto-creates 4 child sheets with all tabs + headers.
 // ═══════════════════════════════════════════════════════════════════════
 
-var ADMIN_EMAIL = "info@ctsetsjm.com";
+var ADMIN_EMAIL = "admin@ctsetsjm.com";
 var SHEET_IDS = { master:"", students:"", finance:"", operations:"", academic:"" };
 
 // ── Load IDs from Script Properties (set during setup) ──

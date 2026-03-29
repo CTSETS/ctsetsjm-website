@@ -18,9 +18,8 @@ const SECTIONS = [
   { title: "3. Fees & Payment", content: [
     "All fees are published on ctsetsjm.com and are quoted in Jamaican Dollars (JMD). USD equivalents are provided for reference at the stated exchange rate and may vary.",
     "Registration fee: J$5,000 (non-refundable). Tuition fees vary by qualification level.",
-    "Payment plans: Gold (full payment, 0% surcharge), Silver (60/40 split, +10% surcharge — Levels 3–5 only), Bronze (30% deposit + monthly instalments, +15% surcharge — Levels 3–5 only).",
+    "Payment plans: Gold (full payment, 0% surcharge), Silver (60/40 split, +10% surcharge — Levels 3–5 only), Bronze (20% deposit + monthly instalments, +15% surcharge — Levels 3–5 only).",
     "Failure to complete payment plan instalments by the agreed dates may result in suspension of access to learning materials until payment is current.",
-    "NCTVET and City & Guilds external assessment and certification fees are separate from CTS ETS tuition and are payable directly to the respective awarding body.",
   ]},
   { title: "4. Refund Policy", content: [
     "Registration fees are non-refundable under any circumstances.",
@@ -39,9 +38,8 @@ const SECTIONS = [
   { title: "6. Assessment & Certification", content: [
     "Internal assessments are administered by CTS ETS in accordance with the relevant competency standard.",
     "Students who pass all internal assessments receive a CTS ETS Institutional Certificate of Completion.",
-    "External certification through NCTVET (NVQ-J) or City & Guilds is subject to the policies, fees, and assessment requirements of the respective awarding body. CTS ETS facilitates but does not guarantee external certification.",
-    "Each programme is aligned to either NCTVET or City & Guilds — not both simultaneously.",
-    "CTS ETS is NOT a City & Guilds Assured Provider. City & Guilds alignment refers to programme content standards, not institutional accreditation.",
+    "External certification through NCTVET (NVQ-J) is subject to the policies, fees, and assessment requirements of the respective awarding body. CTS ETS facilitates but does not guarantee external certification.",
+    "Each programme is aligned to either NCTVET — not both simultaneously.",
   ]},
   { title: "7. Student Conduct", content: [
     "Students are expected to engage with CTS ETS programmes honestly and ethically.",
@@ -56,7 +54,7 @@ const SECTIONS = [
   ]},
   { title: "9. Privacy & Data Protection", content: [
     "Your personal information is handled in accordance with our Privacy Policy, available at ctsetsjm.com.",
-    "By enrolling, you consent to CTS ETS sharing your information with NCTVET, City & Guilds, HEART/NSTA Trust, and payment processors as necessary for programme delivery and certification.",
+    "By enrolling, you consent to CTS ETS sharing your information with NCTVET, HEART/NSTA Trust, and payment processors as necessary for programme delivery and certification.",
   ]},
   { title: "10. Limitation of Liability", content: [
     "CTS ETS is not liable for any indirect, consequential, or incidental damages arising from the use of our services, website, or learning platform.",
@@ -74,8 +72,8 @@ const SECTIONS = [
   ]},
   { title: "13. Contact", content: [
     "For questions about these terms, contact CTS ETS:",
-    "Email: info@ctsetsjm.com | Phone: 876-381-9771 | WhatsApp: 876-381-9771",
-    "Address: 6 Newark Avenue, Kingston 11, Jamaica W.I. | Reg. No. 16007/2025",
+    "Email: admin@ctsetsjm.com | Phone: 876-381-9771 | WhatsApp: 876-381-9771",
+    "Address: 6, Newark Avenue, Kingston 2, Jamaica W.I. | Reg. No. 16007/2025",
   ]},
 ];
 

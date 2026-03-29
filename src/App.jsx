@@ -14,19 +14,18 @@ const AboutPage = lazy(() => import("./pages/AboutPage"));
 const ProgrammesPage = lazy(() => import("./pages/ProgrammesPage"));
 const FeesPage = lazy(() => import("./pages/FeesPage"));
 const ContactPage = lazy(() => import("./pages/ContactPage"));
-const AnnouncementsPage = lazy(() => import("./pages/AnnouncementsPage"));
 const WhyChoosePage = lazy(() => import("./pages/WhyChoosePage"));
-const CertificationPage = lazy(() => import("./pages/CertificationPage"));
 const ApplyPage = lazy(() => import("./pages/ApplyPage"));
 const PaymentPage = lazy(() => import("./pages/PaymentPage"));
 const EmployersPage = lazy(() => import("./pages/EmployersPage"));
 const InternationalPage = lazy(() => import("./pages/InternationalPage"));
 const StudentJourneyPage = lazy(() => import("./pages/StudentJourneyPage"));
-const CareerOutcomesPage = lazy(() => import("./pages/CareerOutcomesPage"));
 const VerifyCertificatePage = lazy(() => import("./pages/VerifyCertificatePage"));
 const FeedbackPage = lazy(() => import("./pages/FeedbackPage"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const TermsPage = lazy(() => import("./pages/TermsPage"));
+const FAQPage = lazy(() => import("./pages/FAQPage"));
+const StudentPortalPage = lazy(() => import("./pages/StudentPortalPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 function PageLoader() {
@@ -43,7 +42,7 @@ class ErrorBoundary extends Component {
   }
 }
 
-const TITLES = { Home: "CTS ETS — Build Real Skills. Earn Recognised Qualifications.", About: "About CTS ETS", "Why Choose": "Why Choose CTS ETS", Programmes: "25 Programmes | CTS ETS", Certification: "Certification | CTS ETS", "Fees & Calculator": "Fees & Calculator | CTS ETS", "For Employers": "For Employers | CTS ETS", "Student Journey": "Student Journey | CTS ETS", Careers: "Career Outcomes | CTS ETS", Announcements: "Updates | CTS ETS", Apply: "Apply Now | CTS ETS", Pay: "Make a Payment | CTS ETS", Contact: "Contact Us | CTS ETS", International: "International Students | CTS ETS", "Verify Certificate": "Verify Certificate | CTS ETS", Feedback: "Feedback | CTS ETS", Privacy: "Privacy Policy | CTS ETS", Terms: "Terms & Conditions | CTS ETS" };
+const TITLES = { Home: "CTS ETS — Jamaica's Digital Vocational School", About: "About CTS ETS", "Why Choose": "Why Choose CTS ETS", Programmes: "Programmes | CTS ETS", "Fees & Calculator": "Student Finance | CTS ETS", "For Employers": "For Employers | CTS ETS", "Student Journey": "Student Journey | CTS ETS", Apply: "Apply Now | CTS ETS", Pay: "Make a Payment | CTS ETS", Contact: "Contact Us | CTS ETS", International: "International Students | CTS ETS", "Verify Certificate": "Verify Certificate | CTS ETS", Feedback: "Feedback | CTS ETS", FAQ: "Frequently Asked Questions | CTS ETS", "Student Portal": "Student Portal | CTS ETS", Privacy: "Privacy Policy | CTS ETS", Terms: "Terms & Conditions | CTS ETS" };
 
 export default function CTSApp() {
   const [page, setPage] = useState(() => {
@@ -77,18 +76,17 @@ export default function CTSApp() {
       case "About": return <AboutPage {...p} />;
       case "Why Choose": return <WhyChoosePage {...p} />;
       case "Programmes": return <ProgrammesPage {...p} />;
-      case "Certification": return <CertificationPage {...p} />;
       case "Fees & Calculator": return <FeesPage {...p} />;
       case "For Employers": return <EmployersPage {...p} />;
       case "Student Journey": return <StudentJourneyPage {...p} />;
-      case "Careers": return <CareerOutcomesPage {...p} />;
-      case "Announcements": return <AnnouncementsPage {...p} />;
       case "Apply": return <ApplyPage {...p} />;
       case "Pay": return <PaymentPage {...p} />;
       case "Contact": return <ContactPage {...p} />;
       case "International": return <InternationalPage {...p} />;
       case "Verify Certificate": return <VerifyCertificatePage {...p} />;
       case "Feedback": return <FeedbackPage {...p} />;
+      case "FAQ": return <FAQPage {...p} />;
+      case "Student Portal": return <StudentPortalPage {...p} />;
       case "Privacy": return <PrivacyPage />;
       case "Terms": return <TermsPage />;
       default: return <NotFoundPage {...p} />;

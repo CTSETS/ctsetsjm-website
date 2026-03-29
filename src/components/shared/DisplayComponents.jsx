@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import S from "../../constants/styles";
-import { USD_RATE, NCTVET_LOGO, CG_LOGO, HEART_LOGO, SECURITY_BADGES } from "../../constants/config";
+import { USD_RATE, NCTVET_LOGO, HEART_LOGO, SECURITY_BADGES } from "../../constants/config";
 
 export function DualPrice({ amount, size = 13, style = {} }) {
   const num = typeof amount === "string" ? parseInt(amount.replace(/[$,]/g, "")) : amount;
@@ -22,7 +22,7 @@ export function CountdownTimer({ targetDate }) {
   return <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>{[["days", time.days], ["hrs", time.hours], ["min", time.minutes], ["sec", time.seconds]].map(([l, v]) => <div key={l} style={{ background: "rgba(255,255,255,0.06)", borderRadius: 8, padding: "8px 12px", textAlign: "center", border: "1px solid rgba(255,255,255,0.08)", minWidth: 52 }}><div style={{ fontFamily: S.heading, fontSize: 20, fontWeight: 800, color: S.gold }}>{String(v || 0).padStart(2, "0")}</div><div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", fontFamily: S.body, textTransform: "uppercase", letterSpacing: 1, marginTop: 2 }}>{l}</div></div>)}</div>;
 }
 export function PartnerLogos() {
-  return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 32, flexWrap: "wrap", padding: "24px 0" }}><div style={{ textAlign: "center" }}><div style={{ fontSize: 10, color: S.gray, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, marginBottom: 8 }}>Aligned To</div><div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap", justifyContent: "center" }}><img src={NCTVET_LOGO} alt="NCTVET" style={{ height: 64, objectFit: "contain" }} loading="lazy" /><img src={CG_LOGO} alt="City and Guilds" style={{ height: 64, objectFit: "contain" }} loading="lazy" /><img src={HEART_LOGO} alt="HEART NSTA" style={{ height: 64, objectFit: "contain" }} loading="lazy" /></div></div></div>;
+  return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 32, flexWrap: "wrap", padding: "24px 0" }}><div style={{ textAlign: "center" }}><div style={{ fontSize: 10, color: S.gray, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, marginBottom: 8 }}>Aligned To</div><div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap", justifyContent: "center" }}><img src={NCTVET_LOGO} alt="NCTVET" style={{ height: 64, objectFit: "contain" }} loading="lazy" /><img src={HEART_LOGO} alt="HEART NSTA" style={{ height: 64, objectFit: "contain" }} loading="lazy" /></div></div></div>;
 }
 export function WhatsAppShare({ text, label = "Share via WhatsApp" }) {
   return <a href={"https://wa.me/?text=" + encodeURIComponent(text)} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 16px", borderRadius: 6, background: "#25D366", color: "#fff", fontSize: 12, fontWeight: 700, fontFamily: S.body, textDecoration: "none" }}>{label}</a>;

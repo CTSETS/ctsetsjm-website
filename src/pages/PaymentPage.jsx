@@ -68,13 +68,13 @@ function calcPricing(level) {
     var months = level && level.indexOf("5") >= 0 ? 8 : level && level.indexOf("4") >= 0 ? 7 : 6;
     var roundedMonthly = level && level.indexOf("5") >= 0 ? 4500 : level && level.indexOf("4") >= 0 ? 4000 : 3500;
     var monthlyTotal = roundedMonthly * months;
-    var bronzeDeposit = level && level.indexOf("5") >= 0 ? 15500 : level && level.indexOf("4") >= 0 ? 12000 : 8500;
+    var bronzeDeposit = level && level.indexOf("5") >= 0 ? 12000 : level && level.indexOf("4") >= 0 ? 10000 : 7000;
     var bronzeTotal = regFee + bronzeDeposit + monthlyTotal;
     var bronzePayments = [{ label: "Deposit", amount: bronzeDeposit }];
     for (var m = 1; m <= months; m++) {
       bronzePayments.push({ label: "Month " + m, amount: roundedMonthly });
     }
-    plans.push({ name: "Bronze", label: "30% Deposit + Monthly", surcharge: 15, total: bronzeTotal, payments: bronzePayments });
+    plans.push({ name: "Bronze", label: "20% Deposit + Monthly", surcharge: 15, total: bronzeTotal, payments: bronzePayments });
   }
 
   return {
@@ -335,7 +335,7 @@ export default function PaymentPage({ setPage }) {
   var selectedAmount = 0;
   var feeDescription = [];
   if (payingReg && regFeeAmount > 0) { selectedAmount += regFeeAmount; feeDescription.push("Registration Fee"); }
-  if (payingTuition) { selectedAmount += tuitionAmount; feeDescription.push("Tuition"); }
+  if (payingTuition) { selectedAmount += tuitionAmount; feeDescription.push("Training Fee"); }
   var feeLabel = feeDescription.join(" + ") || "";
 
   // ═══════════ WIPAY RETURN ═══════════
@@ -367,7 +367,7 @@ export default function PaymentPage({ setPage }) {
                 ); })}
               </div>
               {isSuccess ? (
-                <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.7, marginBottom: 28 }}>A receipt has been sent to your email. Your enrolment will be processed within 24 hours.</p>
+                <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.7, marginBottom: 28 }}>A receipt has been sent to your email. Your enrolment will be processed within 48–72 hours.</p>
               ) : (
                 <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.7, marginBottom: 28 }}>You can try again or use bank transfer instead. Contact us if you need help.</p>
               )}
@@ -411,7 +411,7 @@ export default function PaymentPage({ setPage }) {
                   </div>
                 ); })}
               </div>
-              <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.7, marginBottom: 28 }}>Our finance team will verify within 24-48 hours. Confirmation will be sent to your email.</p>
+              <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.7, marginBottom: 28 }}>Our finance team will verify within 48–72 hours. Confirmation will be sent to your email.</p>
               <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
                 <Btn primary onClick={function() { setPage("Home"); }} style={{ background: S.coral, color: "#fff" }}>Return Home</Btn>
                 <a href={"https://wa.me/8763819771?text=" + encodeURIComponent("Hi, I just uploaded payment evidence for " + (student ? student.ref : "") + ". Please confirm.")} target="_blank" rel="noopener noreferrer"
@@ -469,13 +469,13 @@ export default function PaymentPage({ setPage }) {
                   <div style={{ fontSize: 13, color: S.roseDark, fontFamily: S.body, fontWeight: 600, marginBottom: 8 }}>{lookupMsg}</div>
                   {!disputeSent ? (
                     <div>
-                      <p style={{ fontSize: 12, color: S.gray, fontFamily: S.body, lineHeight: 1.6, marginBottom: 10 }}>If you are sure this number is correct, click below to notify our admin. They will investigate within 24 hours.</p>
+                      <p style={{ fontSize: 12, color: S.gray, fontFamily: S.body, lineHeight: 1.6, marginBottom: 10 }}>If you are sure this number is correct, click below to notify our admin. They will investigate within 48–72 hours.</p>
                       <button onClick={handleDispute} style={{ padding: "10px 20px", borderRadius: 8, background: S.navy, color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>{"I\u2019m Sure \u2014 Notify Admin"}</button>
                     </div>
                   ) : (
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
                       <div style={{ width: 18, height: 18, borderRadius: "50%", background: S.emerald, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10 }}>{"\u2713"}</div>
-                      <span style={{ fontSize: 12, color: S.emeraldDark, fontFamily: S.body, fontWeight: 600 }}>Admin notified. You will hear from us within 24 hours.</span>
+                      <span style={{ fontSize: 12, color: S.emeraldDark, fontFamily: S.body, fontWeight: 600 }}>Admin notified. You will hear from us within 48–72 hours.</span>
                     </div>
                   )}
                 </div>
@@ -525,7 +525,7 @@ export default function PaymentPage({ setPage }) {
                 {/* Price breakdown */}
                 <div style={{ padding: "20px 24px", borderRadius: 12, background: S.lightBg, marginBottom: 20 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", fontSize: 13, fontFamily: S.body }}>
-                    <span style={{ color: S.gray }}>Tuition</span>
+                    <span style={{ color: S.gray }}>Training Fee</span>
                     <span style={{ color: S.navy, fontWeight: 600 }}>{fmt(pricing.tuition)}</span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", fontSize: 13, fontFamily: S.body }}>
@@ -609,12 +609,12 @@ export default function PaymentPage({ setPage }) {
                       <div style={{ fontSize: 10, color: S.gray, fontFamily: S.body, marginTop: 4 }}>One-time fee — paid once at registration</div>
                     </button>
 
-                    {/* Tuition Fee */}
+                    {/* Training Fee */}
                     <button onClick={function() { setPayingTuition(!payingTuition); if (!amountPaid || amountPaid === String(selectedAmount)) setAmountPaid(""); }}
                       style={{ padding: "18px 20px", borderRadius: 12, border: payingTuition ? "2.5px solid " + S.teal : "1.5px solid " + S.border, background: payingTuition ? S.tealLight : "#fff", cursor: "pointer", textAlign: "left", transition: "all 0.2s" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
                         <div style={{ width: 22, height: 22, borderRadius: 6, border: "2px solid " + (payingTuition ? S.teal : S.border), background: payingTuition ? S.teal : "#fff", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 800 }}>{payingTuition ? "\u2713" : ""}</div>
-                        <span style={{ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.body }}>Tuition Fee</span>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.body }}>Training Fee</span>
                       </div>
                       <div style={{ fontSize: 22, fontWeight: 800, color: S.navy, fontFamily: S.heading }}>{fmt(tuitionAmount)}</div>
                       <div style={{ fontSize: 10, color: S.gray, fontFamily: S.body, marginTop: 4 }}>{selectedPlan + " plan" + (activePlan && activePlan.surcharge > 0 ? " (+" + activePlan.surcharge + "% surcharge)" : "")}</div>
@@ -726,7 +726,7 @@ export default function PaymentPage({ setPage }) {
                         <span style={{ fontWeight: 800, color: S.navy }}>{fmt(selectedAmount)}</span>
                       </div>
                       <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", fontSize: 12, fontFamily: S.body }}>
-                        <span style={{ color: S.gray }}>WiPay processing fee (3.5%)</span>
+                        <span style={{ color: S.gray }}>Card processing fee (3.5%)</span>
                         <span style={{ color: S.amber, fontWeight: 600 }}>{fmt(Math.round(selectedAmount * 0.035))}</span>
                       </div>
                       <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0 4px", borderTop: "2px solid " + S.border, fontSize: 16, fontFamily: S.heading, marginTop: 6 }}>
@@ -735,7 +735,7 @@ export default function PaymentPage({ setPage }) {
                       </div>
                     </div>
 
-                    <p style={{ fontFamily: S.body, fontSize: 12, color: S.gray, lineHeight: 1.6, marginBottom: 16, textAlign: "center" }}>You will be redirected to WiPay's secure payment page. Visa and Mastercard accepted.</p>
+                    <p style={{ fontFamily: S.body, fontSize: 12, color: S.gray, lineHeight: 1.6, marginBottom: 16, textAlign: "center" }}>You will be redirected to our secure payment gateway. Visa and Mastercard accepted.</p>
 
                     <button onClick={function() { if (!amountPaid) setAmountPaid(String(selectedAmount)); handleWiPaySubmit(); }} disabled={selectedAmount <= 0}
                       style={{ width: "100%", padding: "18px", borderRadius: 10, border: "none", background: selectedAmount > 0 ? "linear-gradient(135deg, " + S.emerald + " 0%, #1a9b5c 100%)" : "rgba(1,30,64,0.08)", color: selectedAmount > 0 ? "#fff" : S.grayLight, fontSize: 16, fontWeight: 700, cursor: selectedAmount > 0 ? "pointer" : "not-allowed", fontFamily: S.body, boxShadow: selectedAmount > 0 ? "0 4px 20px " + S.emerald + "30" : "none" }}>
@@ -753,7 +753,7 @@ export default function PaymentPage({ setPage }) {
               <span style={{ fontSize: 20 }}>{"\uD83D\uDCAC"}</span>
               <div style={{ flex: 1, minWidth: 200 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body }}>Need payment help?</div>
-                <div style={{ fontSize: 12, color: S.gray, fontFamily: S.body }}>Email finance@ctsetsjm.com or WhatsApp 876-381-9771</div>
+                <div style={{ fontSize: 12, color: S.gray, fontFamily: S.body }}>Email admin@ctsetsjm.com or WhatsApp 876-381-9771</div>
               </div>
               <a href={BOOKING_URLS.payment} target="_blank" rel="noopener noreferrer" style={{ padding: "8px 16px", borderRadius: 6, background: S.teal, color: "#fff", fontSize: 12, fontWeight: 700, fontFamily: S.body, textDecoration: "none", whiteSpace: "nowrap" }}>Book Payment Consultation</a>
             </div>

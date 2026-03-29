@@ -15,10 +15,10 @@ const SECTIONS = [
   { title: "2. How We Use Your Information", content: [
     "We use your personal information for the following purposes:",
     "To process and manage your application and enrolment.",
-    "To deliver educational services through our Interactive Learning System and Canvas LMS.",
+    "To deliver educational services through our CTS ETS Interactive Learning System.",
     "To communicate with you about your programme, assessments, and account.",
     "To process payments and maintain financial records.",
-    "To submit your details to NCTVET or City & Guilds for external certification (with your consent at enrolment).",
+    "To submit your details to NCTVET for external certification (with your consent at enrolment).",
     "To submit registration documents to HEART/NSTA Trust where applicable.",
     "To improve our programmes, website, and services based on usage patterns and feedback.",
     "To send relevant updates about your programme, intake dates, and CTS ETS news (you can opt out at any time).",
@@ -26,11 +26,10 @@ const SECTIONS = [
   { title: "3. How We Share Your Information", content: [
     "We do not sell, rent, or trade your personal information to third parties. We may share your information with:",
     "NCTVET — for national certification and external assessment registration.",
-    "City & Guilds — for international certification where applicable.",
     "HEART/NSTA Trust — for training registration and compliance.",
     "WiPay — our payment processor, for secure payment transactions only.",
-    "Google (Apps Script, Canvas LMS) — for learning management and form processing.",
-    "EmailJS / Brevo — for transactional email delivery only.",
+    "Third-party service providers — for learning management, email, and data processing.",
+    "Secure email service providers — for transactional email delivery only.",
     "Regulatory authorities — if required by law or to protect the rights and safety of CTS ETS or its students.",
   ]},
   { title: "4. Data Security", content: [
@@ -47,7 +46,7 @@ const SECTIONS = [
     "Certification records: retained indefinitely for verification purposes.",
     "Financial records: retained for 7 years in accordance with Jamaican tax regulations.",
     "Website analytics: anonymised data retained for up to 3 years.",
-    "You may request deletion of your personal data by contacting info@ctsetsjm.com, subject to our legal retention obligations.",
+    "You may request deletion of your personal data by contacting admin@ctsetsjm.com, subject to our legal retention obligations.",
   ]},
   { title: "6. Cookies & Tracking", content: [
     "Our website uses cookies and similar technologies to improve your experience:",
@@ -63,7 +62,7 @@ const SECTIONS = [
     "Deletion: Request deletion of your data, subject to legal retention requirements.",
     "Objection: Object to processing of your data for specific purposes.",
     "Portability: Request your data in a portable format.",
-    "To exercise any of these rights, contact us at info@ctsetsjm.com or write to: CTS Empowerment & Training Solutions, 6 Newark Avenue, Kingston 11, Jamaica W.I.",
+    "To exercise any of these rights, contact us at admin@ctsetsjm.com or write to: CTS Empowerment & Training Solutions, 6, Newark Avenue, Kingston 2, Jamaica W.I.",
   ]},
   { title: "8. Children's Privacy", content: [
     "CTS ETS programmes are designed for learners aged 16 and above. We do not knowingly collect personal information from children under 16 without parental consent. If we discover that we have collected information from a child under 16, we will delete it promptly.",
@@ -73,10 +72,10 @@ const SECTIONS = [
   ]},
   { title: "10. Contact Us", content: [
     "If you have any questions about this Privacy Policy or how we handle your data, please contact us:",
-    "Email: info@ctsetsjm.com",
+    "Email: admin@ctsetsjm.com",
     "Phone: 876-381-9771",
     "WhatsApp: 876-381-9771",
-    "Address: 6 Newark Avenue, Kingston 11, Jamaica W.I.",
+    "Address: 6, Newark Avenue, Kingston 2, Jamaica W.I.",
   ]},
 ];
 
