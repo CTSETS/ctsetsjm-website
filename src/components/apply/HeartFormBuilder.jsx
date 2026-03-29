@@ -33,7 +33,7 @@ function SignaturePad({ onSign, signatureData }) {
     const pos = getPos(e);
     ctx.lineTo(pos.x, pos.y);
     ctx.strokeStyle = S.navy;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2.5;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     ctx.stroke();
@@ -75,9 +75,9 @@ function SignaturePad({ onSign, signatureData }) {
       <div style={{ position: "relative", borderRadius: 10, border: "1.5px dashed " + (hasDrawn ? S.emerald + "60" : "rgba(1,30,64,0.15)"), background: hasDrawn ? S.emeraldLight + "40" : "#fff", overflow: "hidden" }}>
         <canvas
           ref={canvasRef}
-          width={400}
-          height={120}
-          style={{ display: "block", width: "100%", maxWidth: 400, height: 120, cursor: "crosshair", touchAction: "none" }}
+          width={500}
+          height={180}
+          style={{ display: "block", width: "100%", maxWidth: 500, height: 180, cursor: "crosshair", touchAction: "none" }}
           onMouseDown={startDraw}
           onMouseMove={draw}
           onMouseUp={endDraw}
@@ -87,8 +87,10 @@ function SignaturePad({ onSign, signatureData }) {
           onTouchEnd={endDraw}
         />
         {!hasDrawn && (
-          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
-            <span style={{ fontSize: 12, color: S.grayLight, fontFamily: S.body }}>Draw your signature here</span>
+          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none", gap: 6 }}>
+            <span style={{ fontSize: 24 }}>{"\u270D\uFE0F"}</span>
+            <span style={{ fontSize: 13, color: S.grayLight, fontFamily: S.body }}>Draw your signature here</span>
+            <span style={{ fontSize: 11, color: S.grayLight, fontFamily: S.body }}>Use your finger on mobile or mouse on desktop — take your time</span>
           </div>
         )}
       </div>
@@ -201,89 +203,139 @@ function HeartFormPreview({ data, signature }) {
   );
 }
 
-// ── Generate printable HEART form as new window ──
+// ── Generate HEART form as direct PDF download ──
 function generateHeartPDF(data, signature) {
   const w = window.open("", "_blank");
   if (!w) { alert("Please allow pop-ups to download your HEART form."); return; }
   const today = new Date().toLocaleDateString("en-JM", { year: "numeric", month: "long", day: "numeric" });
-  const dobFormatted = data.dob ? new Date(data.dob + "T00:00:00").toLocaleDateString("en-JM", { year: "numeric", month: "long", day: "numeric" }) : "—";
-  const sigImg = signature ? `<img src="${signature}" style="height:48px;object-fit:contain;" />` : '<div style="border-bottom:1px solid #333;width:200px;height:40px;"></div>';
+  const dobFormatted = data.dob ? new Date(data.dob + "T00:00:00").toLocaleDateString("en-JM", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—";
+  const sigImg = signature ? `<img src="${signature}" style="height:52px;object-fit:contain;" />` : '<div style="border-bottom:1px solid #333;width:200px;height:40px;"></div>';
+  const ck = (val) => val ? "☑" : "☐";
 
   w.document.write(`<!DOCTYPE html><html><head><title>HEART Application — ${data.firstName} ${data.lastName}</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'DM Sans',sans-serif;color:#111;max-width:700px;margin:0 auto;padding:32px 28px}
-.header{background:#011E40;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;border-radius:6px 6px 0 0;margin-bottom:0}
-.header h1{color:#D4A017;font-size:16px;margin:0}
-.header .sub{color:rgba(255,255,255,.6);font-size:10px;letter-spacing:1px;margin-top:2px}
-.header .right{text-align:right;color:rgba(255,255,255,.7);font-size:10px}
-.section-title{font-size:11px;font-weight:700;color:#D4A017;letter-spacing:1px;text-transform:uppercase;margin:16px 0 6px;padding-top:8px}
-.row{display:flex;border-bottom:1px solid #ddd;font-size:12px}
-.row .label{width:38%;padding:6px 8px;background:#f5f5f5;font-weight:600;color:#333}
-.row .value{flex:1;padding:6px 8px;min-height:24px}
-.declaration{padding:10px;font-size:11px;color:#333;line-height:1.7;background:#fafaf7;border:1px solid #eee;border-radius:4px;margin:8px 0}
-.sig-row{display:flex;justify-content:space-between;align-items:flex-end;margin-top:16px;padding-top:12px;border-top:1px solid #ddd}
-.footer{margin-top:16px;padding-top:10px;border-top:1px solid #eee;font-size:9px;color:#999;text-align:center;line-height:1.6}
-@media print{body{padding:16px}@page{margin:1cm}}
+body{font-family:'DM Sans',sans-serif;color:#111;max-width:720px;margin:0 auto;padding:24px 20px}
+.generating{position:fixed;inset:0;background:rgba(1,30,64,0.85);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;color:#fff;font-size:18px}
+.generating .spin{border:3px solid rgba(255,255,255,0.2);border-top:3px solid #D4A017;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite;margin-bottom:16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.header{background:#0066B2;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-radius:4px 4px 0 0}
+.header h1{color:#fff;font-size:16px;margin:0;font-weight:700}
+.header .sub{color:rgba(255,255,255,.85);font-size:10px;margin-top:2px}
+.header .right{text-align:right;color:rgba(255,255,255,.7);font-size:9px}
+.section-bar{background:#0066B2;color:#fff;padding:6px 12px;font-size:11px;font-weight:700;letter-spacing:1px;margin:12px 0 0}
+table{width:100%;border-collapse:collapse;font-size:11px}
+td,th{border:1px solid #ccc;padding:5px 8px;text-align:left;vertical-align:top}
+td.label{background:#f0f4f8;font-weight:600;color:#333;width:35%}
+.declaration{padding:8px 10px;font-size:10px;color:#333;line-height:1.6;background:#fafaf7;border:1px solid #eee;margin:8px 0}
+.sig-row{display:flex;justify-content:space-between;align-items:flex-end;margin-top:14px;padding-top:10px;border-top:1px solid #ddd}
+.footer{margin-top:12px;padding-top:8px;border-top:1px solid #eee;font-size:8px;color:#999;text-align:center;line-height:1.5}
+.check{font-size:13px}
 </style></head><body>
+<div class="generating" id="loadingOverlay"><div class="spin"></div>Generating your PDF...</div>
+
+<div id="formContent">
 <div class="header">
-  <div><h1>HEART/NSTA TRUST</h1><div class="sub">APPLICATION FOR TRAINING</div></div>
-  <div class="right">Via: CTS Empowerment & Training Solutions<br>Reg. No. 16007/2025</div>
+  <div>
+    <h1>HEART/NSTA TRUST</h1>
+    <div class="sub">APPLICATION FOR ADMISSION FORM</div>
+    <div style="color:rgba(255,255,255,.6);font-size:9px;margin-top:4px">ADDRESS: Corporate Office: 6B Oxford Road, Kingston 5</div>
+  </div>
+  <div class="right">Via: CTS Empowerment & Training Solutions<br>Reg. No. 16007/2025<br>${today}</div>
 </div>
 
-<div class="section-title">Section A — Personal Information</div>
-<div class="row"><div class="label">Surname</div><div class="value">${data.lastName || "—"}</div></div>
-<div class="row"><div class="label">First Name(s)</div><div class="value">${[data.firstName, data.middleName].filter(Boolean).join(" ") || "—"}</div></div>
-<div class="row"><div class="label">Date of Birth</div><div class="value">${dobFormatted}</div></div>
-<div class="row"><div class="label">Gender</div><div class="value">${data.gender || "—"}</div></div>
-<div class="row"><div class="label">Nationality</div><div class="value">${data.nationality || "—"}</div></div>
-<div class="row"><div class="label">Marital Status</div><div class="value">${data.maritalStatus || "—"}</div></div>
-<div class="row"><div class="label">TRN</div><div class="value">${data.trn || "—"}</div></div>
-${data.nis ? '<div class="row"><div class="label">NIS Number</div><div class="value">' + data.nis + '</div></div>' : ''}
-<div class="row"><div class="label">Address</div><div class="value">${data.address || "—"}</div></div>
-<div class="row"><div class="label">Parish</div><div class="value">${data.parish || "—"}</div></div>
-<div class="row"><div class="label">Telephone</div><div class="value">${data.phone || "—"}</div></div>
-<div class="row"><div class="label">Email</div><div class="value">${data.email || "—"}</div></div>
+<div class="section-bar">SECTION A — PERSONAL INFORMATION</div>
+<table>
+<tr><td class="label">Last Name *</td><td>${(data.lastName || "—").toUpperCase()}</td><td class="label">First Name *</td><td>${(data.firstName || "—").toUpperCase()}</td></tr>
+<tr><td class="label">Middle Name</td><td>${(data.middleName || "N/A").toUpperCase()}</td><td class="label">Maiden Name</td><td>N/A</td></tr>
+<tr><td class="label">Gender *</td><td>${ck(data.gender==="Female")} FEMALE ${ck(data.gender==="Male")} MALE</td><td class="label">Date of Birth *</td><td>${dobFormatted}</td></tr>
+<tr><td class="label">Nationality</td><td>${data.nationality || "Jamaican"}</td><td class="label">TRN *</td><td>${data.trn || "—"}</td></tr>
+<tr><td class="label">NIS #</td><td>${data.nis || "N/A"}</td><td class="label">Email Address *</td><td>${data.email || "—"}</td></tr>
+<tr><td class="label">Telephone 1 *</td><td>${data.phone || "—"}</td><td class="label">Telephone 2</td><td>N/A</td></tr>
+<tr><td class="label">Marital Status</td><td colspan="3">${ck(data.maritalStatus==="Single")} SINGLE ${ck(data.maritalStatus==="Married")} MARRIED ${ck(data.maritalStatus==="Widowed")} WIDOWED ${ck(data.maritalStatus==="Divorced")} DIVORCED ${ck(data.maritalStatus==="Common Law")} COMMON LAW</td></tr>
+</table>
 
-<div class="section-title">Section B — Education Background</div>
-<div class="row"><div class="label">Highest Qualification</div><div class="value">${data.highestQualification || "—"}</div></div>
-<div class="row"><div class="label">School / Institution</div><div class="value">${data.schoolLastAttended || "—"}</div></div>
-<div class="row"><div class="label">Year Completed</div><div class="value">${data.yearCompleted || "—"}</div></div>
+<table style="margin-top:2px">
+<tr><td class="label" style="width:20%">Permanent Address</td><td colspan="3">${data.address || "—"}</td></tr>
+<tr><td class="label">Country *</td><td>${data.country || "Jamaica"}</td><td class="label">Parish *</td><td>${data.parish || "—"}</td></tr>
+</table>
 
-<div class="section-title">Section C — Employment Information</div>
-<div class="row"><div class="label">Employment Status</div><div class="value">${data.employmentStatus || "—"}</div></div>
-${data.employer ? '<div class="row"><div class="label">Employer / Business</div><div class="value">' + data.employer + '</div></div>' : ''}
-${data.jobTitle ? '<div class="row"><div class="label">Job Title / Position</div><div class="value">' + data.jobTitle + '</div></div>' : ''}
+<table style="margin-top:2px">
+<tr><td class="label" colspan="4" style="background:#e8eef4;font-weight:700">EMERGENCY CONTACT</td></tr>
+<tr><td class="label">Contact Name *</td><td>${data.emergencyName || "—"}</td><td class="label">Relationship *</td><td>${data.emergencyRelationship || "—"}</td></tr>
+<tr><td class="label">Telephone *</td><td colspan="3">${data.emergencyPhone || "—"}</td></tr>
+</table>
 
-<div class="section-title">Section D — Emergency Contact</div>
-<div class="row"><div class="label">Contact Name</div><div class="value">${data.emergencyName || "—"}</div></div>
-<div class="row"><div class="label">Relationship</div><div class="value">${data.emergencyRelationship || "—"}</div></div>
-<div class="row"><div class="label">Contact Phone</div><div class="value">${data.emergencyPhone || "—"}</div></div>
+<div class="section-bar">SECTION B — PROGRAMME INFORMATION</div>
+<table>
+<tr><td class="label">Programme Offering of Choice *</td><td colspan="3">${data.programme || "—"}</td></tr>
+<tr><td class="label">Name of Training Provider *</td><td colspan="3">CTS Empowerment & Training Solutions</td></tr>
+<tr><td class="label">Programme Level *</td><td colspan="3">${data.level || "—"}</td></tr>
+<tr><td class="label">Mode of Delivery</td><td colspan="3">Online (100%)</td></tr>
+<tr><td class="label">Previously enrolled at HEART?</td><td>☐ YES ☐ NO</td><td class="label">How did you hear about us?</td><td>${data.hearAbout || "Website"}</td></tr>
+</table>
 
-<div class="section-title">Section E — Programme Details</div>
-<div class="row"><div class="label">Qualification Level</div><div class="value">${data.level || "—"}</div></div>
-<div class="row"><div class="label">Programme</div><div class="value">${data.programme || "—"}</div></div>
-<div class="row"><div class="label">Training Provider</div><div class="value">CTS Empowerment & Training Solutions</div></div>
-<div class="row"><div class="label">Mode of Delivery</div><div class="value">Online (100%)</div></div>
+<div class="section-bar">SECTION C — EDUCATION AND EMPLOYMENT</div>
+<table>
+<tr><td class="label">Current/Last School Attended</td><td colspan="3">${data.schoolLastAttended || "—"}</td></tr>
+<tr><td class="label">Highest Qualification</td><td>${data.highestQualification || "—"}</td><td class="label">Year Completed</td><td>${data.yearCompleted || "—"}</td></tr>
+<tr><td class="label">Currently Employed? *</td><td>${ck(data.employmentStatus==="Employed"||data.employmentStatus==="Full-Time"||data.employmentStatus==="Part-Time")} YES ${ck(data.employmentStatus==="Unemployed"||data.employmentStatus==="Not Employed")} NO</td>
+<td class="label">Self-Employed? *</td><td>${ck(data.employmentStatus==="Self-Employed")} YES ${ck(data.employmentStatus!=="Self-Employed")} NO</td></tr>
+${data.employer ? '<tr><td class="label">Employer / Business</td><td>' + data.employer + '</td><td class="label">Job Title</td><td>' + (data.jobTitle||"—") + '</td></tr>' : ''}
+</table>
 
-<div class="section-title">Section F — Declaration</div>
+<div class="section-bar">SECTION D — SUPPORTING DOCUMENTS</div>
+<table>
+<tr><td colspan="4" style="font-size:10px;color:#555;padding:8px">
+☐ Recent Resume (if applicable)<br>
+☐ Copies of qualifications/academic achievements<br>
+☐ Proof of age (Passport, National ID, Birth Certificate, or Driver's License) *<br>
+☐ One (1) recent passport-size photograph *<br>
+☐ Copy of Tax Registration Number (TRN) *
+</td></tr>
+</table>
+
+<div class="section-bar">SECTION E — DECLARATION & SIGNATURE</div>
 <div class="declaration">
-I, <strong>${data.firstName} ${data.lastName}</strong>, declare that the information provided in this application is true and correct to the best of my knowledge. I understand that any false information may result in the cancellation of my application or enrolment. I agree to abide by the rules and regulations of the training institution and the HEART/NSTA Trust.
+<span class="check">☑</span> I, <strong>${data.firstName} ${data.lastName}</strong>, declare that all information submitted including this application and any supporting documents is my own work, factually true, and honestly presented. I understand that my application may be cancelled should the information be false.<br><br>
+<span class="check">☑</span> I agree to notify the training institution immediately should there be any change to the information in this application.<br><br>
+<span class="check">☑</span> I understand that once submitted, this application may not be altered; I will need to contact CTS ETS directly to make changes.<br><br>
+<span class="check">☑</span> I understand and agree that by submitting this form I have consented to the privacy practices described by the HEART/NSTA Trust and CTS ETS.
 </div>
 
 <div class="sig-row">
-  <div><div style="font-size:10px;color:#999;margin-bottom:4px">Applicant Signature:</div>${sigImg}</div>
-  <div style="text-align:right"><div style="font-size:10px;color:#999;margin-bottom:4px">Date:</div><div style="font-size:12px;font-weight:600">${today}</div></div>
+  <div><div style="font-size:10px;color:#999;margin-bottom:4px">Signature of Applicant *</div>${sigImg}</div>
+  <div style="text-align:right"><div style="font-size:10px;color:#999;margin-bottom:4px">Date (DD/MM/YYYY) *</div><div style="font-size:12px;font-weight:600">${today}</div></div>
 </div>
 
 <div class="footer">
-This form was auto-generated from the CTS ETS online application system (ctsetsjm.com).<br>
-For official HEART/NSTA registration, this form will be submitted alongside your enrolment documents.
+This form was auto-generated by CTS Empowerment & Training Solutions (ctsetsjm.com) from data entered in the online application.<br>
+For official HEART/NSTA registration, this form will be submitted alongside your enrolment documents.<br>
+CTS ETS | 6, Newark Avenue, Kingston 2 | admin@ctsetsjm.com | 876-381-9771
 </div>
+</div>
+
+<script>
+window.onload = function() {
+  setTimeout(function() {
+    var el = document.getElementById('formContent');
+    var filename = 'HEART_Application_${(data.firstName||"").replace(/[^a-zA-Z]/g,"")}_${(data.lastName||"").replace(/[^a-zA-Z]/g,"")}.pdf';
+    html2pdf().set({
+      margin: [8, 8, 8, 8],
+      filename: filename,
+      image: { type: 'jpeg', quality: 0.95 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).from(el).save().then(function() {
+      document.getElementById('loadingOverlay').innerHTML = '<div style="text-align:center"><div style="font-size:48px;margin-bottom:16px">✅</div><div style="font-size:20px;font-weight:700;margin-bottom:8px">PDF Downloaded!</div><div style="font-size:14px;opacity:0.8;margin-bottom:20px">Your HEART application form has been saved.<br>Upload it in the Documents section on ctsetsjm.com.</div><button onclick="window.close()" style="padding:12px 32px;border-radius:8px;border:none;background:#0E8F8B;color:#fff;font-size:14px;font-weight:700;cursor:pointer">Close This Tab</button></div>';
+    });
+  }, 500);
+};
+<\/script>
 </body></html>`);
   w.document.close();
-  setTimeout(() => w.print(), 600);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -378,7 +430,7 @@ export default function HeartFormBuilder({ formData, onComplete }) {
 
       {!signature && (
         <p style={{ fontSize: 11, color: S.gray, fontFamily: S.body, marginTop: 10 }}>
-          Please sign above before downloading. Your browser will open a print dialog — choose "Save as PDF" to save the file.
+          Please sign above before downloading. The PDF will download automatically.
         </p>
       )}
     </div>

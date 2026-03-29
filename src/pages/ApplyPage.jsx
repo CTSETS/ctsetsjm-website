@@ -12,7 +12,7 @@ import { Container, PageWrapper, Btn, SectionHeader, SectionBlock, Reveal, PageS
 import { CaptchaChallenge, HoneypotField } from "../components/shared/DisplayComponents";
 import { validateEmail, validatePhone, validateTRN, suggestEmail, MAX_FILE_SIZE, validateFileSize } from "../utils/validation";
 import { submitToAppsScript, generateRef } from "../utils/submission";
-import { fmt } from "../utils/formatting";
+import { fmt, fmtDate } from "../utils/formatting";
 import { sendApplicationConfirmation, registerDripSequence } from "../utils/email";
 import HeartFormBuilder from "../components/apply/HeartFormBuilder";
 
@@ -23,7 +23,7 @@ const APPLICANT_TYPES = [
   { key: "international", label: "🌍 International", desc: "Worldwide" },
 ];
 const LEVELS = Object.keys(PROGRAMMES);
-const GENDERS = ["Male", "Female", "Prefer not to say"];
+const GENDERS = ["Male", "Female"];
 const JA_PARISHES = ["Kingston", "St. Andrew", "St. Thomas", "Portland", "St. Mary", "St. Ann", "Trelawny", "St. James", "Hanover", "Westmoreland", "St. Elizabeth", "Manchester", "Clarendon", "St. Catherine"];
 const DOC_REQUIREMENTS = {
   jamaican: [
@@ -118,7 +118,7 @@ function PrayerModal({ prayer, onClose }) {
 export default function ApplyPage({ setPage }) {
   // ── State ──
   const [applicantType, setApplicantType] = useState("");
-  const [form, setForm] = useState({ firstName: "", middleName: "", lastName: "", email: "", phone: "", gender: "", dob: "", nationality: "", maritalStatus: "", parish: "", country: "", address: "", trn: "", nis: "", highestQualification: "", schoolLastAttended: "", yearCompleted: "", employmentStatus: "", employer: "", jobTitle: "", yearsExperience: "", industry: "", emergencyName: "", emergencyRelationship: "", emergencyPhone: "", level: "", programme: "", hearAbout: "", message: "" });
+  const [form, setForm] = useState({ firstName: "", middleName: "", lastName: "", email: "", phone: "", gender: "", dob: "", nationality: "", maritalStatus: "", parish: "", country: "Jamaica", address: "", trn: "", nis: "", highestQualification: "", schoolLastAttended: "", yearCompleted: "", employmentStatus: "", employer: "", jobTitle: "", yearsExperience: "", industry: "", emergencyName: "", emergencyRelationship: "", emergencyPhone: "", level: "", programme: "", paymentPlan: "", hearAbout: "", message: "" });
   const [files, setFiles] = useState({});
   const [errors, setErrors] = useState({});
   const [emailSuggestion, setEmailSuggestion] = useState(null);
@@ -128,6 +128,8 @@ export default function ApplyPage({ setPage }) {
   const [submitted, setSubmitted] = useState(false);
   const [prayer, setPrayer] = useState(null);
   const [heartFormDone, setHeartFormDone] = useState(false);
+  const [appQueue, setAppQueue] = useState([]); // queued programme selections
+  const [showQueuePrompt, setShowQueuePrompt] = useState(false);
   // Application number — generated once when the page loads, stays the same throughout
   const appRef = useRef(generateRef());
   const startTime = useRef(Date.now());
@@ -136,8 +138,8 @@ export default function ApplyPage({ setPage }) {
   const isJamaican = applicantType === "jamaican";
   const availableProgrammes = form.level ? (PROGRAMMES[form.level] || []) : [];
   const s1Done = !!applicantType;
-  const s2Done = s1Done && form.firstName && form.lastName && validateEmail(form.email) && validatePhone(form.phone) && form.gender && form.dob && form.address && (isJamaican ? (form.parish && form.trn && validateTRN(form.trn)) : form.country) && form.employmentStatus && form.emergencyName && form.emergencyPhone && form.highestQualification;
-  const s3Done = s2Done && form.level && form.programme;
+  const s2Done = s1Done && form.firstName && form.lastName && validateEmail(form.email) && validatePhone(form.phone) && form.gender && form.dob && form.address && form.country && (isJamaican ? (form.parish && form.trn && validateTRN(form.trn)) : true) && form.employmentStatus && form.emergencyName && form.emergencyPhone && form.highestQualification;
+  const s3Done = s2Done && ((form.level && form.programme) || appQueue.length > 0);
   // Jamaican applicants must complete HEART form before docs; others skip straight to docs
   const sHeartDone = isJamaican ? heartFormDone : true;
   const sDocGate = s3Done && sHeartDone;
@@ -172,15 +174,39 @@ export default function ApplyPage({ setPage }) {
   };
 
   // Reset programme when level changes
-  useEffect(() => { set("programme", ""); }, [form.level]);
+  useEffect(() => { set("programme", ""); var isGO = form.level && (form.level.indexOf("Job") >= 0 || form.level.indexOf("Level 2") >= 0); set("paymentPlan", isGO ? "Gold" : (form.paymentPlan || "Gold")); }, [form.level]);
 
 
-  // ── Submit ──
+  // ── Queue management ──
+  const addToQueue = () => {
+    if (!form.level || !form.programme) return;
+    // Check if same programme already in queue
+    if (appQueue.some(q => q.programme === form.programme && q.level === form.level)) {
+      setErrors({ submit: form.programme + " is already in your application queue." });
+      return;
+    }
+    setAppQueue([...appQueue, { level: form.level, programme: form.programme, paymentPlan: form.paymentPlan || "Gold", ref: generateRef() }]);
+    set("level", ""); set("programme", ""); set("paymentPlan", "");
+    setShowQueuePrompt(false);
+  };
+
+  const removeFromQueue = (idx) => {
+    setAppQueue(appQueue.filter((_, i) => i !== idx));
+  };
+
+  // ── Submit all applications ──
   const handleSubmit = async () => {
     if (hp) return;
     if (Date.now() - startTime.current < 5000) return;
 
-    // Validate
+    // Build final list: queued + current (if a programme is selected)
+    var allApps = [...appQueue];
+    if (form.level && form.programme) {
+      allApps.push({ level: form.level, programme: form.programme, paymentPlan: form.paymentPlan || "Gold", ref: appRef.current });
+    }
+    if (allApps.length === 0) { setErrors({ submit: "Please select at least one programme." }); return; }
+
+    // Validate personal info + docs
     const errs = {};
     if (!form.firstName) errs.firstName = "First name is required";
     if (!form.lastName) errs.lastName = "Last name is required";
@@ -190,75 +216,90 @@ export default function ApplyPage({ setPage }) {
     if (!form.dob) errs.dob = "Date of birth is required";
     if (!form.address) errs.address = "Address is required";
     if (applicantType === "jamaican" && !form.parish) errs.parish = "Parish is required";
-    if (applicantType !== "jamaican" && !form.country) errs.country = "Country is required";
+    if (!form.country) errs.country = "Country is required";
     if (applicantType === "jamaican" && !form.trn) errs.trn = "TRN is required for Jamaican applicants";
     if (applicantType === "jamaican" && form.trn && !validateTRN(form.trn)) errs.trn = "TRN must be 9 digits";
     if (!form.highestQualification) errs.highestQualification = "Please select your highest qualification";
     if (!form.employmentStatus) errs.employmentStatus = "Please select your employment status";
     if (!form.emergencyName) errs.emergencyName = "Emergency contact name is required";
     if (!form.emergencyPhone) errs.emergencyPhone = "Emergency contact phone is required";
-    if (!form.level) errs.level = "Please select a qualification level";
-    if (!form.programme) errs.programme = "Please select a programme";
     requiredDocs.forEach(d => { if (!files[d.slot]) errs[d.slot] = d.label + " is required"; else if (!validateFileSize(files[d.slot])) errs[d.slot] = "File too large (max 5 MB)"; });
     if (!captchaOk) errs.captcha = "Please complete the verification";
 
     if (Object.keys(errs).length > 0) { setErrors(errs); window.scrollTo({ top: 200, behavior: "smooth" }); return; }
 
     setSubmitting(true);
-    const ref = appRef.current;
     const fullName = form.firstName.trim() + " " + form.lastName.trim();
-    const formData = {
-      form_type: "Student Application",
-      ref,
-      applicantType,
-      fullName,
-      firstName: form.firstName.trim(),
-      middleName: form.middleName.trim(),
-      lastName: form.lastName.trim(),
-      email: form.email.trim(),
-      phone: form.phone.trim(),
-      gender: form.gender,
-      dob: form.dob,
-      nationality: form.nationality || "",
-      maritalStatus: form.maritalStatus || "",
-      parish: form.parish || "",
-      country: form.country || "",
-      address: form.address.trim(),
-      trn: form.trn || "",
-      nis: form.nis || "",
-      highestQualification: form.highestQualification || "",
-      schoolLastAttended: form.schoolLastAttended || "",
-      yearCompleted: form.yearCompleted || "",
-      employmentStatus: form.employmentStatus || "",
-      employer: form.employer || "",
-      jobTitle: form.jobTitle || "",
-      industry: form.industry || "",
-      yearsExperience: form.yearsExperience || "",
-      emergencyName: form.emergencyName || "",
-      emergencyRelationship: form.emergencyRelationship || "",
-      emergencyPhone: form.emergencyPhone || "",
-      level: form.level,
-      programme: form.programme,
-      hearAbout: form.hearAbout || "",
-      message: form.message || "",
-      timestamp: new Date().toISOString(),
-    };
+    var allRefs = [];
+    var anyDuplicate = false;
 
-    const result = await submitToAppsScript(formData, files);
+    for (var ai = 0; ai < allApps.length; ai++) {
+      var app = allApps[ai];
+      var ref = app.ref || generateRef();
+      allRefs.push(ref);
 
-    if (result.duplicate) {
-      setErrors({ submit: `An application with this email already exists (Ref: ${result.existingRef || "—"}). Contact admin@ctsetsjm.com if this is unexpected.` });
-      setSubmitting(false);
-      return;
+      const formData = {
+        form_type: "Student Application",
+        ref,
+        applicantType,
+        fullName,
+        firstName: form.firstName.trim(),
+        middleName: form.middleName.trim(),
+        lastName: form.lastName.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        gender: form.gender,
+        dob: fmtDate(form.dob),
+        nationality: form.nationality || "",
+        maritalStatus: form.maritalStatus || "",
+        parish: form.parish || "",
+        country: form.country || "",
+        address: form.address.trim(),
+        trn: form.trn || "",
+        nis: form.nis || "",
+        highestQualification: form.highestQualification || "",
+        schoolLastAttended: form.schoolLastAttended || "",
+        yearCompleted: form.yearCompleted || "",
+        employmentStatus: form.employmentStatus || "",
+        employer: form.employer || "",
+        jobTitle: form.jobTitle || "",
+        industry: form.industry || "",
+        yearsExperience: form.yearsExperience || "",
+        emergencyName: form.emergencyName || "",
+        emergencyRelationship: form.emergencyRelationship || "",
+        emergencyPhone: form.emergencyPhone || "",
+        level: app.level,
+        programme: app.programme,
+        paymentPlan: app.paymentPlan || "Gold",
+        hearAbout: form.hearAbout || "",
+        message: form.message || "",
+        timestamp: new Date().toISOString(),
+      };
+
+      // Only send files with the first application (shared documents)
+      const result = await submitToAppsScript(formData, ai === 0 ? files : {});
+
+      if (result.duplicate) {
+        setErrors({ submit: app.programme + " — an application already exists with this TRN/email (Ref: " + (result.existingRef || "—") + "). Contact admin@ctsetsjm.com if unexpected." });
+        anyDuplicate = true;
+        break;
+      }
+
+      // Send confirmation email for each application
+      sendApplicationConfirmation({ name: fullName, email: form.email, ref, programme: app.programme, level: app.level });
     }
 
-    // Send confirmation email + register drip
-    sendApplicationConfirmation({ name: fullName, email: form.email, ref, programme: form.programme, level: form.level });
-    registerDripSequence({ name: fullName, email: form.email, ref, programme: form.programme, level: form.level });
+    if (anyDuplicate) { setSubmitting(false); return; }
+
+    // Register drip once (not per application)
+    registerDripSequence({ name: fullName, email: form.email, ref: allRefs[0], programme: allApps[0].programme, level: allApps[0].level });
 
     // Show prayer
     const g = genderPronouns(form.gender);
     setPrayer(PRAYERS.application(form.firstName.trim(), g));
+
+    // Store all refs for success view
+    appRef.current = allRefs.join(", ");
 
     setSubmitting(false);
     setSubmitted(true);
@@ -284,10 +325,9 @@ export default function ApplyPage({ setPage }) {
               <div style={{ background: "#fff", borderRadius: 16, padding: "28px 32px", border: "1px solid " + S.border, textAlign: "left", marginBottom: 28 }}>
                 <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 16 }}>Application Summary</div>
                 {[
-                  ["Reference", appRef.current],
+                  ["Reference(s)", appRef.current],
                   ["Name", form.firstName + " " + form.lastName],
                   ["Email", form.email],
-                  ["Programme", form.level + " — " + form.programme],
                   ["Applicant Type", APPLICANT_TYPES.find(t => t.key === applicantType)?.label],
                 ].map(([k, v]) => (
                   <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid " + S.border, fontSize: 13, fontFamily: S.body }}>
@@ -295,6 +335,16 @@ export default function ApplyPage({ setPage }) {
                     <span style={{ color: S.navy, fontWeight: 700, textAlign: "right" }}>{v}</span>
                   </div>
                 ))}
+                {/* List all submitted programmes */}
+                <div style={{ marginTop: 12, fontSize: 11, color: S.teal, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 8 }}>Programmes Applied</div>
+                {[...appQueue, ...(form.level && form.programme ? [{ level: form.level, programme: form.programme, paymentPlan: form.paymentPlan || "Gold" }] : [])].map(function(q, i) {
+                  return (
+                    <div key={i} style={{ padding: "8px 12px", borderRadius: 6, background: S.lightBg, border: "1px solid " + S.border, marginBottom: 4, fontSize: 13, fontFamily: S.body }}>
+                      <span style={{ color: S.navy, fontWeight: 700 }}>{q.programme}</span>
+                      <span style={{ color: S.gray }}> · {q.level} · {q.paymentPlan} plan</span>
+                    </div>
+                  );
+                })}
               </div>
 
               <div style={{ background: S.tealLight, borderRadius: 12, padding: "20px 24px", border: "1px solid " + S.teal + "30", textAlign: "left", marginBottom: 28 }}>
@@ -330,6 +380,17 @@ export default function ApplyPage({ setPage }) {
   // ══════════════════════════════════════════════════════════════════
   return (
     <PageWrapper bg={S.lightBg}>
+      {/* Full-screen overlay during submission — prevents all interaction */}
+      {submitting && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99999, background: "rgba(1,30,64,0.85)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
+          <div style={{ background: "#fff", borderRadius: 16, padding: "40px", textAlign: "center", maxWidth: 400 }}>
+            <div style={{ fontSize: 48, marginBottom: 16, animation: "pulse 1.5s infinite" }}>{"\uD83D\uDCE8"}</div>
+            <h3 style={{ fontFamily: S.heading, fontSize: 20, color: S.navy, fontWeight: 700, marginBottom: 10 }}>Submitting {appQueue.length + (form.level && form.programme ? 1 : 0)} Application{appQueue.length > 0 ? "s" : ""}</h3>
+            <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, lineHeight: 1.6 }}>Please wait — we are processing your application and uploading your documents. Do not close this page.</p>
+            <div style={{ marginTop: 20, width: 40, height: 40, border: "4px solid " + S.border, borderTop: "4px solid " + S.coral, borderRadius: "50%", animation: "spin 1s linear infinite", margin: "20px auto 0" }} />
+          </div>
+        </div>
+      )}
       <SectionHeader tag="Start Here" title="Apply in Under 10 Minutes" desc="Complete the form, upload your documents, and we'll review within 48–72 hours." accentColor={S.coral} />
       <Container>
         <SocialProofBar />
@@ -443,7 +504,10 @@ export default function ApplyPage({ setPage }) {
                 </Field>
               ) : (
                 <Field label="Country" required error={errors.country}>
-                  <input style={inputStyle} value={form.country} onChange={e => set("country", e.target.value)} placeholder={applicantType === "caribbean" ? "e.g. Trinidad & Tobago" : "e.g. United Kingdom"} />
+                  <select style={selectStyle} value={form.country} onChange={e => set("country", e.target.value)}>
+                    <option value="">Select country...</option>
+                    {["Jamaica","Trinidad & Tobago","Barbados","Guyana","Bahamas","Belize","St. Lucia","Grenada","Antigua & Barbuda","Dominica","St. Vincent","St. Kitts & Nevis","Suriname","Haiti","Cayman Islands","Bermuda","Turks & Caicos","BVI","USVI","United States","United Kingdom","Canada","Other"].map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
                 </Field>
               )}
               {isJamaican && (
@@ -562,6 +626,7 @@ export default function ApplyPage({ setPage }) {
             {form.level && form.programme && (() => {
               const prog = availableProgrammes.find(p => p.name === form.programme);
               if (!prog) return null;
+              const isGoldOnly = form.level.indexOf("Job") >= 0 || form.level.indexOf("Level 2") >= 0;
               return (
                 <Reveal>
                   <div style={{ background: S.navy, borderRadius: 12, padding: "20px 24px", marginTop: 8 }}>
@@ -572,10 +637,32 @@ export default function ApplyPage({ setPage }) {
                         <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", fontFamily: S.body, marginTop: 4 }}>{prog.duration} · {prog.desc}</div>
                       </div>
                       <div style={{ textAlign: "right" }}>
-                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontFamily: S.body }}>Tuition</div>
+                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontFamily: S.body }}>Training Fee</div>
                         <div style={{ fontSize: 20, fontWeight: 800, color: S.gold, fontFamily: S.heading }}>{prog.tuition}</div>
-                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontFamily: S.body }}>+ {fmt(REG_FEE)} registration</div>
+                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontFamily: S.body }}>+ {fmt(REG_FEE)} registration (non-refundable)</div>
                       </div>
+                    </div>
+                    {/* Payment Plan Selector */}
+                    <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+                      <div style={{ fontSize: 11, color: S.gold, letterSpacing: 1, fontFamily: S.body, fontWeight: 600, marginBottom: 10 }}>Payment Plan</div>
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        {[
+                          { value: "Gold", label: "Gold — Pay in Full", desc: "0% surcharge", available: true },
+                          { value: "Silver", label: "Silver — 60/40 Split", desc: "+10% on training fee", available: !isGoldOnly },
+                          { value: "Bronze", label: "Bronze — 20% + Monthly", desc: "+15% on training fee", available: !isGoldOnly },
+                        ].map(function(plan) {
+                          var selected = form.paymentPlan === plan.value;
+                          return (
+                            <button key={plan.value} onClick={function() { if (plan.available) set("paymentPlan", plan.value); }}
+                              disabled={!plan.available}
+                              style={{ flex: 1, minWidth: 100, padding: "10px 12px", borderRadius: 8, border: "2px solid " + (selected ? S.gold : "rgba(255,255,255,0.15)"), background: selected ? S.gold + "20" : "transparent", cursor: plan.available ? "pointer" : "not-allowed", opacity: plan.available ? 1 : 0.3, textAlign: "center" }}>
+                              <div style={{ fontSize: 12, fontWeight: 700, color: selected ? S.gold : "#fff", fontFamily: S.body }}>{plan.value}</div>
+                              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", fontFamily: S.body, marginTop: 2 }}>{plan.desc}</div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {isGoldOnly && <div style={{ fontSize: 10, color: S.amber, fontFamily: S.body, marginTop: 8 }}>Job Certificate and Level 2: Full payment (Gold) only.</div>}
                     </div>
                   </div>
                 </Reveal>
@@ -627,6 +714,80 @@ export default function ApplyPage({ setPage }) {
               {errors.captcha && <div style={{ fontSize: 11, color: S.error, fontFamily: S.body, marginTop: 6 }}>⚠️ {errors.captcha}</div>}
             </div>
 
+            {/* Application Queue */}
+            {appQueue.length > 0 && (() => {
+              var allItems = appQueue.map(function(q) {
+                var progs = PROGRAMMES[q.level] || [];
+                var p = progs.find(function(x) { return x.name === q.programme; });
+                var tuition = p ? parseInt(p.tuition.replace(/[$,]/g, "")) : 0;
+                var total = tuition + REG_FEE;
+                return { ...q, tuition: tuition, total: total };
+              });
+              if (form.level && form.programme) {
+                var curProgs = PROGRAMMES[form.level] || [];
+                var curP = curProgs.find(function(x) { return x.name === form.programme; });
+                var curTuition = curP ? parseInt(curP.tuition.replace(/[$,]/g, "")) : 0;
+                allItems.push({ level: form.level, programme: form.programme, paymentPlan: form.paymentPlan || "Gold", ref: "(current)", tuition: curTuition, total: curTuition + REG_FEE, isCurrent: true });
+              }
+              var grandTotal = allItems.reduce(function(sum, q) { return sum + q.total; }, 0);
+              return (
+                <div style={{ marginBottom: 20, padding: "20px 24px", borderRadius: 14, background: S.navy, border: "2px solid " + S.teal + "40" }}>
+                  <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 14 }}>Your Applications ({allItems.length})</div>
+
+                  {/* Table */}
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: S.body, fontSize: 12 }}>
+                      <thead>
+                        <tr>
+                          {["#", "Programme", "Level", "Plan", "Reg Fee", "Training", "Total", ""].map(function(h) {
+                            return <th key={h} style={{ padding: "8px 10px", textAlign: h === "Total" || h === "Reg Fee" || h === "Training" ? "right" : "left", color: S.gold, fontSize: 10, fontWeight: 700, borderBottom: "1px solid rgba(255,255,255,0.1)", letterSpacing: 1, textTransform: "uppercase" }}>{h}</th>;
+                          })}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {allItems.map(function(q, idx) {
+                          return (
+                            <tr key={idx} style={{ background: q.isCurrent ? S.gold + "15" : "transparent" }}>
+                              <td style={{ padding: "10px", color: "rgba(255,255,255,0.5)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{idx + 1}</td>
+                              <td style={{ padding: "10px", color: "#fff", fontWeight: 700, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{q.programme} {q.isCurrent ? " ★" : ""}</td>
+                              <td style={{ padding: "10px", color: "rgba(255,255,255,0.6)", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 11 }}>{q.level.replace("Job / Professional Certificates", "JC")}</td>
+                              <td style={{ padding: "10px", color: S.gold, fontWeight: 600, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{q.paymentPlan}</td>
+                              <td style={{ padding: "10px", color: "rgba(255,255,255,0.5)", textAlign: "right", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{fmt(REG_FEE)}</td>
+                              <td style={{ padding: "10px", color: "rgba(255,255,255,0.7)", textAlign: "right", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>{fmt(q.tuition)}</td>
+                              <td style={{ padding: "10px", color: "#fff", fontWeight: 800, textAlign: "right", borderBottom: "1px solid rgba(255,255,255,0.06)", fontFamily: S.heading }}>{fmt(q.total)}</td>
+                              <td style={{ padding: "10px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                                {!q.isCurrent && <button onClick={function() { removeFromQueue(idx); }} style={{ background: "none", border: "none", color: S.rose, fontSize: 14, cursor: "pointer", padding: "2px 6px" }}>✕</button>}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <td colSpan={6} style={{ padding: "12px 10px", color: "#fff", fontWeight: 700, fontSize: 14, textAlign: "right", borderTop: "2px solid " + S.gold + "40" }}>Grand Total</td>
+                          <td style={{ padding: "12px 10px", color: S.gold, fontWeight: 800, fontSize: 18, textAlign: "right", borderTop: "2px solid " + S.gold + "40", fontFamily: S.heading }}>{fmt(grandTotal)}</td>
+                          <td style={{ borderTop: "2px solid " + S.gold + "40" }}></td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", fontFamily: S.body, marginTop: 10, textAlign: "center" }}>Each application generates a separate reference number. Documents are shared across all applications. Registration fee ($5,000) is non-refundable per application.</div>
+                </div>
+              );
+            })()}
+
+            {/* Add Another Programme prompt */}
+            {s3Done && !showQueuePrompt && (
+              <div style={{ marginBottom: 20, padding: "16px 20px", borderRadius: 12, background: S.lightBg, border: "1px solid " + S.border, textAlign: "center" }}>
+                <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, marginBottom: 12 }}>Want to apply for another programme using the same personal details and documents?</p>
+                <button onClick={function() { addToQueue(); }}
+                  style={{ padding: "10px 24px", borderRadius: 8, border: "2px solid " + S.teal, background: "#fff", color: S.teal, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: S.body, marginRight: 10 }}>
+                  + Add Another Programme
+                </button>
+              </div>
+            )}
+
             {/* Submit error */}
             {errors.submit && (
               <div style={{ padding: "14px 20px", borderRadius: 10, background: S.roseLight, border: "1px solid " + S.rose + "30", marginBottom: 20 }}>
@@ -644,7 +805,7 @@ export default function ApplyPage({ setPage }) {
                 boxShadow: s5Done ? "0 8px 32px " + S.coral + "30" : "none",
                 opacity: submitting ? 0.7 : 1,
               }}>
-              {submitting ? "Submitting Application..." : "Submit Application →"}
+              {submitting ? "Submitting " + (appQueue.length + (form.level && form.programme ? 1 : 0)) + " Application" + (appQueue.length > 0 ? "s" : "") + "..." : appQueue.length > 0 ? "Submit All " + (appQueue.length + (form.level && form.programme ? 1 : 0)) + " Applications →" : "Submit Application →"}
             </button>
 
             <p style={{ textAlign: "center", fontSize: 11, color: S.gray, fontFamily: S.body, marginTop: 14, lineHeight: 1.6 }}>

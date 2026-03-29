@@ -77,3 +77,4 @@ input:focus, select:focus, textarea:focus {
 /* ── IMAGES ── */
 img { max-width: 100%; height: auto; }
 img[loading="lazy"] { content-visibility: auto; }
+@keyframes spin { to { transform: rotate(360deg); } }

@@ -10,3 +10,10 @@ export const payFmt = (jmdAmount, cur) => {
   if (cur === "usd") return "US$" + Math.round(num / USD_RATE).toLocaleString();
   return "J$" + Math.round(num).toLocaleString();
 };
+export const fmtDate = (dateStr) => {
+  if (!dateStr) return "";
+  var d = new Date(dateStr);
+  if (isNaN(d)) return dateStr;
+  var months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  return d.getDate() + " " + months[d.getMonth()] + " " + d.getFullYear();
+};

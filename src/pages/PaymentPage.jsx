@@ -86,12 +86,13 @@ function calcPricing(level) {
 }
 
 export default function PaymentPage({ setPage }) {
-  // ── Lookup ──
+  // ── Multi-student lookup ──
   var _s = useState(""); var refInput = _s[0]; var setRefInput = _s[1];
   var _s2 = useState("idle"); var lookupState = _s2[0]; var setLookupState = _s2[1];
   var _s3 = useState(null); var student = _s3[0]; var setStudent = _s3[1];
   var _s4 = useState(""); var lookupMsg = _s4[0]; var setLookupMsg = _s4[1];
   var _s5 = useState(false); var disputeSent = _s5[0]; var setDisputeSent = _s5[1];
+  var _sStudents = useState([]); var students = _sStudents[0]; var setStudents = _sStudents[1];
 
   // ── Pricing ──
   var _s8 = useState(null); var pricing = _s8[0]; var setPricing = _s8[1];
@@ -142,11 +143,18 @@ export default function PaymentPage({ setPage }) {
     }
   }, []);
 
-  // ── Calculate pricing when student found ──
+  // ── Calculate pricing when student found or students list changes ──
   useEffect(function() {
-    if (!student || !student.level) return;
-    setPricing(calcPricing(student.level));
-  }, [student]);
+    if (students.length > 0) {
+      // Use first student's pricing for plan display
+      setPricing(students[0].pricing);
+    } else if (student && student.level) {
+      setPricing(calcPricing(student.level));
+    }
+  }, [student, students]);
+
+  // Combined total for multi-student
+  var combinedTotal = students.reduce(function(sum, s) { return sum + (s.pricing ? s.pricing.total : 0); }, 0);
 
   var inputStyle = { width: "100%", padding: "12px 16px", borderRadius: 8, border: "1.5px solid rgba(1,30,64,0.12)", fontSize: 14, fontFamily: "'DM Sans', sans-serif", color: "#1A202C", outline: "none", background: "#fff", boxSizing: "border-box" };
 
@@ -157,6 +165,12 @@ export default function PaymentPage({ setPage }) {
     if (!val.startsWith("CTSETS-")) {
       setLookupState("not_found");
       setLookupMsg("Application numbers start with CTSETS- (e.g. CTSETS-2026-03-12345).");
+      return;
+    }
+    // Check if already added
+    if (students.some(function(s) { return s.ref === val; })) {
+      setLookupState("not_found");
+      setLookupMsg("This application (" + val + ") is already in your payment list.");
       return;
     }
     setLookupState("loading");
@@ -184,6 +198,24 @@ export default function PaymentPage({ setPage }) {
     }
   };
 
+  var addStudentToList = function() {
+    if (!student) return;
+    var p = calcPricing(student.level);
+    setStudents(function(prev) { return prev.concat([Object.assign({}, student, { pricing: p })]); });
+    setStudent(null);
+    setRefInput("");
+    setLookupState("idle");
+    setPricing(null);
+  };
+
+  var removeStudentFromList = function(ref) {
+    setStudents(function(prev) { return prev.filter(function(s) { return s.ref !== ref; }); });
+  };
+
+  // Use first student in list as primary for payment (or single lookup)
+  var activeStudent = students.length > 0 ? students[0] : student;
+  var allRefs = students.map(function(s) { return s.ref; }).join(", ");
+
   // ── Dispute → email admin ──
   var handleDispute = async function() {
     if (disputeSent) return;
@@ -205,7 +237,7 @@ export default function PaymentPage({ setPage }) {
   // ── Submit payment ──
   var handlePaymentSubmit = async function() {
     if (hp || Date.now() - startTime.current < 3000) return;
-    if (!receipt || !student) return;
+    if (!receipt || (!student && students.length === 0)) return;
     setSubmitting(true);
     var payAmount = amountPaid || String(selectedAmount);
     var activePlan = pricing ? pricing.plans.find(function(p) { return p.name === selectedPlan; }) : null;
@@ -224,11 +256,11 @@ export default function PaymentPage({ setPage }) {
         method: "POST",
         body: JSON.stringify({
           form_type: "Payment Evidence",
-          ref: student.ref,
-          studentName: student.name,
-          email: student.email,
-          programme: student.programme || "",
-          level: student.level || "",
+          ref: students.length > 0 ? allRefs : student.ref,
+          studentName: activeStudent ? activeStudent.name : "",
+          email: activeStudent ? activeStudent.email : "",
+          programme: activeStudent ? activeStudent.programme : "" || "",
+          level: activeStudent ? activeStudent.level : "" || "",
           
           
           paymentPlan: selectedPlan,
@@ -246,15 +278,15 @@ export default function PaymentPage({ setPage }) {
       });
     } catch (e) {
       try {
-        await fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({ form_type: "Payment Evidence", ref: student.ref, studentName: student.name, email: student.email, amountPaid: payAmount, feeType: feeLabel, paymentPlan: selectedPlan,  timestamp: new Date().toISOString() }), mode: "no-cors" });
+        await fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({ form_type: "Payment Evidence", ref: students.length > 0 ? allRefs : student.ref, studentName: activeStudent ? activeStudent.name : "", email: activeStudent ? activeStudent.email : "", amountPaid: payAmount, feeType: feeLabel, paymentPlan: selectedPlan,  timestamp: new Date().toISOString() }), mode: "no-cors" });
       } catch (e2) { /* silent */ }
     }
     setSubmitting(false);
     // Send payment confirmation email to student
-    if (student && student.email) {
+    if (activeStudent && activeStudent.email) {
       sendPaymentConfirmation({
-        name: student.name, email: student.email, ref: student.ref,
-        programme: student.programme, level: student.level,
+        name: activeStudent.name, email: activeStudent.email, ref: students.length > 0 ? allRefs : student.ref,
+        programme: activeStudent.programme, level: activeStudent.level,
         amount: payAmount, feeType: feeLabel, paymentPlan: selectedPlan,
         
         
@@ -305,12 +337,12 @@ export default function PaymentPage({ setPage }) {
       environment: WIPAY_CONFIG.sandbox ? "sandbox" : "live",
       fee_structure: "customer_pay",
       method: "credit_card",
-      order_id: student.ref + "-" + (payingReg && payingTuition ? "BOTH" : payingReg ? "REG" : "TUI"),
+      order_id: (students.length > 0 ? students.map(function(s) { return s.ref; }).join("+") : student.ref) + "-" + (payingReg && payingTuition ? "BOTH" : payingReg ? "REG" : "TUI"),
       origin: "ctsetsjm.com",
       total: payAmount,
       addr1: "",
       email: student.email || "",
-      name: student.name || "",
+      name: activeStudent ? activeStudent.name || "" : "",
       phone: "",
       return_url: WIPAY_CONFIG.returnUrl,
     };
@@ -396,10 +428,10 @@ export default function PaymentPage({ setPage }) {
             <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center" }}>
               <div style={{ width: 72, height: 72, borderRadius: "50%", background: S.emeraldLight, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, margin: "0 auto 20px", border: "3px solid " + S.emerald }}>{"\u2713"}</div>
               <h2 style={{ fontFamily: S.heading, fontSize: 28, color: S.navy, fontWeight: 700, marginBottom: 12 }}>Payment Evidence Submitted</h2>
-              <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, lineHeight: 1.7, marginBottom: 6 }}>{"Thank you, " + (student ? student.name : "") + "."}</p>
+              <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, lineHeight: 1.7, marginBottom: 6 }}>{"Thank you, " + (activeStudent ? activeStudent.name : "") + "."}</p>
               <div style={{ background: "#fff", borderRadius: 12, padding: "20px 24px", border: "1px solid " + S.border, textAlign: "left", marginBottom: 24 }}>
                 {[
-                  ["Reference", student ? student.ref : ""],
+                  ["Reference", students.length > 0 ? allRefs : (student ? student.ref : "")],
                   ["Paying For", feeLabel || "Payment"],
                   ["Payment Plan", selectedPlan],
                   ["Amount Declared", (amountPaid || selectedAmount) ? fmt(parseInt(amountPaid || selectedAmount)) : "Not specified"],
@@ -414,7 +446,7 @@ export default function PaymentPage({ setPage }) {
               <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.7, marginBottom: 28 }}>Our finance team will verify within 48–72 hours. Confirmation will be sent to your email.</p>
               <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
                 <Btn primary onClick={function() { setPage("Home"); }} style={{ background: S.coral, color: "#fff" }}>Return Home</Btn>
-                <a href={"https://wa.me/8763819771?text=" + encodeURIComponent("Hi, I just uploaded payment evidence for " + (student ? student.ref : "") + ". Please confirm.")} target="_blank" rel="noopener noreferrer"
+                <a href={"https://wa.me/8763819771?text=" + encodeURIComponent("Hi, I just uploaded payment evidence for " + (students.length > 0 ? allRefs : (student ? student.ref : "")) + ". Please confirm.")} target="_blank" rel="noopener noreferrer"
                   style={{ padding: "12px 24px", borderRadius: 8, border: "2px solid " + S.emerald, color: S.emerald, fontSize: 14, fontWeight: 700, fontFamily: S.body, textDecoration: "none" }}>Notify via WhatsApp</a>
               </div>
             </div>
@@ -507,14 +539,41 @@ export default function PaymentPage({ setPage }) {
                         </div>
                       );
                     })}
+                    {/* Add to Payment button */}
+                    <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+                      <button onClick={addStudentToList}
+                        style={{ flex: 1, padding: "12px", borderRadius: 8, border: "none", background: S.emerald, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>
+                        {students.length > 0 ? "Add to Payment List" : "Confirm & Continue"}
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Multi-student list */}
+                  {students.length > 0 && (
+                    <div style={{ marginTop: 16, padding: "16px 20px", borderRadius: 10, background: "#fff", border: "1px solid " + S.border }}>
+                      <div style={{ fontSize: 11, color: S.navy, letterSpacing: 1, fontFamily: S.body, fontWeight: 700, marginBottom: 10 }}>PAYMENT LIST ({students.length} application{students.length > 1 ? "s" : ""})</div>
+                      {students.map(function(s) {
+                        return (
+                          <div key={s.ref} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: "1px solid " + S.border, fontSize: 12, fontFamily: S.body }}>
+                            <div>
+                              <div style={{ fontWeight: 700, color: S.navy }}>{s.name}</div>
+                              <div style={{ color: S.gray, fontSize: 11 }}>{s.ref} — {s.programme}</div>
+                            </div>
+                            <button onClick={function() { removeStudentFromList(s.ref); }}
+                              style={{ background: "none", border: "none", color: S.coral, fontSize: 18, cursor: "pointer", padding: "4px 8px" }}>{"\u2715"}</button>
+                          </div>
+                        );
+                      })}
+                      <div style={{ marginTop: 10, fontSize: 12, color: S.teal, fontFamily: S.body, fontWeight: 600 }}>Enter another application number above to add more.</div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           </Reveal>
 
           {/* ════════ STEP 2: PRICING + PLAN SELECTION ════════ */}
-          {lookupState === "found" && pricing && (
+          {((lookupState === "found" && pricing) || students.length > 0) && (
             <Reveal>
               <div style={{ background: "#fff", borderRadius: 16, padding: "32px", border: "1px solid " + S.border, marginBottom: 24 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
@@ -653,7 +712,7 @@ export default function PaymentPage({ setPage }) {
                         </p>
                       </div>
                       <div style={{ marginTop: 14, padding: "10px 14px", borderRadius: 8, background: S.gold + "15", border: "1px solid " + S.gold + "30", fontSize: 12, color: S.gold, fontFamily: S.body, fontWeight: 600 }}>
-                        {"When available, use your application number as payment reference: "}<strong>{student ? student.ref : ""}</strong>
+                        {"When available, use your application number as payment reference: "}<strong>{students.length > 0 ? allRefs : (student ? student.ref : "")}</strong>
                       </div>
                     </div>
 
@@ -737,9 +796,9 @@ export default function PaymentPage({ setPage }) {
 
                     <p style={{ fontFamily: S.body, fontSize: 12, color: S.gray, lineHeight: 1.6, marginBottom: 16, textAlign: "center" }}>You will be redirected to our secure payment gateway. Visa and Mastercard accepted.</p>
 
-                    <button onClick={function() { if (!amountPaid) setAmountPaid(String(selectedAmount)); handleWiPaySubmit(); }} disabled={selectedAmount <= 0}
-                      style={{ width: "100%", padding: "18px", borderRadius: 10, border: "none", background: selectedAmount > 0 ? "linear-gradient(135deg, " + S.emerald + " 0%, #1a9b5c 100%)" : "rgba(1,30,64,0.08)", color: selectedAmount > 0 ? "#fff" : S.grayLight, fontSize: 16, fontWeight: 700, cursor: selectedAmount > 0 ? "pointer" : "not-allowed", fontFamily: S.body, boxShadow: selectedAmount > 0 ? "0 4px 20px " + S.emerald + "30" : "none" }}>
-                      {"Pay " + fmt(selectedAmount) + " with Card"}
+                    <button onClick={function() { if (submitting) return; setSubmitting(true); if (!amountPaid) setAmountPaid(String(selectedAmount)); handleWiPaySubmit(); }} disabled={selectedAmount <= 0 || submitting}
+                      style={{ width: "100%", padding: "18px", borderRadius: 10, border: "none", background: selectedAmount > 0 && !submitting ? "linear-gradient(135deg, " + S.emerald + " 0%, #1a9b5c 100%)" : "rgba(1,30,64,0.08)", color: selectedAmount > 0 && !submitting ? "#fff" : S.grayLight, fontSize: 16, fontWeight: 700, cursor: selectedAmount > 0 && !submitting ? "pointer" : "not-allowed", fontFamily: S.body, boxShadow: selectedAmount > 0 && !submitting ? "0 4px 20px " + S.emerald + "30" : "none", opacity: submitting ? 0.6 : 1 }}>
+                      {submitting ? "Processing..." : "Pay " + fmt(selectedAmount) + " with Card"}
                     </button>
                   </div>
                 )}

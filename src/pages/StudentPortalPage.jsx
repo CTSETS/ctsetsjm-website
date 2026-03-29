@@ -101,14 +101,18 @@ function Dashboard({ student, onLogout, setPage, onPasswordChanged }) {
         <div style={{ background: "#fff", borderRadius: 14, padding: "24px", border: "1px solid " + S.border }}>
           <div style={{ fontSize: 10, color: S.violet, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 14 }}>Programme Details</div>
           {[
+            ["Student Number", student.studentNumber || "—"],
+            ["Application Ref", student.ref || "—"],
             ["Programme", student.programme || "—"],
             ["Level", student.level || "—"],
-            ["Cohort", student.cohort || "—"],
+            ["Payment Plan", student.paymentPlan || "—"],
+            ["Cohort", student.cohort || "To be assigned"],
             ["Start Date", student.startDate || "To be confirmed"],
             ["End Date", student.endDate || "To be confirmed"],
-            ["Status", student.status || "Under Review"],
+            ["Status", student.status || "Pending Payment"],
           ].map(function(row) {
-            var color = row[0] === "Status" ? (student.lmsAccess ? S.emerald : S.amber) : S.navy;
+            var statusColors = { "Enrolled": S.emerald, "Active": S.emerald, "Graduated": S.gold, "Pending Payment": S.amber, "On Hold": S.coral };
+            var color = row[0] === "Status" ? (statusColors[row[1]] || S.navy) : S.navy;
             return (
               <div key={row[0]} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid " + S.border, fontSize: 13, fontFamily: S.body }}>
                 <span style={{ color: S.gray }}>{row[0]}</span>
@@ -216,12 +220,70 @@ function Dashboard({ student, onLogout, setPage, onPasswordChanged }) {
         </div>
       )}
 
-      {/* Not accepted yet — show message instead of LMS */}
+      {/* Not enrolled yet — show message instead of LMS */}
       {!student.lmsAccess && (
         <div style={{ background: S.amberLight, borderRadius: 14, padding: "24px", border: "1px solid " + S.amber + "30", marginBottom: 24, textAlign: "center" }}>
           <div style={{ fontSize: 32, marginBottom: 10 }}>{"\u23F3"}</div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: S.navy, fontFamily: S.heading, marginBottom: 6 }}>Learning Portal — Coming Soon</div>
-          <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.6 }}>Your Learning Portal access will be activated once your application is accepted and payment is confirmed. We will email you your login credentials.</p>
+          <div style={{ fontSize: 15, fontWeight: 700, color: S.navy, fontFamily: S.heading, marginBottom: 6 }}>
+            {student.status === "Pending Payment" ? "Learning Portal — Pay to Unlock" : "Learning Portal — Coming Soon"}
+          </div>
+          <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.6 }}>
+            {student.status === "Pending Payment"
+              ? "Your application has been accepted! Complete your payment to unlock the Learning Portal. Once your payment is verified, your status will be updated to Enrolled and your study materials will be available."
+              : "Your Learning Portal access will be activated once your status is updated to Enrolled. Contact admin@ctsetsjm.com if you have questions."}
+          </p>
+          {student.status === "Pending Payment" && (
+            <Btn primary onClick={function() { setPage("Pay"); }} style={{ color: "#fff", background: S.coral, fontSize: 14, padding: "14px 32px", marginTop: 12 }}>Make Payment Now</Btn>
+          )}
+        </div>
+      )}
+
+      {/* ═══ PERSONAL PROFILE ═══ */}
+      <div style={{ background: "#fff", borderRadius: 14, padding: "24px", border: "1px solid " + S.border, marginBottom: 24 }}>
+        <div style={{ fontSize: 10, color: S.navy, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 14 }}>Personal Profile</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 24px" }} className="resp-grid-2">
+          {[
+            ["Full Name", student.name || "—"],
+            ["Email", student.email || "—"],
+            ["Phone", student.phone || "—"],
+            ["Gender", student.gender || "—"],
+            ["Date of Birth", student.dob || "—"],
+            ["Nationality", student.nationality || "—"],
+            ["Country", student.country || "—"],
+            ["Parish", student.parish || "—"],
+            ["Address", student.address || "—"],
+            ["TRN", student.trn || "—"],
+            ["Highest Qualification", student.highestQualification || "—"],
+            ["Employer", student.employer || "—"],
+            ["Job Title", student.jobTitle || "—"],
+          ].map(function(row) {
+            return (
+              <div key={row[0]} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: "1px solid " + S.border, fontSize: 12, fontFamily: S.body }}>
+                <span style={{ color: S.gray }}>{row[0]}</span>
+                <span style={{ color: S.navy, fontWeight: 600, textAlign: "right", maxWidth: "60%" }}>{row[1]}</span>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ marginTop: 12, fontSize: 11, color: S.grayLight, fontFamily: S.body, fontStyle: "italic" }}>To update your personal information, contact admin@ctsetsjm.com</div>
+      </div>
+
+      {/* Emergency Contact */}
+      {student.emergencyName && (
+        <div style={{ background: "#fff", borderRadius: 14, padding: "20px 24px", border: "1px solid " + S.border, marginBottom: 24 }}>
+          <div style={{ fontSize: 10, color: S.coral, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 10 }}>Emergency Contact</div>
+          {[
+            ["Name", student.emergencyName],
+            ["Phone", student.emergencyPhone || "—"],
+            ["Relationship", student.emergencyRelationship || "—"],
+          ].map(function(row) {
+            return (
+              <div key={row[0]} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid " + S.border, fontSize: 12, fontFamily: S.body }}>
+                <span style={{ color: S.gray }}>{row[0]}</span>
+                <span style={{ color: S.navy, fontWeight: 600 }}>{row[1]}</span>
+              </div>
+            );
+          })}
         </div>
       )}
 
