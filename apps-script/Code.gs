@@ -44,7 +44,7 @@ function setupAllSheets() {
   p.setProperties({"master_id":SHEET_IDS.master,"students_id":SHEET_IDS.students,"finance_id":SHEET_IDS.finance,"operations_id":SHEET_IDS.operations,"academic_id":SHEET_IDS.academic});
 
   // Student Records tabs
-  makeTab(s1,"Applications",["Application Ref","Date Submitted","Applicant Type","First Name","Last Name","Middle Name","Email","Phone","TRN","NIS","Parish","Country","Gender","Date of Birth","Address","Nationality","Marital Status","Highest Qualification","School Last Attended","Year Completed","Employment Status","Employer","Job Title","Industry","Years Experience","Emergency Name","Emergency Phone","Emergency Relationship","Level","Programme","Payment Plan","Hear About Us","Message","Documents Uploaded","Drive Folder Link","Status","Notes"]);
+  makeTab(s1,"Applications",["Application Ref","Date Submitted","Applicant Type","First Name","Last Name","Middle Name","Maiden Name","Email","Phone","Phone 2","TRN","NIS","Parish","Country","Gender","Date of Birth","Address","District","Postal Zone","Nationality","Marital Status","Special Needs","Special Needs Type","Highest Qualification","School Last Attended","Year Completed","Employment Status","Employer","Job Title","Industry","Years Experience","Emergency Name","Emergency Phone","Emergency Relationship","Emergency 2 Name","Emergency 2 Phone","Emergency 2 Relationship","Previous HEART","Level","Programme","Payment Plan","Hear About Us","Message","Documents Uploaded","Drive Folder Link","Status","Notes"]);
   makeTab(s1,"Enrolled Students",["Student Number","Application Ref","Portal Password","First Name","Last Name","Email","Phone","Level","Programme","Payment Plan","Cohort","Start Date","End Date","Total Fees","Total Paid","Outstanding","Status","Payment Status","LMS Access","Enrolled Date","Last Encouragement","Encouragement Count","Notes"]);
   makeTab(s1,"Student Lifecycle",["Date/Time","Application Ref","Student Number","Student Name","Event Type","Category","Details","Previous Value","New Value","Programme","Level","Performed By","Source"]);
   makeTab(s1,"Communication Log",["Timestamp","Student Name","Student Number","App Ref","Channel","Direction","Subject","Summary","Logged By"]);
@@ -176,7 +176,7 @@ function onEditTrigger(e) {
             "Status Change", "Enrollment", "Payment verified — LMS access granted",
             oldStatus, "Enrolled", programme, level, "Admin", "Manual"]);
         } catch(le){}
-        // Start bi-weekly encouragement tracking
+        // Start weekly encouragement tracking
         try {
           sheet.getRange(row, colMap["Last Encouragement"]+1).setValue(new Date());
           sheet.getRange(row, colMap["Encouragement Count"]+1).setValue(0);
@@ -575,9 +575,14 @@ function getStudentProfile(appRef) {
         var row=d[i];
         return { gender:row[c["Gender"]]||"", dob:row[c["Date of Birth"]]||"",
           nationality:row[c["Nationality"]]||"", parish:row[c["Parish"]]||"",
-          country:row[c["Country"]]||"", address:row[c["Address"]]||"", trn:row[c["TRN"]]||"",
+          country:row[c["Country"]]||"", address:row[c["Address"]]||"",
+          district:row[c["District"]]||"", postalZone:row[c["Postal Zone"]]||"",
+          trn:row[c["TRN"]]||"", maritalStatus:row[c["Marital Status"]]||"",
+          maidenName:row[c["Maiden Name"]]||"", phone2:row[c["Phone 2"]]||"",
           emergencyName:row[c["Emergency Name"]]||"", emergencyPhone:row[c["Emergency Phone"]]||"",
           emergencyRelationship:row[c["Emergency Relationship"]]||"",
+          emergency2Name:row[c["Emergency 2 Name"]]||"", emergency2Phone:row[c["Emergency 2 Phone"]]||"",
+          emergency2Relationship:row[c["Emergency 2 Relationship"]]||"",
           highestQualification:row[c["Highest Qualification"]]||"",
           employer:row[c["Employer"]]||"", jobTitle:row[c["Job Title"]]||"" };
       }
@@ -723,12 +728,17 @@ function handleApp(data) {
 
   s.appendRow([
     ref,now,data.applicantType||"",
-    data.firstName||"",data.lastName||"",data.middleName||"",data.email||"",data.phone||"",
+    data.firstName||"",data.lastName||"",data.middleName||"",data.maidenName||"",
+    data.email||"",data.phone||"",data.phone2||"",
     data.trn||"",data.nis||"",data.parish||"",data.country||"",data.gender||"",
-    data.dob||"",data.address||"",data.nationality||"",data.maritalStatus||"",
+    data.dob||"",data.address||"",data.district||"",data.postalZone||"",
+    data.nationality||"",data.maritalStatus||"",
+    data.specialNeeds||"No",data.specialNeedsType||"",
     data.highestQualification||"",data.schoolLastAttended||"",data.yearCompleted||"",
     data.employmentStatus||"",data.employer||"",data.jobTitle||"",data.industry||"",data.yearsExperience||"",
     data.emergencyName||"",data.emergencyPhone||"",data.emergencyRelationship||"",
+    data.emergency2Name||"",data.emergency2Phone||"",data.emergency2Relationship||"",
+    data.previousHeart||"No",
     data.level||"",data.programme||"",data.paymentPlan||"",
     data.hearAbout||"",data.message||"",
     "","","Under Review",""
@@ -744,6 +754,36 @@ function handleApp(data) {
   audit("APPLICATION RECEIVED",ref,(data.firstName||"")+" "+(data.lastName||"")+" | "+(data.programme||""),"Website");
   lifecycle(ref,"",(data.firstName||"")+" "+(data.lastName||""),"Application Submitted","Administrative",
     "Email: "+(data.email||"")+" | "+(data.applicantType||""),data.programme||"",data.level||"");
+
+  // Send confirmation email to student
+  try {
+    if (data.email) {
+      var studentName = (data.firstName||"") + " " + (data.lastName||"");
+      GmailApp.sendEmail(data.email,
+        "CTS ETS — Application Received (" + ref + ")", "",
+        {htmlBody: '<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">'
+          + '<div style="background:#011E40;padding:24px;text-align:center;border-radius:12px 12px 0 0">'
+          + '<h1 style="color:#D4A843;font-size:22px;margin:0">CTS Empowerment & Training Solutions</h1>'
+          + '<p style="color:rgba(255,255,255,0.6);font-size:11px;margin:4px 0 0;letter-spacing:2px">CALLED TO SERVE — EXCELLENCE THROUGH SERVICE</p></div>'
+          + '<div style="padding:32px;background:#fff;border:1px solid #e2e8f0;border-top:none">'
+          + '<h2 style="color:#011E40;font-size:20px">Application Received, ' + (data.firstName||"") + '!</h2>'
+          + '<p style="color:#4A5568;line-height:1.7">Thank you for applying to CTS ETS. Your application is now under review.</p>'
+          + '<div style="background:#FAFAF7;border-radius:10px;padding:20px;margin:20px 0;border-left:4px solid #D4A843">'
+          + '<p style="margin:0 0 8px"><strong>Reference:</strong> ' + ref + '</p>'
+          + '<p style="margin:0 0 8px"><strong>Programme:</strong> ' + (data.level||"") + ' — ' + (data.programme||"") + '</p>'
+          + '<p style="margin:0"><strong>Status:</strong> Under Review</p></div>'
+          + '<h3 style="color:#011E40;font-size:16px">What Happens Next?</h3>'
+          + '<ol style="color:#4A5568;line-height:1.8">'
+          + '<li>Our admissions team reviews your documents (48–72 hours)</li>'
+          + '<li>You receive an acceptance email with your Student Portal credentials</li>'
+          + '<li>Complete your payment</li>'
+          + '<li>Your status is updated to Enrolled and the Learning Portal is unlocked</li></ol>'
+          + '<p style="color:#4A5568;line-height:1.7">Questions? Email admin@ctsetsjm.com or WhatsApp 876-381-9771</p></div>'
+          + '<div style="background:#F7FAFC;padding:16px;text-align:center;border-radius:0 0 12px 12px;border:1px solid #e2e8f0;border-top:none">'
+          + '<p style="font-size:11px;color:#A0AEC0;margin:0">CTS ETS | 6, Newark Avenue, Kingston 2 | admin@ctsetsjm.com</p></div></body></html>',
+        name: "CTS ETS Admissions"});
+    }
+  } catch(emailErr) { Logger.log("Confirmation email error: " + emailErr.message); }
 
   return {success:true,ref:ref};
 }
@@ -853,6 +893,31 @@ function handlePayment(data) {
     +"<p><b>Plan:</b> "+(data.paymentPlan||"")+"</p>"
     +(receiptUrl?"<p><a href='"+receiptUrl+"'>View Receipt</a></p>":"")
   });}catch(e){}
+  
+  // Send payment confirmation to each student
+  for (var j=0; j<refs.length; j++) {
+    var sRef = refs[j];
+    var sInfo = lookupStudent(sRef, "");
+    if (sInfo.found && sInfo.email) {
+      try {
+        GmailApp.sendEmail(sInfo.email,
+          "CTS ETS — Payment Received (" + sRef + ")", "",
+          {htmlBody: wrapDripEmail(
+            '<h2 style="color:#011E40">Payment Received, ' + (sInfo.name||"") + '!</h2>'
+            + '<p style="color:#4A5568;line-height:1.7">Thank you for your payment. We are processing it now.</p>'
+            + '<div style="background:#FAFAF7;border-radius:10px;padding:20px;margin:20px 0;border-left:4px solid #2D8B61">'
+            + '<p style="margin:0 0 8px"><strong>Reference:</strong> ' + sRef + '</p>'
+            + '<p style="margin:0 0 8px"><strong>Amount:</strong> J$' + amountPerStudent + '</p>'
+            + '<p style="margin:0"><strong>Programme:</strong> ' + (sInfo.level||"") + ' — ' + (sInfo.programme||"") + '</p></div>'
+            + '<h3 style="color:#011E40;font-size:16px">What Happens Next?</h3>'
+            + '<ol style="color:#4A5568;line-height:1.8">'
+            + '<li>Our team verifies your payment (48\u201372 hours)</li>'
+            + '<li>Your status is updated to Enrolled</li>'
+            + '<li>Your Learning Portal is unlocked — start studying!</li></ol>'
+          ), name: "CTS ETS"});
+      } catch(se) {}
+    }
+  }
 }
 
 function updateEnrolledPayment(ref, amount) {
@@ -897,7 +962,6 @@ function handleWiPay(data) {
       +"<p><b>Total:</b> J$"+(data.totalCharged||"")+"</p>"
       +(refs.length>1?"<p><b>Per Student:</b> J$"+amountPerStudent+"</p>":"")
     });}catch(e){}
-  }
   }
 }
 
@@ -1025,9 +1089,9 @@ function encourageEmail(name, prog) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// BI-WEEKLY ENCOURAGEMENT EMAILS — Run daily via Time-Based Trigger
+// WEEKLY ENCOURAGEMENT EMAILS — Run daily via Time-Based Trigger
 // Triggers > Add Trigger > processEncouragementEmails > Time-driven > Day timer
-// Sends every 14 days to active enrolled students
+// Sends weekly to active enrolled students once course has started
 // ═══════════════════════════════════════════════════════════════════════
 function processEncouragementEmails() {
   loadIds();
@@ -1049,7 +1113,7 @@ function processEncouragementEmails() {
   for (var i=1; i<d.length; i++) {
     var row = d[i];
     var status = String(row[c["Status"]]||"").trim();
-    if (status !== "Active") continue;
+    if (status !== "Active" && status !== "Enrolled") continue;
 
     var email = String(row[c["Email"]]||"").trim();
     var firstName = String(row[c["First Name"]]||"").trim();
@@ -1059,11 +1123,11 @@ function processEncouragementEmails() {
     var lastSent = row[c["Last Encouragement"]];
     var count = Number(row[c["Encouragement Count"]]||0);
 
-    // Check if 14 days since last encouragement (or enrollment if never sent)
+    // Check if 7 days since last encouragement (or enrollment if never sent)
     var lastDate = lastSent ? new Date(lastSent) : new Date(row[c["Enrolled Date"]]||now);
     var daysSince = Math.floor((now - lastDate) / (1000*60*60*24));
 
-    if (daysSince >= 14) {
+    if (daysSince >= 7) {
       var idx = count % encouragements.length;
       var enc = encouragements[idx];
       var subject = enc.subject.replace("{name}", firstName);

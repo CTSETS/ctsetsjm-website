@@ -13,7 +13,7 @@ import { CaptchaChallenge, HoneypotField } from "../components/shared/DisplayCom
 import { validateEmail, validatePhone, validateTRN, suggestEmail, MAX_FILE_SIZE, validateFileSize } from "../utils/validation";
 import { submitToAppsScript, generateRef } from "../utils/submission";
 import { fmt, fmtDate } from "../utils/formatting";
-import { sendApplicationConfirmation, registerDripSequence } from "../utils/email";
+import { registerDripSequence } from "../utils/email";
 import HeartFormBuilder from "../components/apply/HeartFormBuilder";
 
 // ── Constants ──
@@ -118,7 +118,7 @@ function PrayerModal({ prayer, onClose }) {
 export default function ApplyPage({ setPage }) {
   // ── State ──
   const [applicantType, setApplicantType] = useState("");
-  const [form, setForm] = useState({ firstName: "", middleName: "", lastName: "", email: "", phone: "", gender: "", dob: "", nationality: "", maritalStatus: "", parish: "", country: "Jamaica", address: "", trn: "", nis: "", highestQualification: "", schoolLastAttended: "", yearCompleted: "", employmentStatus: "", employer: "", jobTitle: "", yearsExperience: "", industry: "", emergencyName: "", emergencyRelationship: "", emergencyPhone: "", level: "", programme: "", paymentPlan: "", hearAbout: "", message: "" });
+  const [form, setForm] = useState({ firstName: "", middleName: "", lastName: "", maidenName: "", email: "", phone: "", phone2: "", gender: "", dob: "", nationality: "", maritalStatus: "", parish: "", country: "Jamaica", address: "", street: "", district: "", postalZone: "", mailingAddress: "", mailingParish: "", mailingStreet: "", trn: "", nis: "", highestQualification: "", schoolLastAttended: "", yearCompleted: "", employmentStatus: "", employer: "", jobTitle: "", yearsExperience: "", industry: "", emergencyName: "", emergencyRelationship: "", emergencyPhone: "", emergency2Name: "", emergency2Relationship: "", emergency2Phone: "", specialNeeds: "No", specialNeedsType: "", previousHeart: "", level: "", programme: "", paymentPlan: "", hearAbout: "", message: "" });
   const [files, setFiles] = useState({});
   const [errors, setErrors] = useState({});
   const [emailSuggestion, setEmailSuggestion] = useState(null);
@@ -174,7 +174,7 @@ export default function ApplyPage({ setPage }) {
   };
 
   // Reset programme when level changes
-  useEffect(() => { set("programme", ""); var isGO = form.level && (form.level.indexOf("Job") >= 0 || form.level.indexOf("Level 2") >= 0); set("paymentPlan", isGO ? "Gold" : (form.paymentPlan || "Gold")); }, [form.level]);
+  useEffect(() => { set("programme", ""); var isGO = form.level && (form.level.indexOf("Job") >= 0 || form.level.indexOf("Level 2") >= 0); set("paymentPlan", isGO ? "Gold" : "Gold"); }, [form.level]);
 
 
   // ── Queue management ──
@@ -246,8 +246,10 @@ export default function ApplyPage({ setPage }) {
         firstName: form.firstName.trim(),
         middleName: form.middleName.trim(),
         lastName: form.lastName.trim(),
+        maidenName: form.maidenName || "",
         email: form.email.trim(),
         phone: form.phone.trim(),
+        phone2: form.phone2 || "",
         gender: form.gender,
         dob: fmtDate(form.dob),
         nationality: form.nationality || "",
@@ -255,8 +257,12 @@ export default function ApplyPage({ setPage }) {
         parish: form.parish || "",
         country: form.country || "",
         address: form.address.trim(),
+        district: form.district || "",
+        postalZone: form.postalZone || "",
         trn: form.trn || "",
         nis: form.nis || "",
+        specialNeeds: form.specialNeeds || "No",
+        specialNeedsType: form.specialNeedsType || "",
         highestQualification: form.highestQualification || "",
         schoolLastAttended: form.schoolLastAttended || "",
         yearCompleted: form.yearCompleted || "",
@@ -268,6 +274,10 @@ export default function ApplyPage({ setPage }) {
         emergencyName: form.emergencyName || "",
         emergencyRelationship: form.emergencyRelationship || "",
         emergencyPhone: form.emergencyPhone || "",
+        emergency2Name: form.emergency2Name || "",
+        emergency2Relationship: form.emergency2Relationship || "",
+        emergency2Phone: form.emergency2Phone || "",
+        previousHeart: form.previousHeart || "No",
         level: app.level,
         programme: app.programme,
         paymentPlan: app.paymentPlan || "Gold",
@@ -285,8 +295,7 @@ export default function ApplyPage({ setPage }) {
         break;
       }
 
-      // Send confirmation email for each application
-      sendApplicationConfirmation({ name: fullName, email: form.email, ref, programme: app.programme, level: app.level });
+      // Confirmation email sent by backend (Apps Script)
     }
 
     if (anyDuplicate) { setSubmitting(false); return; }
@@ -457,6 +466,12 @@ export default function ApplyPage({ setPage }) {
                 <input style={inputStyle} value={form.lastName} onChange={e => set("lastName", e.target.value)} placeholder="e.g. Campbell" />
               </Field>
             </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }} className="resp-grid-2">
+              <Field label="Maiden Name" hint="If applicable">
+                <input style={inputStyle} value={form.maidenName} onChange={e => set("maidenName", e.target.value)} placeholder="If applicable" />
+              </Field>
+              <div />
+            </div>
             <Field label="Email Address" required error={errors.email}>
               <input type="email" style={inputStyle} value={form.email} onChange={e => set("email", e.target.value)} onBlur={onEmailBlur} placeholder="your@email.com" />
               {emailSuggestion && (
@@ -470,6 +485,11 @@ export default function ApplyPage({ setPage }) {
               <Field label="Phone Number" required error={errors.phone} hint="10 digits, e.g. 876XXXXXXX">
                 <input type="tel" style={inputStyle} value={form.phone} onChange={e => set("phone", e.target.value)} placeholder="8763819771" />
               </Field>
+              <Field label="Phone 2" hint="Optional alternate number">
+                <input type="tel" style={inputStyle} value={form.phone2} onChange={e => set("phone2", e.target.value)} placeholder="Optional" />
+              </Field>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }} className="resp-grid-2">
               <Field label="Gender" required error={errors.gender}>
                 <select style={selectStyle} value={form.gender} onChange={e => set("gender", e.target.value)}>
                   <option value="">Select...</option>
@@ -491,10 +511,24 @@ export default function ApplyPage({ setPage }) {
                 </select>
               </Field>
             </div>
-            <Field label="Address" required error={errors.address}>
-              <input style={inputStyle} value={form.address} onChange={e => set("address", e.target.value)} placeholder="Street, City, Parish/State" />
+            <Field label="Street Address" required error={errors.address}>
+              <input style={inputStyle} value={form.address} onChange={e => set("address", e.target.value)} placeholder="e.g. 15 King Street" />
             </Field>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }} className="resp-grid-2">
+              <Field label="District / Town">
+                <input style={inputStyle} value={form.district} onChange={e => set("district", e.target.value)} placeholder="e.g. Half Way Tree" />
+              </Field>
+              <Field label="Postal Zone / Office">
+                <input style={inputStyle} value={form.postalZone} onChange={e => set("postalZone", e.target.value)} placeholder="e.g. Kingston 10" />
+              </Field>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }} className="resp-grid-2">
+              <Field label="Country" required error={errors.country}>
+                <select style={selectStyle} value={form.country} onChange={e => set("country", e.target.value)}>
+                  <option value="">Select country...</option>
+                  {["Jamaica","Trinidad & Tobago","Barbados","Guyana","Bahamas","Belize","St. Lucia","Grenada","Antigua & Barbuda","Dominica","St. Vincent","St. Kitts & Nevis","Suriname","Haiti","Cayman Islands","Bermuda","Turks & Caicos","BVI","USVI","United States","United Kingdom","Canada","Other"].map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </Field>
               {isJamaican ? (
                 <Field label="Parish" required error={errors.parish}>
                   <select style={selectStyle} value={form.parish} onChange={e => set("parish", e.target.value)}>
@@ -502,24 +536,37 @@ export default function ApplyPage({ setPage }) {
                     {JA_PARISHES.map(p => <option key={p} value={p}>{p}</option>)}
                   </select>
                 </Field>
-              ) : (
-                <Field label="Country" required error={errors.country}>
-                  <select style={selectStyle} value={form.country} onChange={e => set("country", e.target.value)}>
-                    <option value="">Select country...</option>
-                    {["Jamaica","Trinidad & Tobago","Barbados","Guyana","Bahamas","Belize","St. Lucia","Grenada","Antigua & Barbuda","Dominica","St. Vincent","St. Kitts & Nevis","Suriname","Haiti","Cayman Islands","Bermuda","Turks & Caicos","BVI","USVI","United States","United Kingdom","Canada","Other"].map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </Field>
-              )}
-              {isJamaican && (
+              ) : <div />}
+            </div>
+            {isJamaican && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }} className="resp-grid-2">
                 <Field label="TRN (Tax Registration Number)" required error={errors.trn} hint="9 digits — for NCTVET registration">
                   <input style={inputStyle} value={form.trn} onChange={e => set("trn", e.target.value)} placeholder="123456789" maxLength={11} />
                 </Field>
-              )}
-            </div>
+                <Field label="NIS Number (National Insurance Scheme)" hint="Optional — if you have one">
+                  <input style={inputStyle} value={form.nis} onChange={e => set("nis", e.target.value)} placeholder="NIS number" />
+                </Field>
+              </div>
+            )}
+
+            {/* Special Needs */}
             {isJamaican && (
-              <Field label="NIS Number (National Insurance Scheme)" hint="Optional — if you have one">
-                <input style={inputStyle} value={form.nis} onChange={e => set("nis", e.target.value)} placeholder="NIS number" />
-              </Field>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }} className="resp-grid-2">
+                <Field label="Do you have any special needs?" hint="Physical, emotional, behavioural, learning disability">
+                  <select style={selectStyle} value={form.specialNeeds} onChange={e => set("specialNeeds", e.target.value)}>
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </Field>
+                {form.specialNeeds === "Yes" && (
+                  <Field label="If yes, please specify">
+                    <select style={selectStyle} value={form.specialNeedsType} onChange={e => set("specialNeedsType", e.target.value)}>
+                      <option value="">Select...</option>
+                      {["Physical", "Emotional/Behavioural", "Developmental/Learning", "Sensory-Impaired"].map(o => <option key={o} value={o}>{o}</option>)}
+                    </select>
+                  </Field>
+                )}
+              </div>
             )}
 
             {/* Education Background */}
@@ -585,7 +632,7 @@ export default function ApplyPage({ setPage }) {
 
             {/* Emergency Contact */}
             <div style={{ marginTop: 8, paddingTop: 20, borderTop: "1px solid " + S.border }}>
-              <div style={{ fontSize: 11, color: S.coral, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 16 }}>Emergency Contact</div>
+              <div style={{ fontSize: 11, color: S.coral, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 16 }}>Emergency Contact #1</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0 20px" }} className="resp-grid-3">
                 <Field label="Contact Name" required error={errors.emergencyName}>
                   <input style={inputStyle} value={form.emergencyName} onChange={e => set("emergencyName", e.target.value)} placeholder="e.g. Sandra Campbell" />
@@ -593,11 +640,26 @@ export default function ApplyPage({ setPage }) {
                 <Field label="Relationship">
                   <select style={selectStyle} value={form.emergencyRelationship} onChange={e => set("emergencyRelationship", e.target.value)}>
                     <option value="">Select...</option>
-                    {["Spouse", "Parent", "Sibling", "Child", "Aunt/Uncle", "Cousin", "Friend", "Employer", "Other"].map(o => <option key={o} value={o}>{o}</option>)}
+                    {["Parent", "Guardian", "Spouse", "Relative", "Friend"].map(o => <option key={o} value={o}>{o}</option>)}
                   </select>
                 </Field>
                 <Field label="Contact Phone" required error={errors.emergencyPhone}>
                   <input type="tel" style={inputStyle} value={form.emergencyPhone} onChange={e => set("emergencyPhone", e.target.value)} placeholder="8761234567" />
+                </Field>
+              </div>
+              <div style={{ fontSize: 11, color: S.coral, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 16, marginTop: 16 }}>Emergency Contact #2 <span style={{ opacity: 0.5, fontSize: 9, letterSpacing: 0 }}>(Optional)</span></div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0 20px" }} className="resp-grid-3">
+                <Field label="Contact Name">
+                  <input style={inputStyle} value={form.emergency2Name} onChange={e => set("emergency2Name", e.target.value)} placeholder="Optional" />
+                </Field>
+                <Field label="Relationship">
+                  <select style={selectStyle} value={form.emergency2Relationship} onChange={e => set("emergency2Relationship", e.target.value)}>
+                    <option value="">Select...</option>
+                    {["Parent", "Guardian", "Spouse", "Relative", "Friend"].map(o => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                </Field>
+                <Field label="Contact Phone">
+                  <input type="tel" style={inputStyle} value={form.emergency2Phone} onChange={e => set("emergency2Phone", e.target.value)} placeholder="Optional" />
                 </Field>
               </div>
             </div>
@@ -663,6 +725,49 @@ export default function ApplyPage({ setPage }) {
                         })}
                       </div>
                       {isGoldOnly && <div style={{ fontSize: 10, color: S.amber, fontFamily: S.body, marginTop: 8 }}>Job Certificate and Level 2: Full payment (Gold) only.</div>}
+
+                      {/* Plan breakdown */}
+                      {form.paymentPlan && (() => {
+                        var tuition = parseInt(prog.tuition.replace(/[$,]/g, ""));
+                        var plan = form.paymentPlan;
+                        if (plan === "Gold") {
+                          return (
+                            <div style={{ marginTop: 14, padding: "14px 16px", borderRadius: 8, background: "rgba(255,255,255,0.06)", fontSize: 12, fontFamily: S.body, color: "rgba(255,255,255,0.7)" }}>
+                              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}><span>Registration Fee</span><span style={{ color: S.gold, fontWeight: 700 }}>{fmt(REG_FEE)}</span></div>
+                              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}><span>Training Fee</span><span style={{ color: S.gold, fontWeight: 700 }}>{fmt(tuition)}</span></div>
+                              <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.1)", fontSize: 14, fontWeight: 800, color: S.gold }}><span>Total</span><span>{fmt(tuition + REG_FEE)}</span></div>
+                            </div>
+                          );
+                        }
+                        if (plan === "Silver") {
+                          var silverT = Math.round(tuition * 1.10);
+                          var pay1 = REG_FEE + Math.round(silverT * 0.6);
+                          var pay2 = silverT - Math.round(silverT * 0.6);
+                          return (
+                            <div style={{ marginTop: 14, padding: "14px 16px", borderRadius: 8, background: "rgba(255,255,255,0.06)", fontSize: 12, fontFamily: S.body, color: "rgba(255,255,255,0.7)" }}>
+                              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}><span>Training Fee (+10%)</span><span style={{ color: "#ccc", fontWeight: 700 }}>{fmt(silverT)}</span></div>
+                              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}><span>At Enrolment (60% + reg)</span><span style={{ color: S.gold, fontWeight: 700 }}>{fmt(pay1)}</span></div>
+                              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}><span>Mid-Point (40%)</span><span style={{ color: S.gold, fontWeight: 700 }}>{fmt(pay2)}</span></div>
+                              <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.1)", fontSize: 14, fontWeight: 800, color: S.gold }}><span>Total</span><span>{fmt(REG_FEE + silverT)}</span></div>
+                            </div>
+                          );
+                        }
+                        if (plan === "Bronze") {
+                          var lv = form.level || "";
+                          var months = lv.indexOf("5") >= 0 ? 8 : lv.indexOf("4") >= 0 ? 7 : 6;
+                          var monthly = lv.indexOf("5") >= 0 ? 4500 : lv.indexOf("4") >= 0 ? 4000 : 3500;
+                          var deposit = lv.indexOf("5") >= 0 ? 12000 : lv.indexOf("4") >= 0 ? 10000 : 7000;
+                          var bronzeTotal = REG_FEE + deposit + (monthly * months);
+                          return (
+                            <div style={{ marginTop: 14, padding: "14px 16px", borderRadius: 8, background: "rgba(255,255,255,0.06)", fontSize: 12, fontFamily: S.body, color: "rgba(255,255,255,0.7)" }}>
+                              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}><span>At Enrolment (20% deposit + reg)</span><span style={{ color: S.gold, fontWeight: 700 }}>{fmt(REG_FEE + deposit)}</span></div>
+                              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}><span>{months + " Monthly Payments"}</span><span style={{ color: S.gold, fontWeight: 700 }}>{fmt(monthly) + "/mth"}</span></div>
+                              <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.1)", fontSize: 14, fontWeight: 800, color: S.gold }}><span>Total</span><span>{fmt(bronzeTotal)}</span></div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                   </div>
                 </Reveal>
@@ -702,6 +807,16 @@ export default function ApplyPage({ setPage }) {
                 {["Google Search", "Facebook", "Instagram", "TikTok", "LinkedIn", "WhatsApp", "A friend or family member", "Employer", "HEART/NSTA", "Other"].map(o => <option key={o} value={o}>{o}</option>)}
               </select>
             </Field>
+
+            {isJamaican && (
+              <Field label="Have you previously enrolled at the HEART/NSTA Trust?">
+                <select style={selectStyle} value={form.previousHeart} onChange={e => set("previousHeart", e.target.value)}>
+                  <option value="">Select...</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </Field>
+            )}
 
             {/* Additional message */}
             <Field label="Anything else you'd like us to know?" hint="Optional — special requests, questions, etc.">

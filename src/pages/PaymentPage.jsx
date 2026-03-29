@@ -9,7 +9,7 @@ import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture } fro
 import { PaymentSecurityNotice, HoneypotField } from "../components/shared/DisplayComponents";
 import { PaymentMethodSelector, PaymentSetupNotice, isOnlinePaymentAvailable } from "../components/apply/SmartPayment";
 import { fmt } from "../utils/formatting";
-import { sendPaymentConfirmation } from "../utils/email";
+// Payment confirmation email sent by backend (Apps Script)
 
 // ── Tuition by level ──
 var TUITION_MAP = {
@@ -282,16 +282,7 @@ export default function PaymentPage({ setPage }) {
       } catch (e2) { /* silent */ }
     }
     setSubmitting(false);
-    // Send payment confirmation email to student
-    if (activeStudent && activeStudent.email) {
-      sendPaymentConfirmation({
-        name: activeStudent.name, email: activeStudent.email, ref: students.length > 0 ? allRefs : student.ref,
-        programme: activeStudent.programme, level: activeStudent.level,
-        amount: payAmount, feeType: feeLabel, paymentPlan: selectedPlan,
-        
-        
-      });
-    }
+    // Payment confirmation email sent by backend (Apps Script)
     setSubmitted(true);
   };
 
