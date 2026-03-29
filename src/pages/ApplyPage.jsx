@@ -663,10 +663,39 @@ export default function ApplyPage({ setPage }) {
                 </Field>
               </div>
             </div>
-          </SectionBlock>
 
-          {/* ════════════════════════════════════════════════ */}
-          {/* SECTION 3: PROGRAMME SELECTION */}
+            {/* Missing fields indicator */}
+            {s1Done && !s2Done && (() => {
+              var missing = [];
+              if (!form.firstName) missing.push("First Name");
+              if (!form.lastName) missing.push("Last Name");
+              if (!validateEmail(form.email)) missing.push("Valid Email");
+              if (!validatePhone(form.phone)) missing.push("Phone Number");
+              if (!form.gender) missing.push("Gender");
+              if (!form.dob) missing.push("Date of Birth");
+              if (!form.address) missing.push("Street Address");
+              if (!form.country) missing.push("Country");
+              if (isJamaican && !form.parish) missing.push("Parish");
+              if (isJamaican && !form.trn) missing.push("TRN");
+              if (isJamaican && form.trn && !validateTRN(form.trn)) missing.push("Valid TRN (9 digits)");
+              if (!form.highestQualification) missing.push("Highest Qualification");
+              if (!form.employmentStatus) missing.push("Employment Status");
+              if (!form.emergencyName) missing.push("Emergency Contact Name");
+              if (!form.emergencyPhone) missing.push("Emergency Contact Phone");
+              if (missing.length === 0) return null;
+              return (
+                <div style={{ marginTop: 20, padding: "14px 18px", borderRadius: 10, background: S.amberLight, border: "1px solid " + S.amber + "40", display: "flex", alignItems: "flex-start", gap: 10 }}>
+                  <span style={{ fontSize: 16, flexShrink: 0 }}>{"\u26A0\uFE0F"}</span>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: S.amberDark, fontFamily: S.body, marginBottom: 4 }}>Complete these fields to unlock the next section:</div>
+                    <div style={{ fontSize: 12, color: S.amberDark, fontFamily: S.body, lineHeight: 1.8 }}>
+                      {missing.map(function(f, i) { return <span key={f} style={{ display: "inline-block", padding: "2px 10px", borderRadius: 20, background: S.amber + "20", marginRight: 6, marginBottom: 4, fontSize: 11, fontWeight: 600 }}>{f}</span>; })}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </SectionBlock>
           {/* ════════════════════════════════════════════════ */}
           <SectionBlock num={secN.programme} title="Programme Selection" desc="Choose your qualification level and programme." locked={!s2Done} complete={s3Done}>
             <Field label="Qualification Level" required error={errors.level}>
@@ -776,10 +805,21 @@ export default function ApplyPage({ setPage }) {
                 </Reveal>
               );
             })()}
-          </SectionBlock>
 
-          {/* ════════════════════════════════════════════════ */}
-          {/* SECTION 4 (Jamaican only): HEART/NSTA FORM */}
+            {/* Missing fields indicator for Section 3 */}
+            {s2Done && !s3Done && appQueue.length === 0 && (
+              <div style={{ marginTop: 16, padding: "14px 18px", borderRadius: 10, background: S.amberLight, border: "1px solid " + S.amber + "40", display: "flex", alignItems: "flex-start", gap: 10 }}>
+                <span style={{ fontSize: 16, flexShrink: 0 }}>{"\u26A0\uFE0F"}</span>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: S.amberDark, fontFamily: S.body, marginBottom: 4 }}>Complete these fields to continue:</div>
+                  <div style={{ fontSize: 12, color: S.amberDark, fontFamily: S.body, lineHeight: 1.8 }}>
+                    {!form.level && <span style={{ display: "inline-block", padding: "2px 10px", borderRadius: 20, background: S.amber + "20", marginRight: 6, fontSize: 11, fontWeight: 600 }}>Qualification Level</span>}
+                    {form.level && !form.programme && <span style={{ display: "inline-block", padding: "2px 10px", borderRadius: 20, background: S.amber + "20", marginRight: 6, fontSize: 11, fontWeight: 600 }}>Programme</span>}
+                  </div>
+                </div>
+              </div>
+            )}
+          </SectionBlock>
           {/* ════════════════════════════════════════════════ */}
           {isJamaican && (
             <SectionBlock num={secN.heart} title="HEART/NSTA Application Form" desc="Auto-filled from your details. Sign and download, then upload it in the next section." locked={!s3Done} complete={heartFormDone}>
