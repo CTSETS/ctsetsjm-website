@@ -22,6 +22,9 @@ var SCENARIOS = [
   { time: "Sunday", emoji: "\uD83C\uDFE0", scene: "Weekend catch-up from the verandah", desc: "Anika hasn't studied all week — life was busy. She does three lessons back-to-back from the verandah. No penalty for the missed days. That's self-paced.", bg: S.emerald },
   { time: "3:00 PM", emoji: "\uD83D\uDE97", scene: "Parked outside the school gate", desc: "Jordan is waiting to pick up the kids. She opens the learning portal and reviews her Customer Service flashcards for 15 minutes. Small pockets of time add up.", bg: S.rose },
   { time: "11:30 PM", emoji: "\uD83C\uDF19", scene: "Night shift break at the security post", desc: "Ansel is on night shift. During his break he watches a 10-minute video summary on his phone and completes the reflection exercise. His certificate is 3 weeks away.", bg: S.sky },
+  { time: "6:45 AM", emoji: "\uD83C\uDFCB\uFE0F", scene: "At the gym — between sets", desc: "Pauline listens to her Entrepreneurship audio session while working out. Thirty minutes of cardio, one full lesson done. She calls it her 'mind and body' hour.", bg: S.amber },
+  { time: "2:15 PM", emoji: "\uD83C\uDFEA", scene: "Slow afternoon at the shop", desc: "Devon's father runs a hardware store. When business is slow, he pulls up the learning portal on his phone behind the counter and reads through his Data Protection module.", bg: S.navy },
+  { time: "8:00 PM", emoji: "\uD83C\uDF73", scene: "Cooking dinner, earphones in", desc: "Kezia is making dinner for the family. She puts in her earphones and listens to an audio study session while stirring the pot. By the time dinner is ready, she's covered two topics.", bg: S.teal },
 ];
 
 export default function HomePage({ setPage }) {
@@ -96,7 +99,7 @@ export default function HomePage({ setPage }) {
         <Container>
           <Reveal><div style={{ textAlign: "center", marginBottom: 36 }}>
             <span style={{ fontSize: 11, color: S.gold, letterSpacing: 3, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600 }}>Real Students. Real Schedules.</span>
-            <h2 style={{ fontFamily: S.heading, fontSize: "clamp(26px,4vw,38px)", color: "#fff", margin: "10px 0 0", fontWeight: 700 }}>7 Ways Our Students <span style={{ color: S.coral }}>Actually Study</span></h2>
+            <h2 style={{ fontFamily: S.heading, fontSize: "clamp(26px,4vw,38px)", color: "#fff", margin: "10px 0 0", fontWeight: 700 }}>10 Ways Our Students <span style={{ color: S.coral }}>Actually Study</span></h2>
             <p style={{ fontFamily: S.body, fontSize: 14, color: "rgba(255,255,255,0.55)", lineHeight: 1.6, maxWidth: 520, margin: "12px auto 0" }}>Self-paced means your regular studying fits around your life. You will be part of a cohort with scheduled assessment preparation days — given with advance notice.</p>
           </div></Reveal>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }} className="resp-grid-2">
@@ -104,7 +107,7 @@ export default function HomePage({ setPage }) {
               var isLast = i === SCENARIOS.length - 1;
               return (
                 <Reveal key={i} delay={i * 0.06}>
-                  <div style={{ display: "flex", gap: 18, padding: "22px 24px", borderRadius: 16, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", height: "100%", gridColumn: isLast ? "1 / -1" : undefined }}>
+                  <div style={{ display: "flex", gap: 18, padding: "22px 24px", borderRadius: 16, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", height: "100%", gridColumn: undefined }}>
                     <div style={{ flexShrink: 0, textAlign: "center", minWidth: 60 }}>
                       <div style={{ fontSize: 40, lineHeight: 1, marginBottom: 6 }}>{s.emoji}</div>
                       <div style={{ fontSize: 11, fontWeight: 800, color: s.bg, fontFamily: S.body }}>{s.time}</div>

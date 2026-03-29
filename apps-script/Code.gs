@@ -44,12 +44,15 @@ function setupAllSheets() {
   p.setProperties({"master_id":SHEET_IDS.master,"students_id":SHEET_IDS.students,"finance_id":SHEET_IDS.finance,"operations_id":SHEET_IDS.operations,"academic_id":SHEET_IDS.academic});
 
   // Student Records tabs
-  makeTab(s1,"Student Tracker",["Student ID","Application Ref","Date Submitted","Form Type","Applicant Type","Last Name","First Name","Middle Name","Email","Phone","TRN","NIS","Parish","Country","Gender","Date of Birth","Address","Nationality","Marital Status","Highest Qualification","School Last Attended","Year Completed","Employment Status","Employer","Job Title","Industry","Years Experience","Emergency Name","Emergency Phone","Emergency Relationship","Level","Programme","Payment Plan","Hear About Us","Referral Code","Message","Documents Uploaded","Drive Folder Link","Status","Payment Status","Payment Reference","Enrolment Date","Class Start","Completion Date","Is Founding Member","Founding Member #"]);
-  makeTab(s1,"Student Lifecycle",["Date/Time","Application Ref","Student ID","Student Name","Event Type","Category","Details","Previous Value","New Value","Programme","Level","Performed By","Source"]);
-  makeTab(s1,"Drip Log",["Student ID","App Ref","Email","Student Name","Programme","Level","Enrolled Date","day1_welcome","day3_tips","day7_checkin","day14_encourage"]);
-  makeTab(s1,"Communication Log",["Timestamp","Student Name","Student ID","App Ref","Channel","Direction","Subject","Summary","Logged By"]);
+  makeTab(s1,"Applications",["Application Ref","Date Submitted","Applicant Type","First Name","Last Name","Middle Name","Email","Phone","TRN","NIS","Parish","Country","Gender","Date of Birth","Address","Nationality","Marital Status","Highest Qualification","School Last Attended","Year Completed","Employment Status","Employer","Job Title","Industry","Years Experience","Emergency Name","Emergency Phone","Emergency Relationship","Level","Programme","Payment Plan","Hear About Us","Message","Documents Uploaded","Drive Folder Link","Status","Notes"]);
+  makeTab(s1,"Enrolled Students",["Student Number","Application Ref","Portal Password","First Name","Last Name","Email","Phone","Level","Programme","Payment Plan","Cohort","Start Date","End Date","Total Fees","Total Paid","Outstanding","Status","Payment Status","LMS Access","Enrolled Date","Last Encouragement","Encouragement Count","Notes"]);
+  makeTab(s1,"Student Lifecycle",["Date/Time","Application Ref","Student Number","Student Name","Event Type","Category","Details","Previous Value","New Value","Programme","Level","Performed By","Source"]);
+  makeTab(s1,"Communication Log",["Timestamp","Student Name","Student Number","App Ref","Channel","Direction","Subject","Summary","Logged By"]);
+  makeTab(s1,"Drip Log",["Student Number","App Ref","Email","Student Name","Programme","Level","Enrolled Date","day1_welcome","day3_tips","day7_checkin","day14_encourage"]);
   makeTab(s1,"Employer Contacts",["Organisation","Contact Name","Email","Phone","Students Enrolled","Discount","Notes"]);
-  makeTab(s1,"Testimonials",["Date","Student Name","Programme","Level","Quote","Permission","Photo Consent","Student ID","Email","Status"]);
+
+  // Add Status dropdown validation to Applications
+  setupStatusDropdown(s1);
   rmDef(s1);
 
   // Finance tabs
@@ -93,6 +96,207 @@ function makeTab(ss, name, headers) {
   if (s.getLastRow() === 0) { s.appendRow(headers); s.getRange(1,1,1,headers.length).setFontWeight("bold"); s.setFrozenRows(1); }
 }
 function rmDef(ss) { try { var d=ss.getSheetByName("Sheet1"); if(d&&ss.getSheets().length>1) ss.deleteSheet(d); } catch(e){} }
+
+function setupStatusDropdown(ss) {
+  var apps = ss.getSheetByName("Applications");
+  if (!apps) return;
+  var h = apps.getRange(1,1,1,apps.getLastColumn()).getValues()[0];
+  var statusCol = -1;
+  for (var i=0; i<h.length; i++) { if (String(h[i]).trim() === "Status") { statusCol = i+1; break; } }
+  if (statusCol < 0) return;
+  // Apply dropdown to rows 2-500
+  var rule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(["Under Review","Pending Payment","Accepted","Rejected","Withdrawn","Deferred"], true)
+    .setAllowInvalid(false).build();
+  apps.getRange(2, statusCol, 499, 1).setDataValidation(rule);
+
+  // Also set Enrolled Students status dropdown
+  var enrolled = ss.getSheetByName("Enrolled Students");
+  if (!enrolled) return;
+  var h2 = enrolled.getRange(1,1,1,enrolled.getLastColumn()).getValues()[0];
+  var statusCol2 = -1;
+  for (var i=0; i<h2.length; i++) { if (String(h2[i]).trim() === "Status") { statusCol2 = i+1; break; } }
+  if (statusCol2 < 0) return;
+  var rule2 = SpreadsheetApp.newDataValidation()
+    .requireValueInList(["Active","On Hold","Completed","Withdrawn","Graduated"], true)
+    .setAllowInvalid(false).build();
+  enrolled.getRange(2, statusCol2, 499, 1).setDataValidation(rule2);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// ON-EDIT TRIGGER — Install via: Triggers > Add Trigger > onEditTrigger > On Edit
+// Watches Applications → Status column. When set to "Accepted", auto-enrolls.
+// ═══════════════════════════════════════════════════════════════════════
+function onEditTrigger(e) {
+  try {
+    var sheet = e.source.getActiveSheet();
+    var sheetName = sheet.getName();
+    if (sheetName !== "Applications") return;
+
+    var range = e.range;
+    var row = range.getRow();
+    if (row < 2) return; // header row
+
+    var headers = sheet.getRange(1,1,1,sheet.getLastColumn()).getValues()[0];
+    var colMap = {};
+    for (var i=0; i<headers.length; i++) colMap[String(headers[i]).trim()] = i;
+
+    var statusCol = colMap["Status"];
+    if (statusCol === undefined) return;
+    if (range.getColumn() !== statusCol + 1) return; // not the Status column
+
+    var newStatus = String(e.value || "").trim();
+    var oldStatus = String(e.oldValue || "").trim();
+
+    if (newStatus === "Accepted" && oldStatus !== "Accepted") {
+      enrollStudent(sheet, row, headers, colMap);
+    }
+  } catch(err) {
+    Logger.log("onEditTrigger error: " + err.message);
+  }
+}
+
+function enrollStudent(appSheet, row, headers, colMap) {
+  var data = appSheet.getRange(row, 1, 1, headers.length).getValues()[0];
+
+  var appRef = String(data[colMap["Application Ref"]] || "").trim();
+  var firstName = String(data[colMap["First Name"]] || "").trim();
+  var lastName = String(data[colMap["Last Name"]] || "").trim();
+  var email = String(data[colMap["Email"]] || "").trim();
+  var phone = String(data[colMap["Phone"]] || "").trim();
+  var level = String(data[colMap["Level"]] || "").trim();
+  var programme = String(data[colMap["Programme"]] || "").trim();
+  var paymentPlan = String(data[colMap["Payment Plan"]] || "").trim();
+
+  // Generate student number: CTSETS-STU-XXXXX
+  var studentNumber = generateStudentNumber();
+
+  // Generate portal password: CTS + 6 random alphanumeric
+  var portalPassword = generatePortalPassword();
+
+  // Calculate total fees based on level
+  var totalFees = getLevelFee(level);
+
+  // Write to Enrolled Students
+  loadIds();
+  var enrolled = sTab("Enrolled Students");
+  enrolled.appendRow([
+    studentNumber,       // Student Number
+    appRef,              // Application Ref
+    portalPassword,      // Portal Password
+    firstName,           // First Name
+    lastName,            // Last Name
+    email,               // Email
+    phone,               // Phone
+    level,               // Level
+    programme,           // Programme
+    paymentPlan,         // Payment Plan
+    "",                  // Cohort (you fill in)
+    "",                  // Start Date (you fill in)
+    "",                  // End Date (you fill in)
+    totalFees,           // Total Fees
+    0,                   // Total Paid
+    totalFees,           // Outstanding
+    "Active",            // Status
+    "Pending",           // Payment Status
+    "Yes",               // LMS Access
+    new Date(),          // Enrolled Date
+    "",                  // Last Encouragement
+    0,                   // Encouragement Count
+    ""                   // Notes
+  ]);
+
+  // Log to Student Lifecycle
+  try {
+    var lifecycle = sTab("Student Lifecycle");
+    lifecycle.appendRow([
+      new Date(), appRef, studentNumber, firstName + " " + lastName,
+      "Status Change", "Enrollment", "Application accepted — auto-enrolled",
+      "Under Review", "Accepted", programme, level, "System", "Auto"
+    ]);
+  } catch(e) {}
+
+  // Log to Audit
+  try {
+    var audit = oTab("Audit Log");
+    audit.appendRow([new Date(), "Student Enrolled", appRef, studentNumber, firstName + " " + lastName,
+      "Auto-enrolled. Student #: " + studentNumber + " | Password: " + portalPassword, "System"]);
+  } catch(e) {}
+
+  Logger.log("Enrolled: " + appRef + " → " + studentNumber + " | PW: " + portalPassword);
+
+  // AUTO-SEND ACCEPTANCE EMAIL
+  try {
+    if (email) {
+      var fmtFees = "J$" + totalFees.toLocaleString();
+      var subject = "🎓 Congratulations " + firstName + "! You've Been Accepted — CTS ETS";
+      var body = '<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">'
+        + '<div style="background:#011E40;color:#fff;padding:24px;border-radius:12px 12px 0 0;text-align:center">'
+        + '<h1 style="margin:0;font-size:22px">Welcome to CTS ETS!</h1>'
+        + '<p style="margin:8px 0 0;opacity:0.8;font-size:13px">Called To Serve — Excellence Through Service</p>'
+        + '</div>'
+        + '<div style="padding:24px;background:#fff;border:1px solid #e2e8f0;border-top:none">'
+        + '<p style="font-size:16px;color:#011E40"><strong>Congratulations, ' + firstName + '!</strong></p>'
+        + '<p style="font-size:14px;color:#4A5568;line-height:1.7">Your application for <strong>' + programme + ' (' + level + ')</strong> has been accepted. You are now officially a CTS ETS student.</p>'
+        + '<div style="background:#F0FFF4;border:2px solid #38A169;border-radius:10px;padding:20px;margin:20px 0">'
+        + '<h3 style="color:#22543D;margin:0 0 12px;font-size:15px">Your Portal Credentials</h3>'
+        + '<table style="width:100%;font-size:14px"><tr><td style="padding:6px 0;color:#718096">Student Number</td><td style="padding:6px 0;font-weight:bold;color:#011E40">' + studentNumber + '</td></tr>'
+        + '<tr><td style="padding:6px 0;color:#718096">Application Ref</td><td style="padding:6px 0;font-weight:bold;color:#011E40">' + appRef + '</td></tr>'
+        + '<tr><td style="padding:6px 0;color:#718096">Portal Password</td><td style="padding:6px 0;font-weight:bold;color:#E53E3E;font-family:monospace;font-size:16px">' + portalPassword + '</td></tr>'
+        + '<tr><td style="padding:6px 0;color:#718096">Total Fees</td><td style="padding:6px 0;font-weight:bold;color:#011E40">' + fmtFees + '</td></tr></table>'
+        + '</div>'
+        + '<h3 style="color:#011E40;font-size:15px;margin:20px 0 10px">What to Do Next</h3>'
+        + '<ol style="font-size:14px;color:#4A5568;line-height:2">'
+        + '<li><strong>Log into the Student Portal</strong> at <a href="https://www.ctsetsjm.com/#Student-Portal" style="color:#0E8F8B">ctsetsjm.com → Student Portal</a> using your Application Ref (or Student Number) and the password above.</li>'
+        + '<li><strong>Make your payment</strong> — you can pay online at <a href="https://www.ctsetsjm.com/#pay" style="color:#0E8F8B">ctsetsjm.com → Make a Payment</a></li>'
+        + '<li><strong>Access the Learning Portal</strong> — once inside the Student Portal, click "Enter Learning Portal" to start studying.</li>'
+        + '<li><strong>Change your password</strong> — you can change your portal password from within the Student Portal.</li>'
+        + '</ol>'
+        + '<p style="font-size:14px;color:#4A5568;line-height:1.7">We will assign you to a cohort and notify you of your start date. In the meantime, you can begin exploring your study materials.</p>'
+        + '<div style="text-align:center;margin:24px 0"><a href="https://www.ctsetsjm.com/#Student-Portal" style="display:inline-block;padding:14px 36px;background:#0E8F8B;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold;font-size:15px">Log Into Student Portal</a></div>'
+        + '<p style="font-size:12px;color:#A0AEC0;margin-top:20px;text-align:center">Keep this email safe — it contains your login credentials.<br>Questions? Email admin@ctsetsjm.com or WhatsApp 876-381-9771</p>'
+        + '</div>'
+        + '<div style="background:#F7FAFC;padding:16px;text-align:center;border-radius:0 0 12px 12px;border:1px solid #e2e8f0;border-top:none">'
+        + '<p style="font-size:11px;color:#A0AEC0;margin:0">CTS Empowerment & Training Solutions | 6, Newark Avenue, Kingston 2 | admin@ctsetsjm.com</p>'
+        + '</div></body></html>';
+      GmailApp.sendEmail(email, subject, "Congratulations " + firstName + "! Your CTS ETS application has been accepted. Student #: " + studentNumber + " | Password: " + portalPassword + " | Log in at ctsetsjm.com → Student Portal", {htmlBody: body, name: "CTS ETS Admissions"});
+      Logger.log("Acceptance email sent to: " + email);
+    }
+  } catch(emailErr) { Logger.log("Acceptance email error: " + emailErr.message); }
+}
+
+function generateStudentNumber() {
+  loadIds();
+  var enrolled = sTab("Enrolled Students");
+  var lastRow = enrolled.getLastRow();
+  var nextNum = 1;
+  if (lastRow > 1) {
+    var existing = enrolled.getRange(2, 1, lastRow-1, 1).getValues();
+    for (var i=0; i<existing.length; i++) {
+      var m = String(existing[i][0]).match(/STU-(\d+)/);
+      if (m) { var n = parseInt(m[1]); if (n >= nextNum) nextNum = n + 1; }
+    }
+  }
+  var padded = String(nextNum);
+  while (padded.length < 5) padded = "0" + padded;
+  return "CTSETS-STU-" + padded;
+}
+
+function generatePortalPassword() {
+  var chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+  var pw = "CTS";
+  for (var i=0; i<6; i++) { pw += chars.charAt(Math.floor(Math.random() * chars.length)); }
+  return pw;
+}
+
+function getLevelFee(level) {
+  var l = String(level).toLowerCase();
+  if (l.indexOf("5") >= 0) return 50000;
+  if (l.indexOf("4") >= 0) return 40000;
+  if (l.indexOf("3") >= 0) return 30000;
+  if (l.indexOf("2") >= 0) return 20000;
+  return 10000; // Job Certificate
+}
 
 
 function populateFC(fin) {
@@ -139,7 +343,7 @@ function buildMaster(master, s1, s2, s3, s4) {
   d.getRange("A3").setValue("Setup: " + new Date().toLocaleString()).setFontSize(9).setFontColor("#999");
   var r = 5;
   var items = [
-    ["📘 1. STUDENT RECORDS", s1, "#011E40", ["Student Tracker","Student Lifecycle","Drip Log","Communication Log","Employer Contacts","Testimonials"]],
+    ["📘 1. STUDENT RECORDS", s1, "#011E40", ["Applications","Enrolled Students","Student Lifecycle","Communication Log","Drip Log","Employer Contacts"]],
     ["💰 2. FINANCE", s2, "#C49112", ["Payment Schedule","Founding_Cohort","Founding_Credits","Founding_Referrals"]],
     ["⚙️ 3. OPERATIONS", s3, "#2D8B61", ["Site Analytics","Feedback","Interest Capture","Audit Log","Config"]],
     ["🎓 4. ACADEMIC", s4, "#7C3AED", ["Certificates","Programme Codes","Progress Reports","NCTVET Ready","Ministry Register"]],
@@ -167,6 +371,8 @@ function doGet(e) {
   var a = (e.parameter.action||"").toLowerCase(), r = {};
   try {
     if (a==="lookupstudent") r = lookupStudent(e.parameter.ref||"",e.parameter.email||"");
+    else if (a==="studentlogin") r = studentLogin(e.parameter.ref||"",e.parameter.pw||"");
+    else if (a==="changepassword") r = changePassword(e.parameter.ref||"",e.parameter.oldpw||"",e.parameter.newpw||"");
     else if (a==="getfoundingcount") r = getFoundingCount(e.parameter.programme||"",e.parameter.level||"");
     else if (a==="verifycert") r = verifyCert(e.parameter.cert||"");
     else if (a==="validatereferral") r = validateReferral(e.parameter.code||"");
@@ -203,27 +409,130 @@ function doPost(e) {
 // GET ACTIONS
 // ═══════════════════════════════════════════════════════════════════════
 function lookupStudent(ref, email) {
-  var s=sTab("Student Tracker"), d=s.getDataRange().getValues(), h=d[0], c={};
+  var s=sTab("Applications"), d=s.getDataRange().getValues(), h=d[0], c={};
   for(var i=0;i<h.length;i++) c[String(h[i]).trim()]=i;
   for(var i=1;i<d.length;i++){
     var row=d[i], ar=String(row[c["Application Ref"]]||"").trim().toUpperCase(), re=String(row[c["Email"]]||"").trim().toLowerCase();
     var match=false;
     if(ref&&ar===ref.trim().toUpperCase()) match=true;
     if(!match&&email&&re===email.trim().toLowerCase()) match=true;
-    if(match) return {
-      found:true, ref:ar, studentId:row[c["Student ID"]]||"",
-      name:((row[c["First Name"]]||"")+" "+(row[c["Last Name"]]||"")).trim(),
-      email:row[c["Email"]]||"", phone:row[c["Phone"]]||"",
-      programme:row[c["Programme"]]||"", level:row[c["Level"]]||"",
-      paymentPlan:row[c["Payment Plan"]]||"",
-      status:row[c["Status"]]||"Under Review",
-      paymentStatus:row[c["Payment Status"]]||"Pending",
-      isFoundingMember:String(row[c["Is Founding Member"]]||"").toLowerCase()==="yes",
-      foundingMemberNumber:row[c["Founding Member #"]]||"",
-      amountDue:getAmtDue(ar)
-    };
+    if(match) {
+      var status = String(row[c["Status"]]||"Under Review").trim();
+      return {
+        found:true, ref:ar,
+        name:((row[c["First Name"]]||"")+" "+(row[c["Last Name"]]||"")).trim(),
+        email:row[c["Email"]]||"", phone:row[c["Phone"]]||"",
+        programme:row[c["Programme"]]||"", level:row[c["Level"]]||"",
+        paymentPlan:row[c["Payment Plan"]]||"",
+        status:status
+      };
+    }
   }
   return {found:false};
+}
+
+function studentLogin(ref, pw) {
+  if (!ref || !pw) return {ok:false, error:"Reference and password are required."};
+  var s=sTab("Enrolled Students"), d=s.getDataRange().getValues(), h=d[0], c={};
+  for(var i=0;i<h.length;i++) c[String(h[i]).trim()]=i;
+  if (c["Portal Password"] === undefined) return {ok:false, error:"Portal not configured. Contact admin."};
+  var refUpper = ref.trim().toUpperCase();
+  for(var i=1;i<d.length;i++){
+    var row=d[i];
+    var ar=String(row[c["Application Ref"]]||"").trim().toUpperCase();
+    var sn=String(row[c["Student Number"]]||"").trim().toUpperCase();
+    // Match by Application Ref OR Student Number
+    if(ar===refUpper || sn===refUpper){
+      var storedPw=String(row[c["Portal Password"]]||"").trim();
+      if(!storedPw) return {ok:false, error:"Your portal access has not been set up yet. Contact admin@ctsetsjm.com."};
+      if(storedPw!==pw.trim()) return {ok:false, error:"Incorrect password. Try again or contact admin@ctsetsjm.com."};
+      var status=row[c["Status"]]||"Active";
+      var totalFees=Number(row[c["Total Fees"]]||0);
+      var totalPaid=Number(row[c["Total Paid"]]||0);
+      var outstanding=Number(row[c["Outstanding"]]||0);
+      return {
+        ok:true,
+        ref:ar,
+        studentNumber:sn,
+        name:((row[c["First Name"]]||"")+" "+(row[c["Last Name"]]||"")).trim(),
+        email:row[c["Email"]]||"",
+        programme:row[c["Programme"]]||"",
+        level:row[c["Level"]]||"",
+        paymentPlan:row[c["Payment Plan"]]||"",
+        status:status,
+        paymentStatus:row[c["Payment Status"]]||"Pending",
+        totalFees:totalFees,
+        totalPaid:totalPaid,
+        outstanding:outstanding>0?outstanding:0,
+        startDate:row[c["Start Date"]]||"",
+        endDate:row[c["End Date"]]||"",
+        cohort:row[c["Cohort"]]||"",
+        payments:getPaymentHistory(ar),
+        lmsAccess:String(row[c["LMS Access"]]||"").toLowerCase()==="yes"
+      };
+    }
+  }
+  return {ok:false, error:"No enrolled student found with this reference. If you applied but haven't been accepted yet, please wait for your acceptance email."};
+}
+
+function changePassword(ref, oldPw, newPw) {
+  if (!ref || !oldPw || !newPw) return {ok:false, error:"All fields are required."};
+  if (newPw.length < 6) return {ok:false, error:"New password must be at least 6 characters."};
+  loadIds();
+  var s=sTab("Enrolled Students"), d=s.getDataRange().getValues(), h=d[0], c={};
+  for(var i=0;i<h.length;i++) c[String(h[i]).trim()]=i;
+  if (c["Portal Password"] === undefined) return {ok:false, error:"Portal not configured."};
+  var refUpper = ref.trim().toUpperCase();
+  for(var i=1;i<d.length;i++){
+    var row=d[i];
+    var ar=String(row[c["Application Ref"]]||"").trim().toUpperCase();
+    var sn=String(row[c["Student Number"]]||"").trim().toUpperCase();
+    if(ar===refUpper || sn===refUpper){
+      var storedPw=String(row[c["Portal Password"]]||"").trim();
+      if(storedPw!==oldPw.trim()) return {ok:false, error:"Current password is incorrect."};
+      // Update password in sheet
+      s.getRange(i+1, c["Portal Password"]+1).setValue(newPw.trim());
+      // Log it
+      try {
+        var lifecycle = sTab("Student Lifecycle");
+        lifecycle.appendRow([new Date(), ar, sn, (row[c["First Name"]]||"")+" "+(row[c["Last Name"]]||""),
+          "Password Change", "Security", "Portal password changed by student", "", "", row[c["Programme"]]||"", row[c["Level"]]||"", "Student", "Portal"]);
+      } catch(e){}
+      return {ok:true, message:"Password changed successfully."};
+    }
+  }
+  return {ok:false, error:"Student not found."};
+}
+
+function getAmtPaid(ref) {
+  try {
+    var s=fTab("Payment Schedule"),d=s.getDataRange().getValues(),tot=0;
+    for(var i=1;i<d.length;i++){
+      if(String(d[i][1]||"").trim().toUpperCase()===ref.toUpperCase()){
+        var st=String(d[i][11]||"").toLowerCase();
+        if(st==="paid"||st==="verified") tot+=Number(d[i][9])||0;
+      }
+    }
+    return tot;
+  } catch(e){ return 0; }
+}
+
+function getPaymentHistory(ref) {
+  try {
+    var s=fTab("Payment Schedule"),d=s.getDataRange().getValues(),h=d[0],payments=[];
+    for(var i=1;i<d.length;i++){
+      if(String(d[i][1]||"").trim().toUpperCase()===ref.toUpperCase()){
+        payments.push({
+          date:d[i][0]||"",
+          type:d[i][3]||"",
+          amount:Number(d[i][9])||0,
+          status:d[i][11]||"Pending",
+          method:d[i][10]||""
+        });
+      }
+    }
+    return payments;
+  } catch(e){ return []; }
 }
 
 function getAmtDue(ref) {
@@ -282,7 +591,7 @@ function trackPage(pg, dev) {
 // POST ACTIONS
 // ═══════════════════════════════════════════════════════════════════════
 function handleApp(data) {
-  var s=sTab("Student Tracker"),all=s.getDataRange().getValues(),h=all[0],c={};
+  var s=sTab("Applications"),all=s.getDataRange().getValues(),h=all[0],c={};
   for(var i=0;i<h.length;i++) c[String(h[i]).trim()]=i;
 
   // Duplicate check
@@ -293,23 +602,19 @@ function handleApp(data) {
       return {success:false,duplicate:true,message:"Application with this email/programme exists.",existingRef:all[i][c["Application Ref"]]||""};
   }
 
-  // Founding check
-  var fc=getFoundingCount(data.programme||"",data.level||"");
-  var isFounding=fc.count<fc.maxSpots, fNum=isFounding?fc.count+1:"";
   var ref=data.ref||"", now=new Date();
 
   s.appendRow([
-    "",ref,now,data.form_type||"Student Application",data.applicantType||"",
-    data.lastName||"",data.firstName||"",data.middleName||"",data.email||"",data.phone||"",
+    ref,now,data.applicantType||"",
+    data.firstName||"",data.lastName||"",data.middleName||"",data.email||"",data.phone||"",
     data.trn||"",data.nis||"",data.parish||"",data.country||"",data.gender||"",
     data.dob||"",data.address||"",data.nationality||"",data.maritalStatus||"",
     data.highestQualification||"",data.schoolLastAttended||"",data.yearCompleted||"",
     data.employmentStatus||"",data.employer||"",data.jobTitle||"",data.industry||"",data.yearsExperience||"",
     data.emergencyName||"",data.emergencyPhone||"",data.emergencyRelationship||"",
-    data.level||"",data.programme||"","",
-    data.hearAbout||"",data.referralCode||"",data.message||"",
-    "","","Under Review","Pending","","","","",
-    isFounding?"Yes":"No",fNum
+    data.level||"",data.programme||"",data.paymentPlan||"",
+    data.hearAbout||"",data.message||"",
+    "","","Under Review",""
   ]);
 
   // Save files
@@ -319,11 +624,9 @@ function handleApp(data) {
     if(c["Documents Uploaded"]!==undefined) s.getRange(lr,c["Documents Uploaded"]+1).setValue(fl.names);
   }
 
-  if(isFounding) updateFC(data.programme||"");
-
   audit("APPLICATION RECEIVED",ref,(data.firstName||"")+" "+(data.lastName||"")+" | "+(data.programme||""),"Website");
   lifecycle(ref,"",(data.firstName||"")+" "+(data.lastName||""),"Application Submitted","Administrative",
-    "Email: "+(data.email||"")+" | "+(data.applicantType||"")+" | Founding: "+(isFounding?"Yes #"+fNum:"No"),data.programme||"",data.level||"");
+    "Email: "+(data.email||"")+" | "+(data.applicantType||""),data.programme||"",data.level||"");
 
   return {success:true,ref:ref};
 }
@@ -440,12 +743,218 @@ function handleReferral(data) {
 // ═══════════════════════════════════════════════════════════════════════
 function updateField(matchCol,matchVal,targetCol,newVal) {
   if(!matchVal) return;
-  var s=sTab("Student Tracker"),d=s.getDataRange().getValues(),h=d[0],mi=-1,ti=-1;
+  var s=sTab("Applications"),d=s.getDataRange().getValues(),h=d[0],mi=-1,ti=-1;
   for(var i=0;i<h.length;i++){if(String(h[i]).trim()===matchCol)mi=i;if(String(h[i]).trim()===targetCol)ti=i;}
   if(mi<0||ti<0) return;
   for(var i=1;i<d.length;i++){
     if(String(d[i][mi]||"").trim().toUpperCase()===matchVal.trim().toUpperCase()){s.getRange(i+1,ti+1).setValue(newVal);return;}
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// DRIP EMAIL PROCESSOR — Run daily via Time-Based Trigger
+// Triggers > Add Trigger > processDripEmails > Time-driven > Day timer > 9am-10am
+// ═══════════════════════════════════════════════════════════════════════
+function processDripEmails() {
+  loadIds();
+  var s = sTab("Drip Log"), d = s.getDataRange().getValues();
+  if (d.length < 2) return;
+  var h = d[0], c = {};
+  for (var i=0; i<h.length; i++) c[String(h[i]).trim()] = i;
+  var now = new Date();
+
+  for (var i=1; i<d.length; i++) {
+    var row = d[i];
+    var email = String(row[c["Email"]]||"").trim();
+    var name = String(row[c["Student Name"]]||"").trim();
+    var programme = String(row[c["Programme"]]||"").trim();
+    var enrolled = row[c["Enrolled Date"]];
+    if (!email || !enrolled) continue;
+
+    var enrollDate = new Date(enrolled);
+    var daysSince = Math.floor((now - enrollDate) / (1000*60*60*24));
+
+    var dripMap = [
+      { day: 1, col: "day1_welcome", subject: "Welcome to CTS ETS — Here's What to Expect", body: welcomeEmail(name) },
+      { day: 3, col: "day3_tips", subject: "CTS ETS — Your Programme Starts With a Single Step", body: tipsEmail(name, programme) },
+      { day: 7, col: "day7_checkin", subject: "CTS ETS — Your Spot is Waiting", body: checkinEmail(name) },
+      { day: 14, col: "day14_encourage", subject: "CTS ETS — Last Reminder: Your Place is Still Open", body: encourageEmail(name, programme) },
+    ];
+
+    for (var j=0; j<dripMap.length; j++) {
+      var drip = dripMap[j];
+      if (daysSince >= drip.day && !row[c[drip.col]]) {
+        try {
+          GmailApp.sendEmail(email, drip.subject, "", {htmlBody: wrapDripEmail(drip.body), name: "CTS ETS"});
+          s.getRange(i+1, c[drip.col]+1).setValue(new Date());
+          Logger.log("Drip Day " + drip.day + " sent to: " + email);
+        } catch(e) { Logger.log("Drip error Day " + drip.day + ": " + e.message); }
+      }
+    }
+  }
+}
+
+function wrapDripEmail(content) {
+  return '<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">'
+    + '<div style="background:#011E40;color:#fff;padding:20px;border-radius:12px 12px 0 0;text-align:center">'
+    + '<h2 style="margin:0;font-size:18px">CTS Empowerment & Training Solutions</h2>'
+    + '<p style="margin:4px 0 0;opacity:0.7;font-size:11px">Called To Serve — Excellence Through Service</p></div>'
+    + '<div style="padding:24px;background:#fff;border:1px solid #e2e8f0;border-top:none">' + content + '</div>'
+    + '<div style="background:#F7FAFC;padding:14px;text-align:center;border-radius:0 0 12px 12px;border:1px solid #e2e8f0;border-top:none">'
+    + '<p style="font-size:11px;color:#A0AEC0;margin:0">CTS ETS | admin@ctsetsjm.com | 876-381-9771</p></div></body></html>';
+}
+
+function welcomeEmail(name) {
+  return '<h2 style="color:#011E40">Welcome, ' + name + '!</h2>'
+    + '<p style="color:#4A5568;line-height:1.7">Your application is being reviewed. Here\'s what the next few days look like:</p>'
+    + '<ul style="color:#4A5568;line-height:2"><li><strong>Today:</strong> Our admissions team is reviewing your documents</li>'
+    + '<li><strong>Within 48\u201372 hours:</strong> You\'ll receive your acceptance decision</li>'
+    + '<li><strong>After acceptance:</strong> Student Portal credentials sent to this email</li></ul>'
+    + '<p style="color:#4A5568">In the meantime, explore what\'s waiting for you:</p>'
+    + '<ul style="color:#4A5568;line-height:2"><li>\uD83C\uDFA7 <strong>Audio Study Sessions</strong> — learn by listening, anywhere</li>'
+    + '<li>\uD83E\uDD16 <strong>AI Study Assistant</strong> — ask questions 24/7</li>'
+    + '<li>\uD83D\uDCDD <strong>Expert-Written Guides</strong> — clear, structured content</li></ul>'
+    + '<p style="color:#4A5568">We\'re excited to have you. This is the start of something great.</p>';
+}
+
+function tipsEmail(name, prog) {
+  return '<h2 style="color:#011E40">' + name + ', your ' + prog + ' journey is almost ready.</h2>'
+    + '<p style="color:#4A5568;line-height:1.7">Many of our students tell us the hardest part was pressing "Apply." You\'ve already done that.</p>'
+    + '<p style="color:#4A5568">Here\'s what successful CTS ETS students have in common:</p>'
+    + '<ul style="color:#4A5568;line-height:2"><li>They study 6\u201310 hours per week (at their own pace)</li>'
+    + '<li>They use the Audio Study Sessions during commutes</li>'
+    + '<li>They ask questions early — our WhatsApp support is available</li></ul>'
+    + '<p style="color:#4A5568">Questions? Email admin@ctsetsjm.com or WhatsApp <strong>876-381-9771</strong>. We respond within 48\u201372 hours.</p>';
+}
+
+function checkinEmail(name) {
+  return '<h2 style="color:#011E40">' + name + ', just checking in.</h2>'
+    + '<p style="color:#4A5568;line-height:1.7">It\'s been a week since you applied. If you\'ve already paid \u2014 welcome aboard! Your Learning Portal access is on its way.</p>'
+    + '<p style="color:#4A5568">If you haven\'t paid yet, your place is still reserved:</p>'
+    + '<ul style="color:#4A5568;line-height:2"><li>Pay online at <a href="https://www.ctsetsjm.com/#pay" style="color:#0E8F8B">ctsetsjm.com \u2192 Make a Payment</a></li>'
+    + '<li>Need a payment plan? Gold, Silver, or Bronze \u2014 details in your acceptance email</li></ul>'
+    + '<p style="color:#4A5568">We don\'t want you to miss out. If anything is holding you back, tell us \u2014 we\'re here to help.</p>';
+}
+
+function encourageEmail(name, prog) {
+  return '<h2 style="color:#011E40">' + name + ', your ' + prog + ' spot is still available.</h2>'
+    + '<p style="color:#4A5568;line-height:1.7">We know life gets busy. But we wanted you to know: your application is still active.</p>'
+    + '<p style="color:#4A5568">Here\'s what you\'ll get when you enrol:</p>'
+    + '<ul style="color:#4A5568;line-height:2"><li>\u2705 Access to the CTS ETS Learning Portal</li>'
+    + '<li>\uD83C\uDFA7 Audio Study Sessions you can listen to like a podcast</li>'
+    + '<li>\uD83E\uDD16 An AI study assistant that answers your questions 24/7</li>'
+    + '<li>\uD83C\uDF93 A nationally recognised NCTVET qualification</li></ul>'
+    + '<p style="color:#4A5568">Ready? Visit <a href="https://www.ctsetsjm.com/#pay" style="color:#0E8F8B">ctsetsjm.com</a> to complete your payment.</p>'
+    + '<p style="color:#4A5568">Not ready yet? That\'s okay. We\'ll be here when you are.</p>';
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// BI-WEEKLY ENCOURAGEMENT EMAILS — Run daily via Time-Based Trigger
+// Triggers > Add Trigger > processEncouragementEmails > Time-driven > Day timer
+// Sends every 14 days to active enrolled students
+// ═══════════════════════════════════════════════════════════════════════
+function processEncouragementEmails() {
+  loadIds();
+  var s = sTab("Enrolled Students"), d = s.getDataRange().getValues();
+  if (d.length < 2) return;
+  var h = d[0], c = {};
+  for (var i=0; i<h.length; i++) c[String(h[i]).trim()] = i;
+  var now = new Date();
+
+  var encouragements = [
+    { subject: "Keep Going, {name}! You're Making Progress", body: encourageMsg1 },
+    { subject: "{name}, Every Lesson Brings You Closer to Your Goal", body: encourageMsg2 },
+    { subject: "Halfway There, {name}? Let's Keep the Momentum!", body: encourageMsg3 },
+    { subject: "{name}, Your Qualification is Within Reach", body: encourageMsg4 },
+    { subject: "You're Doing Great, {name} — Don't Stop Now!", body: encourageMsg5 },
+    { subject: "Almost There, {name}! The Finish Line is in Sight", body: encourageMsg6 },
+  ];
+
+  for (var i=1; i<d.length; i++) {
+    var row = d[i];
+    var status = String(row[c["Status"]]||"").trim();
+    if (status !== "Active") continue;
+
+    var email = String(row[c["Email"]]||"").trim();
+    var firstName = String(row[c["First Name"]]||"").trim();
+    var programme = String(row[c["Programme"]]||"").trim();
+    if (!email) continue;
+
+    var lastSent = row[c["Last Encouragement"]];
+    var count = Number(row[c["Encouragement Count"]]||0);
+
+    // Check if 14 days since last encouragement (or enrollment if never sent)
+    var lastDate = lastSent ? new Date(lastSent) : new Date(row[c["Enrolled Date"]]||now);
+    var daysSince = Math.floor((now - lastDate) / (1000*60*60*24));
+
+    if (daysSince >= 14) {
+      var idx = count % encouragements.length;
+      var enc = encouragements[idx];
+      var subject = enc.subject.replace("{name}", firstName);
+      try {
+        GmailApp.sendEmail(email, subject, "", {
+          htmlBody: wrapDripEmail(enc.body(firstName, programme)),
+          name: "CTS ETS"
+        });
+        s.getRange(i+1, c["Last Encouragement"]+1).setValue(now);
+        s.getRange(i+1, c["Encouragement Count"]+1).setValue(count + 1);
+        Logger.log("Encouragement #" + (count+1) + " sent to: " + email);
+      } catch(e) { Logger.log("Encouragement error: " + e.message); }
+    }
+  }
+}
+
+function encourageMsg1(name, prog) {
+  return '<h2 style="color:#011E40">Keep Going, ' + name + '!</h2>'
+    + '<p style="color:#4A5568;line-height:1.7">Two weeks into your ' + prog + ' programme \u2014 how are you feeling? Whether you\'ve done one lesson or ten, you\'re ahead of everyone who hasn\'t started.</p>'
+    + '<p style="color:#4A5568">Remember:</p>'
+    + '<ul style="color:#4A5568;line-height:2"><li>You don\'t have to finish everything today</li>'
+    + '<li>Even 15 minutes a day adds up</li>'
+    + '<li>The AI Study Assistant is there for you 24/7 \u2014 ask it anything</li></ul>'
+    + '<p style="color:#4A5568"><strong>You took the first step. That was the hardest part. Keep going.</strong></p>'
+    + '<div style="text-align:center;margin:20px 0"><a href="https://www.ctsetsjm.com/#Student-Portal" style="display:inline-block;padding:12px 32px;background:#0E8F8B;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Continue Studying</a></div>';
+}
+
+function encourageMsg2(name, prog) {
+  return '<h2 style="color:#011E40">' + name + ', Every Lesson Counts</h2>'
+    + '<p style="color:#4A5568;line-height:1.7">Think about where you were before you enrolled. Now think about where you\'ll be when you finish \u2014 with a nationally recognised qualification in ' + prog + '.</p>'
+    + '<p style="color:#4A5568">A few tips from students who\'ve been where you are:</p>'
+    + '<ul style="color:#4A5568;line-height:2"><li>\uD83C\uDFA7 Put on the audio sessions during your commute \u2014 it counts as studying</li>'
+    + '<li>\uD83D\uDCDD Take the quizzes even if you\'re not sure \u2014 they help you learn faster</li>'
+    + '<li>\uD83D\uDCAC If you\'re stuck, WhatsApp us at 876-381-9771</li></ul>'
+    + '<p style="color:#4A5568"><strong>You\'re closer than you think.</strong></p>';
+}
+
+function encourageMsg3(name, prog) {
+  return '<h2 style="color:#011E40">Momentum, ' + name + '!</h2>'
+    + '<p style="color:#4A5568;line-height:1.7">By now you should be getting into a rhythm with your ' + prog + ' studies. If you are \u2014 brilliant, keep it up. If life got in the way \u2014 that\'s okay. Self-paced means you can pick up right where you left off.</p>'
+    + '<p style="color:#4A5568">Quick reminder: your cohort assessment preparation days will be announced in advance. Make sure you\'re checking your email and the Learning Portal regularly.</p>'
+    + '<p style="color:#4A5568"><strong>Consistency beats speed. Show up, even for 15 minutes.</strong></p>'
+    + '<div style="text-align:center;margin:20px 0"><a href="https://www.ctsetsjm.com/#Student-Portal" style="display:inline-block;padding:12px 32px;background:#0E8F8B;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Log Into Portal</a></div>';
+}
+
+function encourageMsg4(name, prog) {
+  return '<h2 style="color:#011E40">' + name + ', Your Qualification is Within Reach</h2>'
+    + '<p style="color:#4A5568;line-height:1.7">Think about what your NCTVET qualification in ' + prog + ' will mean for you \u2014 a better job, a promotion, a new career path, respect in your field.</p>'
+    + '<p style="color:#4A5568">That\'s not a dream. That\'s a plan. And you\'re already executing it.</p>'
+    + '<p style="color:#4A5568">If you haven\'t logged in recently, today is a great day to start again. Open one lesson. Do one quiz. That\'s all it takes to get the momentum back.</p>'
+    + '<p style="color:#4A5568"><strong>We believe in you. Now prove us right.</strong></p>';
+}
+
+function encourageMsg5(name, prog) {
+  return '<h2 style="color:#011E40">You\'re Doing Great, ' + name + '!</h2>'
+    + '<p style="color:#4A5568;line-height:1.7">Just a quick note to remind you that we see your effort. Studying while working, managing family, juggling life \u2014 that takes real discipline.</p>'
+    + '<p style="color:#4A5568">Here\'s something to think about: every module you complete is one step closer to your NVQ-J. And once you have it, nobody can take it away from you.</p>'
+    + '<p style="color:#4A5568"><strong>Keep pushing, ' + name + '. The best investment you ever made was in yourself.</strong></p>'
+    + '<div style="text-align:center;margin:20px 0"><a href="https://www.ctsetsjm.com/#Student-Portal" style="display:inline-block;padding:12px 32px;background:#0E8F8B;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Continue Studying</a></div>';
+}
+
+function encourageMsg6(name, prog) {
+  return '<h2 style="color:#011E40">The Finish Line is in Sight, ' + name + '</h2>'
+    + '<p style="color:#4A5568;line-height:1.7">You\'ve come so far in your ' + prog + ' programme. Don\'t slow down now \u2014 the end is closer than you think.</p>'
+    + '<p style="color:#4A5568">Remember why you started. Think about the person you\'ll be when you walk away with your qualification. That person is worth every late night and early morning.</p>'
+    + '<p style="color:#4A5568"><strong>Finish strong. We\'re with you all the way.</strong></p>'
+    + '<p style="color:#4A5568;font-size:13px;font-style:italic">"For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, plans to give you hope and a future." \u2014 Jeremiah 29:11</p>';
 }
 
 function audit(action,ref,details,by) {
