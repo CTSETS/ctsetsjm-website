@@ -63,14 +63,16 @@ function calcPricing(level) {
     plans.push({ name: "Silver", label: "60/40 Split", surcharge: 10, total: silverTotal, payments: [{ label: "First Payment (60%)", amount: silver1 }, { label: "Second Payment (40%)", amount: silver2 }] });
   }
 
-  // Bronze — L3+ only, rounded monthly amounts
+  // Bronze — L3+ only, calculated from actual 15% surcharge
   if (l3plus) {
     var months = level && level.indexOf("5") >= 0 ? 8 : level && level.indexOf("4") >= 0 ? 7 : 6;
-    var roundedMonthly = level && level.indexOf("5") >= 0 ? 4500 : level && level.indexOf("4") >= 0 ? 4000 : 3500;
+    var bronzeTuition = Math.round(tuition * 1.15);
+    var bronzeDeposit = Math.round(bronzeTuition * 0.20);
+    var bronzeRemaining = bronzeTuition - bronzeDeposit;
+    var roundedMonthly = Math.round(bronzeRemaining / months);
     var monthlyTotal = roundedMonthly * months;
-    var bronzeDeposit = level && level.indexOf("5") >= 0 ? 12000 : level && level.indexOf("4") >= 0 ? 10000 : 7000;
     var bronzeTotal = regFee + bronzeDeposit + monthlyTotal;
-    var bronzePayments = [{ label: "Deposit", amount: bronzeDeposit }];
+    var bronzePayments = [{ label: "Deposit (20%)", amount: bronzeDeposit }];
     for (var m = 1; m <= months; m++) {
       bronzePayments.push({ label: "Month " + m, amount: roundedMonthly });
     }

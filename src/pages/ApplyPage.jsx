@@ -755,11 +755,14 @@ export default function ApplyPage({ setPage }) {
                         if (plan === "Bronze") {
                           var lv = form.level || "";
                           var months = lv.indexOf("5") >= 0 ? 8 : lv.indexOf("4") >= 0 ? 7 : 6;
-                          var monthly = lv.indexOf("5") >= 0 ? 4500 : lv.indexOf("4") >= 0 ? 4000 : 3500;
-                          var deposit = lv.indexOf("5") >= 0 ? 12000 : lv.indexOf("4") >= 0 ? 10000 : 7000;
+                          var bronzeT = Math.round(tuition * 1.15);
+                          var deposit = Math.round(bronzeT * 0.20);
+                          var remaining = bronzeT - deposit;
+                          var monthly = Math.round(remaining / months);
                           var bronzeTotal = REG_FEE + deposit + (monthly * months);
                           return (
                             <div style={{ marginTop: 14, padding: "14px 16px", borderRadius: 8, background: "rgba(255,255,255,0.06)", fontSize: 12, fontFamily: S.body, color: "rgba(255,255,255,0.7)" }}>
+                              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}><span>Training Fee (+15%)</span><span style={{ color: "#ccc", fontWeight: 700 }}>{fmt(bronzeT)}</span></div>
                               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}><span>At Enrolment (20% deposit + reg)</span><span style={{ color: S.gold, fontWeight: 700 }}>{fmt(REG_FEE + deposit)}</span></div>
                               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}><span>{months + " Monthly Payments"}</span><span style={{ color: S.gold, fontWeight: 700 }}>{fmt(monthly) + "/mth"}</span></div>
                               <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.1)", fontSize: 14, fontWeight: 800, color: S.gold }}><span>Total</span><span>{fmt(bronzeTotal)}</span></div>

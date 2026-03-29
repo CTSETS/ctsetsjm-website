@@ -27,16 +27,16 @@ export default function FeesPage({ setPage }) {
     const regLabel = fmt(REG_FEE) + " non-refundable reg";
     if (selPlan === "Gold") { const tt = t * gd, ae = tt + REG_FEE; return { plan: "Gold", grandTotal: fmt(ae), steps: [{ label: "At Enrolment", amount: fmt(ae), detail: fmt(tt) + " training + " + regLabel }], savings: isGroup ? fmt(t * 0.15) : null, note: "Surcharge: 0% — best value" }; }
     if (selPlan === "Silver") { const st = Math.round(t * 1.10 * gd), ep = Math.round(st * 0.6), mp = st - ep, ae = ep + REG_FEE; return { plan: "Silver", grandTotal: fmt(ae + mp), steps: [{ label: "At Enrolment", amount: fmt(ae), detail: fmt(ep) + " (60% of training) + " + regLabel }, { label: "At Mid-Point", amount: fmt(mp), detail: "Remaining 40% of training fee" }], savings: isGroup ? fmt(Math.round(t * 1.10 * 0.15)) : null, note: "+10% surcharge on training fee only" }; }
-    // Bronze — rounded monthly amounts
+    // Bronze — calculated from actual 15% surcharge
     const m = prog.bronzeMonths || 6;
-    const isL5 = selLevel.indexOf("5") >= 0, isL4 = selLevel.indexOf("4") >= 0;
-    const roundedMonthly = isL5 ? 4500 : isL4 ? 4000 : 3500;
-    const bronzeDeposit = isL5 ? 12000 : isL4 ? 10000 : 7000;
+    const bronzeT = Math.round(t * 1.15 * gd);
+    const bronzeDeposit = Math.round(bronzeT * 0.20);
+    const remaining = bronzeT - bronzeDeposit;
+    const roundedMonthly = Math.round(remaining / m);
     const ae = bronzeDeposit + REG_FEE;
     const monthlyTotal = roundedMonthly * m;
     const gt = ae + monthlyTotal;
-    const gtWithGroup = isGroup ? Math.round(gt * 0.85) : gt;
-    return { plan: "Bronze", grandTotal: fmt(gtWithGroup), steps: [{ label: "At Enrolment", amount: fmt(ae), detail: fmt(bronzeDeposit) + " deposit + " + regLabel }, { label: m + " Monthly Payments", amount: fmt(roundedMonthly) + "/mth", detail: fmt(monthlyTotal) + " over " + m + " months" }], savings: isGroup ? fmt(gt - gtWithGroup) : null, note: "+15% surcharge on training fee only" };
+    return { plan: "Bronze", grandTotal: fmt(gt), steps: [{ label: "At Enrolment", amount: fmt(ae), detail: fmt(bronzeDeposit) + " deposit + " + regLabel }, { label: m + " Monthly Payments", amount: fmt(roundedMonthly) + "/mth", detail: fmt(monthlyTotal) + " over " + m + " months" }], savings: isGroup ? fmt(Math.round(t * 1.15) - bronzeT) + " (group)" : null, note: "+15% surcharge on training fee only" };
   };
   const result = calc();
   const inputStyle = { width: "100%", padding: "11px 14px", borderRadius: 6, border: "2px solid rgba(1,30,64,0.1)", background: "#fff", fontSize: 13, fontFamily: S.body, color: S.navy, fontWeight: 600, cursor: "pointer" };
