@@ -287,6 +287,86 @@ function Dashboard({ student, onLogout, setPage, onPasswordChanged }) {
         </div>
       )}
 
+      {/* Student ID Card — only if photo on file */}
+      {student.studentNumber && student.photoUrl && (
+        <div style={{ background: "#fff", borderRadius: 14, padding: "20px 24px", border: "1px solid " + S.border, marginBottom: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 18 }}>{"\uD83E\uDEAA"}</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.body }}>Student ID Card</span>
+            </div>
+            <button onClick={function() {
+              var card = document.getElementById("cts-id-card");
+              if (!card) return;
+              var w = window.open("", "_blank");
+              if (!w) { alert("Please allow pop-ups."); return; }
+              w.document.write('<!DOCTYPE html><html><head><title>Student ID - ' + student.name + '</title>'
+                + '<style>*{margin:0;padding:0;box-sizing:border-box}'
+                + 'body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#e8e8e8;font-family:Arial,sans-serif}'
+                + '.card-wrap{width:323px;margin:20px}'
+                + '.instructions{text-align:center;font-size:11px;color:#666;margin-top:16px;line-height:1.6}'
+                + '@media print{body{background:#fff}.card-wrap{width:85.6mm}.instructions{display:none}}'
+                + '</style></head><body>'
+                + '<div class="card-wrap">' + card.innerHTML + '</div>'
+                + '<div class="instructions">Print at 100% scale (no fit-to-page) for exact credit card size.<br>Cut along the card edges. Laminate if desired.</div>'
+                + '<script>setTimeout(function(){window.print()},400);<\/script></body></html>');
+              w.document.close();
+            }} style={{ padding: "6px 16px", borderRadius: 6, border: "1.5px solid " + S.navy, background: "transparent", color: S.navy, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>
+              Print / Save
+            </button>
+          </div>
+          <div id="cts-id-card" style={{ width: 323, margin: "0 auto" }}>
+            <div style={{ width: 323, height: 204, background: "linear-gradient(135deg, " + S.navy + " 0%, #0A2347 100%)", borderRadius: 10, padding: "10px 12px", color: "#fff", position: "relative", overflow: "hidden", fontFamily: "Arial, sans-serif" }}>
+              {/* Gold top bar */}
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg, " + S.gold + ", " + S.gold + "60)" }} />
+              {/* Header */}
+              <div style={{ textAlign: "center", marginBottom: 6 }}>
+                <div style={{ fontSize: 6, letterSpacing: 2, color: S.gold, fontWeight: 700, textTransform: "uppercase" }}>CTS Empowerment & Training Solutions</div>
+                <div style={{ fontSize: 10, fontWeight: 800, marginTop: 1, letterSpacing: 0.5 }}>STUDENT IDENTITY CARD</div>
+                <div style={{ fontSize: 5, color: "rgba(255,255,255,0.4)", marginTop: 1 }}>Registered Training Institution — COJ Reg. No. 16007/2025</div>
+              </div>
+              {/* Photo + Info row */}
+              <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+                <div style={{ width: 52, height: 65, borderRadius: 4, background: "rgba(255,255,255,0.08)", border: "1.5px solid " + S.gold + "50", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" }}>
+                  {student.photoUrl ? (
+                    <img src={student.photoUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 3 }} referrerPolicy="no-referrer" crossOrigin="anonymous" />
+                  ) : (
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ fontSize: 16, opacity: 0.3 }}>{"\uD83D\uDC64"}</div>
+                      <div style={{ fontSize: 4, color: "rgba(255,255,255,0.3)", marginTop: 1 }}>PHOTO</div>
+                    </div>
+                  )}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: S.gold, lineHeight: 1.15, marginBottom: 3, overflow: "hidden", textOverflow: "ellipsis" }}>{(student.name || "").toUpperCase()}</div>
+                  <div style={{ fontSize: 5, color: "rgba(255,255,255,0.4)", letterSpacing: 0.5 }}>STUDENT NUMBER</div>
+                  <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 1, fontFamily: "monospace", marginBottom: 3 }}>{student.studentNumber}</div>
+                  <div style={{ fontSize: 5, color: "rgba(255,255,255,0.4)", letterSpacing: 0.5 }}>PROGRAMME</div>
+                  <div style={{ fontSize: 6.5, fontWeight: 600, lineHeight: 1.25, overflow: "hidden" }}>{student.programme}</div>
+                  <div style={{ fontSize: 6, color: S.gold, marginTop: 1 }}>{student.level}</div>
+                </div>
+              </div>
+              {/* Bottom bar */}
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, paddingTop: 5, borderTop: "0.5px solid rgba(255,255,255,0.1)", fontSize: 5 }}>
+                <div><div style={{ color: "rgba(255,255,255,0.35)", letterSpacing: 0.3 }}>COHORT</div><div style={{ fontWeight: 700, marginTop: 1, fontSize: 6 }}>{student.cohort || "TBC"}</div></div>
+                <div><div style={{ color: "rgba(255,255,255,0.35)", letterSpacing: 0.3 }}>VALID FROM</div><div style={{ fontWeight: 700, marginTop: 1, fontSize: 6 }}>{student.startDate || "TBC"}</div></div>
+                <div><div style={{ color: "rgba(255,255,255,0.35)", letterSpacing: 0.3 }}>VALID TO</div><div style={{ fontWeight: 700, marginTop: 1, fontSize: 6 }}>{student.endDate || "TBC"}</div></div>
+                <div><div style={{ color: "rgba(255,255,255,0.35)", letterSpacing: 0.3 }}>STATUS</div><div style={{ fontWeight: 700, marginTop: 1, fontSize: 6, color: S.gold }}>{student.status}</div></div>
+              </div>
+              {/* Footer */}
+              <div style={{ textAlign: "center", marginTop: 4, fontSize: 4.5, color: "rgba(255,255,255,0.2)", lineHeight: 1.4 }}>
+                6, Newark Avenue, Kingston 2 | admin@ctsetsjm.com | 876-381-9771<br/>
+                This card remains the property of CTS ETS. If found, please return.
+              </div>
+            </div>
+          </div>
+          <div style={{ textAlign: "center", marginTop: 10, fontSize: 10, color: S.gray, fontFamily: S.body }}>
+            {student.photoUrl ? "Your passport photo is displayed on the card." : "Photo will appear once your application documents are processed."}
+            <br/><span style={{ fontSize: 9, color: S.grayLight }}>Print at 100% scale for exact credit card size (85.6mm x 54mm). Cut and laminate.</span>
+          </div>
+        </div>
+      )}
+
       {/* Password Change */}
       <div style={{ background: "#fff", borderRadius: 14, padding: "20px 24px", border: "1px solid " + S.border, marginBottom: 24 }}>
         <button onClick={function() { setShowPwChange(!showPwChange); setPwMsg(""); setPwSuccess(false); }}

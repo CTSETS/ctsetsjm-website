@@ -27,7 +27,7 @@ const GENDERS = ["Male", "Female"];
 const JA_PARISHES = ["Kingston", "St. Andrew", "St. Thomas", "Portland", "St. Mary", "St. Ann", "Trelawny", "St. James", "Hanover", "Westmoreland", "St. Elizabeth", "Manchester", "Clarendon", "St. Catherine"];
 const DOC_REQUIREMENTS = {
   jamaican: [
-    { slot: "passportPhoto", label: "Passport-Size Photo", required: true, accept: "image/*" },
+    { slot: "passportPhoto", label: "Passport-Size Photo (upload right-side up — this will be used on your Student ID Card)", required: true, accept: "image/*" },
     { slot: "birthCert", label: "Birth Certificate", required: true, accept: "image/*,.pdf" },
     { slot: "proofId", label: "Proof of Identity (National ID / Passport / Driver's Licence)", required: true, accept: "image/*,.pdf" },
     { slot: "trn", label: "TRN Card", required: true, accept: "image/*,.pdf" },
@@ -35,13 +35,13 @@ const DOC_REQUIREMENTS = {
     { slot: "heartForm", label: "HEART/NSTA Application Form", required: false, accept: "image/*,.pdf" },
   ],
   caribbean: [
-    { slot: "passportPhoto", label: "Passport-Size Photo", required: true, accept: "image/*" },
+    { slot: "passportPhoto", label: "Passport-Size Photo (upload right-side up — this will be used on your Student ID Card)", required: true, accept: "image/*" },
     { slot: "birthCertOrPassport", label: "Birth Certificate or Passport", required: true, accept: "image/*,.pdf" },
     { slot: "proofId", label: "Proof of Identity (National ID / Passport / Driver's Licence)", required: true, accept: "image/*,.pdf" },
     { slot: "qualifications", label: "Academic Qualifications", required: false, accept: "image/*,.pdf" },
   ],
   international: [
-    { slot: "passportPhoto", label: "Passport-Size Photo", required: true, accept: "image/*" },
+    { slot: "passportPhoto", label: "Passport-Size Photo (upload right-side up — this will be used on your Student ID Card)", required: true, accept: "image/*" },
     { slot: "passportBio", label: "Passport Bio Page", required: true, accept: "image/*,.pdf" },
     { slot: "transcripts", label: "Secondary School Transcripts", required: true, accept: "image/*,.pdf" },
     { slot: "proofId", label: "Proof of Identity (National ID / Passport / Driver's Licence)", required: true, accept: "image/*,.pdf" },

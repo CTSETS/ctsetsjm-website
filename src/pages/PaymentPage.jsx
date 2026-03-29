@@ -184,8 +184,28 @@ export default function PaymentPage({ setPage }) {
       if (res.ok) {
         var data = await res.json();
         if (data.found) {
-          setStudent(data);
-          setLookupState("found");
+          // Check if status allows payment
+          var allowedStatuses = ["Accepted", "Pending Payment", "Enrolled", "Active", "Completed", "Graduated"];
+          var statusOk = false;
+          for (var si = 0; si < allowedStatuses.length; si++) {
+            if ((data.status || "").indexOf(allowedStatuses[si]) >= 0) { statusOk = true; break; }
+          }
+          if (!statusOk) {
+            setLookupState("not_found");
+            var st = data.status || "Under Review";
+            if (st === "Under Review") {
+              setLookupMsg("Application " + val + " is still under review. You will receive an acceptance email before you can make a payment. Please wait for our admissions team to review your application (48\u201372 hours).");
+            } else if (st === "Rejected") {
+              setLookupMsg("Application " + val + " was not accepted. Please contact admin@ctsetsjm.com for more information.");
+            } else if (st === "Withdrawn" || st === "Deferred") {
+              setLookupMsg("Application " + val + " has been " + st.toLowerCase() + ". Contact admin@ctsetsjm.com if you'd like to reapply.");
+            } else {
+              setLookupMsg("Application " + val + " has status \"" + st + "\" and is not eligible for payment at this time. Contact admin@ctsetsjm.com.");
+            }
+          } else {
+            setStudent(data);
+            setLookupState("found");
+          }
         } else {
           setLookupState("not_found");
           setLookupMsg("No application found for " + val + ".");
@@ -288,10 +308,12 @@ export default function PaymentPage({ setPage }) {
     setSubmitted(true);
   };
 
-  // ── WiPay online payment — creates hidden form and POSTs to gateway ──
+  // ── WiPay online payment ──
   var handleWiPaySubmit = function() {
+    if (submitting) return;
     var payAmount = amountPaid || String(selectedAmount);
     if (!student || !payAmount || parseInt(payAmount) <= 0) return;
+    setSubmitting(true);
     // Log payment intent to Apps Script before redirect
     try {
       fetch(APPS_SCRIPT_URL, {
@@ -316,40 +338,16 @@ export default function PaymentPage({ setPage }) {
       });
     } catch (e) { /* silent — don't block payment */ }
 
-    // Build WiPay form and submit
-    var form = document.createElement("form");
-    form.method = "POST";
-    form.action = WIPAY_CONFIG.baseUrl;
-    form.style.display = "none";
-
-    var fields = {
-      account_number: WIPAY_CONFIG.accountNumber,
-      avs: "0",
-      country_code: WIPAY_CONFIG.country,
-      currency: WIPAY_CONFIG.currency,
-      environment: WIPAY_CONFIG.sandbox ? "sandbox" : "live",
-      fee_structure: "customer_pay",
-      method: "credit_card",
-      order_id: (students.length > 0 ? students.map(function(s) { return s.ref; }).join("+") : student.ref) + "-" + (payingReg && payingTuition ? "BOTH" : payingReg ? "REG" : "TUI"),
-      origin: "ctsetsjm.com",
-      total: payAmount,
-      addr1: "",
-      email: student.email || "",
-      name: activeStudent ? activeStudent.name || "" : "",
-      phone: "",
-      return_url: WIPAY_CONFIG.returnUrl,
-    };
-
-    for (var key in fields) {
-      var input = document.createElement("input");
-      input.type = "hidden";
-      input.name = key;
-      input.value = String(fields[key]);
-      form.appendChild(input);
-    }
-
-    document.body.appendChild(form);
-    form.submit();
+    // Redirect to WiPay hosted payment page
+    var orderId = (students.length > 0 ? students.map(function(s) { return s.ref; }).join("+") : student.ref) + "-" + (payingReg && payingTuition ? "BOTH" : payingReg ? "REG" : "TUI");
+    var wipayUrl = WIPAY_CONFIG.baseUrl
+      + "?total=" + encodeURIComponent(payAmount)
+      + "&currency=" + encodeURIComponent(WIPAY_CONFIG.currency)
+      + "&order_id=" + encodeURIComponent(orderId)
+      + "&return_url=" + encodeURIComponent(WIPAY_CONFIG.returnUrl)
+      + "&email=" + encodeURIComponent(activeStudent ? activeStudent.email || "" : "")
+      + "&name=" + encodeURIComponent(activeStudent ? activeStudent.name || "" : "");
+    window.location.href = wipayUrl;
   };
 
   var activePlan = pricing ? pricing.plans.find(function(p) { return p.name === selectedPlan; }) : null;
@@ -452,6 +450,17 @@ export default function PaymentPage({ setPage }) {
   // ═══════════ MAIN ═══════════
   return (
     <PageWrapper bg={S.lightBg}>
+      {/* Full-screen overlay — blocks ALL interaction during payment */}
+      {submitting && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99999, background: "rgba(1,30,64,0.9)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
+          <div style={{ background: "#fff", borderRadius: 16, padding: "40px", textAlign: "center", maxWidth: 420, margin: "0 20px" }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>{"\uD83D\uDCB3"}</div>
+            <h3 style={{ fontFamily: S.heading, fontSize: 20, color: S.navy, fontWeight: 700, marginBottom: 10 }}>Processing Payment</h3>
+            <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, lineHeight: 1.6 }}>Please wait — do not close this page, press back, or submit another payment. You will be redirected shortly.</p>
+            <div style={{ marginTop: 20, width: 40, height: 40, border: "4px solid " + S.border, borderTop: "4px solid " + S.coral, borderRadius: "50%", animation: "spin 1s linear infinite", margin: "20px auto 0" }} />
+          </div>
+        </div>
+      )}
       <SectionHeader tag="Finance" title="Make a Payment" desc="Enter your application number to view your account and submit payment." accentColor={S.gold} />
       <Container>
         <div style={{ maxWidth: 680, margin: "0 auto" }}>

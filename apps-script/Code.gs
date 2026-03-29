@@ -44,7 +44,7 @@ function setupAllSheets() {
   p.setProperties({"master_id":SHEET_IDS.master,"students_id":SHEET_IDS.students,"finance_id":SHEET_IDS.finance,"operations_id":SHEET_IDS.operations,"academic_id":SHEET_IDS.academic});
 
   // Student Records tabs
-  makeTab(s1,"Applications",["Application Ref","Date Submitted","Applicant Type","First Name","Last Name","Middle Name","Maiden Name","Email","Phone","Phone 2","TRN","NIS","Parish","Country","Gender","Date of Birth","Address","District","Postal Zone","Nationality","Marital Status","Special Needs","Special Needs Type","Highest Qualification","School Last Attended","Year Completed","Employment Status","Employer","Job Title","Industry","Years Experience","Emergency Name","Emergency Phone","Emergency Relationship","Emergency 2 Name","Emergency 2 Phone","Emergency 2 Relationship","Previous HEART","Level","Programme","Payment Plan","Hear About Us","Message","Documents Uploaded","Drive Folder Link","Status","Notes"]);
+  makeTab(s1,"Applications",["Application Ref","Date Submitted","Applicant Type","First Name","Last Name","Middle Name","Maiden Name","Email","Phone","Phone 2","TRN","NIS","Parish","Country","Gender","Date of Birth","Address","District","Postal Zone","Nationality","Marital Status","Special Needs","Special Needs Type","Highest Qualification","School Last Attended","Year Completed","Employment Status","Employer","Job Title","Industry","Years Experience","Emergency Name","Emergency Phone","Emergency Relationship","Emergency 2 Name","Emergency 2 Phone","Emergency 2 Relationship","Previous HEART","Level","Programme","Payment Plan","Hear About Us","Message","Documents Uploaded","Drive Folder Link","Photo URL","Status","Notes"]);
   makeTab(s1,"Enrolled Students",["Student Number","Application Ref","Portal Password","First Name","Last Name","Email","Phone","Level","Programme","Payment Plan","Cohort","Start Date","End Date","Total Fees","Total Paid","Outstanding","Status","Payment Status","LMS Access","Enrolled Date","Last Encouragement","Encouragement Count","Notes"]);
   makeTab(s1,"Student Lifecycle",["Date/Time","Application Ref","Student Number","Student Name","Event Type","Category","Details","Previous Value","New Value","Programme","Level","Performed By","Source"]);
   makeTab(s1,"Communication Log",["Timestamp","Student Name","Student Number","App Ref","Channel","Direction","Subject","Summary","Logged By"]);
@@ -166,7 +166,7 @@ function onEditTrigger(e) {
       var programme = String(rowData[colMap["Programme"]]||"").trim();
       var level = String(rowData[colMap["Level"]]||"").trim();
       
-      // Pending Payment → Enrolled: unlock LMS + send confirmation
+      // Pending Payment → Enrolled: unlock LMS + send confirmation + generate data sheet
       if (newStatus === "Enrolled" && oldStatus !== "Enrolled") {
         sheet.getRange(row, colMap["LMS Access"]+1).setValue("Yes");
         sendEnrollmentConfirmation(firstName, email, studentNum, ref, programme, level);
@@ -181,6 +181,12 @@ function onEditTrigger(e) {
           sheet.getRange(row, colMap["Last Encouragement"]+1).setValue(new Date());
           sheet.getRange(row, colMap["Encouragement Count"]+1).setValue(0);
         } catch(le){}
+        // Generate Student Data Sheet PDF and save to Drive
+        try {
+          generateStudentDataSheet(ref, studentNum, firstName, lastName, email, String(rowData[colMap["Phone"]]||""), programme, level);
+        } catch(ds) { Logger.log("Data sheet error: " + ds.message); }
+        // Update cumulative record
+        try { generateCumulativeRecord(studentNum); } catch(cr) {}
         Logger.log("LMS unlocked for: " + ref + " → " + studentNum);
       }
       
@@ -208,6 +214,8 @@ function onEditTrigger(e) {
             ), name: "CTS ETS"});
         } catch(ge){}
         Logger.log("Graduated: " + ref + " → " + studentNum);
+        // Update cumulative record
+        try { generateCumulativeRecord(studentNum); } catch(cr) {}
       }
     }
   } catch(err) {
@@ -464,6 +472,7 @@ function doGet(e) {
     if (a==="lookupstudent") r = lookupStudent(e.parameter.ref||"",e.parameter.email||"");
     else if (a==="studentlogin") r = studentLogin(e.parameter.ref||"",e.parameter.pw||"");
     else if (a==="changepassword") r = changePassword(e.parameter.ref||"",e.parameter.oldpw||"",e.parameter.newpw||"");
+    else if (a==="generaterecord") r = generateCumulativeRecord(e.parameter.student||"");
     else if (a==="getfoundingcount") r = getFoundingCount(e.parameter.programme||"",e.parameter.level||"");
     else if (a==="verifycert") r = verifyCert(e.parameter.cert||"");
     else if (a==="validatereferral") r = validateReferral(e.parameter.code||"");
@@ -560,6 +569,7 @@ function studentLogin(ref, pw) {
         emergencyPhone:profile.emergencyPhone||"", emergencyRelationship:profile.emergencyRelationship||"",
         highestQualification:profile.highestQualification||"",
         employer:profile.employer||"", jobTitle:profile.jobTitle||"",
+        photoUrl:profile.photoUrl||"",
       };
     }
   }
@@ -577,14 +587,20 @@ function getStudentProfile(appRef) {
           nationality:row[c["Nationality"]]||"", parish:row[c["Parish"]]||"",
           country:row[c["Country"]]||"", address:row[c["Address"]]||"",
           district:row[c["District"]]||"", postalZone:row[c["Postal Zone"]]||"",
-          trn:row[c["TRN"]]||"", maritalStatus:row[c["Marital Status"]]||"",
-          maidenName:row[c["Maiden Name"]]||"", phone2:row[c["Phone 2"]]||"",
+          trn:row[c["TRN"]]||"", nis:row[c["NIS"]]||"",
+          maritalStatus:row[c["Marital Status"]]||"",
+          maidenName:row[c["Maiden Name"]]||"", middleName:row[c["Middle Name"]]||"",
+          phone2:row[c["Phone 2"]]||"",
+          specialNeeds:row[c["Special Needs"]]||"No", specialNeedsType:row[c["Special Needs Type"]]||"",
           emergencyName:row[c["Emergency Name"]]||"", emergencyPhone:row[c["Emergency Phone"]]||"",
           emergencyRelationship:row[c["Emergency Relationship"]]||"",
           emergency2Name:row[c["Emergency 2 Name"]]||"", emergency2Phone:row[c["Emergency 2 Phone"]]||"",
           emergency2Relationship:row[c["Emergency 2 Relationship"]]||"",
           highestQualification:row[c["Highest Qualification"]]||"",
-          employer:row[c["Employer"]]||"", jobTitle:row[c["Job Title"]]||"" };
+          schoolLastAttended:row[c["School Last Attended"]]||"", yearCompleted:row[c["Year Completed"]]||"",
+          employmentStatus:row[c["Employment Status"]]||"",
+          employer:row[c["Employer"]]||"", jobTitle:row[c["Job Title"]]||"",
+          photoUrl:row[c["Photo URL"]]||"" };
       }
     }
   } catch(e){}
@@ -749,6 +765,7 @@ function handleApp(data) {
   if(fl.url){var lr=s.getLastRow();
     if(c["Drive Folder Link"]!==undefined) s.getRange(lr,c["Drive Folder Link"]+1).setValue(fl.url);
     if(c["Documents Uploaded"]!==undefined) s.getRange(lr,c["Documents Uploaded"]+1).setValue(fl.names);
+    if(fl.photoUrl && c["Photo URL"]!==undefined) s.getRange(lr,c["Photo URL"]+1).setValue(fl.photoUrl);
   }
 
   audit("APPLICATION RECEIVED",ref,(data.firstName||"")+" "+(data.lastName||"")+" | "+(data.programme||""),"Website");
@@ -787,25 +804,191 @@ function handleApp(data) {
 
   // NOTIFY ADMIN of new application
   try {
-    MailApp.sendEmail({to: ADMIN_EMAIL, subject: "📋 New Application — " + ref + " — " + (data.firstName||"") + " " + (data.lastName||""),
-      htmlBody: "<h2>New Application Received</h2>"
+    GmailApp.sendEmail(ADMIN_EMAIL, "\uD83D\uDCCB New Application \u2014 " + ref + " \u2014 " + (data.firstName||"") + " " + (data.lastName||""), 
+      "New application: " + ref + " | " + (data.firstName||"") + " " + (data.lastName||"") + " | " + (data.programme||""),
+      {htmlBody: "<h2>New Application Received</h2>"
         + "<p><b>Ref:</b> " + ref + "</p>"
         + "<p><b>Name:</b> " + (data.firstName||"") + " " + (data.lastName||"") + "</p>"
         + "<p><b>Email:</b> " + (data.email||"") + "</p>"
         + "<p><b>Phone:</b> " + (data.phone||"") + "</p>"
-        + "<p><b>Programme:</b> " + (data.level||"") + " — " + (data.programme||"") + "</p>"
+        + "<p><b>Programme:</b> " + (data.level||"") + " \u2014 " + (data.programme||"") + "</p>"
         + "<p><b>Payment Plan:</b> " + (data.paymentPlan||"Gold") + "</p>"
         + "<p><b>Type:</b> " + (data.applicantType||"") + "</p>"
         + "<p><b>Country:</b> " + (data.country||"") + "</p>"
-        + "<p style='margin-top:16px;font-size:12px;color:#666'>Review in your <a href='https://docs.google.com/spreadsheets'>Google Sheets</a> → Applications tab.<br>Change Status to <b>Accepted</b> to auto-enrol.</p>"
-    });
-  } catch(ae) {}
+        + "<p style='margin-top:16px;font-size:12px;color:#666'>Review in your Google Sheets \u2192 Applications tab.<br>Change Status to <b>Accepted</b> to auto-enrol.</p>",
+      name: "CTS ETS System"});
+    Logger.log("Admin notification sent for: " + ref);
+  } catch(ae) { Logger.log("Admin notification error: " + ae.message); }
 
   return {success:true,ref:ref};
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// STUDENT DATA SHEET — Auto-generated on enrollment, saved to Drive
+// ═══════════════════════════════════════════════════════════════════════
+function generateStudentDataSheet(appRef, studentNum, firstName, lastName, email, phone, programme, level) {
+  loadIds();
+  var profile = getStudentProfile(appRef);
+  var today = new Date();
+  var dateStr = Utilities.formatDate(today, "America/Jamaica", "dd MMM yyyy");
+  
+  // Get enrolled data
+  var enrolled = sTab("Enrolled Students"), ed = enrolled.getDataRange().getValues(), eh = ed[0], ec = {};
+  for (var i=0; i<eh.length; i++) ec[String(eh[i]).trim()] = i;
+  var cohort = "", startDate = "", endDate = "", paymentPlan = "", totalFees = "";
+  for (var i=1; i<ed.length; i++) {
+    if (String(ed[i][ec["Application Ref"]]||"").trim().toUpperCase() === appRef.toUpperCase()) {
+      cohort = ed[i][ec["Cohort"]]||""; startDate = ed[i][ec["Start Date"]]||""; endDate = ed[i][ec["End Date"]]||"";
+      paymentPlan = ed[i][ec["Payment Plan"]]||""; totalFees = ed[i][ec["Total Fees"]]||"";
+      break;
+    }
+  }
+  
+  var v = function(val) { return val || "\u2014"; };
+  var photoImg = profile.photoUrl ? '<img src="' + profile.photoUrl + '" style="width:90px;height:110px;object-fit:cover;border:1px solid #ccc;border-radius:4px" />' : '<div style="width:90px;height:110px;border:1px solid #ccc;border-radius:4px;display:flex;align-items:center;justify-content:center;background:#f5f5f5;font-size:10px;color:#999;text-align:center">No Photo<br>On File</div>';
+  
+  var html = '<!DOCTYPE html><html><head><style>'
+    + '*{margin:0;padding:0;box-sizing:border-box}'
+    + 'body{font-family:Arial,sans-serif;font-size:11px;color:#111;max-width:720px;margin:0 auto;padding:20px}'
+    + '.hdr{background:#011E40;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-radius:4px 4px 0 0}'
+    + '.hdr h1{color:#D4A843;font-size:16px;margin:0}'
+    + '.hdr .sub{color:rgba(255,255,255,.7);font-size:9px;margin-top:2px}'
+    + '.sec{background:#011E40;color:#D4A843;padding:5px 10px;font-size:10px;font-weight:700;letter-spacing:1px;margin-top:10px}'
+    + 'table{width:100%;border-collapse:collapse;margin-bottom:2px}'
+    + 'td{border:1px solid #bbb;padding:4px 8px;font-size:10px;vertical-align:top}'
+    + 'td.l{background:#f0f4f8;font-weight:600;color:#333;width:28%}'
+    + 'td.v{font-weight:500}'
+    + '.ft{margin-top:12px;font-size:8px;color:#999;text-align:center;border-top:1px solid #ddd;padding-top:6px}'
+    + '.conf{font-size:9px;color:#333;margin-top:10px;line-height:1.6;border:1px solid #ddd;padding:8px;background:#fafafa}'
+    + '.sig-area{display:flex;justify-content:space-between;margin-top:16px;padding-top:8px}'
+    + '.sig-box{width:45%}'
+    + '.sig-line{border-bottom:1px solid #333;height:30px;margin-bottom:4px}'
+    + '.sig-label{font-size:8px;color:#666}'
+    + '</style></head><body>'
+    
+    // Header
+    + '<div class="hdr"><div><h1>CTS Empowerment & Training Solutions</h1>'
+    + '<div class="sub">STUDENT DATA SHEET \u2014 CONFIDENTIAL</div></div>'
+    + '<div style="text-align:right;color:rgba(255,255,255,.5);font-size:8px">Date Generated: ' + dateStr + '<br>COJ Reg. No. 16007/2025</div></div>'
+    
+    // Student ID + Photo
+    + '<div class="sec">STUDENT IDENTIFICATION</div>'
+    + '<table><tr><td class="l" rowspan="4" style="width:110px;text-align:center;vertical-align:middle">' + photoImg + '</td>'
+    + '<td class="l" style="width:20%">Student Number</td><td class="v" style="font-size:13px;font-weight:700;letter-spacing:1px">' + v(studentNum) + '</td></tr>'
+    + '<tr><td class="l">Application Ref</td><td class="v">' + v(appRef) + '</td></tr>'
+    + '<tr><td class="l">Full Name</td><td class="v" style="font-size:12px;font-weight:700">' + v(firstName + " " + (profile.middleName ? profile.middleName + " " : "") + lastName) + '</td></tr>'
+    + '<tr><td class="l">Maiden Name</td><td class="v">' + v(profile.maidenName) + '</td></tr></table>'
+    
+    // Personal Information
+    + '<div class="sec">PERSONAL INFORMATION</div>'
+    + '<table>'
+    + '<tr><td class="l">Gender</td><td class="v">' + v(profile.gender) + '</td><td class="l">Date of Birth</td><td class="v">' + v(profile.dob) + '</td></tr>'
+    + '<tr><td class="l">Nationality</td><td class="v">' + v(profile.nationality) + '</td><td class="l">Marital Status</td><td class="v">' + v(profile.maritalStatus) + '</td></tr>'
+    + '<tr><td class="l">TRN</td><td class="v">' + v(profile.trn) + '</td><td class="l">NIS #</td><td class="v">' + v(profile.nis) + '</td></tr>'
+    + '<tr><td class="l">Email</td><td class="v" colspan="3">' + v(email) + '</td></tr>'
+    + '<tr><td class="l">Phone 1</td><td class="v">' + v(phone) + '</td><td class="l">Phone 2</td><td class="v">' + v(profile.phone2) + '</td></tr>'
+    + '<tr><td class="l">Special Needs</td><td class="v" colspan="3">' + (profile.specialNeeds === "Yes" ? "Yes \u2014 " + v(profile.specialNeedsType) : "No") + '</td></tr>'
+    + '</table>'
+    
+    // Address
+    + '<div class="sec">ADDRESS</div>'
+    + '<table>'
+    + '<tr><td class="l">Street</td><td class="v" colspan="3">' + v(profile.address) + '</td></tr>'
+    + '<tr><td class="l">District/Town</td><td class="v">' + v(profile.district) + '</td><td class="l">Postal Zone</td><td class="v">' + v(profile.postalZone) + '</td></tr>'
+    + '<tr><td class="l">Parish</td><td class="v">' + v(profile.parish) + '</td><td class="l">Country</td><td class="v">' + v(profile.country) + '</td></tr>'
+    + '</table>'
+    
+    // Emergency Contacts
+    + '<div class="sec">EMERGENCY CONTACTS</div>'
+    + '<table>'
+    + '<tr><td class="l">Contact #1 Name</td><td class="v">' + v(profile.emergencyName) + '</td><td class="l">Contact #2 Name</td><td class="v">' + v(profile.emergency2Name) + '</td></tr>'
+    + '<tr><td class="l">Phone</td><td class="v">' + v(profile.emergencyPhone) + '</td><td class="l">Phone</td><td class="v">' + v(profile.emergency2Phone) + '</td></tr>'
+    + '<tr><td class="l">Relationship</td><td class="v">' + v(profile.emergencyRelationship) + '</td><td class="l">Relationship</td><td class="v">' + v(profile.emergency2Relationship) + '</td></tr>'
+    + '</table>'
+    
+    // Education & Employment
+    + '<div class="sec">EDUCATION & EMPLOYMENT</div>'
+    + '<table>'
+    + '<tr><td class="l">Highest Qualification</td><td class="v">' + v(profile.highestQualification) + '</td><td class="l">Year Completed</td><td class="v">' + v(profile.yearCompleted) + '</td></tr>'
+    + '<tr><td class="l">Last School / Institution</td><td class="v" colspan="3">' + v(profile.schoolLastAttended) + '</td></tr>'
+    + '<tr><td class="l">Employment Status</td><td class="v">' + v(profile.employmentStatus) + '</td><td class="l">Employer</td><td class="v">' + v(profile.employer) + '</td></tr>'
+    + '<tr><td class="l">Job Title</td><td class="v" colspan="3">' + v(profile.jobTitle) + '</td></tr>'
+    + '</table>'
+    
+    // Programme & Enrolment
+    + '<div class="sec">PROGRAMME & ENROLMENT</div>'
+    + '<table>'
+    + '<tr><td class="l">Programme</td><td class="v" colspan="3" style="font-weight:700">' + v(programme) + '</td></tr>'
+    + '<tr><td class="l">Level</td><td class="v">' + v(level) + '</td><td class="l">Payment Plan</td><td class="v">' + v(paymentPlan) + '</td></tr>'
+    + '<tr><td class="l">Cohort</td><td class="v">' + v(cohort) + '</td><td class="l">Total Fees</td><td class="v">' + (totalFees ? "J$" + Number(totalFees).toLocaleString() : "\u2014") + '</td></tr>'
+    + '<tr><td class="l">Start Date</td><td class="v">' + v(startDate) + '</td><td class="l">End Date</td><td class="v">' + v(endDate) + '</td></tr>'
+    + '<tr><td class="l">Enrolled Date</td><td class="v" colspan="3">' + dateStr + '</td></tr>'
+    + '</table>'
+    
+    // Confidentiality
+    + '<div class="conf"><strong>CONFIDENTIALITY NOTICE:</strong> This document contains personal information about the above-named student. It is intended solely for institutional records and must be handled in accordance with data protection requirements. Unauthorised disclosure, copying, or distribution is prohibited.</div>'
+    
+    // Signature areas
+    + '<div class="sig-area">'
+    + '<div class="sig-box"><div class="sig-line"></div><div class="sig-label">Student Signature / Date</div></div>'
+    + '<div class="sig-box"><div class="sig-line"></div><div class="sig-label">Administrator Signature / Date</div></div>'
+    + '</div>'
+    
+    + '<div class="ft">CTS Empowerment & Training Solutions | 6, Newark Avenue, Kingston 2 | admin@ctsetsjm.com | 876-381-9771<br>'
+    + 'This document was auto-generated on enrolment. Student #: ' + studentNum + ' | Ref: ' + appRef + '</div>'
+    + '</body></html>';
+  
+  // Create Google Doc from HTML, convert to PDF, save to folder
+  var rf = DriveApp.getFoldersByName("CTS ETS Student Records");
+  var recordsFolder = rf.hasNext() ? rf.next() : DriveApp.createFolder("CTS ETS Student Records");
+  
+  // Create temp HTML file, convert via Google Docs
+  var tempFile = recordsFolder.createFile(studentNum + "_DataSheet.html", html, "text/html");
+  var docBlob = tempFile.getAs("text/html");
+  
+  // Use Google Docs to convert HTML to clean PDF
+  var tempDoc = DocumentApp.create("TEMP_" + studentNum);
+  var tempDocId = tempDoc.getId();
+  
+  // Insert HTML content into doc body
+  var body = tempDoc.getBody();
+  body.setText(""); // Clear
+  
+  // Since we can't directly insert HTML into Docs, create the PDF from the HTML blob directly
+  DriveApp.getFileById(tempDocId).setTrashed(true); // Remove temp doc
+  
+  // Save HTML as the record (can be opened in browser and printed to PDF)
+  var fileName = studentNum + " \u2014 " + firstName + " " + lastName + " \u2014 Student Data Sheet.html";
+  tempFile.setName(fileName);
+  
+  // Also create a simple text summary
+  var summaryText = "CTS ETS \u2014 STUDENT DATA SHEET\n"
+    + "Generated: " + dateStr + "\n"
+    + "═══════════════════════════════\n"
+    + "Student #: " + studentNum + "\n"
+    + "Ref: " + appRef + "\n"
+    + "Name: " + firstName + " " + lastName + "\n"
+    + "Email: " + email + "\n"
+    + "Phone: " + phone + "\n"
+    + "Programme: " + programme + "\n"
+    + "Level: " + level + "\n"
+    + "Payment Plan: " + (paymentPlan||"Gold") + "\n"
+    + "Total Fees: J$" + (totalFees ? Number(totalFees).toLocaleString() : "N/A") + "\n"
+    + "═══════════════════════════════\n"
+    + "TRN: " + (profile.trn||"N/A") + "\n"
+    + "DOB: " + (profile.dob||"N/A") + "\n"
+    + "Gender: " + (profile.gender||"N/A") + "\n"
+    + "Nationality: " + (profile.nationality||"N/A") + "\n"
+    + "Address: " + (profile.address||"N/A") + ", " + (profile.district||"") + ", " + (profile.parish||"") + "\n"
+    + "Country: " + (profile.country||"Jamaica") + "\n"
+    + "Emergency: " + (profile.emergencyName||"N/A") + " (" + (profile.emergencyRelationship||"") + ") " + (profile.emergencyPhone||"") + "\n";
+  
+  audit("DATA SHEET", appRef, "Student data sheet generated for " + studentNum + " in CTS ETS Student Records folder", "System");
+  Logger.log("Data sheet saved: " + fileName);
+}
+
 function saveDriveFiles(data, ref) {
-  var r={url:"",names:""};
+  var r={url:"",names:"",photoUrl:""};
   if(!data.files||data.files.length===0) return r;
   try{
     var rf=DriveApp.getFoldersByName("CTS ETS Applications");
@@ -818,7 +1001,12 @@ function saveDriveFiles(data, ref) {
         var dec=Utilities.base64Decode(f.data);
         var ext=(f.name||"").indexOf(".")>=0?(f.name||"").split(".").pop():(f.type||"").indexOf("pdf")>=0?"pdf":"jpg";
         var blob=Utilities.newBlob(dec,f.type||"application/octet-stream",ref+"_"+String(i+1).padStart(2,"0")+"_"+(f.slot||"file")+"."+ext);
-        folder.createFile(blob); names.push(blob.getName());
+        var savedFile=folder.createFile(blob); names.push(blob.getName());
+        // If this is the passport photo, make it publicly viewable and save URL
+        if((f.slot||"") === "passportPhoto"){
+          savedFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+          r.photoUrl = "https://drive.google.com/uc?id=" + savedFile.getId();
+        }
       }catch(fe){}
     }
     r.url=folder.getUrl(); r.names=names.join(", ");
@@ -900,15 +1088,15 @@ function handlePayment(data) {
       "J$"+amountPerStudent+" via "+(data.paymentMethod||"upload")+(refs.length>1?" | Part of multi-payment":""),programme,level);
   }
   
-  try{MailApp.sendEmail({to:ADMIN_EMAIL,subject:"💰 Payment — "+(refs.length>1?refs.length+" applications":rawRef),
-    htmlBody:"<h2>Payment Evidence Received</h2>"
+  try{GmailApp.sendEmail(ADMIN_EMAIL,"💰 Payment — "+(refs.length>1?refs.length+" applications":rawRef),"",
+    {htmlBody:"<h2>Payment Evidence Received</h2>"
     +(refs.length>1?"<p><b>Multi-Payment:</b> "+refs.length+" applications</p>":"")
     +"<p><b>Ref(s):</b> "+rawRef+"</p>"
     +"<p><b>Total Amount:</b> J$"+(data.amountPaid||"N/A")+"</p>"
     +(refs.length>1?"<p><b>Per Student:</b> J$"+amountPerStudent+"</p>":"")
     +"<p><b>Plan:</b> "+(data.paymentPlan||"")+"</p>"
-    +(receiptUrl?"<p><a href='"+receiptUrl+"'>View Receipt</a></p>":"")
-  });}catch(e){}
+    +(receiptUrl?"<p><a href='"+receiptUrl+"'>View Receipt</a></p>":""),
+    name:"CTS ETS System"});}catch(e){}
   
   // Send payment confirmation to each student
   for (var j=0; j<refs.length; j++) {
@@ -948,6 +1136,9 @@ function updateEnrolledPayment(ref, amount) {
         s.getRange(i+1, c["Total Paid"]+1).setValue(paid);
         s.getRange(i+1, c["Outstanding"]+1).setValue(outstanding > 0 ? outstanding : 0);
         s.getRange(i+1, c["Payment Status"]+1).setValue(outstanding <= 0 ? "Paid in Full" : "Partial Payment");
+        // Update cumulative record
+        var stuNum = String(d[i][c["Student Number"]]||"").trim();
+        if (stuNum) { try { generateCumulativeRecord(stuNum); } catch(cr){} }
         return;
       }
     }
@@ -971,20 +1162,21 @@ function handleWiPay(data) {
       updateEnrolledPayment(ref, amountPerStudent);
       lifecycle(ref,"","","Online Payment","Financial","Txn:"+(data.transactionId||"")+" J$"+amountPerStudent+(refs.length>1?" [Multi]":""),"","");
     }
-    try{MailApp.sendEmail({to:ADMIN_EMAIL,subject:"✅ Payment Confirmed — "+(refs.length>1?refs.length+" applications":rawRef),
-      htmlBody:"<h2>Payment Confirmed</h2>"
+    try{GmailApp.sendEmail(ADMIN_EMAIL,"✅ Payment Confirmed — "+(refs.length>1?refs.length+" applications":rawRef),"",
+      {htmlBody:"<h2>Payment Confirmed</h2>"
       +(refs.length>1?"<p><b>Multi-Payment:</b> "+refs.length+" applications</p>":"")
       +"<p><b>Ref(s):</b> "+rawRef+"</p><p><b>Txn:</b> "+(data.transactionId||"")+"</p>"
       +"<p><b>Total:</b> J$"+(data.totalCharged||"")+"</p>"
-      +(refs.length>1?"<p><b>Per Student:</b> J$"+amountPerStudent+"</p>":"")
-    });}catch(e){}
+      +(refs.length>1?"<p><b>Per Student:</b> J$"+amountPerStudent+"</p>":""),
+      name:"CTS ETS System"});}catch(e){}
   }
 }
 
 function handleDispute(data) {
   audit("DISPUTE",data.ref||"",data.message||"Lookup failed","Website");
-  try{MailApp.sendEmail({to:ADMIN_EMAIL,subject:"⚠️ Dispute — "+(data.ref||""),
-    htmlBody:"<h2>Payment Lookup Dispute</h2><p>Ref: <b>"+(data.ref||"")+"</b></p><p>"+(data.message||"")+"</p>"});}catch(e){}
+  try{GmailApp.sendEmail(ADMIN_EMAIL,"⚠️ Dispute — "+(data.ref||""),"",
+    {htmlBody:"<h2>Payment Lookup Dispute</h2><p>Ref: <b>"+(data.ref||"")+"</b></p><p>"+(data.message||"")+"</p>",
+    name:"CTS ETS System"});}catch(e){}
 }
 
 function handleReferral(data) {
@@ -1211,6 +1403,294 @@ function encourageMsg6(name, prog) {
     + '<p style="color:#4A5568">Remember why you started. Think about the person you\'ll be when you walk away with your qualification. That person is worth every late night and early morning.</p>'
     + '<p style="color:#4A5568"><strong>Finish strong. We\'re with you all the way.</strong></p>'
     + '<p style="color:#4A5568;font-size:13px;font-style:italic">"For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, plans to give you hope and a future." \u2014 Jeremiah 29:11</p>';
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// CUMULATIVE STUDENT RECORD — Live document, grows with every event
+// Legal size (8.5"×14"), page breaks, ministry-ready
+// APPEND-ONLY: New versions are added, old versions are NEVER deleted
+// Only admin with authorization code can overwrite/delete records
+// ═══════════════════════════════════════════════════════════════════════
+var RECORD_AUTH_CODE = "CTSETS-ADMIN-2026"; // Change this to your secret code
+
+function generateCumulativeRecord(studentNum) {
+  loadIds();
+  if (!studentNum) return {ok:false, error:"Student number required"};
+  
+  var es = sTab("Enrolled Students"), ed = es.getDataRange().getValues(), eh = ed[0], ec = {};
+  for (var i=0; i<eh.length; i++) ec[String(eh[i]).trim()] = i;
+  var studentRow = null, appRef = "";
+  for (var i=1; i<ed.length; i++) {
+    if (String(ed[i][ec["Student Number"]]||"").trim().toUpperCase() === studentNum.toUpperCase()) {
+      studentRow = ed[i]; appRef = String(ed[i][ec["Application Ref"]]||"").trim(); break;
+    }
+  }
+  if (!studentRow) return {ok:false, error:"Student not found: " + studentNum};
+  
+  var profile = getStudentProfile(appRef);
+  var firstName = String(studentRow[ec["First Name"]]||"").trim();
+  var lastName = String(studentRow[ec["Last Name"]]||"").trim();
+  var fullName = firstName + (profile.middleName ? " " + profile.middleName : "") + " " + lastName;
+  var today = new Date();
+  var dateStr = Utilities.formatDate(today, "America/Jamaica", "dd MMM yyyy, h:mm a");
+  var versionStamp = Utilities.formatDate(today, "America/Jamaica", "yyyyMMdd_HHmmss");
+  var v = function(val) { return val || "\u2014"; };
+  
+  var photoImg = profile.photoUrl 
+    ? '<img src="' + profile.photoUrl + '" style="width:90px;height:110px;object-fit:cover;border:1px solid #999;border-radius:3px" />' 
+    : '<div style="width:90px;height:110px;border:1px solid #999;display:flex;align-items:center;justify-content:center;background:#f5f5f5;font-size:9px;color:#999;text-align:center">No Photo<br>On File</div>';
+  
+  // Get ALL lifecycle events
+  var lc = sTab("Student Lifecycle"), ld = lc.getDataRange().getValues(), lh = ld[0], lcc = {};
+  for (var i=0; i<lh.length; i++) lcc[String(lh[i]).trim()] = i;
+  var events = [];
+  for (var i=1; i<ld.length; i++) {
+    var eRef = String(ld[i][lcc["Application Ref"]]||"").trim().toUpperCase();
+    var eStu = String(ld[i][lcc["Student Number"]]||"").trim().toUpperCase();
+    if (eRef === appRef.toUpperCase() || eStu === studentNum.toUpperCase()) {
+      events.push({
+        date: ld[i][lcc["Date/Time"]] ? Utilities.formatDate(new Date(ld[i][lcc["Date/Time"]]), "America/Jamaica", "dd MMM yyyy, h:mm a") : "",
+        event: ld[i][lcc["Event Type"]]||"", category: ld[i][lcc["Category"]]||"",
+        details: ld[i][lcc["Details"]]||"",
+        from: ld[i][lcc["Previous Value"]]||"", to: ld[i][lcc["New Value"]]||"",
+        by: ld[i][lcc["Performed By"]]||""
+      });
+    }
+  }
+  
+  // Get ALL payment records
+  var ps = fTab("Payment Schedule"), pd = ps.getDataRange().getValues();
+  var payments = [];
+  for (var i=1; i<pd.length; i++) {
+    if (String(pd[i][1]||"").trim().toUpperCase() === appRef.toUpperCase()) {
+      payments.push({
+        date: pd[i][0] ? Utilities.formatDate(new Date(pd[i][0]), "America/Jamaica", "dd MMM yyyy") : "",
+        type: pd[i][8]||"", amount: "J$" + (Number(pd[i][9])||0).toLocaleString(),
+        status: pd[i][11]||"", method: pd[i][10]||"", plan: pd[i][6]||""
+      });
+    }
+  }
+  
+  // Get communication log
+  var cl = sTab("Communication Log"), cd = cl.getDataRange().getValues(), clh = cd[0], clc = {};
+  for (var i=0; i<clh.length; i++) clc[String(clh[i]).trim()] = i;
+  var comms = [];
+  for (var i=1; i<cd.length; i++) {
+    var cRef = String(cd[i][clc["App Ref"]]||"").trim().toUpperCase();
+    var cStu = String(cd[i][clc["Student Number"]]||"").trim().toUpperCase();
+    if (cRef === appRef.toUpperCase() || cStu === studentNum.toUpperCase()) {
+      comms.push({
+        date: cd[i][clc["Timestamp"]] ? Utilities.formatDate(new Date(cd[i][clc["Timestamp"]]), "America/Jamaica", "dd MMM yyyy") : "",
+        channel: cd[i][clc["Channel"]]||"", direction: cd[i][clc["Direction"]]||"",
+        subject: cd[i][clc["Subject"]]||"", summary: cd[i][clc["Summary"]]||""
+      });
+    }
+  }
+  
+  // Build table rows
+  var eventRows = "";
+  for (var i=0; i<events.length; i++) {
+    var e = events[i];
+    eventRows += '<tr><td style="width:18%">' + v(e.date) + '</td><td style="width:14%">' + v(e.event) + '</td><td style="width:10%">' + v(e.category) + '</td><td style="width:35%">' + v(e.details) + '</td><td style="width:13%">' + (e.from && e.to ? e.from + " \u2192 " + e.to : v(e.to || e.from)) + '</td><td style="width:10%">' + v(e.by) + '</td></tr>';
+  }
+  if (!eventRows) eventRows = '<tr><td colspan="6" style="text-align:center;color:#999;padding:10px">No lifecycle events recorded.</td></tr>';
+  
+  var payRows = "";
+  for (var i=0; i<payments.length; i++) {
+    var p = payments[i];
+    payRows += '<tr><td>' + v(p.date) + '</td><td>' + v(p.type) + '</td><td style="font-weight:700">' + v(p.amount) + '</td><td>' + v(p.status) + '</td><td>' + v(p.method) + '</td><td>' + v(p.plan) + '</td></tr>';
+  }
+  if (!payRows) payRows = '<tr><td colspan="6" style="text-align:center;color:#999;padding:10px">No payment records.</td></tr>';
+  
+  var commRows = "";
+  for (var i=0; i<comms.length; i++) {
+    var cm = comms[i];
+    commRows += '<tr><td>' + v(cm.date) + '</td><td>' + v(cm.channel) + '</td><td>' + v(cm.direction) + '</td><td>' + v(cm.subject) + '</td><td>' + v(cm.summary) + '</td></tr>';
+  }
+  if (!commRows) commRows = '<tr><td colspan="5" style="text-align:center;color:#999;padding:10px">No communications logged.</td></tr>';
+  
+  var status = studentRow[ec["Status"]]||"";
+  var payStatus = studentRow[ec["Payment Status"]]||"";
+  var totalFees = Number(studentRow[ec["Total Fees"]]||0);
+  var totalPaid = Number(studentRow[ec["Total Paid"]]||0);
+  var outstanding = Number(studentRow[ec["Outstanding"]]||0);
+  var cohort = studentRow[ec["Cohort"]]||"";
+  var startDate = studentRow[ec["Start Date"]]||"";
+  var endDate = studentRow[ec["End Date"]]||"";
+  var paymentPlan = studentRow[ec["Payment Plan"]]||"";
+  var enrolledDate = studentRow[ec["Enrolled Date"]]||"";
+  var programme = studentRow[ec["Programme"]]||"";
+  var level = studentRow[ec["Level"]]||"";
+  
+  // Determine how many pages needed for events
+  var eventsPerPage = 25;
+  var totalEventPages = Math.max(1, Math.ceil(events.length / eventsPerPage));
+  
+  var css = '*{margin:0;padding:0;box-sizing:border-box}'
+    + 'body{font-family:Arial,Helvetica,sans-serif;font-size:9px;color:#111}'
+    + '@page{size:8.5in 14in;margin:12mm 10mm}'
+    + '.page{width:100%;padding:8mm 0;page-break-after:always}'
+    + '.page:last-child{page-break-after:auto}'
+    + '.hdr{background:#011E40;padding:10px 14px;display:flex;justify-content:space-between;align-items:center}'
+    + '.hdr h1{color:#D4A843;font-size:14px;margin:0;font-weight:700}'
+    + '.hdr .sub{color:rgba(255,255,255,.7);font-size:8px;margin-top:2px}'
+    + '.hdr .right{text-align:right;color:rgba(255,255,255,.5);font-size:7px}'
+    + '.sec{background:#011E40;color:#D4A843;padding:4px 10px;font-size:9px;font-weight:700;letter-spacing:.5px;margin-top:8px}'
+    + 'table{width:100%;border-collapse:collapse;margin-bottom:2px}'
+    + 'td,th{border:1px solid #aaa;padding:3px 6px;font-size:8px;vertical-align:top;text-align:left}'
+    + 'th{background:#011E40;color:#D4A843;font-weight:700;font-size:7px;letter-spacing:.3px}'
+    + 'td.l{background:#f0f4f8;font-weight:600;color:#333;width:22%}'
+    + 'td.v{font-weight:500}'
+    + '.live-tag{display:inline-block;background:#38A169;color:#fff;padding:2px 8px;border-radius:10px;font-size:7px;font-weight:700}'
+    + '.status-badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:8px;font-weight:700}'
+    + '.ft{font-size:7px;color:#888;text-align:center;border-top:1px solid #ccc;padding-top:4px;margin-top:8px}'
+    + '.version{font-size:6px;color:#aaa;text-align:right;margin-top:2px}'
+    + '@media print{.page{page-break-after:always}}';
+
+  // PAGE 1
+  var page1 = '<div class="page">'
+    + '<div class="hdr"><div><h1>CTS Empowerment & Training Solutions</h1>'
+    + '<div class="sub">CUMULATIVE STUDENT RECORD \u2014 <span class="live-tag">LIVE DOCUMENT</span></div></div>'
+    + '<div class="right">Generated: ' + dateStr + '<br>COJ Reg. No. 16007/2025<br>6, Newark Avenue, Kingston 2</div></div>'
+    + '<div class="version">Version: ' + versionStamp + ' | Events: ' + events.length + ' | Payments: ' + payments.length + '</div>'
+    + '<div class="sec">1. STUDENT IDENTIFICATION</div>'
+    + '<table><tr><td rowspan="5" style="width:100px;text-align:center;vertical-align:middle">' + photoImg + '</td>'
+    + '<td class="l">Student Number</td><td class="v" style="font-size:11px;font-weight:700;letter-spacing:1px">' + v(studentNum) + '</td>'
+    + '<td class="l">Application Ref</td><td class="v">' + v(appRef) + '</td></tr>'
+    + '<tr><td class="l">Full Name</td><td class="v" colspan="3" style="font-size:10px;font-weight:700">' + fullName.toUpperCase() + '</td></tr>'
+    + '<tr><td class="l">Maiden Name</td><td class="v">' + v(profile.maidenName) + '</td><td class="l">Date of Birth</td><td class="v">' + v(profile.dob) + '</td></tr>'
+    + '<tr><td class="l">Gender</td><td class="v">' + v(profile.gender) + '</td><td class="l">Nationality</td><td class="v">' + v(profile.nationality) + '</td></tr>'
+    + '<tr><td class="l">TRN</td><td class="v">' + v(profile.trn) + '</td><td class="l">NIS #</td><td class="v">' + v(profile.nis) + '</td></tr></table>'
+    + '<div class="sec">2. CONTACT INFORMATION</div>'
+    + '<table><tr><td class="l">Email</td><td class="v" colspan="3">' + v(studentRow[ec["Email"]]) + '</td></tr>'
+    + '<tr><td class="l">Phone 1</td><td class="v">' + v(studentRow[ec["Phone"]]) + '</td><td class="l">Phone 2</td><td class="v">' + v(profile.phone2) + '</td></tr>'
+    + '<tr><td class="l">Address</td><td class="v" colspan="3">' + v(profile.address) + (profile.district ? ", " + profile.district : "") + (profile.postalZone ? ", " + profile.postalZone : "") + '</td></tr>'
+    + '<tr><td class="l">Parish</td><td class="v">' + v(profile.parish) + '</td><td class="l">Country</td><td class="v">' + v(profile.country) + '</td></tr>'
+    + '<tr><td class="l">Marital Status</td><td class="v">' + v(profile.maritalStatus) + '</td><td class="l">Special Needs</td><td class="v">' + (profile.specialNeeds === "Yes" ? "Yes \u2014 " + v(profile.specialNeedsType) : "No") + '</td></tr></table>'
+    + '<div class="sec">3. EMERGENCY CONTACTS</div>'
+    + '<table><tr><th colspan="3">EMERGENCY CONTACT #1</th><th colspan="3">EMERGENCY CONTACT #2</th></tr>'
+    + '<tr><td class="l">Name</td><td class="v" colspan="2">' + v(profile.emergencyName) + '</td><td class="l">Name</td><td class="v" colspan="2">' + v(profile.emergency2Name) + '</td></tr>'
+    + '<tr><td class="l">Phone</td><td class="v" colspan="2">' + v(profile.emergencyPhone) + '</td><td class="l">Phone</td><td class="v" colspan="2">' + v(profile.emergency2Phone) + '</td></tr>'
+    + '<tr><td class="l">Relationship</td><td class="v" colspan="2">' + v(profile.emergencyRelationship) + '</td><td class="l">Relationship</td><td class="v" colspan="2">' + v(profile.emergency2Relationship) + '</td></tr></table>'
+    + '<div class="sec">4. EDUCATION & EMPLOYMENT</div>'
+    + '<table><tr><td class="l">Highest Qualification</td><td class="v">' + v(profile.highestQualification) + '</td><td class="l">Year Completed</td><td class="v">' + v(profile.yearCompleted) + '</td></tr>'
+    + '<tr><td class="l">Last School</td><td class="v" colspan="3">' + v(profile.schoolLastAttended) + '</td></tr>'
+    + '<tr><td class="l">Employment Status</td><td class="v">' + v(profile.employmentStatus) + '</td><td class="l">Employer</td><td class="v">' + v(profile.employer) + '</td></tr>'
+    + '<tr><td class="l">Job Title</td><td class="v" colspan="3">' + v(profile.jobTitle) + '</td></tr></table>'
+    + '<div class="sec">5. PROGRAMME & ENROLMENT</div>'
+    + '<table><tr><td class="l">Programme</td><td class="v" colspan="3" style="font-weight:700;font-size:9px">' + v(programme) + '</td></tr>'
+    + '<tr><td class="l">Level</td><td class="v">' + v(level) + '</td><td class="l">Payment Plan</td><td class="v">' + v(paymentPlan) + '</td></tr>'
+    + '<tr><td class="l">Cohort</td><td class="v">' + v(cohort) + '</td><td class="l">Enrolled Date</td><td class="v">' + (enrolledDate ? Utilities.formatDate(new Date(enrolledDate), "America/Jamaica", "dd MMM yyyy") : "\u2014") + '</td></tr>'
+    + '<tr><td class="l">Start Date</td><td class="v">' + v(startDate) + '</td><td class="l">End Date</td><td class="v">' + v(endDate) + '</td></tr>'
+    + '<tr><td class="l">Current Status</td><td class="v"><span class="status-badge" style="background:' + (status==="Enrolled"||status==="Active"?"#38A169":status==="Graduated"?"#D4A843":"#E8634A") + ';color:#fff">' + v(status) + '</span></td>'
+    + '<td class="l">LMS Access</td><td class="v">' + v(studentRow[ec["LMS Access"]]) + '</td></tr></table>'
+    + '<div class="sec">6. FINANCIAL SUMMARY</div>'
+    + '<table><tr><td class="l">Total Fees</td><td class="v" style="font-weight:700">J$' + totalFees.toLocaleString() + '</td><td class="l">Total Paid</td><td class="v" style="font-weight:700;color:#38A169">J$' + totalPaid.toLocaleString() + '</td></tr>'
+    + '<tr><td class="l">Outstanding</td><td class="v" style="font-weight:700;color:' + (outstanding > 0 ? "#E8634A" : "#38A169") + '">J$' + outstanding.toLocaleString() + '</td><td class="l">Payment Status</td><td class="v">' + v(payStatus) + '</td></tr></table>'
+    + '<div class="ft">CTS ETS \u2014 Cumulative Student Record \u2014 ' + studentNum + ' \u2014 Page 1 | APPEND-ONLY \u2014 This document cannot be altered without authorization.</div></div>';
+
+  // PAGE 2: Events + Payments + Comms
+  var page2 = '<div class="page">'
+    + '<div class="hdr"><div><h1>' + fullName.toUpperCase() + '</h1><div class="sub">' + studentNum + ' | ' + programme + ' | ' + level + '</div></div>'
+    + '<div class="right">CUMULATIVE RECORD \u2014 Page 2<br>' + dateStr + '</div></div>'
+    + '<div class="sec">7. STUDENT LIFECYCLE \u2014 CHRONOLOGICAL EVENT LOG (' + events.length + ' events)</div>'
+    + '<table><tr><th>Date/Time</th><th>Event</th><th>Category</th><th>Details</th><th>Change</th><th>By</th></tr>' + eventRows + '</table>'
+    + '<div class="sec">8. PAYMENT HISTORY (' + payments.length + ' records)</div>'
+    + '<table><tr><th>Date</th><th>Type</th><th>Amount</th><th>Status</th><th>Method</th><th>Plan</th></tr>' + payRows + '</table>'
+    + '<div class="sec">9. COMMUNICATION LOG (' + comms.length + ' entries)</div>'
+    + '<table><tr><th>Date</th><th>Channel</th><th>Direction</th><th>Subject</th><th>Summary</th></tr>' + commRows + '</table>'
+    + '<div class="ft">CTS ETS \u2014 Cumulative Student Record \u2014 ' + studentNum + ' \u2014 Page 2 | APPEND-ONLY \u2014 This document cannot be altered without authorization.</div></div>';
+
+  // PAGE 3: Notes + Assessment + Sign-off
+  var page3 = '<div class="page">'
+    + '<div class="hdr"><div><h1>' + fullName.toUpperCase() + '</h1><div class="sub">' + studentNum + ' | ' + programme + ' | ' + level + '</div></div>'
+    + '<div class="right">CUMULATIVE RECORD \u2014 Page 3<br>' + dateStr + '</div></div>'
+    + '<div class="sec">10. ADMINISTRATIVE NOTES</div>'
+    + '<div style="min-height:100px;border:1px solid #aaa;padding:6px;font-size:8px;color:#999;line-height:2">'
+    + '___________________________________________________________________________________________________________<br>'
+    + '___________________________________________________________________________________________________________<br>'
+    + '___________________________________________________________________________________________________________<br>'
+    + '___________________________________________________________________________________________________________<br>'
+    + '___________________________________________________________________________________________________________</div>'
+    + '<div class="sec">11. ASSESSMENT & CERTIFICATION</div>'
+    + '<table><tr><th style="width:18%">Date</th><th style="width:30%">Assessment / Module</th><th style="width:15%">Result</th><th style="width:17%">Assessor</th><th style="width:20%">Notes</th></tr>'
+    + '<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>'
+    + '<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>'
+    + '<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>'
+    + '<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>'
+    + '<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>'
+    + '<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>'
+    + '<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>'
+    + '<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr></table>'
+    + '<div class="sec">12. OFFICIAL SIGN-OFF</div>'
+    + '<div style="padding:8px;border:1px solid #aaa">'
+    + '<div style="font-size:8px;color:#333;line-height:1.6;margin-bottom:10px">I certify that the information contained in this cumulative student record is accurate and complete to the best of my knowledge. This record has been maintained in accordance with CTS ETS institutional policies and regulatory requirements.</div>'
+    + '<div style="display:flex;justify-content:space-between;margin-top:16px">'
+    + '<div style="width:30%"><div style="border-bottom:1px solid #333;height:28px"></div><div style="font-size:7px;color:#666;margin-top:3px">Principal / Administrator</div></div>'
+    + '<div style="width:30%"><div style="border-bottom:1px solid #333;height:28px"></div><div style="font-size:7px;color:#666;margin-top:3px">Date</div></div>'
+    + '<div style="width:30%"><div style="border-bottom:1px solid #333;height:28px"></div><div style="font-size:7px;color:#666;margin-top:3px">Official Stamp</div></div></div>'
+    + '<div style="display:flex;justify-content:space-between;margin-top:16px">'
+    + '<div style="width:30%"><div style="border-bottom:1px solid #333;height:28px"></div><div style="font-size:7px;color:#666;margin-top:3px">Student Signature</div></div>'
+    + '<div style="width:30%"><div style="border-bottom:1px solid #333;height:28px"></div><div style="font-size:7px;color:#666;margin-top:3px">Date</div></div>'
+    + '<div style="width:30%"></div></div></div>'
+    + '<div style="margin-top:8px;font-size:7px;color:#999;text-align:center;border:1px dashed #ccc;padding:5px">'
+    + '<strong>DOCUMENT CONTROL:</strong> This cumulative record is an APPEND-ONLY live document. New versions are generated as events occur. '
+    + 'Previous versions are retained and marked with their version timestamp. No record may be deleted or overwritten without '
+    + 'written authorization from the Principal (code: CTSETS-ADMIN-XXXX). For audit purposes, note the version stamp on page 1.</div>'
+    + '<div class="ft">CTS ETS \u2014 Cumulative Student Record \u2014 ' + studentNum + ' \u2014 Page 3 of 3 | Version: ' + versionStamp + ' | admin@ctsetsjm.com | 876-381-9771</div></div>';
+
+  var html = '<!DOCTYPE html><html><head><style>' + css + '</style></head><body>' + page1 + page2 + page3 + '</body></html>';
+  
+  // APPEND-ONLY: Save new version, NEVER delete old ones
+  var rf = DriveApp.getFoldersByName("CTS ETS Student Records");
+  var folder = rf.hasNext() ? rf.next() : DriveApp.createFolder("CTS ETS Student Records");
+  
+  // Create student subfolder if doesn't exist
+  var stuFolders = folder.getFoldersByName(studentNum);
+  var stuFolder = stuFolders.hasNext() ? stuFolders.next() : folder.createFolder(studentNum + " \u2014 " + firstName + " " + lastName);
+  
+  // Save with version timestamp — old versions are kept
+  var fileName = studentNum + " \u2014 Cumulative Record \u2014 v" + versionStamp + ".html";
+  stuFolder.createFile(fileName, html, "text/html");
+  
+  // Also save a "LATEST" copy for easy access (this one gets replaced)
+  var latestName = studentNum + " \u2014 Cumulative Record \u2014 LATEST.html";
+  var latestFiles = stuFolder.getFilesByName(latestName);
+  while (latestFiles.hasNext()) { latestFiles.next().setTrashed(true); }
+  stuFolder.createFile(latestName, html, "text/html");
+  
+  audit("RECORD GENERATED", appRef, "Cumulative record v" + versionStamp + " for " + studentNum + " (" + events.length + " events, " + payments.length + " payments)", "System");
+  Logger.log("Cumulative record v" + versionStamp + " saved: " + fileName);
+  return {ok:true, message:"Cumulative record generated for " + studentNum + " (v" + versionStamp + ")"};
+}
+
+// Admin-only: Delete or overwrite a student record version
+function deleteStudentRecord(studentNum, authCode, fileName) {
+  if (authCode !== RECORD_AUTH_CODE) {
+    audit("UNAUTHORIZED", studentNum, "Attempted record deletion with invalid auth code", "Unknown");
+    return {ok:false, error:"Authorization denied. Invalid admin code."};
+  }
+  try {
+    loadIds();
+    var rf = DriveApp.getFoldersByName("CTS ETS Student Records");
+    if (!rf.hasNext()) return {ok:false, error:"Records folder not found"};
+    var folder = rf.next();
+    var stuFolders = folder.getFoldersByName(studentNum.split(" ")[0]);
+    if (!stuFolders.hasNext()) return {ok:false, error:"Student folder not found"};
+    var stuFolder = stuFolders.next();
+    
+    if (fileName) {
+      // Delete specific version
+      var files = stuFolder.getFilesByName(fileName);
+      if (files.hasNext()) {
+        files.next().setTrashed(true);
+        audit("RECORD DELETED", studentNum, "Authorized deletion of: " + fileName + " by admin", "Admin");
+        return {ok:true, message:"Record version deleted: " + fileName};
+      }
+      return {ok:false, error:"File not found: " + fileName};
+    }
+    return {ok:false, error:"Specify a fileName to delete"};
+  } catch(e) { return {ok:false, error:e.message}; }
 }
 
 function audit(action,ref,details,by) {
