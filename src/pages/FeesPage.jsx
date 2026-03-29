@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import S from "../constants/styles";
 import { CALC_DATA } from "../constants/programmes";
 import { REG_FEE, USD_RATE } from "../constants/config";
-import { Container, PageWrapper, Btn, SectionHeader, PageScripture, SocialProofBar, TestimonialCard } from "../components/shared/CoreComponents";
+import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture, SocialProofBar, TestimonialCard } from "../components/shared/CoreComponents";
 import { WhatsAppShare } from "../components/shared/DisplayComponents";
 import { fmt, dualPrice } from "../utils/formatting";
 import { TESTIMONIALS } from "../constants/content";
@@ -24,10 +24,19 @@ export default function FeesPage({ setPage }) {
   const calc = () => {
     if (!prog) return null;
     const t = prog.tuition, gd = isGroup ? 0.85 : 1;
-    if (selPlan === "Gold") { const tt = t * gd, ae = tt + REG_FEE; return { plan: "Gold", grandTotal: fmt(ae), steps: [{ label: "At Enrolment", amount: fmt(ae), detail: fmt(tt) + " tuition + " + fmt(REG_FEE) + " reg" }], savings: isGroup ? fmt(t * 0.15) : null }; }
-    if (selPlan === "Silver") { const st = t * 1.10 * gd, ep = st * 0.6, mp = st * 0.4, ae = ep + REG_FEE; return { plan: "Silver", grandTotal: fmt(ae + mp), steps: [{ label: "At Enrolment", amount: fmt(ae), detail: fmt(ep) + " (60%) + " + fmt(REG_FEE) + " reg" }, { label: "At Mid-Point", amount: fmt(mp), detail: "Remaining 40%" }], savings: isGroup ? fmt(t * 1.10 * 0.15) : null }; }
-    const bt = t * 1.15 * gd, dep = bt * 0.3, ae = dep + REG_FEE, rem = bt - dep, m = prog.bronzeMonths || 6, mo = Math.round(rem / m);
-    return { plan: "Bronze", grandTotal: fmt(ae + mo * m), steps: [{ label: "At Enrolment", amount: fmt(ae), detail: fmt(dep) + " (30%) + " + fmt(REG_FEE) + " reg" }, { label: m + " Monthly Payments", amount: fmt(mo) + "/mth", detail: fmt(rem) + " over " + m + " months" }], savings: isGroup ? fmt(t * 1.15 * 0.15) : null };
+    const regLabel = fmt(REG_FEE) + " non-refundable reg";
+    if (selPlan === "Gold") { const tt = t * gd, ae = tt + REG_FEE; return { plan: "Gold", grandTotal: fmt(ae), steps: [{ label: "At Enrolment", amount: fmt(ae), detail: fmt(tt) + " training + " + regLabel }], savings: isGroup ? fmt(t * 0.15) : null, note: "Surcharge: 0% — best value" }; }
+    if (selPlan === "Silver") { const st = Math.round(t * 1.10 * gd), ep = Math.round(st * 0.6), mp = st - ep, ae = ep + REG_FEE; return { plan: "Silver", grandTotal: fmt(ae + mp), steps: [{ label: "At Enrolment", amount: fmt(ae), detail: fmt(ep) + " (60% of training) + " + regLabel }, { label: "At Mid-Point", amount: fmt(mp), detail: "Remaining 40% of training fee" }], savings: isGroup ? fmt(Math.round(t * 1.10 * 0.15)) : null, note: "+10% surcharge on training fee only" }; }
+    // Bronze — rounded monthly amounts
+    const m = prog.bronzeMonths || 6;
+    const isL5 = selLevel.indexOf("5") >= 0, isL4 = selLevel.indexOf("4") >= 0;
+    const roundedMonthly = isL5 ? 4500 : isL4 ? 4000 : 3500;
+    const bronzeDeposit = isL5 ? 15500 : isL4 ? 12000 : 8500;
+    const ae = bronzeDeposit + REG_FEE;
+    const monthlyTotal = roundedMonthly * m;
+    const gt = ae + monthlyTotal;
+    const gtWithGroup = isGroup ? Math.round(gt * 0.85) : gt;
+    return { plan: "Bronze", grandTotal: fmt(gtWithGroup), steps: [{ label: "At Enrolment", amount: fmt(ae), detail: fmt(bronzeDeposit) + " deposit + " + regLabel }, { label: m + " Monthly Payments", amount: fmt(roundedMonthly) + "/mth", detail: fmt(monthlyTotal) + " over " + m + " months" }], savings: isGroup ? fmt(gt - gtWithGroup) : null, note: "+15% surcharge on training fee only" };
   };
   const result = calc();
   const inputStyle = { width: "100%", padding: "11px 14px", borderRadius: 6, border: "2px solid rgba(1,30,64,0.1)", background: "#fff", fontSize: 13, fontFamily: S.body, color: S.navy, fontWeight: 600, cursor: "pointer" };
@@ -35,12 +44,58 @@ export default function FeesPage({ setPage }) {
 
   return (
     <PageWrapper>
-      <SectionHeader tag="Your Investment" title="See Exactly What You'll Pay" desc="Choose your programme and payment plan. No hidden fees." accentColor={S.coral} />
+      <SectionHeader tag="Your Investment" title="See Exactly What You'll Pay" desc="$5,000 non-refundable registration fee + training fee. Surcharges apply to training only. No hidden fees." accentColor={S.coral} />
       <Container>
         <SocialProofBar />
+
+        {/* Fee Structure Overview */}
+        <Reveal>
+          <div style={{ marginBottom: 36 }}>
+            <div style={{ textAlign: "center", marginBottom: 20 }}>
+              <h3 style={{ fontFamily: S.heading, fontSize: "clamp(20px,3vw,26px)", color: S.navy, fontWeight: 700, margin: 0 }}>Fee Structure</h3>
+              <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.6, margin: "8px 0 0" }}>Your total cost = $5,000 registration fee + training fee for your level.</p>
+            </div>
+            <div style={{ overflowX: "auto", borderRadius: 12, border: "1px solid " + S.border }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: S.body, fontSize: 13 }}>
+                <thead><tr style={{ background: S.navy }}>
+                  {["Level", "Training Fee", "Reg Fee", "Total (Gold)"].map(function(h, i) { return <th key={i} style={{ padding: "12px 16px", color: i === 3 ? S.gold : "#fff", fontWeight: 700, textAlign: i === 0 ? "left" : "center", fontSize: 12 }}>{h}</th>; })}
+                </tr></thead>
+                <tbody>
+                  {[
+                    ["Job Certificate", "$5,000", "$5,000", "$10,000"],
+                    ["Level 2 — Vocational", "$15,000", "$5,000", "$20,000"],
+                    ["Level 3 — Diploma", "$25,000", "$5,000", "$30,000"],
+                    ["Level 4 — Associate", "$35,000", "$5,000", "$40,000"],
+                    ["Level 5 — Bachelor's", "$45,000", "$5,000", "$50,000"],
+                  ].map(function(row, ri) { return (
+                    <tr key={ri} style={{ background: ri % 2 === 0 ? "#fff" : S.lightBg }}>
+                      <td style={{ padding: "11px 16px", fontWeight: 700, color: S.navy, borderTop: "1px solid " + S.border, fontSize: 12 }}>{row[0]}</td>
+                      <td style={{ padding: "11px 16px", textAlign: "center", color: S.navy, borderTop: "1px solid " + S.border }}>{row[1]}</td>
+                      <td style={{ padding: "11px 16px", textAlign: "center", color: S.gray, borderTop: "1px solid " + S.border }}>{row[2]}</td>
+                      <td style={{ padding: "11px 16px", textAlign: "center", fontWeight: 800, color: S.coral, borderTop: "1px solid " + S.border, fontFamily: S.heading }}>{row[3]}</td>
+                    </tr>
+                  ); })}
+                </tbody>
+              </table>
+            </div>
+            <div style={{ display: "flex", gap: 12, marginTop: 12, flexWrap: "wrap", justifyContent: "center" }}>
+              {[
+                ["Registration fee", "$5,000 non-refundable — paid once at registration"],
+                ["Training fee", "Covers online instruction, study materials, audio sessions, AI assistant"],
+                ["NCTVET assessment", "Arranged through HEART/NSTA at no additional cost"],
+                ["Payment plans", "Silver (+10%) and Bronze (+15%) surcharge applies to training fee only"],
+              ].map(function(note, i) { return (
+                <div key={i} style={{ fontSize: 11, fontFamily: S.body, color: S.gray, lineHeight: 1.4, padding: "6px 12px", background: S.lightBg, borderRadius: 6, border: "1px solid " + S.border }}>
+                  <strong style={{ color: S.navy }}>{note[0]}:</strong> {note[1]}
+                </div>
+              ); })}
+            </div>
+          </div>
+        </Reveal>
+
         {/* Plan cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginBottom: 40 }} className="resp-grid-3">
-          {[{ n: "Gold", f: "0%", d: "Full payment. Best value.", color: S.gold, bg: S.goldLight }, { n: "Silver", f: "+10%", d: "60% at enrolment, 40% mid-point.", color: "#64748B", bg: "#F1F5F9" }, { n: "Bronze", f: "+15%", d: "30% deposit + monthly payments.", color: "#CD7F32", bg: S.amberLight }].map(p => (
+          {[{ n: "Gold", f: "0%", d: "Pay training + reg fee in full. Best value.", color: S.gold, bg: S.goldLight }, { n: "Silver", f: "+10%", d: "+10% on training fee. 60/40 split.", color: "#64748B", bg: "#F1F5F9" }, { n: "Bronze", f: "+15%", d: "+15% on training fee. Deposit + monthly.", color: "#CD7F32", bg: S.amberLight }].map(p => (
             <div key={p.n} style={{ background: p.bg, borderRadius: 12, padding: "24px 20px", border: "1px solid " + p.color + "30", textAlign: "center" }}>
               <div style={{ fontSize: 12, fontWeight: 700, color: p.color, fontFamily: S.body, letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>{p.n}</div>
               <div style={{ fontSize: 28, fontWeight: 700, color: S.navy, fontFamily: S.heading }}>{p.f}</div>
@@ -80,6 +135,10 @@ export default function FeesPage({ setPage }) {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><span style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", fontFamily: S.body }}>Total (USD)</span><span style={{ fontSize: 26, fontWeight: 800, color: "#fff", fontFamily: S.heading }}>US${Math.round(parseInt(result.grandTotal.replace(/[$,]/g, "")) / USD_RATE).toLocaleString()}</span></div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}><span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", fontFamily: S.body }}>JMD</span><span style={{ fontSize: 18, fontWeight: 700, color: S.gold, fontFamily: S.heading }}>{result.grandTotal}</span></div>
                 {result.savings && <div style={{ fontSize: 12, color: S.emerald, fontFamily: S.body, marginTop: 8, textAlign: "right" }}>Group discount saves {result.savings}</div>}
+                {result.note && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontFamily: S.body, marginTop: 8, textAlign: "right", fontStyle: "italic" }}>{result.note}</div>}
+              </div>
+              <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", fontSize: 10, color: "rgba(255,255,255,0.4)", fontFamily: S.body, lineHeight: 1.6, textAlign: "center" }}>
+                {"The $5,000 registration fee is non-refundable. All surcharges apply to the training fee only, not the registration fee. Your training fee covers full online instruction, study materials, audio sessions, and AI study assistant. NCTVET assessment is arranged through HEART/NSTA at no additional cost."}
               </div>
               <div style={{ marginTop: 16, display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <Btn primary onClick={() => setPage("Apply")} style={{ color: "#fff", background: S.coral, flex: 1 }}>Apply Now</Btn>

@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import S from "../constants/styles";
 import { NAV_LOGO, PORTAL_URL, APPS_SCRIPT_URL } from "../constants/config";
-import { TESTIMONIALS, SOCIAL_PROOF, ANNOUNCEMENTS } from "../constants/content";
+import { TESTIMONIALS, SOCIAL_PROOF, ANNOUNCEMENTS, FAQS } from "../constants/content";
 import { CAREER_OUTCOMES } from "../constants/programmes";
 import { Container, Btn, Reveal, PageScripture, SocialProofBar, TalkToGraduate, TestimonialCard } from "../components/shared/CoreComponents";
 import { PartnerLogos, HoneypotField } from "../components/shared/DisplayComponents";
@@ -14,6 +14,7 @@ function InterestCapture() {
 }
 
 export default function HomePage({ setPage }) {
+  var [openFaq, setOpenFaq] = useState(null);
   return (
     <div>
       {/* ══ HERO — Digital School, 100% Online, Self-Paced ══ */}
@@ -35,7 +36,7 @@ export default function HomePage({ setPage }) {
               {/* Primary badge — this is what they see FIRST */}
               <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: S.emerald + "25", border: "2px solid " + S.emerald + "60", borderRadius: 30, padding: "10px 24px", marginBottom: 22 }}>
                 <div style={{ width: 10, height: 10, borderRadius: "50%", background: S.emerald, boxShadow: "0 0 12px " + S.emerald, animation: "pulse 2s infinite" }} />
-                <span style={{ fontSize: 13, color: S.emerald, fontFamily: S.body, fontWeight: 800, letterSpacing: 1 }}>100% ONLINE &bull; SELF-PACED &bull; NO CLASS DAYS</span>
+                <span style={{ fontSize: 13, color: S.emerald, fontFamily: S.body, fontWeight: 800, letterSpacing: 1 }}>100% ONLINE &bull; SELF-PACED &bull; STUDY ANYTIME</span>
               </div>
 
               {/* Headline */}
@@ -45,10 +46,10 @@ export default function HomePage({ setPage }) {
 
               {/* What self-paced really means */}
               <p style={{ fontFamily: S.body, fontSize: "clamp(14px,1.5vw,17px)", color: "rgba(255,255,255,0.9)", lineHeight: 1.8, marginBottom: 10, maxWidth: 500 }}>
-                Everything happens online. There are no classroom days, no fixed timetable, and no need to travel. You log in from your phone or laptop, study at whatever time suits you — morning, night, weekend — and move through the material at your own speed.
+                Study from your phone or laptop — at home, on the bus, or during your lunch break. No fixed timetable. No travel. You move through the material at your own speed, with online class days scheduled for assessment preparation.
               </p>
               <p style={{ fontFamily: S.body, fontSize: "clamp(13px,1.3vw,15px)", color: "rgba(255,255,255,0.6)", lineHeight: 1.7, marginBottom: 28, maxWidth: 480 }}>
-                When you are finished, we arrange your NCTVET assessment through HEART/NSTA — at no additional cost. You receive the same nationally recognised NVQ-J qualification.
+                25 programmes from Job Certificate to Bachelor's Equivalent. Aligned to NCTVET. Assessments are conducted online unless otherwise needed. External assessment arranged through HEART/NSTA at no additional cost.
               </p>
 
               {/* CTAs */}
@@ -86,7 +87,7 @@ export default function HomePage({ setPage }) {
 
           {/* Bottom stat bar */}
           <div style={{ display: "flex", justifyContent: "center", gap: "clamp(20px,4vw,48px)", flexWrap: "wrap", marginTop: 40, paddingTop: 28, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-            {[["100%", "Online"], ["25", "Programmes"], ["Self-Paced", "No Deadlines"], ["From J$10K", "Total Cost"], ["NCTVET", "Certified"]].map(function(s) {
+            {[["100%", "Online"], ["25", "Programmes"], ["Self-Paced", "Study Anytime"], ["From J$10K", "Total Cost"], ["NCTVET", "Certified"]].map(function(s) {
               return (
                 <div key={s[1]} style={{ textAlign: "center", minWidth: 80 }}>
                   <div style={{ fontFamily: S.heading, fontSize: 22, fontWeight: 800, color: S.coral }}>{s[0]}</div>
@@ -104,13 +105,13 @@ export default function HomePage({ setPage }) {
           <Reveal><div style={{ textAlign: "center", marginBottom: 40 }}>
             <span style={{ fontSize: 11, color: S.emerald, letterSpacing: 3, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600 }}>How It Works</span>
             <h2 style={{ fontFamily: S.heading, fontSize: "clamp(26px,4vw,40px)", color: S.navy, margin: "10px 0 0", fontWeight: 700 }}>What Does "Self-Paced" <span style={{ color: S.coral }}>Actually Mean?</span></h2>
-            <p style={{ fontFamily: S.body, fontSize: 15, color: S.gray, lineHeight: 1.7, maxWidth: 600, margin: "14px auto 0" }}>It means there is no timetable. No class days. No one telling you when to study. You decide everything.</p>
+            <p style={{ fontFamily: S.body, fontSize: 15, color: S.gray, lineHeight: 1.7, maxWidth: 600, margin: "14px auto 0" }}>It means there is no fixed timetable for your regular studying. You decide when and where to learn. Assessments are on announced dates, with online class days to help you prepare.</p>
           </div></Reveal>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }} className="resp-grid-3">
             {[
               { icon: "\uD83D\uDCF1", title: "Your device is your classroom", desc: "All you need is a phone, tablet, or laptop and an internet connection. Every lesson, quiz, audio session, and study guide is available online — 24 hours a day, 7 days a week. There is no building to go to.", color: S.teal },
               { icon: "\u23F0", title: "You choose when to study", desc: "5am before work? Lunch break? 11pm after the kids are asleep? It does not matter. The material is always there waiting for you. Study when your mind is sharpest — not when a timetable tells you to.", color: S.coral },
-              { icon: "\uD83D\uDCC8", title: "You move at your speed", desc: "If you understand a topic quickly, skip ahead. If something is difficult, go back and repeat it. There are no deadlines, no exams on a fixed date, and no pressure to keep up with a class.", color: S.violet },
+              { icon: "\uD83D\uDCC8", title: "You move at your speed", desc: "If you understand a topic quickly, skip ahead. If something is difficult, go back and repeat it. There is no pressure to keep up with a class. Assessments are on announced dates — with online preparation sessions to get you ready.", color: S.violet },
               { icon: "\uD83C\uDFE2", title: "Keep your job. Keep your life.", desc: "You do not need to take time off work. You do not need to arrange childcare. You do not need to travel anywhere. Your studies fit around your life — not the other way around.", color: S.emerald },
               { icon: "\uD83C\uDFA7", title: "Listen like a podcast", desc: "Every lesson has an Audio Study Session. Plug in your earphones on the bus, in the car, at the gym, or while cooking. Learning does not have to mean sitting at a desk.", color: S.gold },
               { icon: "\uD83C\uDF93", title: "Same qualification at the end", desc: "Whether you finish in 2 months or 6, you earn the same nationally recognised NCTVET qualification. Your certificate does not say 'online' — it says NVQ-J, just like any classroom student.", color: S.rose },
@@ -212,6 +213,40 @@ export default function HomePage({ setPage }) {
               <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, lineHeight: 1.7 }}>Audio Study Sessions you can listen to like a podcast. An AI study assistant that answers your questions 24/7. Expert-written guides, flashcards, and video summaries — all from one place.</p>
             </div>
             <a href={PORTAL_URL} target="_blank" rel="noopener noreferrer" style={{ padding: "14px 32px", borderRadius: 8, background: S.teal, color: "#fff", fontSize: 14, fontWeight: 700, fontFamily: S.body, textDecoration: "none", whiteSpace: "nowrap" }}>Access Student Portal →</a>
+          </div>
+        </Container>
+      </section>
+
+      {/* ══ FAQ — HEART comparison questions first ══ */}
+      <section style={{ background: S.lightBg, padding: "64px 0" }}>
+        <Container>
+          <Reveal><div style={{ textAlign: "center", marginBottom: 36 }}>
+            <span style={{ fontSize: 11, color: S.coral, letterSpacing: 3, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600 }}>Common Questions</span>
+            <h2 style={{ fontFamily: S.heading, fontSize: "clamp(26px,4vw,38px)", color: S.navy, margin: "10px 0 0", fontWeight: 700 }}>Got Questions? We've Got Answers.</h2>
+          </div></Reveal>
+          <div style={{ maxWidth: 720, margin: "0 auto" }}>
+            {FAQS.slice(0, 8).map(function(faq, i) {
+              var isOpen = openFaq === i;
+              return (
+                <Reveal key={i} delay={i * 0.04}>
+                  <div style={{ marginBottom: 8 }}>
+                    <button onClick={function() { setOpenFaq(isOpen ? null : i); }}
+                      style={{ width: "100%", padding: "16px 20px", borderRadius: isOpen ? "12px 12px 0 0" : 12, border: "1px solid " + (isOpen ? S.coral + "40" : S.border), borderBottom: isOpen ? "none" : "1px solid " + S.border, background: isOpen ? S.coral : "#fff", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, textAlign: "left", transition: "all 0.2s" }}>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: isOpen ? "#fff" : S.navy, fontFamily: S.body }}>{faq.q}</span>
+                      <span style={{ fontSize: 18, color: isOpen ? "#fff" : S.gray, fontWeight: 700, flexShrink: 0, transition: "transform 0.2s", transform: isOpen ? "rotate(45deg)" : "none" }}>+</span>
+                    </button>
+                    {isOpen && (
+                      <div style={{ padding: "18px 20px", background: "#fff", border: "1px solid " + S.coral + "40", borderTop: "none", borderRadius: "0 0 12px 12px", fontSize: 14, color: "#2D3748", fontFamily: S.body, lineHeight: 1.75 }}>
+                        {faq.a}
+                      </div>
+                    )}
+                  </div>
+                </Reveal>
+              );
+            })}
+          </div>
+          <div style={{ textAlign: "center", marginTop: 24 }}>
+            <Btn onClick={function() { setPage("Contact"); }} style={{ border: "2px solid " + S.coral, color: S.coral, fontSize: 13 }}>View All FAQs</Btn>
           </div>
         </Container>
       </section>

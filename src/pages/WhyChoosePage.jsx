@@ -8,7 +8,7 @@ const FEATURES = [
   { icon: "🎓", title: "Nationally Recognised", desc: "All 25 programmes aligned to NCTVET (NVQ-J) or City & Guilds — qualifications trusted by employers across Jamaica and internationally.", color: S.teal },
   { icon: "💻", title: "100% Online", desc: "Study from anywhere, on any device. No campus visits required. Our learning system works on phones, tablets, and computers.", color: S.violet },
   { icon: "📚", title: "Interactive Learning System", desc: "More than just PDFs. Our proprietary system includes audio study sessions, an intelligent study assistant, video summaries, and flashcards.", color: S.coral },
-  { icon: "⏰", title: "Self-Paced Study", desc: "No fixed class schedule. Study at your own pace — evenings, weekends, lunch breaks. Life doesn't stop, and neither should your education.", color: S.amber },
+  { icon: "⏰", title: "Self-Paced Study", desc: "Study at your own pace — evenings, weekends, lunch breaks. Online class days are scheduled for assessment preparation. Assessments on announced dates, conducted online unless otherwise needed.", color: S.amber },
   { icon: "💳", title: "Flexible Payment Plans", desc: "Gold, Silver, or Bronze — choose the plan that works for you. Levels 3–5 qualify for instalment payments with no hidden fees.", color: S.emerald },
   { icon: "👥", title: "Real Support", desc: "WhatsApp support, email guidance, and optional consultations. You're never alone in your journey. We respond within 24 hours.", color: S.sky },
   { icon: "🏢", title: "Employer Partnerships", desc: "15% group discount for 8+ learners. Employers can invest in their team's growth with recognised qualifications.", color: S.gold },
@@ -75,6 +75,93 @@ export default function WhyChoosePage({ setPage }) {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </Reveal>
+
+        {/* ══ HEART vs CTS ETS — the key question ══ */}
+        <Reveal>
+          <div style={{ marginBottom: 48 }}>
+            <div style={{ textAlign: "center", marginBottom: 24 }}>
+              <span style={{ fontSize: 11, color: S.coral, letterSpacing: 3, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600 }}>The Question Everyone Asks</span>
+              <h3 style={{ fontFamily: S.heading, fontSize: "clamp(22px,3vw,30px)", color: S.navy, margin: "8px 0 0", fontWeight: 700 }}>"HEART is Free — Why Would I Pay?"</h3>
+              <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, lineHeight: 1.7, maxWidth: 600, margin: "14px auto 0" }}>HEART/NSTA is an excellent institution. But their model works differently from ours. Here is an honest comparison so you can decide which is right for you.</p>
+            </div>
+
+            <div style={{ overflowX: "auto", borderRadius: 16, border: "2px solid " + S.border }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: S.body, fontSize: 13 }}>
+                <thead>
+                  <tr style={{ background: S.navy }}>
+                    {["", "HEART/NSTA (Free)", "CTS ETS (Admin Fee)"].map(function(h, i) {
+                      return <th key={i} style={{ padding: "16px 18px", color: i === 2 ? S.gold : "#fff", fontWeight: 700, textAlign: "left", fontSize: 13, whiteSpace: "nowrap" }}>{h}</th>;
+                    })}
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    ["Cost to you", "Free", "$10,000 – $50,000 admin fee"],
+                    ["How you study", "Mostly in-person at a HEART centre", "100% online — phone, tablet, or laptop"],
+                    ["Schedule", "Fixed class days and times", "Self-paced study + online class days for assessment prep"],
+                    ["Intakes per year", "3 fixed intake dates", "Rolling — apply today, start this week"],
+                    ["Missed the intake?", "Wait 3–4 months for the next one", "No waiting. Start immediately"],
+                    ["Working full-time?", "Difficult — classes during work hours", "Study around your job. No time off needed"],
+                    ["Location", "Must travel to a HEART centre", "Study from your verandah, your bus, your bed"],
+                    ["Study pace", "Fixed — keep up with the class", "Self-paced — go faster or slower as you need"],
+                    ["Study tools", "Classroom materials", "Audio sessions, AI assistant, video, flashcards"],
+                    ["NCTVET qualification", "Yes — NVQ-J", "Same NVQ-J — assessments online unless otherwise needed"],
+                  ].map(function(row, ri) {
+                    return (
+                      <tr key={ri} style={{ background: ri % 2 === 0 ? "#fff" : S.lightBg }}>
+                        <td style={{ padding: "13px 18px", fontWeight: 700, color: S.navy, borderTop: "1px solid " + S.border, fontSize: 12 }}>{row[0]}</td>
+                        <td style={{ padding: "13px 18px", color: S.gray, borderTop: "1px solid " + S.border }}>{row[1]}</td>
+                        <td style={{ padding: "13px 18px", color: S.navy, fontWeight: 600, borderTop: "1px solid " + S.border }}>{row[2]}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Who should choose CTS ETS */}
+            <div style={{ marginTop: 24, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }} className="resp-grid-2">
+              <div style={{ background: S.emeraldLight, borderRadius: 14, padding: "24px", border: "1px solid " + S.emerald + "30" }}>
+                <div style={{ fontSize: 11, color: S.emerald, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 12 }}>CTS ETS Is Right For You If...</div>
+                {[
+                  "You work full-time and cannot attend daytime classes",
+                  "You missed HEART's intake and don't want to wait months",
+                  "You live in a rural parish and travel to a centre is difficult",
+                  "You prefer studying at night, on weekends, or during commute",
+                  "Your employer is paying for your training",
+                  "You are an international or diaspora student",
+                ].map(function(item, i) {
+                  return (
+                    <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 8 }}>
+                      <span style={{ color: S.emerald, fontWeight: 800, fontSize: 14, flexShrink: 0 }}>{"\u2713"}</span>
+                      <span style={{ fontSize: 13, color: S.navy, fontFamily: S.body, lineHeight: 1.5 }}>{item}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ background: S.lightBg, borderRadius: 14, padding: "24px", border: "1px solid " + S.border }}>
+                <div style={{ fontSize: 11, color: S.teal, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 12 }}>HEART May Be Better If...</div>
+                {[
+                  "You are not currently working and can attend daytime classes",
+                  "A HEART centre is close to where you live",
+                  "You prefer face-to-face classroom learning",
+                  "The next intake date works with your schedule",
+                  "Cost is your only consideration",
+                ].map(function(item, i) {
+                  return (
+                    <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 8 }}>
+                      <span style={{ color: S.teal, fontWeight: 800, fontSize: 14, flexShrink: 0 }}>{"\u2022"}</span>
+                      <span style={{ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.5 }}>{item}</span>
+                    </div>
+                  );
+                })}
+                <div style={{ marginTop: 14, padding: "12px 16px", borderRadius: 8, background: S.gold + "15", border: "1px solid " + S.gold + "25", fontSize: 12, color: S.navy, fontFamily: S.body, lineHeight: 1.6, fontWeight: 600 }}>
+                  {"Either way, you earn the same NCTVET qualification. We are not competing with HEART — we are offering a different path to the same destination."}
+                </div>
+              </div>
             </div>
           </div>
         </Reveal>
