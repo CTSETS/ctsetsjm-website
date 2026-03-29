@@ -7,7 +7,7 @@ var STEPS = [
   { title: "Study On Your Own Time", emoji: "📱", desc: "Self-paced means you study when it suits you — mornings, evenings, weekends, on the bus. Online class days are scheduled for assessment preparation, with advance notice.", highlight: "About" },
   { title: "Student Finance", emoji: "💳", desc: "Fees start from J$10,000 (total). Payment plans available for Levels 3–5. Use the calculator to see exactly what you'll pay — no hidden fees.", highlight: "Fees & Calculator" },
   { title: "Apply — Start With the Next Cohort", emoji: "🎓", desc: "Complete the online application in under 10 minutes. Upload your documents, and we'll review within 48–72 hours. You'll be assigned to the next available cohort.", highlight: "Apply" },
-  { title: "We're Here to Help", emoji: "💬", desc: "WhatsApp us at 876-381-9771 or email admin@ctsetsjm.com. Check the FAQ for instant answers to common questions. We respond within 48–72 hours.", highlight: "FAQ" },
+  { title: "We're Here to Help", emoji: "💬", desc: "Call 876-525-6802 or WhatsApp 876-381-9771 or email admin@ctsetsjm.com. Check the FAQ for instant answers to common questions. We respond within 48–72 hours.", highlight: "FAQ" },
 ];
 
 export default function SiteTour({ onClose, setPage }) {

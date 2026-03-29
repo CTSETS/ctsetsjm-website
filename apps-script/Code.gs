@@ -934,7 +934,7 @@ function generateStudentDataSheet(appRef, studentNum, firstName, lastName, email
     + '<div class="sig-box"><div class="sig-line"></div><div class="sig-label">Administrator Signature / Date</div></div>'
     + '</div>'
     
-    + '<div class="ft">CTS Empowerment & Training Solutions | 6, Newark Avenue, Kingston 2 | admin@ctsetsjm.com | 876-381-9771<br>'
+    + '<div class="ft">CTS Empowerment & Training Solutions | 6, Newark Avenue, Kingston 2 | admin@ctsetsjm.com | 876-525-6802 | 876-381-9771<br>'
     + 'This document was auto-generated on enrolment. Student #: ' + studentNum + ' | Ref: ' + appRef + '</div>'
     + '</body></html>';
   
@@ -1249,7 +1249,7 @@ function wrapDripEmail(content) {
     + '<p style="margin:4px 0 0;opacity:0.7;font-size:11px">Called To Serve — Excellence Through Service</p></div>'
     + '<div style="padding:24px;background:#fff;border:1px solid #e2e8f0;border-top:none">' + content + '</div>'
     + '<div style="background:#F7FAFC;padding:14px;text-align:center;border-radius:0 0 12px 12px;border:1px solid #e2e8f0;border-top:none">'
-    + '<p style="font-size:11px;color:#A0AEC0;margin:0">CTS ETS | admin@ctsetsjm.com | 876-381-9771</p></div></body></html>';
+    + '<p style="font-size:11px;color:#A0AEC0;margin:0">CTS ETS | admin@ctsetsjm.com | 876-525-6802 | 876-381-9771</p></div></body></html>';
 }
 
 function welcomeEmail(name) {
@@ -1411,7 +1411,7 @@ function encourageMsg6(name, prog) {
 // APPEND-ONLY: New versions are added, old versions are NEVER deleted
 // Only admin with authorization code can overwrite/delete records
 // ═══════════════════════════════════════════════════════════════════════
-var RECORD_AUTH_CODE = "CTSETS-ADMIN-2026"; // Change this to your secret code
+var RECORD_AUTH_CODE = "Detailed1982"; // Change this to your secret code
 
 function generateCumulativeRecord(studentNum) {
   loadIds();
@@ -1637,7 +1637,7 @@ function generateCumulativeRecord(studentNum) {
     + '<strong>DOCUMENT CONTROL:</strong> This cumulative record is an APPEND-ONLY live document. New versions are generated as events occur. '
     + 'Previous versions are retained and marked with their version timestamp. No record may be deleted or overwritten without '
     + 'written authorization from the Principal (code: CTSETS-ADMIN-XXXX). For audit purposes, note the version stamp on page 1.</div>'
-    + '<div class="ft">CTS ETS \u2014 Cumulative Student Record \u2014 ' + studentNum + ' \u2014 Page 3 of 3 | Version: ' + versionStamp + ' | admin@ctsetsjm.com | 876-381-9771</div></div>';
+    + '<div class="ft">CTS ETS \u2014 Cumulative Student Record \u2014 ' + studentNum + ' \u2014 Page 3 of 3 | Version: ' + versionStamp + ' | admin@ctsetsjm.com | 876-525-6802 | 876-381-9771</div></div>';
 
   var html = '<!DOCTYPE html><html><head><style>' + css + '</style></head><body>' + page1 + page2 + page3 + '</body></html>';
   

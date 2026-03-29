@@ -12,7 +12,7 @@ export const FAQS = [
   { q: "What payment plans are available?", a: "Gold (pay in full, 0% surcharge) for all levels. Silver (60/40 split, +10% on training fee) and Bronze (20% deposit + monthly payments, +15% on training fee) for Levels 3–5 only. Surcharges apply to the training fee only, not the registration fee." },
   { q: "Can my employer pay for my training?", a: "Yes — we offer a 15% group discount for 8 or more learners from the same organisation. Contact us for a quotation. Online delivery means no lost work hours for your staff." },
   { q: "How do I apply?", a: "Complete the online form at ctsetsjm.com. Select Jamaican, Caribbean, or International — the form adapts for your location. You will receive your application number immediately and a confirmation email. You may be able to start the same week or be assigned to the next available cohort." },
-  { q: "How do I contact CTS ETS?", a: "Email admin@ctsetsjm.com, call or WhatsApp 876-381-9771. We respond within 48–72 hours." },
+  { q: "How do I contact CTS ETS?", a: "Email admin@ctsetsjm.com, call 876-525-6802 or WhatsApp 876-381-9771. We respond within 48–72 hours." },
 ];
 export const TESTIMONIALS = [
   { name: "Kadian H.", initials: "KH", color: S.teal, level: "Level 3 — Customer Service Supervision", outcome: "Promoted to Supervisor", quote: "CTS ETS gave me the qualification I needed. I studied in the evenings and never missed a shift. My employer now covers my Level 4 fees.", parish: "St. Andrew" },

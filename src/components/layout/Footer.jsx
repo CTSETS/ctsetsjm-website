@@ -21,7 +21,7 @@ export default function Footer({ setPage }) {
             </div>
             <p style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", fontFamily: S.body, lineHeight: 1.6, marginBottom: 8 }}>Jamaica's Digital Vocational School. 100% online, self-paced programmes aligned to NCTVET.</p>
             <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontFamily: S.body, marginBottom: 4 }}>{"📍 6, Newark Avenue, Kingston 2 (By Appointment Only)"}</p>
-            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontFamily: S.body, marginBottom: 4 }}>{"📧 admin@ctsetsjm.com | 📞 876-381-9771"}</p>
+            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontFamily: S.body, marginBottom: 4 }}>{"📧 admin@ctsetsjm.com | 📞 876-525-6802 | 💬 876-381-9771"}</p>
             <p style={{ fontSize: 10, color: "rgba(255,255,255,0.25)", fontFamily: S.body }}>Reg. No. 16007/2025</p>
             {/* Partners */}
             <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>

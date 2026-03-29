@@ -37,7 +37,7 @@ tr:nth-child(even) { background: #fafaf7; }
 </style></head><body>
 <div class="header">
   <div><h1>CTS Empowerment & Training Solutions</h1><p style="color:#D4A017;font-size:12px;letter-spacing:2px;margin:4px 0 0">PROGRAMME GUIDE 2026</p></div>
-  <div style="text-align:right;font-size:11px;color:#4A5568"><p>ctsetsjm.com</p><p>admin@ctsetsjm.com</p><p>876-381-9771</p></div>
+  <div style="text-align:right;font-size:11px;color:#4A5568"><p>ctsetsjm.com</p><p>admin@ctsetsjm.com</p><p>876-525-6802 | 876-381-9771</p></div>
 </div>
 <p>Online programmes from Job Certificate to Bachelor's Equivalent. Aligned to NCTVET (NVQ-J) . 100% online, self-paced. Study from anywhere.</p>
 
@@ -60,7 +60,7 @@ tr:nth-child(even) { background: #fafaf7; }
 <p>1. Visit <strong>ctsetsjm.com</strong> → 2. Click <strong>Apply Now</strong> → 3. Complete the online form (10 minutes) → 4. Upload your documents → 5. Receive acceptance within 48 hours → 6. Pay and start studying.</p>
 
 <h2>Contact</h2>
-<p>📧 admin@ctsetsjm.com &nbsp;|&nbsp; 📞 876-381-9771 &nbsp;|&nbsp; 💬 WhatsApp: 876-381-9771</p>
+<p>📧 admin@ctsetsjm.com &nbsp;|&nbsp; 📞 876-525-6802 &nbsp;|&nbsp; 💬 WhatsApp: 876-381-9771</p>
 <p>📍 6, Newark Avenue, Kingston 2, Jamaica W.I. &nbsp;|&nbsp; Reg. No. 16007/2025</p>
 
 <div class="footer">

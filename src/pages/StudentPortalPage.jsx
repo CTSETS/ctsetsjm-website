@@ -355,7 +355,7 @@ function Dashboard({ student, onLogout, setPage, onPasswordChanged }) {
               </div>
               {/* Footer */}
               <div style={{ textAlign: "center", marginTop: 4, fontSize: 4.5, color: "rgba(255,255,255,0.2)", lineHeight: 1.4 }}>
-                6, Newark Avenue, Kingston 2 | admin@ctsetsjm.com | 876-381-9771<br/>
+                6, Newark Avenue, Kingston 2 | 876-525-6802 | 876-381-9771<br/>
                 This card remains the property of CTS ETS. If found, please return.
               </div>
             </div>
