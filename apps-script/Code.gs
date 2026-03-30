@@ -7,7 +7,8 @@
 // ═══════════════════════════════════════════════════════════════════════
 
 var ADMIN_EMAIL = "ctsetsgroup@gmail.com";
-var ADMIN_BACKUP_EMAIL = ""; // Put a personal Gmail here as backup (e.g. "mark@gmail.com")
+var ADMIN_BACKUP_EMAIL = "";
+var WEBAPP_URL = ""; // PASTE YOUR DEPLOYED URL HERE after deploying (ends in /exec) // Put a personal Gmail here as backup (e.g. "mark@gmail.com")
 var SHEET_IDS = { master:"", students:"", finance:"", operations:"", academic:"" };
 
 // ── Load IDs from Script Properties (set during setup) ──
@@ -1557,7 +1558,15 @@ function updateEnrolledPayment(ref, amount) {
 var VERIFY_AUTH = "Detailed1982"; // Same as your admin auth code
 
 function verifyPaymentFromEmail(ref, amount, txnId, auth) {
-  if (auth !== VERIFY_AUTH) return {ok:false, error:"Unauthorized"};
+  Logger.log("Verify received: ref=" + ref + " amount=" + amount + " txn=" + txnId + " auth=" + auth + " expected=" + VERIFY_AUTH);
+  var authClean = String(auth||"").trim();
+  if (authClean !== VERIFY_AUTH && authClean !== RECORD_AUTH_CODE) {
+    // Also try URL-decoded version
+    try { authClean = decodeURIComponent(authClean); } catch(e) {}
+    if (authClean !== VERIFY_AUTH && authClean !== RECORD_AUTH_CODE) {
+      return {ok:false, error:"Unauthorized. Received: " + String(auth||"").substring(0,20)};
+    }
+  }
   loadIds();
   var amt = Number(amount) || 0;
   
@@ -1637,7 +1646,13 @@ function verifyPaymentFromEmail(ref, amount, txnId, auth) {
 }
 
 function rejectPaymentFromEmail(ref, txnId, auth) {
-  if (auth !== VERIFY_AUTH) return {ok:false, error:"Unauthorized"};
+  var authClean = String(auth||"").trim();
+  if (authClean !== VERIFY_AUTH && authClean !== RECORD_AUTH_CODE) {
+    try { authClean = decodeURIComponent(authClean); } catch(e) {}
+    if (authClean !== VERIFY_AUTH && authClean !== RECORD_AUTH_CODE) {
+      return {ok:false, error:"Unauthorized"};
+    }
+  }
   loadIds();
   
   // Update Payment Schedule — mark as Rejected
@@ -1715,9 +1730,14 @@ function handlePortalPaymentConfirm(data) {
   
   // Notify admin to verify — with one-click Verify/Reject buttons
   try {
-    var scriptUrl = ScriptApp.getService().getUrl();
-    var verifyUrl = scriptUrl + "?action=verifypayment&ref=" + encodeURIComponent(ref) + "&amount=" + encodeURIComponent(amount) + "&txn=" + encodeURIComponent(txnId) + "&auth=" + encodeURIComponent(VERIFY_AUTH);
-    var rejectUrl = scriptUrl + "?action=rejectpayment&ref=" + encodeURIComponent(ref) + "&txn=" + encodeURIComponent(txnId) + "&auth=" + encodeURIComponent(VERIFY_AUTH);
+    var scriptUrl = WEBAPP_URL || PropertiesService.getScriptProperties().getProperty("webapp_url") || ScriptApp.getService().getUrl();
+    var verifyParams = "?action=verifypayment&ref=" + encodeURIComponent(ref) + "&amount=" + encodeURIComponent(amount) + "&txn=" + encodeURIComponent(txnId) + "&auth=" + encodeURIComponent(VERIFY_AUTH);
+    var rejectParams = "?action=rejectpayment&ref=" + encodeURIComponent(ref) + "&txn=" + encodeURIComponent(txnId) + "&auth=" + encodeURIComponent(VERIFY_AUTH);
+    var verifyUrl = scriptUrl + verifyParams;
+    var rejectUrl = scriptUrl + rejectParams;
+    // For HTML email, escape & as &amp;
+    var verifyHref = scriptUrl + verifyParams.replace(/&/g, "&amp;");
+    var rejectHref = scriptUrl + rejectParams.replace(/&/g, "&amp;");
     
     GmailApp.sendEmail(ADMIN_EMAIL, "Payment to Verify \u2014 " + (stuNum || ref) + " \u2014 J$" + amount.toLocaleString(), "", {
       htmlBody: "<div style='font-family:Arial,sans-serif;max-width:600px;margin:0 auto'>"
@@ -1735,9 +1755,9 @@ function handlePortalPaymentConfirm(data) {
         + "</table>"
         + "<p style='margin:20px 0 12px;font-size:13px;color:#333;font-weight:700'>Check your WiPay dashboard for this Transaction ID, then click:</p>"
         + "<div style='display:flex;gap:12px;text-align:center'>"
-        + "<a href='" + verifyUrl + "' style='display:inline-block;padding:14px 32px;background:#2E7D32;color:#fff;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px'>VERIFY PAYMENT</a>"
+        + "<a href='" + verifyHref + "' style='display:inline-block;padding:14px 32px;background:#2E7D32;color:#fff;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px'>VERIFY PAYMENT</a>"
         + "&nbsp;&nbsp;&nbsp;"
-        + "<a href='" + rejectUrl + "' style='display:inline-block;padding:14px 32px;background:#C62828;color:#fff;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px'>REJECT</a>"
+        + "<a href='" + rejectHref + "' style='display:inline-block;padding:14px 32px;background:#C62828;color:#fff;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px'>REJECT</a>"
         + "</div>"
         + "<p style='margin-top:16px;font-size:11px;color:#999'>Verify: marks payment as Paid, updates student balance, auto-enrolls if fully paid, sends confirmation email to student, generates data sheet + cumulative record.</p>"
         + "<p style='font-size:11px;color:#999'>Reject: marks payment as Rejected, notifies student to resubmit with correct details.</p>"
