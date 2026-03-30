@@ -114,6 +114,13 @@ function Dashboard({ student, onLogout, setPage, onPasswordChanged }) {
   var [showPwChange, setShowPwChange] = useState(false);
   var [showPayModal, setShowPayModal] = useState(false);
   var [payUrl, setPayUrl] = useState("");
+  var [payStep, setPayStep] = useState("choose");
+  var [payTxn, setPayTxn] = useState("");
+  var [payAmt, setPayAmt] = useState("");
+  var [payMethod, setPayMethod] = useState("WiPay Online");
+  var [payConfirmMsg, setPayConfirmMsg] = useState("");
+  var [payConfirmSuccess, setPayConfirmSuccess] = useState(false);
+  var [payConfirmLoading, setPayConfirmLoading] = useState(false);
   var [oldPw, setOldPw] = useState("");
   var [newPw, setNewPw] = useState("");
   var [confirmPw, setConfirmPw] = useState("");
@@ -480,38 +487,108 @@ function Dashboard({ student, onLogout, setPage, onPasswordChanged }) {
         )}
       </div>
 
-      {/* Payment Modal — WiPay inline */}
+      {/* Payment Modal — WiPay + Confirm */}
       {showPayModal && (
         <div style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(1,30,64,0.85)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)", padding: 20 }}
           onClick={function(e) { if (e.target === e.currentTarget) setShowPayModal(false); }}>
-          <div style={{ background: "#fff", borderRadius: 16, width: "100%", maxWidth: 520, maxHeight: "90vh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-            <div style={{ padding: "16px 20px", background: S.navy, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ background: "#fff", borderRadius: 16, width: "100%", maxWidth: 520, maxHeight: "90vh", overflow: "auto", display: "flex", flexDirection: "column" }}>
+            <div style={{ padding: "16px 20px", background: S.navy, display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
               <div>
                 <div style={{ color: S.gold, fontSize: 14, fontWeight: 700 }}>Make a Payment</div>
                 <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 11, marginTop: 2 }}>Ref: {student.studentNumber || student.ref} | Outstanding: {fmt(student.outstanding)}</div>
               </div>
-              <button onClick={function() { setShowPayModal(false); }} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer", padding: "0 4px" }}>{"\u2715"}</button>
+              <button onClick={function() { setShowPayModal(false); setPayStep("choose"); setPayTxn(""); setPayAmt(""); setPayConfirmMsg(""); }} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer", padding: "0 4px" }}>{"\u2715"}</button>
             </div>
             <div style={{ padding: 20 }}>
-              <div style={{ background: S.amberLight, borderRadius: 8, padding: "12px 16px", marginBottom: 16, border: "1px solid " + S.amber + "30" }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: S.amberDark, fontFamily: S.body, marginBottom: 4 }}>Payment Reference</div>
-                <div style={{ fontSize: 16, fontWeight: 800, color: S.navy, fontFamily: "monospace", letterSpacing: 1 }}>{student.studentNumber || student.ref}</div>
-                <div style={{ fontSize: 11, color: S.gray, fontFamily: S.body, marginTop: 4 }}>Use this reference when making your payment so we can match it to your account.</div>
-              </div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 12 }}>Choose payment method:</div>
-              <a href={payUrl} target="_blank" rel="noopener noreferrer"
-                style={{ display: "block", padding: "16px 20px", borderRadius: 10, background: S.emerald, color: "#fff", textAlign: "center", textDecoration: "none", fontWeight: 700, fontSize: 14, fontFamily: S.body, marginBottom: 10 }}>
-                Pay Online with Credit/Debit Card (WiPay)
-              </a>
-              <div style={{ padding: "14px 20px", borderRadius: 10, background: S.lightBg, border: "1px solid " + S.border, fontSize: 12, fontFamily: S.body, color: S.gray, lineHeight: 1.7 }}>
-                <div style={{ fontWeight: 700, color: S.navy, marginBottom: 6 }}>Bank Transfer</div>
-                NCB — JMD Account<br/>
-                After transfer, email your receipt to <strong>admin@ctsetsjm.com</strong> with your reference number above.<br/>
-                Or WhatsApp your receipt to <strong>876-381-9771</strong>
-              </div>
-              <div style={{ textAlign: "center", marginTop: 14, fontSize: 11, color: S.grayLight, fontFamily: S.body }}>
-                After payment, your status will be updated within 24 hours. You will receive an email confirmation.
-              </div>
+              {payStep === "choose" && (
+                <div>
+                  <div style={{ background: S.amberLight, borderRadius: 8, padding: "12px 16px", marginBottom: 16, border: "1px solid " + S.amber + "30" }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: S.amberDark, fontFamily: S.body, marginBottom: 4 }}>Payment Reference</div>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: S.navy, fontFamily: "monospace", letterSpacing: 1 }}>{student.studentNumber || student.ref}</div>
+                    <div style={{ fontSize: 11, color: S.gray, fontFamily: S.body, marginTop: 4 }}>Use this reference when making your payment.</div>
+                  </div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 12 }}>Step 1: Make your payment</div>
+                  <a href={payUrl} target="_blank" rel="noopener noreferrer"
+                    onClick={function() { setTimeout(function() { setPayStep("confirm"); }, 1000); }}
+                    style={{ display: "block", padding: "16px 20px", borderRadius: 10, background: S.emerald, color: "#fff", textAlign: "center", textDecoration: "none", fontWeight: 700, fontSize: 14, fontFamily: S.body, marginBottom: 10 }}>
+                    Pay Online with Credit/Debit Card (WiPay)
+                  </a>
+                  <div style={{ padding: "14px 20px", borderRadius: 10, background: S.lightBg, border: "1px solid " + S.border, fontSize: 12, fontFamily: S.body, color: S.gray, lineHeight: 1.7, marginBottom: 14 }}>
+                    <div style={{ fontWeight: 700, color: S.navy, marginBottom: 6 }}>Bank Transfer</div>
+                    NCB — JMD Account<br/>
+                    After transfer, email your receipt to <strong>admin@ctsetsjm.com</strong> with your reference number.
+                  </div>
+                  <button onClick={function() { setPayStep("confirm"); }}
+                    style={{ width: "100%", padding: "12px", borderRadius: 8, border: "2px solid " + S.teal, background: "transparent", color: S.teal, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>
+                    I already made a payment — Confirm it
+                  </button>
+                </div>
+              )}
+              {payStep === "confirm" && (
+                <div>
+                  <div style={{ textAlign: "center", marginBottom: 16 }}>
+                    <div style={{ fontSize: 32, marginBottom: 8 }}>{"\u2705"}</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: S.navy, fontFamily: S.heading }}>Confirm Your Payment</div>
+                    <p style={{ fontSize: 12, color: S.gray, fontFamily: S.body, marginTop: 6, lineHeight: 1.6 }}>Enter your WiPay Transaction ID from the receipt (e.g. 55-31798-2-20260329221811) and the amount you paid.</p>
+                  </div>
+                  <div style={{ marginBottom: 12 }}>
+                    <label style={{ display: "block", fontSize: 11, color: S.gray, fontFamily: S.body, marginBottom: 4 }}>Transaction ID / Receipt Number</label>
+                    <input type="text" value={payTxn} onChange={function(e) { setPayTxn(e.target.value); setPayConfirmMsg(""); }}
+                      placeholder="e.g. 55-31798-2-20260329221811"
+                      style={{ width: "100%", padding: "12px 14px", borderRadius: 8, border: "2px solid " + S.border, fontSize: 14, fontFamily: "monospace", color: S.navy, fontWeight: 600, boxSizing: "border-box" }} />
+                  </div>
+                  <div style={{ marginBottom: 12 }}>
+                    <label style={{ display: "block", fontSize: 11, color: S.gray, fontFamily: S.body, marginBottom: 4 }}>Amount Paid (JMD)</label>
+                    <input type="number" value={payAmt} onChange={function(e) { setPayAmt(e.target.value); setPayConfirmMsg(""); }}
+                      placeholder="e.g. 20000"
+                      style={{ width: "100%", padding: "12px 14px", borderRadius: 8, border: "2px solid " + S.border, fontSize: 14, fontFamily: S.body, color: S.navy, fontWeight: 600, boxSizing: "border-box" }} />
+                  </div>
+                  <div style={{ marginBottom: 12 }}>
+                    <label style={{ display: "block", fontSize: 11, color: S.gray, fontFamily: S.body, marginBottom: 4 }}>Payment Method</label>
+                    <select value={payMethod} onChange={function(e) { setPayMethod(e.target.value); }}
+                      style={{ width: "100%", padding: "12px 14px", borderRadius: 8, border: "2px solid " + S.border, fontSize: 13, fontFamily: S.body, color: S.navy, boxSizing: "border-box" }}>
+                      <option value="WiPay Online">WiPay Online (Credit/Debit Card)</option>
+                      <option value="Bank Transfer">Bank Transfer / Deposit</option>
+                      <option value="Cash">Cash (In-Person)</option>
+                    </select>
+                  </div>
+                  {payConfirmMsg && <div style={{ marginBottom: 12, padding: "12px 16px", borderRadius: 8, background: payConfirmSuccess ? S.emeraldLight : S.amberLight, border: "1px solid " + (payConfirmSuccess ? S.emerald : S.amber) + "30", fontSize: 13, color: payConfirmSuccess ? S.emeraldDark : S.amberDark, fontFamily: S.body }}>{payConfirmMsg}</div>}
+                  <button onClick={async function() {
+                    if (!payTxn.trim() || !payAmt) { setPayConfirmMsg("Please enter the Transaction ID and amount."); return; }
+                    setPayConfirmLoading(true); setPayConfirmMsg("");
+                    try {
+                      var res = await fetch(APPS_SCRIPT_URL, {
+                        method: "POST",
+                        body: JSON.stringify({
+                          form_type: "Payment Confirmation",
+                          ref: student.ref || "",
+                          studentNumber: student.studentNumber || "",
+                          email: student.email || "",
+                          transactionId: payTxn.trim(),
+                          amountPaid: payAmt,
+                          paymentMethod: payMethod,
+                          paymentPlan: student.paymentPlan || "Gold",
+                          programme: student.programme || "",
+                          level: student.level || "",
+                          timestamp: new Date().toISOString()
+                        })
+                      });
+                      setPayConfirmSuccess(true);
+                      setPayConfirmMsg("Payment confirmed! Your payment of J$" + Number(payAmt).toLocaleString() + " has been recorded. Your account will be updated within 24 hours. You will receive an email confirmation once verified.");
+                    } catch(e) {
+                      setPayConfirmMsg("Error submitting. Please try again or contact admin@ctsetsjm.com");
+                    }
+                    setPayConfirmLoading(false);
+                  }} disabled={payConfirmLoading || !payTxn.trim() || !payAmt}
+                    style={{ width: "100%", padding: "14px", borderRadius: 10, border: "none", background: (payTxn.trim() && payAmt) ? S.emerald : S.border, color: (payTxn.trim() && payAmt) ? "#fff" : S.grayLight, fontSize: 15, fontWeight: 700, cursor: (payTxn.trim() && payAmt) ? "pointer" : "not-allowed", fontFamily: S.body, marginBottom: 10 }}>
+                    {payConfirmLoading ? "Submitting..." : "Confirm Payment"}
+                  </button>
+                  <button onClick={function() { setPayStep("choose"); setPayConfirmMsg(""); }}
+                    style={{ width: "100%", background: "none", border: "none", color: S.gray, fontSize: 12, cursor: "pointer", fontFamily: S.body }}>
+                    Back to payment options
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

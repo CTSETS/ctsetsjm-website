@@ -767,6 +767,7 @@ function doPost(e) {
     else if (ft==="Student Feedback") handleFeedback(d);
     else if (ft==="Payment Evidence") handlePayment(d);
     else if (ft==="Payment Intent") audit("PAYMENT INTENT",d.ref||"","WiPay J$"+(d.amountIntended||"")+" Plan:"+(d.paymentPlan||""),"Website");
+    else if (ft==="Payment Confirmation") handlePortalPaymentConfirm(d);
     else if (ft==="WiPay Payment Confirmation") handleWiPay(d);
     else if (ft==="Payment Lookup Dispute") handleDispute(d);
     else if (ft==="Referral Registration") handleReferral(d);
@@ -1548,6 +1549,77 @@ function updateEnrolledPayment(ref, amount) {
       }
     }
   } catch(e) {}
+}
+
+// Student confirms payment from portal — logs it, notifies admin for verification
+function handlePortalPaymentConfirm(data) {
+  loadIds();
+  var ref = data.ref || "";
+  var stuNum = data.studentNumber || "";
+  var txnId = data.transactionId || "";
+  var amount = Number(data.amountPaid || 0);
+  var method = data.paymentMethod || "WiPay Online";
+  var email = data.email || "";
+  var programme = data.programme || "";
+  var level = data.level || "";
+  var plan = data.paymentPlan || "Gold";
+  
+  // Log to Payment Schedule
+  try {
+    fTab("Payment Schedule").appendRow([
+      new Date(), ref, email, "", programme, level, plan,
+      "", "Student-Confirmed Payment", amount, "", "Pending Verification",
+      "", amount, "", new Date(), "", "Txn: " + txnId + " | Method: " + method + " | Submitted via Portal"
+    ]);
+  } catch(e) { Logger.log("Payment log error: " + e.message); }
+  
+  // Log lifecycle event
+  lifecycle(ref, stuNum, "", "Payment Submitted", "Financial", "J$" + amount.toLocaleString() + " via " + method + " | Txn: " + txnId + " | Pending admin verification", programme, level);
+  
+  // Audit
+  audit("PAYMENT SUBMITTED", ref || stuNum, "J$" + amount.toLocaleString() + " | Txn: " + txnId + " | " + method + " | Portal", "Student");
+  
+  // Notify admin to verify
+  try {
+    GmailApp.sendEmail(ADMIN_EMAIL, "Payment to Verify \u2014 " + (stuNum || ref) + " \u2014 J$" + amount.toLocaleString(), "", {
+      htmlBody: "<h2 style='color:#011E40'>Payment Confirmation Received</h2>"
+        + "<p>A student has confirmed a payment from the Student Portal. Please verify in your WiPay dashboard or bank statement.</p>"
+        + "<table style='border-collapse:collapse;font-family:Arial;font-size:13px'>"
+        + "<tr><td style='padding:6px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Student</td><td style='padding:6px 12px;border:1px solid #ddd'>" + (stuNum || ref) + "</td></tr>"
+        + "<tr><td style='padding:6px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Transaction ID</td><td style='padding:6px 12px;border:1px solid #ddd;font-family:monospace;font-weight:700'>" + txnId + "</td></tr>"
+        + "<tr><td style='padding:6px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Amount</td><td style='padding:6px 12px;border:1px solid #ddd;font-weight:700'>J$" + amount.toLocaleString() + "</td></tr>"
+        + "<tr><td style='padding:6px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Method</td><td style='padding:6px 12px;border:1px solid #ddd'>" + method + "</td></tr>"
+        + "<tr><td style='padding:6px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Programme</td><td style='padding:6px 12px;border:1px solid #ddd'>" + level + " \u2014 " + programme + "</td></tr>"
+        + "<tr><td style='padding:6px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Email</td><td style='padding:6px 12px;border:1px solid #ddd'>" + email + "</td></tr>"
+        + "</table>"
+        + "<p style='margin-top:16px;font-size:12px;color:#666'><b>Action needed:</b> Check your WiPay dashboard for Txn " + txnId + ". If verified, update the student's Payment Schedule status to \"Paid\" and change Enrolled Students status to \"Enrolled\" to unlock LMS access.</p>",
+      name: "CTS ETS System"
+    });
+  } catch(e) { Logger.log("Admin notify error: " + e.message); }
+  
+  // Send confirmation to student
+  if (email) {
+    try {
+      GmailApp.sendEmail(email, "CTS ETS \u2014 Payment Received \u2014 Verification in Progress", "", {
+        htmlBody: '<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">'
+          + '<div style="background:#011E40;padding:20px;text-align:center;border-radius:12px 12px 0 0">'
+          + '<h1 style="color:#D4A843;font-size:20px;margin:0">CTS ETS</h1></div>'
+          + '<div style="padding:28px;background:#fff;border:1px solid #e2e8f0;border-top:none">'
+          + '<h2 style="color:#011E40">Payment Received</h2>'
+          + '<p style="color:#4A5568;line-height:1.7">Thank you! We have received your payment confirmation. Here are the details:</p>'
+          + '<div style="background:#FAFAF7;border-radius:10px;padding:20px;margin:16px 0;border-left:4px solid #D4A843">'
+          + '<p style="margin:0 0 6px"><strong>Transaction ID:</strong> ' + txnId + '</p>'
+          + '<p style="margin:0 0 6px"><strong>Amount:</strong> J$' + amount.toLocaleString() + '</p>'
+          + '<p style="margin:0 0 6px"><strong>Method:</strong> ' + method + '</p>'
+          + '<p style="margin:0"><strong>Status:</strong> Pending Verification</p></div>'
+          + '<p style="color:#4A5568;line-height:1.7">Our team will verify your payment within 24 hours. Once confirmed, your account will be updated and you will receive a confirmation email.</p>'
+          + '</div></body></html>',
+        name: "CTS ETS Finance"
+      });
+    } catch(e) {}
+  }
+  
+  Logger.log("Portal payment confirmation: " + (stuNum || ref) + " | J$" + amount + " | Txn: " + txnId);
 }
 
 function handleWiPay(data) {
