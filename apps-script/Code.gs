@@ -743,6 +743,8 @@ function doGet(e) {
     else if (a==="studentlogin") r = studentLogin(e.parameter.ref||"",e.parameter.pw||"");
     else if (a==="changepassword") r = changePassword(e.parameter.ref||"",e.parameter.oldpw||"",e.parameter.newpw||"");
     else if (a==="resetpassword") r = requestPasswordReset(e.parameter.email||"");
+    else if (a==="verifypayment") r = verifyPaymentFromEmail(e.parameter.ref||"",e.parameter.amount||"",e.parameter.txn||"",e.parameter.auth||"");
+    else if (a==="rejectpayment") r = rejectPaymentFromEmail(e.parameter.ref||"",e.parameter.txn||"",e.parameter.auth||"");
     else if (a==="generaterecord") r = generateCumulativeRecord(e.parameter.student||"");
     else if (a==="getfoundingcount") r = getFoundingCount(e.parameter.programme||"",e.parameter.level||"");
     else if (a==="verifycert") r = verifyCert(e.parameter.cert||"");
@@ -1551,6 +1553,138 @@ function updateEnrolledPayment(ref, amount) {
   } catch(e) {}
 }
 
+// One-click payment verification from admin email
+var VERIFY_AUTH = "Detailed1982"; // Same as your admin auth code
+
+function verifyPaymentFromEmail(ref, amount, txnId, auth) {
+  if (auth !== VERIFY_AUTH) return {ok:false, error:"Unauthorized"};
+  loadIds();
+  var amt = Number(amount) || 0;
+  
+  // Update Payment Schedule — mark as Paid
+  try {
+    var ps = fTab("Payment Schedule"), pd = ps.getDataRange().getValues(), ph = pd[0], pc = {};
+    for (var i=0; i<ph.length; i++) pc[String(ph[i]).trim()] = i;
+    for (var i=1; i<pd.length; i++) {
+      var pRef = String(pd[i][pc["Application Ref"]]||"").trim().toUpperCase();
+      var pTxn = String(pd[i][pc["Notes"]]||"");
+      if (pRef === ref.toUpperCase() && pTxn.indexOf(txnId) >= 0 && String(pd[i][pc["Status"]]||"") === "Pending Verification") {
+        ps.getRange(i+1, pc["Status"]+1).setValue("Paid");
+        ps.getRange(i+1, pc["Date Paid"]+1).setValue(new Date());
+        break;
+      }
+    }
+  } catch(e) { Logger.log("Payment schedule update error: " + e.message); }
+  
+  // Update Enrolled Students — add to Total Paid
+  updateEnrolledPayment(ref, amt);
+  
+  // Log lifecycle
+  lifecycle(ref, "", "", "Payment Verified", "Financial", "J$" + amt.toLocaleString() + " | Txn: " + txnId + " | Verified via email button", "", "");
+  audit("PAYMENT VERIFIED", ref, "J$" + amt.toLocaleString() + " | Txn: " + txnId + " | One-click email verify", "Admin");
+  
+  // Find student details and send confirmation
+  var es = sTab("Enrolled Students"), ed = es.getDataRange().getValues(), eh = ed[0], ec = {};
+  for (var i=0; i<eh.length; i++) ec[String(eh[i]).trim()] = i;
+  for (var i=1; i<ed.length; i++) {
+    if (String(ed[i][ec["Application Ref"]]||"").trim().toUpperCase() === ref.toUpperCase()) {
+      var email = String(ed[i][ec["Email"]]||"").trim();
+      var firstName = String(ed[i][ec["First Name"]]||"").trim();
+      var stuNum = String(ed[i][ec["Student Number"]]||"").trim();
+      var outstanding = Number(ed[i][ec["Outstanding"]]||0) - amt;
+      
+      // Send student confirmation
+      if (email) {
+        try {
+          GmailApp.sendEmail(email, "CTS ETS \u2014 Payment Verified \u2014 J$" + amt.toLocaleString(), "", {
+            htmlBody: '<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">'
+              + '<div style="background:#011E40;padding:20px;text-align:center;border-radius:12px 12px 0 0">'
+              + '<h1 style="color:#D4A843;font-size:20px;margin:0">CTS ETS</h1></div>'
+              + '<div style="padding:28px;background:#fff;border:1px solid #e2e8f0;border-top:none">'
+              + '<h2 style="color:#2E7D32">Payment Verified!</h2>'
+              + '<p style="color:#4A5568;line-height:1.7">Great news, ' + firstName + '! Your payment has been verified and applied to your account.</p>'
+              + '<div style="background:#E8F5E9;border-radius:10px;padding:16px;margin:16px 0;border-left:4px solid #2E7D32">'
+              + '<p style="margin:0 0 6px"><strong>Amount:</strong> J$' + amt.toLocaleString() + '</p>'
+              + '<p style="margin:0 0 6px"><strong>Transaction:</strong> ' + txnId + '</p>'
+              + '<p style="margin:0"><strong>Status:</strong> Verified</p></div>'
+              + (outstanding <= 0 ? '<p style="color:#2E7D32;font-weight:700">Your fees are now paid in full! Your Learning Portal access will be activated shortly.</p>' : '<p style="color:#4A5568">Remaining balance: J$' + Math.max(0, outstanding).toLocaleString() + '</p>')
+              + '<div style="text-align:center;margin:20px 0"><a href="https://www.ctsetsjm.com/#Student-Portal" style="display:inline-block;padding:14px 32px;background:#0E8F8B;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Go to Student Portal</a></div>'
+              + '</div></body></html>',
+            name: "CTS ETS Finance"
+          });
+        } catch(e) {}
+      }
+      
+      // If fully paid, auto-enroll
+      if (outstanding <= 0 && String(ed[i][ec["Status"]]||"") === "Pending Payment") {
+        es.getRange(i+1, ec["Status"]+1).setValue("Enrolled");
+        es.getRange(i+1, ec["LMS Access"]+1).setValue("Yes");
+        sendEnrollmentConfirmation(firstName, email, stuNum, ref, String(ed[i][ec["Programme"]]||""), String(ed[i][ec["Level"]]||""));
+        try {
+          sTab("Student Lifecycle").appendRow([new Date(), ref, stuNum, firstName + " " + (ed[i][ec["Last Name"]]||""),
+            "Status Change", "Enrollment", "Payment verified — auto-enrolled via email button",
+            "Pending Payment", "Enrolled", ed[i][ec["Programme"]]||"", ed[i][ec["Level"]]||"", "Admin", "Email Verify"]);
+        } catch(e){}
+        try { generateStudentDataSheet(ref, stuNum, firstName, String(ed[i][ec["Last Name"]]||""), email, String(ed[i][ec["Phone"]]||""), String(ed[i][ec["Programme"]]||""), String(ed[i][ec["Level"]]||"")); } catch(e){}
+        try { generateCumulativeRecord(stuNum); } catch(e){}
+        Logger.log("Auto-enrolled via email verify: " + stuNum);
+      }
+      break;
+    }
+  }
+  
+  return {ok:true, message:"Payment of J$" + amt.toLocaleString() + " verified for " + ref + ". Student notified."};
+}
+
+function rejectPaymentFromEmail(ref, txnId, auth) {
+  if (auth !== VERIFY_AUTH) return {ok:false, error:"Unauthorized"};
+  loadIds();
+  
+  // Update Payment Schedule — mark as Rejected
+  try {
+    var ps = fTab("Payment Schedule"), pd = ps.getDataRange().getValues(), ph = pd[0], pc = {};
+    for (var i=0; i<ph.length; i++) pc[String(ph[i]).trim()] = i;
+    for (var i=1; i<pd.length; i++) {
+      var pRef = String(pd[i][pc["Application Ref"]]||"").trim().toUpperCase();
+      var pTxn = String(pd[i][pc["Notes"]]||"");
+      if (pRef === ref.toUpperCase() && pTxn.indexOf(txnId) >= 0 && String(pd[i][pc["Status"]]||"") === "Pending Verification") {
+        ps.getRange(i+1, pc["Status"]+1).setValue("Rejected — Not Found");
+        break;
+      }
+    }
+  } catch(e) {}
+  
+  // Find student and notify
+  var es = sTab("Enrolled Students"), ed = es.getDataRange().getValues(), eh = ed[0], ec = {};
+  for (var i=0; i<eh.length; i++) ec[String(eh[i]).trim()] = i;
+  for (var i=1; i<ed.length; i++) {
+    if (String(ed[i][ec["Application Ref"]]||"").trim().toUpperCase() === ref.toUpperCase()) {
+      var email = String(ed[i][ec["Email"]]||"").trim();
+      var firstName = String(ed[i][ec["First Name"]]||"").trim();
+      if (email) {
+        try {
+          GmailApp.sendEmail(email, "CTS ETS \u2014 Payment Could Not Be Verified", "", {
+            htmlBody: '<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">'
+              + '<div style="background:#011E40;padding:20px;text-align:center;border-radius:12px 12px 0 0">'
+              + '<h1 style="color:#D4A843;font-size:20px;margin:0">CTS ETS</h1></div>'
+              + '<div style="padding:28px;background:#fff;border:1px solid #e2e8f0;border-top:none">'
+              + '<h2 style="color:#C62828">Payment Could Not Be Verified</h2>'
+              + '<p style="color:#4A5568;line-height:1.7">Dear ' + firstName + ', we were unable to verify the payment with Transaction ID: <strong>' + txnId + '</strong>.</p>'
+              + '<p style="color:#4A5568;line-height:1.7">This could mean the transaction hasn\'t been processed yet, or the details provided don\'t match our records. Please:</p>'
+              + '<ul style="color:#4A5568;line-height:1.8"><li>Double-check your Transaction ID from your WiPay or bank receipt</li><li>Try submitting the confirmation again from your Student Portal</li><li>Contact us at admin@ctsetsjm.com or WhatsApp 876-381-9771 for help</li></ul>'
+              + '</div></body></html>',
+            name: "CTS ETS Finance"
+          });
+        } catch(e) {}
+      }
+      break;
+    }
+  }
+  
+  audit("PAYMENT REJECTED", ref, "Txn: " + txnId + " could not be verified", "Admin");
+  return {ok:true, message:"Payment rejected. Student notified to resubmit."};
+}
+
 // Student confirms payment from portal — logs it, notifies admin for verification
 function handlePortalPaymentConfirm(data) {
   loadIds();
@@ -1579,20 +1713,35 @@ function handlePortalPaymentConfirm(data) {
   // Audit
   audit("PAYMENT SUBMITTED", ref || stuNum, "J$" + amount.toLocaleString() + " | Txn: " + txnId + " | " + method + " | Portal", "Student");
   
-  // Notify admin to verify
+  // Notify admin to verify — with one-click Verify/Reject buttons
   try {
+    var scriptUrl = ScriptApp.getService().getUrl();
+    var verifyUrl = scriptUrl + "?action=verifypayment&ref=" + encodeURIComponent(ref) + "&amount=" + encodeURIComponent(amount) + "&txn=" + encodeURIComponent(txnId) + "&auth=" + encodeURIComponent(VERIFY_AUTH);
+    var rejectUrl = scriptUrl + "?action=rejectpayment&ref=" + encodeURIComponent(ref) + "&txn=" + encodeURIComponent(txnId) + "&auth=" + encodeURIComponent(VERIFY_AUTH);
+    
     GmailApp.sendEmail(ADMIN_EMAIL, "Payment to Verify \u2014 " + (stuNum || ref) + " \u2014 J$" + amount.toLocaleString(), "", {
-      htmlBody: "<h2 style='color:#011E40'>Payment Confirmation Received</h2>"
-        + "<p>A student has confirmed a payment from the Student Portal. Please verify in your WiPay dashboard or bank statement.</p>"
-        + "<table style='border-collapse:collapse;font-family:Arial;font-size:13px'>"
-        + "<tr><td style='padding:6px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Student</td><td style='padding:6px 12px;border:1px solid #ddd'>" + (stuNum || ref) + "</td></tr>"
-        + "<tr><td style='padding:6px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Transaction ID</td><td style='padding:6px 12px;border:1px solid #ddd;font-family:monospace;font-weight:700'>" + txnId + "</td></tr>"
-        + "<tr><td style='padding:6px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Amount</td><td style='padding:6px 12px;border:1px solid #ddd;font-weight:700'>J$" + amount.toLocaleString() + "</td></tr>"
-        + "<tr><td style='padding:6px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Method</td><td style='padding:6px 12px;border:1px solid #ddd'>" + method + "</td></tr>"
-        + "<tr><td style='padding:6px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Programme</td><td style='padding:6px 12px;border:1px solid #ddd'>" + level + " \u2014 " + programme + "</td></tr>"
-        + "<tr><td style='padding:6px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Email</td><td style='padding:6px 12px;border:1px solid #ddd'>" + email + "</td></tr>"
+      htmlBody: "<div style='font-family:Arial,sans-serif;max-width:600px;margin:0 auto'>"
+        + "<div style='background:#011E40;padding:16px 20px;border-radius:12px 12px 0 0'>"
+        + "<h2 style='color:#D4A843;margin:0;font-size:18px'>Payment Verification Required</h2>"
+        + "<p style='color:rgba(255,255,255,0.6);font-size:11px;margin:4px 0 0'>A student submitted a payment from the Student Portal</p></div>"
+        + "<div style='padding:24px;background:#fff;border:1px solid #e2e8f0;border-top:none'>"
+        + "<table style='border-collapse:collapse;font-family:Arial;font-size:13px;width:100%'>"
+        + "<tr><td style='padding:8px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd;width:35%'>Student</td><td style='padding:8px 12px;border:1px solid #ddd;font-weight:700'>" + (stuNum || ref) + "</td></tr>"
+        + "<tr><td style='padding:8px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Transaction ID</td><td style='padding:8px 12px;border:1px solid #ddd;font-family:monospace;font-weight:700;font-size:14px'>" + txnId + "</td></tr>"
+        + "<tr><td style='padding:8px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Amount</td><td style='padding:8px 12px;border:1px solid #ddd;font-weight:700;font-size:16px;color:#2E7D32'>J$" + amount.toLocaleString() + "</td></tr>"
+        + "<tr><td style='padding:8px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Method</td><td style='padding:8px 12px;border:1px solid #ddd'>" + method + "</td></tr>"
+        + "<tr><td style='padding:8px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Programme</td><td style='padding:8px 12px;border:1px solid #ddd'>" + level + " \u2014 " + programme + "</td></tr>"
+        + "<tr><td style='padding:8px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Email</td><td style='padding:8px 12px;border:1px solid #ddd'>" + email + "</td></tr>"
         + "</table>"
-        + "<p style='margin-top:16px;font-size:12px;color:#666'><b>Action needed:</b> Check your WiPay dashboard for Txn " + txnId + ". If verified, update the student's Payment Schedule status to \"Paid\" and change Enrolled Students status to \"Enrolled\" to unlock LMS access.</p>",
+        + "<p style='margin:20px 0 12px;font-size:13px;color:#333;font-weight:700'>Check your WiPay dashboard for this Transaction ID, then click:</p>"
+        + "<div style='display:flex;gap:12px;text-align:center'>"
+        + "<a href='" + verifyUrl + "' style='display:inline-block;padding:14px 32px;background:#2E7D32;color:#fff;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px'>VERIFY PAYMENT</a>"
+        + "&nbsp;&nbsp;&nbsp;"
+        + "<a href='" + rejectUrl + "' style='display:inline-block;padding:14px 32px;background:#C62828;color:#fff;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px'>REJECT</a>"
+        + "</div>"
+        + "<p style='margin-top:16px;font-size:11px;color:#999'>Verify: marks payment as Paid, updates student balance, auto-enrolls if fully paid, sends confirmation email to student, generates data sheet + cumulative record.</p>"
+        + "<p style='font-size:11px;color:#999'>Reject: marks payment as Rejected, notifies student to resubmit with correct details.</p>"
+        + "</div></div>",
       name: "CTS ETS System"
     });
   } catch(e) { Logger.log("Admin notify error: " + e.message); }
