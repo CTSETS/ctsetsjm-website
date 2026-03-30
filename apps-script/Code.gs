@@ -6,7 +6,8 @@
 // This auto-creates 4 child sheets with all tabs + headers.
 // ═══════════════════════════════════════════════════════════════════════
 
-var ADMIN_EMAIL = "admin@ctsetsjm.com";
+var ADMIN_EMAIL = "ctsetsgroup@gmail.com";
+var ADMIN_BACKUP_EMAIL = ""; // Put a personal Gmail here as backup (e.g. "mark@gmail.com")
 var SHEET_IDS = { master:"", students:"", finance:"", operations:"", academic:"" };
 
 // ── Load IDs from Script Properties (set during setup) ──
@@ -124,7 +125,221 @@ function setupStatusDropdown(ss) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// ON-EDIT TRIGGER — Install via: Triggers > Add Trigger > onEditTrigger > On Edit
+// ROW COLORING — Conditional formatting based on status column
+// ═══════════════════════════════════════════════════════════════════════
+function applyStatusColors(sheet, statusCol) {
+  if (!sheet || statusCol < 1) return;
+  var lastCol = sheet.getLastColumn();
+  var range = sheet.getRange(2, 1, 499, lastCol);
+  sheet.clearConditionalFormatRules();
+  var rules = [];
+  var colorMap = [
+    {status: "Under Review",     bg: "#FFF8E1", text: "#F57F17"},
+    {status: "Accepted",         bg: "#E8F5E9", text: "#2E7D32"},
+    {status: "Pending Payment",  bg: "#E3F2FD", text: "#1565C0"},
+    {status: "Rejected",         bg: "#FFEBEE", text: "#C62828"},
+    {status: "Withdrawn",        bg: "#F3E5F5", text: "#6A1B9A"},
+    {status: "Deferred",         bg: "#ECEFF1", text: "#546E7A"},
+    {status: "Enrolled",         bg: "#E8F5E9", text: "#2E7D32"},
+    {status: "Active",           bg: "#E0F7FA", text: "#00695C"},
+    {status: "On Hold",          bg: "#FFF3E0", text: "#E65100"},
+    {status: "Completed",        bg: "#F1F8E9", text: "#33691E"},
+    {status: "Graduated",        bg: "#FFFDE7", text: "#F9A825"},
+  ];
+  for (var i = 0; i < colorMap.length; i++) {
+    var c = colorMap[i];
+    var rule = SpreadsheetApp.newConditionalFormatRule()
+      .whenFormulaSatisfied('=$' + columnLetter(statusCol) + '2="' + c.status + '"')
+      .setBackground(c.bg)
+      .setFontColor(c.text)
+      .setRanges([range])
+      .build();
+    rules.push(rule);
+  }
+  sheet.setConditionalFormatRules(rules);
+}
+
+function columnLetter(col) {
+  var letter = "";
+  while (col > 0) {
+    var rem = (col - 1) % 26;
+    letter = String.fromCharCode(65 + rem) + letter;
+    col = Math.floor((col - 1) / 26);
+  }
+  return letter;
+}
+
+// Run manually to apply colors to existing sheets
+function reapplyColors() {
+  loadIds();
+  var ss = SpreadsheetApp.openById(SHEET_IDS.students);
+  var apps = ss.getSheetByName("Applications");
+  var enrolled = ss.getSheetByName("Enrolled Students");
+  if (apps) {
+    var h = apps.getRange(1,1,1,apps.getLastColumn()).getValues()[0];
+    for (var i=0;i<h.length;i++) { if (String(h[i]).trim()==="Status") { applyStatusColors(apps, i+1); break; } }
+  }
+  if (enrolled) {
+    var h2 = enrolled.getRange(1,1,1,enrolled.getLastColumn()).getValues()[0];
+    for (var i=0;i<h2.length;i++) { if (String(h2[i]).trim()==="Status") { applyStatusColors(enrolled, i+1); break; } }
+  }
+  Logger.log("Status colors applied");
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// DAILY SUMMARY REPORT — Set up trigger: sendDailySummary, Time-driven, 7-8am
+// ═══════════════════════════════════════════════════════════════════════
+function sendDailySummary() {
+  loadIds();
+  var today = new Date();
+  var yesterday = new Date(today.getTime() - 86400000);
+  var dateStr = Utilities.formatDate(today, "America/Jamaica", "EEEE, dd MMM yyyy");
+
+  // Count Applications by status
+  var apps = sTab("Applications"), ad = apps.getDataRange().getValues(), ah = ad[0], ac = {};
+  for (var i=0; i<ah.length; i++) ac[String(ah[i]).trim()] = i;
+  var statusCounts = {}, newApps = [], totalApps = 0;
+  for (var i=1; i<ad.length; i++) {
+    if (!ad[i][ac["Application Ref"]]) continue;
+    totalApps++;
+    var st = String(ad[i][ac["Status"]]||"Under Review").trim();
+    statusCounts[st] = (statusCounts[st]||0) + 1;
+    var submitted = ad[i][ac["Date Submitted"]];
+    if (submitted && new Date(submitted) >= yesterday) {
+      newApps.push({ ref: ad[i][ac["Application Ref"]]||"", name: (ad[i][ac["First Name"]]||"") + " " + (ad[i][ac["Last Name"]]||""), programme: ad[i][ac["Programme"]]||"", level: ad[i][ac["Level"]]||"", status: st });
+    }
+  }
+
+  // Count Enrolled by status + financials
+  var es = sTab("Enrolled Students"), ed = es.getDataRange().getValues(), eh = ed[0], ec = {};
+  for (var i=0; i<eh.length; i++) ec[String(eh[i]).trim()] = i;
+  var enrolledCounts = {}, totalEnrolled = 0, totalRevenue = 0, totalOutstanding = 0;
+  for (var i=1; i<ed.length; i++) {
+    if (!ed[i][ec["Student Number"]]) continue;
+    totalEnrolled++;
+    var est = String(ed[i][ec["Status"]]||"").trim();
+    enrolledCounts[est] = (enrolledCounts[est]||0) + 1;
+    totalRevenue += Number(ed[i][ec["Total Paid"]]||0);
+    totalOutstanding += Number(ed[i][ec["Outstanding"]]||0);
+  }
+
+  // Recent lifecycle events (last 24h)
+  var lc = sTab("Student Lifecycle"), ld = lc.getDataRange().getValues(), lh = ld[0], lcc = {};
+  for (var i=0; i<lh.length; i++) lcc[String(lh[i]).trim()] = i;
+  var recentEvents = [];
+  for (var i=1; i<ld.length; i++) {
+    var evDate = ld[i][lcc["Date/Time"]];
+    if (evDate && new Date(evDate) >= yesterday) {
+      recentEvents.push({ time: Utilities.formatDate(new Date(evDate), "America/Jamaica", "h:mm a"), student: ld[i][lcc["Student Name"]]||"", event: ld[i][lcc["Event Type"]]||"", details: String(ld[i][lcc["Details"]]||"").substring(0,60) });
+    }
+  }
+
+  var statusBar = function(label, count, color, total) {
+    var pct = total > 0 ? Math.round(count/total*100) : 0;
+    return '<tr><td style="padding:4px 8px;font-size:12px">' + label + '</td><td style="padding:4px 8px;font-size:12px;font-weight:700;text-align:right">' + count + '</td><td style="padding:4px 8px;width:50%"><div style="background:#eee;border-radius:4px;height:18px;overflow:hidden"><div style="background:' + color + ';height:100%;width:' + pct + '%;min-width:' + (count>0?'2px':'0') + ';border-radius:4px"></div></div></td></tr>';
+  };
+
+  // New apps table
+  var newAppsHtml = "";
+  if (newApps.length > 0) {
+    newAppsHtml = '<table style="width:100%;border-collapse:collapse;margin:8px 0"><tr style="background:#011E40"><th style="padding:6px 8px;color:#D4A843;font-size:11px;text-align:left">Ref</th><th style="padding:6px 8px;color:#D4A843;font-size:11px;text-align:left">Name</th><th style="padding:6px 8px;color:#D4A843;font-size:11px;text-align:left">Programme</th><th style="padding:6px 8px;color:#D4A843;font-size:11px;text-align:left">Status</th></tr>';
+    for (var i=0; i<newApps.length; i++) { var a = newApps[i]; newAppsHtml += '<tr style="background:' + (i%2===0?"#f8f9fa":"#fff") + '"><td style="padding:5px 8px;font-size:11px;border-bottom:1px solid #eee">' + a.ref + '</td><td style="padding:5px 8px;font-size:11px;border-bottom:1px solid #eee;font-weight:600">' + a.name + '</td><td style="padding:5px 8px;font-size:11px;border-bottom:1px solid #eee">' + a.level + ' \u2014 ' + a.programme + '</td><td style="padding:5px 8px;font-size:11px;border-bottom:1px solid #eee">' + a.status + '</td></tr>'; }
+    newAppsHtml += '</table>';
+  } else { newAppsHtml = '<p style="color:#999;font-size:12px;padding:8px">No new applications in the last 24 hours.</p>'; }
+
+  // Recent events table
+  var eventsHtml = "";
+  if (recentEvents.length > 0) {
+    eventsHtml = '<table style="width:100%;border-collapse:collapse;margin:8px 0"><tr style="background:#011E40"><th style="padding:6px 8px;color:#D4A843;font-size:11px;text-align:left">Time</th><th style="padding:6px 8px;color:#D4A843;font-size:11px;text-align:left">Student</th><th style="padding:6px 8px;color:#D4A843;font-size:11px;text-align:left">Event</th><th style="padding:6px 8px;color:#D4A843;font-size:11px;text-align:left">Details</th></tr>';
+    for (var i=0; i<Math.min(recentEvents.length,15); i++) { var ev = recentEvents[i]; eventsHtml += '<tr style="background:' + (i%2===0?"#f8f9fa":"#fff") + '"><td style="padding:4px 8px;font-size:11px;border-bottom:1px solid #eee">' + ev.time + '</td><td style="padding:4px 8px;font-size:11px;border-bottom:1px solid #eee">' + ev.student + '</td><td style="padding:4px 8px;font-size:11px;border-bottom:1px solid #eee">' + ev.event + '</td><td style="padding:4px 8px;font-size:11px;border-bottom:1px solid #eee">' + ev.details + '</td></tr>'; }
+    if (recentEvents.length > 15) eventsHtml += '<tr><td colspan="4" style="padding:6px 8px;font-size:11px;color:#999">... and ' + (recentEvents.length-15) + ' more events</td></tr>';
+    eventsHtml += '</table>';
+  } else { eventsHtml = '<p style="color:#999;font-size:12px;padding:8px">No activity in the last 24 hours.</p>'; }
+
+  var html = '<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:650px;margin:0 auto;background:#f5f5f5;padding:20px">'
+    + '<div style="background:#011E40;padding:20px 24px;border-radius:12px 12px 0 0;text-align:center">'
+    + '<h1 style="color:#D4A843;font-size:20px;margin:0">CTS ETS Daily Summary</h1>'
+    + '<p style="color:rgba(255,255,255,0.6);font-size:12px;margin:6px 0 0">' + dateStr + '</p></div>'
+    + '<div style="background:#fff;padding:24px;border:1px solid #e2e8f0;border-top:none">'
+    // Key Metrics
+    + '<table style="width:100%;border-collapse:separate;border-spacing:8px 0"><tr>'
+    + '<td style="background:#E3F2FD;border-radius:8px;padding:14px;text-align:center;width:33%"><div style="font-size:28px;font-weight:800;color:#1565C0">' + totalApps + '</div><div style="font-size:10px;color:#1565C0;font-weight:600">TOTAL APPS</div></td>'
+    + '<td style="background:#E8F5E9;border-radius:8px;padding:14px;text-align:center;width:33%"><div style="font-size:28px;font-weight:800;color:#2E7D32">' + totalEnrolled + '</div><div style="font-size:10px;color:#2E7D32;font-weight:600">ENROLLED</div></td>'
+    + '<td style="background:#FFFDE7;border-radius:8px;padding:14px;text-align:center;width:33%"><div style="font-size:28px;font-weight:800;color:#F57F17">' + newApps.length + '</div><div style="font-size:10px;color:#F57F17;font-weight:600">NEW (24H)</div></td>'
+    + '</tr></table>'
+    // Revenue
+    + '<table style="width:100%;border-collapse:separate;border-spacing:8px 0;margin-top:8px"><tr>'
+    + '<td style="background:#E8F5E9;border-radius:8px;padding:12px;text-align:center;width:50%"><div style="font-size:11px;color:#2E7D32;font-weight:600">TOTAL REVENUE</div><div style="font-size:22px;font-weight:800;color:#2E7D32;margin-top:4px">J$' + totalRevenue.toLocaleString() + '</div></td>'
+    + '<td style="background:' + (totalOutstanding > 0 ? "#FFF3E0" : "#E8F5E9") + ';border-radius:8px;padding:12px;text-align:center;width:50%"><div style="font-size:11px;color:' + (totalOutstanding > 0 ? "#E65100" : "#2E7D32") + ';font-weight:600">OUTSTANDING</div><div style="font-size:22px;font-weight:800;color:' + (totalOutstanding > 0 ? "#E65100" : "#2E7D32") + ';margin-top:4px">J$' + totalOutstanding.toLocaleString() + '</div></td>'
+    + '</tr></table>'
+    // Application Pipeline
+    + '<h3 style="color:#011E40;font-size:14px;margin:16px 0 8px;border-bottom:2px solid #011E40;padding-bottom:6px">Application Pipeline</h3>'
+    + '<table style="width:100%">'
+    + statusBar("Under Review", statusCounts["Under Review"]||0, "#FFC107", totalApps)
+    + statusBar("Accepted", statusCounts["Accepted"]||0, "#4CAF50", totalApps)
+    + statusBar("Pending Payment", statusCounts["Pending Payment"]||0, "#2196F3", totalApps)
+    + statusBar("Rejected", statusCounts["Rejected"]||0, "#F44336", totalApps)
+    + statusBar("Withdrawn", statusCounts["Withdrawn"]||0, "#9C27B0", totalApps)
+    + statusBar("Deferred", statusCounts["Deferred"]||0, "#78909C", totalApps)
+    + '</table>'
+    // Enrolled Breakdown
+    + '<h3 style="color:#011E40;font-size:14px;margin:16px 0 8px;border-bottom:2px solid #011E40;padding-bottom:6px">Enrolled Students</h3>'
+    + '<table style="width:100%">'
+    + statusBar("Enrolled", enrolledCounts["Enrolled"]||0, "#4CAF50", totalEnrolled)
+    + statusBar("Active", enrolledCounts["Active"]||0, "#009688", totalEnrolled)
+    + statusBar("On Hold", enrolledCounts["On Hold"]||0, "#FF9800", totalEnrolled)
+    + statusBar("Graduated", enrolledCounts["Graduated"]||0, "#D4A843", totalEnrolled)
+    + statusBar("Completed", enrolledCounts["Completed"]||0, "#8BC34A", totalEnrolled)
+    + statusBar("Withdrawn", enrolledCounts["Withdrawn"]||0, "#9C27B0", totalEnrolled)
+    + '</table>'
+    // New Applications
+    + '<h3 style="color:#011E40;font-size:14px;margin:16px 0 8px;border-bottom:2px solid #011E40;padding-bottom:6px">\uD83D\uDCE5 New Applications (Last 24 Hours)</h3>'
+    + newAppsHtml
+    // Recent Activity
+    + '<h3 style="color:#011E40;font-size:14px;margin:16px 0 8px;border-bottom:2px solid #011E40;padding-bottom:6px">\u26A1 Recent Activity</h3>'
+    + eventsHtml
+    // Action Items
+    + '<div style="margin-top:20px;padding:14px;background:#FFF8E1;border-radius:8px;border-left:4px solid #F57F17">'
+    + '<div style="font-size:12px;font-weight:700;color:#F57F17;margin-bottom:6px">\u26A0\uFE0F Action Required</div>'
+    + '<ul style="font-size:12px;color:#333;line-height:1.8;margin:0;padding-left:20px">'
+    + (statusCounts["Under Review"]>0 ? '<li><strong>' + statusCounts["Under Review"] + ' application(s)</strong> awaiting review</li>' : '')
+    + (totalOutstanding>0 ? '<li><strong>J$' + totalOutstanding.toLocaleString() + '</strong> outstanding fees to collect</li>' : '')
+    + ((statusCounts["Under Review"]||0)===0 && totalOutstanding===0 ? '<li style="color:#2E7D32">All clear! No pending actions.</li>' : '')
+    + '</ul></div></div>'
+    + '<div style="background:#F7FAFC;padding:12px;text-align:center;border-radius:0 0 12px 12px;border:1px solid #e2e8f0;border-top:none">'
+    + '<p style="font-size:10px;color:#A0AEC0;margin:0">CTS Empowerment & Training Solutions | admin@ctsetsjm.com | 876-525-6802</p></div></body></html>';
+
+  var subject = "CTS ETS Daily Summary \u2014 " + dateStr + " \u2014 " + totalApps + " apps, " + totalEnrolled + " enrolled, " + newApps.length + " new";
+  var plain = "CTS ETS Daily Summary: " + totalApps + " apps, " + totalEnrolled + " enrolled, " + newApps.length + " new, J$" + totalRevenue.toLocaleString() + " revenue, J$" + totalOutstanding.toLocaleString() + " outstanding.";
+  try { GmailApp.sendEmail(ADMIN_EMAIL, subject, plain, {htmlBody: html, name: "CTS ETS Reports"}); Logger.log("Daily summary sent to: " + ADMIN_EMAIL); } catch(e) { Logger.log("Daily summary error: " + e.message); }
+  if (ADMIN_BACKUP_EMAIL) { try { GmailApp.sendEmail(ADMIN_BACKUP_EMAIL, subject, plain, {htmlBody: html, name: "CTS ETS Reports"}); } catch(e) {} }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// TRIGGER INSTALLER — Run this ONCE to set up the onEdit trigger
+// on the correct spreadsheet (Student Records, not Master)
+// ═══════════════════════════════════════════════════════════════════════
+function installOnEditTrigger() {
+  loadIds();
+  // Delete any existing onEditTrigger triggers
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === "onEditTrigger") {
+      ScriptApp.deleteTrigger(triggers[i]);
+      Logger.log("Deleted old onEditTrigger");
+    }
+  }
+  // Install on the Student Records spreadsheet
+  var ss = SpreadsheetApp.openById(SHEET_IDS.students);
+  ScriptApp.newTrigger("onEditTrigger")
+    .forSpreadsheet(ss)
+    .onEdit()
+    .create();
+  Logger.log("onEditTrigger installed on: " + ss.getName() + " (" + SHEET_IDS.students + ")");
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// ON-EDIT TRIGGER — Installed on Student Records spreadsheet
 // Watches:
 //   Applications → "Accepted" → auto-enrolls with Pending Payment
 //   Enrolled Students → "Enrolled" → unlocks LMS, sends confirmation
@@ -200,7 +415,7 @@ function onEditTrigger(e) {
         } catch(le){}
         // Send graduation email
         try {
-          GmailApp.sendEmail(email, "🎓 Congratulations " + firstName + "! You've Graduated — CTS ETS", "",
+          GmailApp.sendEmail(email, "Congratulations " + firstName + "! You've Graduated — CTS ETS", "",
             {htmlBody: wrapDripEmail(
               '<h2 style="color:#011E40">Congratulations, ' + firstName + '! 🎓</h2>'
               + '<p style="color:#4A5568;line-height:1.7">You have officially completed your <strong>' + programme + ' (' + level + ')</strong> programme at CTS ETS.</p>'
@@ -227,7 +442,7 @@ function sendEnrollmentConfirmation(firstName, email, studentNum, ref, programme
   if (!email) return;
   try {
     GmailApp.sendEmail(email,
-      "✅ You're In, " + firstName + "! Your Learning Portal is Now Open — CTS ETS", "",
+      "You're In, " + firstName + "! Your Learning Portal is Now Open — CTS ETS", "",
       {htmlBody: '<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">'
         + '<div style="background:#011E40;color:#fff;padding:24px;border-radius:12px 12px 0 0;text-align:center">'
         + '<h1 style="margin:0;font-size:22px">You\'re Officially Enrolled!</h1>'
@@ -328,7 +543,7 @@ function enrollStudent(appSheet, row, headers, colMap) {
   try {
     if (email) {
       var fmtFees = "J$" + totalFees.toLocaleString();
-      var subject = "🎓 Congratulations " + firstName + "! You've Been Accepted — CTS ETS";
+      var subject = "Congratulations " + firstName + "! You've Been Accepted — CTS ETS";
       var body = '<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">'
         + '<div style="background:#011E40;color:#fff;padding:24px;border-radius:12px 12px 0 0;text-align:center">'
         + '<h1 style="margin:0;font-size:22px">Welcome to CTS ETS!</h1>'
@@ -443,9 +658,9 @@ function buildMaster(master, s1, s2, s3, s4) {
   var r = 5;
   var items = [
     ["📘 1. STUDENT RECORDS", s1, "#011E40", ["Applications","Enrolled Students","Student Lifecycle","Communication Log","Drip Log","Employer Contacts"]],
-    ["💰 2. FINANCE", s2, "#C49112", ["Payment Schedule","Founding_Cohort","Founding_Credits","Founding_Referrals"]],
+    ["2. FINANCE", s2, "#C49112", ["Payment Schedule","Founding_Cohort","Founding_Credits","Founding_Referrals"]],
     ["⚙️ 3. OPERATIONS", s3, "#2D8B61", ["Site Analytics","Feedback","Interest Capture","Audit Log","Config"]],
-    ["🎓 4. ACADEMIC", s4, "#7C3AED", ["Certificates","Programme Codes","Progress Reports","NCTVET Ready","Ministry Register"]],
+    ["4. ACADEMIC", s4, "#7C3AED", ["Certificates","Programme Codes","Progress Reports","NCTVET Ready","Ministry Register"]],
   ];
   for (var i=0;i<items.length;i++) {
     var it=items[i];
@@ -773,52 +988,92 @@ function handleApp(data) {
     "Email: "+(data.email||"")+" | "+(data.applicantType||""),data.programme||"",data.level||"");
 
   // Send confirmation email to student
-  try {
-    if (data.email) {
-      var studentName = (data.firstName||"") + " " + (data.lastName||"");
-      GmailApp.sendEmail(data.email,
-        "CTS ETS — Application Received (" + ref + ")", "",
-        {htmlBody: '<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">'
-          + '<div style="background:#011E40;padding:24px;text-align:center;border-radius:12px 12px 0 0">'
-          + '<h1 style="color:#D4A843;font-size:22px;margin:0">CTS Empowerment & Training Solutions</h1>'
-          + '<p style="color:rgba(255,255,255,0.6);font-size:11px;margin:4px 0 0;letter-spacing:2px">CALLED TO SERVE — EXCELLENCE THROUGH SERVICE</p></div>'
-          + '<div style="padding:32px;background:#fff;border:1px solid #e2e8f0;border-top:none">'
-          + '<h2 style="color:#011E40;font-size:20px">Application Received, ' + (data.firstName||"") + '!</h2>'
-          + '<p style="color:#4A5568;line-height:1.7">Thank you for applying to CTS ETS. Your application is now under review.</p>'
-          + '<div style="background:#FAFAF7;border-radius:10px;padding:20px;margin:20px 0;border-left:4px solid #D4A843">'
-          + '<p style="margin:0 0 8px"><strong>Reference:</strong> ' + ref + '</p>'
-          + '<p style="margin:0 0 8px"><strong>Programme:</strong> ' + (data.level||"") + ' — ' + (data.programme||"") + '</p>'
-          + '<p style="margin:0"><strong>Status:</strong> Under Review</p></div>'
-          + '<h3 style="color:#011E40;font-size:16px">What Happens Next?</h3>'
-          + '<ol style="color:#4A5568;line-height:1.8">'
-          + '<li>Our admissions team reviews your documents (48–72 hours)</li>'
-          + '<li>You receive an acceptance email with your Student Portal credentials</li>'
-          + '<li>Complete your payment</li>'
-          + '<li>Your status is updated to Enrolled and the Learning Portal is unlocked</li></ol>'
-          + '<p style="color:#4A5568;line-height:1.7">Questions? Email admin@ctsetsjm.com or WhatsApp 876-381-9771</p></div>'
-          + '<div style="background:#F7FAFC;padding:16px;text-align:center;border-radius:0 0 12px 12px;border:1px solid #e2e8f0;border-top:none">'
-          + '<p style="font-size:11px;color:#A0AEC0;margin:0">CTS ETS | 6, Newark Avenue, Kingston 2 | admin@ctsetsjm.com</p></div></body></html>',
-        name: "CTS ETS Admissions"});
+  var studentEmailSent = false;
+  if (data.email) {
+    var studentName = (data.firstName||"") + " " + (data.lastName||"");
+    var studentSubject = "CTS ETS \u2014 Application Received (" + ref + ")";
+    var studentBody = '<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">'
+      + '<div style="background:#011E40;padding:24px;text-align:center;border-radius:12px 12px 0 0">'
+      + '<h1 style="color:#D4A843;font-size:22px;margin:0">CTS Empowerment & Training Solutions</h1>'
+      + '<p style="color:rgba(255,255,255,0.6);font-size:11px;margin:4px 0 0;letter-spacing:2px">CALLED TO SERVE \u2014 EXCELLENCE THROUGH SERVICE</p></div>'
+      + '<div style="padding:32px;background:#fff;border:1px solid #e2e8f0;border-top:none">'
+      + '<h2 style="color:#011E40;font-size:20px">Application Received, ' + (data.firstName||"") + '!</h2>'
+      + '<p style="color:#4A5568;line-height:1.7">Thank you for applying to CTS ETS. Your application is now under review.</p>'
+      + '<div style="background:#FAFAF7;border-radius:10px;padding:20px;margin:20px 0;border-left:4px solid #D4A843">'
+      + '<p style="margin:0 0 8px"><strong>Reference:</strong> ' + ref + '</p>'
+      + '<p style="margin:0 0 8px"><strong>Programme:</strong> ' + (data.level||"") + ' \u2014 ' + (data.programme||"") + '</p>'
+      + '<p style="margin:0"><strong>Status:</strong> Under Review</p></div>'
+      + '<h3 style="color:#011E40;font-size:16px">What Happens Next?</h3>'
+      + '<ol style="color:#4A5568;line-height:1.8">'
+      + '<li>Our admissions team reviews your documents (48\u201372 hours)</li>'
+      + '<li>You receive an acceptance email with your Student Portal credentials</li>'
+      + '<li>Complete your payment</li>'
+      + '<li>Your status is updated to Enrolled and the Learning Portal is unlocked</li></ol>'
+      + '<p style="color:#4A5568;line-height:1.7">Questions? Email admin@ctsetsjm.com or WhatsApp 876-381-9771</p></div>'
+      + '<div style="background:#F7FAFC;padding:16px;text-align:center;border-radius:0 0 12px 12px;border:1px solid #e2e8f0;border-top:none">'
+      + '<p style="font-size:11px;color:#A0AEC0;margin:0">CTS ETS | 6, Newark Avenue, Kingston 2 | admin@ctsetsjm.com</p></div></body></html>';
+    var studentPlain = "Thank you for applying to CTS ETS, " + (data.firstName||"") + ". Your application ref is " + ref + " for " + (data.programme||"") + ". Status: Under Review. We will review within 48-72 hours.";
+    
+    // Method 1: GmailApp
+    try {
+      GmailApp.sendEmail(data.email, studentSubject, studentPlain, {htmlBody: studentBody, name: "CTS ETS Admissions"});
+      studentEmailSent = true;
+      Logger.log("Student confirmation sent via GmailApp to: " + data.email);
+    } catch(e1) { Logger.log("GmailApp student email FAILED: " + e1.message); }
+    
+    // Method 2: MailApp fallback if GmailApp failed
+    if (!studentEmailSent) {
+      try {
+        MailApp.sendEmail({to: data.email, subject: studentSubject, htmlBody: studentBody, name: "CTS ETS Admissions"});
+        studentEmailSent = true;
+        Logger.log("Student confirmation sent via MailApp to: " + data.email);
+      } catch(e2) { Logger.log("MailApp student email FAILED: " + e2.message); }
     }
-  } catch(emailErr) { Logger.log("Confirmation email error: " + emailErr.message); }
+    
+    if (!studentEmailSent) {
+      Logger.log("ALL student email methods failed for: " + data.email + " | Ref: " + ref);
+      audit("EMAIL FAILED", ref, "Student confirmation could not be sent to " + data.email, "System");
+    }
+  } else {
+    Logger.log("No student email provided for: " + ref);
+  }
 
-  // NOTIFY ADMIN of new application
+  // NOTIFY ADMIN of new application — multiple methods to ensure delivery
+  // Gmail silently drops self-to-self emails, so we use backup methods
+  var adminSubject = "New Application \u2014 " + ref + " \u2014 " + (data.firstName||"") + " " + (data.lastName||"");
+  var adminHtml = "<h2 style='color:#011E40'>New Application Received</h2>"
+    + "<table style='border-collapse:collapse;font-family:Arial;font-size:13px'>"
+    + "<tr><td style='padding:6px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Ref</td><td style='padding:6px 12px;border:1px solid #ddd'>" + ref + "</td></tr>"
+    + "<tr><td style='padding:6px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Name</td><td style='padding:6px 12px;border:1px solid #ddd'>" + (data.firstName||"") + " " + (data.lastName||"") + "</td></tr>"
+    + "<tr><td style='padding:6px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Email</td><td style='padding:6px 12px;border:1px solid #ddd'>" + (data.email||"") + "</td></tr>"
+    + "<tr><td style='padding:6px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Phone</td><td style='padding:6px 12px;border:1px solid #ddd'>" + (data.phone||"") + "</td></tr>"
+    + "<tr><td style='padding:6px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Programme</td><td style='padding:6px 12px;border:1px solid #ddd'>" + (data.level||"") + " \u2014 " + (data.programme||"") + "</td></tr>"
+    + "<tr><td style='padding:6px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Payment Plan</td><td style='padding:6px 12px;border:1px solid #ddd'>" + (data.paymentPlan||"Gold") + "</td></tr>"
+    + "<tr><td style='padding:6px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Type</td><td style='padding:6px 12px;border:1px solid #ddd'>" + (data.applicantType||"") + "</td></tr>"
+    + "<tr><td style='padding:6px 12px;background:#f0f4f8;font-weight:600;border:1px solid #ddd'>Country</td><td style='padding:6px 12px;border:1px solid #ddd'>" + (data.country||"") + "</td></tr>"
+    + "</table>"
+    + "<p style='margin-top:16px;font-size:12px;color:#666'>Review in Google Sheets \u2192 Applications tab. Change Status to <b>Accepted</b> to auto-enrol.</p>";
+  var adminPlain = "New application: " + ref + " | " + (data.firstName||"") + " " + (data.lastName||"") + " | " + (data.programme||"") + " | " + (data.email||"") + " | " + (data.phone||"");
+  
+  // Method 1: Try GmailApp to admin email
   try {
-    GmailApp.sendEmail(ADMIN_EMAIL, "\uD83D\uDCCB New Application \u2014 " + ref + " \u2014 " + (data.firstName||"") + " " + (data.lastName||""), 
-      "New application: " + ref + " | " + (data.firstName||"") + " " + (data.lastName||"") + " | " + (data.programme||""),
-      {htmlBody: "<h2>New Application Received</h2>"
-        + "<p><b>Ref:</b> " + ref + "</p>"
-        + "<p><b>Name:</b> " + (data.firstName||"") + " " + (data.lastName||"") + "</p>"
-        + "<p><b>Email:</b> " + (data.email||"") + "</p>"
-        + "<p><b>Phone:</b> " + (data.phone||"") + "</p>"
-        + "<p><b>Programme:</b> " + (data.level||"") + " \u2014 " + (data.programme||"") + "</p>"
-        + "<p><b>Payment Plan:</b> " + (data.paymentPlan||"Gold") + "</p>"
-        + "<p><b>Type:</b> " + (data.applicantType||"") + "</p>"
-        + "<p><b>Country:</b> " + (data.country||"") + "</p>"
-        + "<p style='margin-top:16px;font-size:12px;color:#666'>Review in your Google Sheets \u2192 Applications tab.<br>Change Status to <b>Accepted</b> to auto-enrol.</p>",
-      name: "CTS ETS System"});
-    Logger.log("Admin notification sent for: " + ref);
-  } catch(ae) { Logger.log("Admin notification error: " + ae.message); }
+    GmailApp.sendEmail(ADMIN_EMAIL, adminSubject, adminPlain, {htmlBody: adminHtml, name: "CTS ETS System"});
+    Logger.log("Admin email sent to: " + ADMIN_EMAIL);
+  } catch(ae) { Logger.log("Admin email error: " + ae.message); }
+  
+  // Method 2: Send to backup email if configured (personal Gmail)
+  if (ADMIN_BACKUP_EMAIL) {
+    try {
+      GmailApp.sendEmail(ADMIN_BACKUP_EMAIL, adminSubject, adminPlain, {htmlBody: adminHtml, name: "CTS ETS System"});
+      Logger.log("Backup admin email sent to: " + ADMIN_BACKUP_EMAIL);
+    } catch(be) { Logger.log("Backup email error: " + be.message); }
+  }
+  
+  // Method 3: Create a Gmail draft (always works, even for self-to-self)
+  try {
+    GmailApp.createDraft(ADMIN_EMAIL, adminSubject, adminPlain, {htmlBody: adminHtml, name: "CTS ETS System"});
+    Logger.log("Admin notification draft created for: " + ref);
+  } catch(de) { Logger.log("Draft error: " + de.message); }
 
   return {success:true,ref:ref};
 }
@@ -1088,7 +1343,7 @@ function handlePayment(data) {
       "J$"+amountPerStudent+" via "+(data.paymentMethod||"upload")+(refs.length>1?" | Part of multi-payment":""),programme,level);
   }
   
-  try{GmailApp.sendEmail(ADMIN_EMAIL,"💰 Payment — "+(refs.length>1?refs.length+" applications":rawRef),"",
+  try{GmailApp.sendEmail(ADMIN_EMAIL,"Payment — "+(refs.length>1?refs.length+" applications":rawRef),"",
     {htmlBody:"<h2>Payment Evidence Received</h2>"
     +(refs.length>1?"<p><b>Multi-Payment:</b> "+refs.length+" applications</p>":"")
     +"<p><b>Ref(s):</b> "+rawRef+"</p>"
@@ -1162,7 +1417,7 @@ function handleWiPay(data) {
       updateEnrolledPayment(ref, amountPerStudent);
       lifecycle(ref,"","","Online Payment","Financial","Txn:"+(data.transactionId||"")+" J$"+amountPerStudent+(refs.length>1?" [Multi]":""),"","");
     }
-    try{GmailApp.sendEmail(ADMIN_EMAIL,"✅ Payment Confirmed — "+(refs.length>1?refs.length+" applications":rawRef),"",
+    try{GmailApp.sendEmail(ADMIN_EMAIL,"Payment Confirmed — "+(refs.length>1?refs.length+" applications":rawRef),"",
       {htmlBody:"<h2>Payment Confirmed</h2>"
       +(refs.length>1?"<p><b>Multi-Payment:</b> "+refs.length+" applications</p>":"")
       +"<p><b>Ref(s):</b> "+rawRef+"</p><p><b>Txn:</b> "+(data.transactionId||"")+"</p>"
@@ -1174,7 +1429,7 @@ function handleWiPay(data) {
 
 function handleDispute(data) {
   audit("DISPUTE",data.ref||"",data.message||"Lookup failed","Website");
-  try{GmailApp.sendEmail(ADMIN_EMAIL,"⚠️ Dispute — "+(data.ref||""),"",
+  try{GmailApp.sendEmail(ADMIN_EMAIL,"Dispute — "+(data.ref||""),"",
     {htmlBody:"<h2>Payment Lookup Dispute</h2><p>Ref: <b>"+(data.ref||"")+"</b></p><p>"+(data.message||"")+"</p>",
     name:"CTS ETS System"});}catch(e){}
 }

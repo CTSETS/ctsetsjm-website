@@ -32,7 +32,7 @@ const DOC_REQUIREMENTS = {
     { slot: "proofId", label: "Proof of Identity (National ID / Passport / Driver's Licence)", required: true, accept: "image/*,.pdf" },
     { slot: "trn", label: "TRN Card", required: true, accept: "image/*,.pdf" },
     { slot: "qualifications", label: "Qualifications (CXC, Diplomas, etc.)", required: false, accept: "image/*,.pdf" },
-    { slot: "heartForm", label: "HEART/NSTA Application Form", required: false, accept: "image/*,.pdf" },
+    { slot: "heartForm", label: "Signed HEART/NSTA Application Form (download from section above)", required: true, accept: "image/*,.pdf" },
   ],
   caribbean: [
     { slot: "passportPhoto", label: "Passport-Size Photo (upload right-side up — this will be used on your Student ID Card)", required: true, accept: "image/*" },
@@ -186,8 +186,11 @@ export default function ApplyPage({ setPage }) {
       setErrors({ submit: form.programme + " is already in your application queue." });
       return;
     }
-    setAppQueue([...appQueue, { level: form.level, programme: form.programme, paymentPlan: form.paymentPlan || "Gold", ref: generateRef() }]);
+    setAppQueue([...appQueue, { level: form.level, programme: form.programme, paymentPlan: form.paymentPlan || "Gold", ref: generateRef(), heartDone: heartFormDone, heartFile: files.heartForm || null }]);
     set("level", ""); set("programme", ""); set("paymentPlan", "");
+    // Reset HEART form for next programme
+    setHeartFormDone(false);
+    setFiles(function(prev) { var n = Object.assign({}, prev); delete n.heartForm; return n; });
     setShowQueuePrompt(false);
   };
 
@@ -353,11 +356,14 @@ export default function ApplyPage({ setPage }) {
                 ))}
                 {/* List all submitted programmes */}
                 <div style={{ marginTop: 12, fontSize: 11, color: S.teal, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 8 }}>Programmes Applied</div>
-                {[...appQueue, ...(form.level && form.programme ? [{ level: form.level, programme: form.programme, paymentPlan: form.paymentPlan || "Gold" }] : [])].map(function(q, i) {
+                {[...appQueue, ...(form.level && form.programme ? [{ level: form.level, programme: form.programme, paymentPlan: form.paymentPlan || "Gold", heartDone: heartFormDone }] : [])].map(function(q, i) {
                   return (
-                    <div key={i} style={{ padding: "8px 12px", borderRadius: 6, background: S.lightBg, border: "1px solid " + S.border, marginBottom: 4, fontSize: 13, fontFamily: S.body }}>
-                      <span style={{ color: S.navy, fontWeight: 700 }}>{q.programme}</span>
-                      <span style={{ color: S.gray }}> · {q.level} · {q.paymentPlan} plan</span>
+                    <div key={i} style={{ padding: "8px 12px", borderRadius: 6, background: S.lightBg, border: "1px solid " + S.border, marginBottom: 4, fontSize: 13, fontFamily: S.body, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div>
+                        <span style={{ color: S.navy, fontWeight: 700 }}>{q.programme}</span>
+                        <span style={{ color: S.gray }}> · {q.level} · {q.paymentPlan} plan</span>
+                      </div>
+                      {isJamaican && <span style={{ fontSize: 10, color: q.heartDone ? S.emerald : S.coral, fontWeight: 700 }}>{q.heartDone ? "\u2713 HEART" : "\u2717 HEART"}</span>}
                     </div>
                   );
                 })}
