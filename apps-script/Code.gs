@@ -19,8 +19,22 @@ function loadIds() {
   SHEET_IDS.finance = p.getProperty("finance_id") || "";
   SHEET_IDS.operations = p.getProperty("operations_id") || "";
   SHEET_IDS.academic = p.getProperty("academic_id") || "";
+  // If students_id is missing, use the host spreadsheet (container-bound)
+  if (!SHEET_IDS.students) {
+    try {
+      var host = SpreadsheetApp.getActiveSpreadsheet();
+      if (host) {
+        SHEET_IDS.students = host.getId();
+        SHEET_IDS.master = SHEET_IDS.master || host.getId();
+        p.setProperty("students_id", SHEET_IDS.students);
+        p.setProperty("master_id", SHEET_IDS.master);
+        Logger.log("Auto-detected students_id from host spreadsheet: " + SHEET_IDS.students);
+      }
+    } catch(e) { Logger.log("Could not auto-detect host: " + e.message); }
+  }
 }
 function tab(sheetId, name) {
+  if (!sheetId) throw new Error("Sheet ID is empty for tab: " + name + ". Run setupAllSheets or check Script Properties.");
   var ss = SpreadsheetApp.openById(sheetId);
   var s = ss.getSheetByName(name);
   return s || ss.insertSheet(name);
@@ -29,6 +43,37 @@ function sTab(n) { loadIds(); return tab(SHEET_IDS.students, n); }
 function fTab(n) { loadIds(); return tab(SHEET_IDS.finance, n); }
 function oTab(n) { loadIds(); return tab(SHEET_IDS.operations, n); }
 function aTab(n) { loadIds(); return tab(SHEET_IDS.academic, n); }
+
+// Run this to check what's connected
+function diagnose() {
+  loadIds();
+  Logger.log("═══ CTS ETS DIAGNOSTICS ═══");
+  Logger.log("master_id:     " + (SHEET_IDS.master || "❌ EMPTY"));
+  Logger.log("students_id:   " + (SHEET_IDS.students || "❌ EMPTY"));
+  Logger.log("finance_id:    " + (SHEET_IDS.finance || "❌ EMPTY"));
+  Logger.log("operations_id: " + (SHEET_IDS.operations || "❌ EMPTY"));
+  Logger.log("academic_id:   " + (SHEET_IDS.academic || "❌ EMPTY"));
+  
+  var checks = [
+    ["Students", SHEET_IDS.students, "Applications"],
+    ["Students", SHEET_IDS.students, "Enrolled Students"],
+    ["Finance", SHEET_IDS.finance, "Payment Schedule"],
+    ["Operations", SHEET_IDS.operations, "Audit Log"],
+    ["Academic", SHEET_IDS.academic, "Certificates"],
+  ];
+  for (var i = 0; i < checks.length; i++) {
+    var c = checks[i];
+    try {
+      if (!c[1]) { Logger.log("❌ " + c[0] + " → " + c[2] + " — ID is empty"); continue; }
+      var ss = SpreadsheetApp.openById(c[1]);
+      var s = ss.getSheetByName(c[2]);
+      Logger.log(s ? "✅ " + c[0] + " → " + c[2] + " — OK" : "⚠️ " + c[0] + " → " + c[2] + " — tab not found");
+    } catch(e) {
+      Logger.log("❌ " + c[0] + " → " + c[2] + " — " + e.message);
+    }
+  }
+  Logger.log("═══ END DIAGNOSTICS ═══");
+}
 
 // ═══════════════════════════════════════════════════════════════════════
 // SETUP — Run ONCE
@@ -122,6 +167,16 @@ function setupStatusDropdown(ss) {
     .requireValueInList(["Pending Payment","Enrolled","Active","On Hold","Completed","Graduated","Withdrawn"], true)
     .setAllowInvalid(false).build();
   enrolled.getRange(2, statusCol2, 499, 1).setDataValidation(rule2);
+
+  // LMS Access Yes/No dropdown
+  var lmsCol = -1;
+  for (var i=0; i<h2.length; i++) { if (String(h2[i]).trim() === "LMS Access") { lmsCol = i+1; break; } }
+  if (lmsCol > 0) {
+    var lmsRule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(["Yes","No"], true)
+      .setAllowInvalid(false).build();
+    enrolled.getRange(2, lmsCol, 499, 1).setDataValidation(lmsRule);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -687,6 +742,7 @@ function doGet(e) {
     if (a==="lookupstudent") r = lookupStudent(e.parameter.ref||"",e.parameter.email||"");
     else if (a==="studentlogin") r = studentLogin(e.parameter.ref||"",e.parameter.pw||"");
     else if (a==="changepassword") r = changePassword(e.parameter.ref||"",e.parameter.oldpw||"",e.parameter.newpw||"");
+    else if (a==="resetpassword") r = requestPasswordReset(e.parameter.email||"");
     else if (a==="generaterecord") r = generateCumulativeRecord(e.parameter.student||"");
     else if (a==="getfoundingcount") r = getFoundingCount(e.parameter.programme||"",e.parameter.level||"");
     else if (a==="verifycert") r = verifyCert(e.parameter.cert||"");
@@ -837,18 +893,112 @@ function changePassword(ref, oldPw, newPw) {
     if(ar===refUpper || sn===refUpper){
       var storedPw=String(row[c["Portal Password"]]||"").trim();
       if(storedPw!==oldPw.trim()) return {ok:false, error:"Current password is incorrect."};
-      // Update password in sheet
       s.getRange(i+1, c["Portal Password"]+1).setValue(newPw.trim());
-      // Log it
       try {
-        var lifecycle = sTab("Student Lifecycle");
-        lifecycle.appendRow([new Date(), ar, sn, (row[c["First Name"]]||"")+" "+(row[c["Last Name"]]||""),
+        sTab("Student Lifecycle").appendRow([new Date(), ar, sn, (row[c["First Name"]]||"")+" "+(row[c["Last Name"]]||""),
           "Password Change", "Security", "Portal password changed by student", "", "", row[c["Programme"]]||"", row[c["Level"]]||"", "Student", "Portal"]);
       } catch(e){}
       return {ok:true, message:"Password changed successfully."};
     }
   }
   return {ok:false, error:"Student not found."};
+}
+
+// Admin password reset — run from script editor: adminResetPassword("CTSETS-STU-00001")
+function adminResetPassword(studentRef) {
+  if (!studentRef) return {ok:false, error:"Student ref required"};
+  loadIds();
+  var s=sTab("Enrolled Students"), d=s.getDataRange().getValues(), h=d[0], c={};
+  for(var i=0;i<h.length;i++) c[String(h[i]).trim()]=i;
+  var refUpper = studentRef.trim().toUpperCase();
+  for(var i=1;i<d.length;i++){
+    var row=d[i];
+    var ar=String(row[c["Application Ref"]]||"").trim().toUpperCase();
+    var sn=String(row[c["Student Number"]]||"").trim().toUpperCase();
+    if(ar===refUpper || sn===refUpper){
+      var newPw = generatePortalPassword();
+      s.getRange(i+1, c["Portal Password"]+1).setValue(newPw);
+      var email = String(row[c["Email"]]||"").trim();
+      var firstName = String(row[c["First Name"]]||"").trim();
+      var stuNum = sn || ar;
+      // Email new password to student
+      try {
+        GmailApp.sendEmail(email, "CTS ETS \u2014 Your Portal Password Has Been Reset", "", {
+          htmlBody: '<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">'
+            + '<div style="background:#011E40;padding:20px;text-align:center;border-radius:12px 12px 0 0">'
+            + '<h1 style="color:#D4A843;font-size:20px;margin:0">CTS ETS</h1></div>'
+            + '<div style="padding:28px;background:#fff;border:1px solid #e2e8f0;border-top:none">'
+            + '<h2 style="color:#011E40">Password Reset, ' + firstName + '</h2>'
+            + '<p style="color:#4A5568;line-height:1.7">Your Student Portal password has been reset by an administrator. Here are your new login credentials:</p>'
+            + '<div style="background:#FAFAF7;border-radius:10px;padding:20px;margin:16px 0;border-left:4px solid #D4A843">'
+            + '<p style="margin:0 0 8px"><strong>Student Number:</strong> ' + stuNum + '</p>'
+            + '<p style="margin:0 0 8px"><strong>New Password:</strong> ' + newPw + '</p></div>'
+            + '<p style="color:#4A5568;line-height:1.7">Please log in and change your password immediately for security.</p>'
+            + '<div style="text-align:center;margin:20px 0"><a href="https://www.ctsetsjm.com/#Student-Portal" style="display:inline-block;padding:14px 32px;background:#0E8F8B;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Log Into Portal</a></div>'
+            + '</div></body></html>',
+          name: "CTS ETS Admissions"
+        });
+      } catch(e) { Logger.log("Reset email error: " + e.message); }
+      try {
+        sTab("Student Lifecycle").appendRow([new Date(), ar, sn, firstName + " " + (row[c["Last Name"]]||""),
+          "Password Reset", "Security", "Portal password reset by admin", "", "", row[c["Programme"]]||"", row[c["Level"]]||"", "Admin", "Manual"]);
+      } catch(e){}
+      audit("PASSWORD RESET", stuNum, "Admin reset password for " + firstName + " (" + email + ")", "Admin");
+      Logger.log("Password reset for " + stuNum + " — new password emailed to " + email);
+      return {ok:true, message:"Password reset for " + stuNum + ". New password emailed to " + email};
+    }
+  }
+  return {ok:false, error:"Student not found: " + studentRef};
+}
+
+// Student self-service password reset — triggered from login page
+function requestPasswordReset(emailOrRef) {
+  if (!emailOrRef) return {ok:false, error:"Please enter your email or student number."};
+  loadIds();
+  var s=sTab("Enrolled Students"), d=s.getDataRange().getValues(), h=d[0], c={};
+  for(var i=0;i<h.length;i++) c[String(h[i]).trim()]=i;
+  var lookup = emailOrRef.trim().toUpperCase();
+  for(var i=1;i<d.length;i++){
+    var row=d[i];
+    var ar=String(row[c["Application Ref"]]||"").trim().toUpperCase();
+    var sn=String(row[c["Student Number"]]||"").trim().toUpperCase();
+    var em=String(row[c["Email"]]||"").trim().toUpperCase();
+    if(ar===lookup || sn===lookup || em===lookup){
+      var newPw = generatePortalPassword();
+      s.getRange(i+1, c["Portal Password"]+1).setValue(newPw);
+      var email = String(row[c["Email"]]||"").trim();
+      var firstName = String(row[c["First Name"]]||"").trim();
+      var stuNum = String(row[c["Student Number"]]||"").trim();
+      var appRef = String(row[c["Application Ref"]]||"").trim();
+      // Email new password
+      try {
+        GmailApp.sendEmail(email, "CTS ETS \u2014 Your New Portal Password", "", {
+          htmlBody: '<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">'
+            + '<div style="background:#011E40;padding:20px;text-align:center;border-radius:12px 12px 0 0">'
+            + '<h1 style="color:#D4A843;font-size:20px;margin:0">CTS ETS</h1></div>'
+            + '<div style="padding:28px;background:#fff;border:1px solid #e2e8f0;border-top:none">'
+            + '<h2 style="color:#011E40">Password Reset, ' + firstName + '</h2>'
+            + '<p style="color:#4A5568;line-height:1.7">You requested a password reset for your Student Portal. Here are your new login credentials:</p>'
+            + '<div style="background:#FAFAF7;border-radius:10px;padding:20px;margin:16px 0;border-left:4px solid #D4A843">'
+            + '<p style="margin:0 0 8px"><strong>Student Number:</strong> ' + (stuNum || appRef) + '</p>'
+            + '<p style="margin:0 0 8px"><strong>New Password:</strong> ' + newPw + '</p></div>'
+            + '<p style="color:#4A5568;line-height:1.7">We recommend changing this password after logging in.</p>'
+            + '<div style="text-align:center;margin:20px 0"><a href="https://www.ctsetsjm.com/#Student-Portal" style="display:inline-block;padding:14px 32px;background:#0E8F8B;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Log Into Portal</a></div>'
+            + '</div></body></html>',
+          name: "CTS ETS Admissions"
+        });
+      } catch(e) { Logger.log("Reset email error: " + e.message); }
+      try {
+        sTab("Student Lifecycle").appendRow([new Date(), appRef, stuNum, firstName + " " + (row[c["Last Name"]]||""),
+          "Password Reset", "Security", "Self-service password reset requested", "", "", row[c["Programme"]]||"", row[c["Level"]]||"", "Student", "Portal"]);
+      } catch(e){}
+      audit("PASSWORD RESET", stuNum || appRef, "Self-service reset for " + firstName + " (" + email + ")", "Student");
+      // Always return generic message for security — don't confirm whether account exists
+      return {ok:true, message:"If an account exists with that information, a new password has been emailed."};
+    }
+  }
+  // Same generic message even if not found — don't reveal account existence
+  return {ok:true, message:"If an account exists with that information, a new password has been emailed."};
 }
 
 function getAmtPaid(ref) {
@@ -1556,6 +1706,152 @@ function encourageEmail(name, prog) {
 // Triggers > Add Trigger > processEncouragementEmails > Time-driven > Day timer
 // Sends weekly to active enrolled students once course has started
 // ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════
+// PAYMENT REMINDERS — Checks due dates, sends 3/2/1 week reminders
+// Blocks LMS if payment overdue. Set trigger: processPaymentReminders, daily 8-9am
+// ═══════════════════════════════════════════════════════════════════════
+function processPaymentReminders() {
+  loadIds();
+  var today = new Date();
+  var todayMs = today.getTime();
+  var DAY = 86400000;
+  
+  // Get enrolled students
+  var es = sTab("Enrolled Students"), ed = es.getDataRange().getValues(), eh = ed[0], ec = {};
+  for (var i=0; i<eh.length; i++) ec[String(eh[i]).trim()] = i;
+  
+  // Get payment schedule
+  var ps = fTab("Payment Schedule"), pd = ps.getDataRange().getValues(), ph = pd[0], pc = {};
+  for (var i=0; i<ph.length; i++) pc[String(ph[i]).trim()] = i;
+  
+  // Check each enrolled student on Silver or Bronze plans
+  for (var i=1; i<ed.length; i++) {
+    var stuNum = String(ed[i][ec["Student Number"]]||"").trim();
+    var appRef = String(ed[i][ec["Application Ref"]]||"").trim();
+    var plan = String(ed[i][ec["Payment Plan"]]||"").trim();
+    var email = String(ed[i][ec["Email"]]||"").trim();
+    var firstName = String(ed[i][ec["First Name"]]||"").trim();
+    var programme = String(ed[i][ec["Programme"]]||"").trim();
+    var status = String(ed[i][ec["Status"]]||"").trim();
+    var lmsAccess = String(ed[i][ec["LMS Access"]]||"").trim();
+    
+    if (!stuNum || !email || plan === "Gold") continue;
+    if (status === "Graduated" || status === "Withdrawn" || status === "Completed") continue;
+    
+    // Find unpaid instalments for this student
+    for (var j=1; j<pd.length; j++) {
+      var pRef = String(pd[j][pc["Application Ref"]]||"").trim();
+      if (pRef.toUpperCase() !== appRef.toUpperCase()) continue;
+      
+      var pStatus = String(pd[j][pc["Status"]]||"").trim();
+      if (pStatus === "Paid" || pStatus === "Paid (Online)") continue;
+      
+      var dueDate = pd[j][pc["Due Date"]];
+      if (!dueDate) continue;
+      var dueDateMs = new Date(dueDate).getTime();
+      var daysUntil = Math.round((dueDateMs - todayMs) / DAY);
+      
+      var instalment = pd[j][pc["Instalment Label"]]||"";
+      var amount = pd[j][pc["Amount Due (JMD)"]]||0;
+      var amountStr = "J$" + Number(amount).toLocaleString();
+      var dueDateStr = Utilities.formatDate(new Date(dueDate), "America/Jamaica", "dd MMM yyyy");
+      var reminderStage = String(pd[j][pc["Reminder Stage"]]||"").trim();
+      
+      // 3 weeks (21 days)
+      if (daysUntil <= 21 && daysUntil > 14 && reminderStage !== "3wk" && reminderStage !== "2wk" && reminderStage !== "1wk" && reminderStage !== "overdue") {
+        sendPaymentReminder(email, firstName, stuNum, programme, instalment, amountStr, dueDateStr, "3 weeks");
+        ps.getRange(j+1, pc["Reminder Stage"]+1).setValue("3wk");
+        ps.getRange(j+1, pc["Last Reminder"]+1).setValue(new Date());
+      }
+      // 2 weeks (14 days)
+      else if (daysUntil <= 14 && daysUntil > 7 && reminderStage !== "2wk" && reminderStage !== "1wk" && reminderStage !== "overdue") {
+        sendPaymentReminder(email, firstName, stuNum, programme, instalment, amountStr, dueDateStr, "2 weeks");
+        ps.getRange(j+1, pc["Reminder Stage"]+1).setValue("2wk");
+        ps.getRange(j+1, pc["Last Reminder"]+1).setValue(new Date());
+      }
+      // 1 week (7 days)
+      else if (daysUntil <= 7 && daysUntil > 0 && reminderStage !== "1wk" && reminderStage !== "overdue") {
+        sendPaymentReminder(email, firstName, stuNum, programme, instalment, amountStr, dueDateStr, "1 week");
+        ps.getRange(j+1, pc["Reminder Stage"]+1).setValue("1wk");
+        ps.getRange(j+1, pc["Last Reminder"]+1).setValue(new Date());
+      }
+      // OVERDUE — block LMS access
+      else if (daysUntil <= 0 && reminderStage !== "overdue") {
+        sendPaymentReminder(email, firstName, stuNum, programme, instalment, amountStr, dueDateStr, "overdue");
+        ps.getRange(j+1, pc["Reminder Stage"]+1).setValue("overdue");
+        ps.getRange(j+1, pc["Last Reminder"]+1).setValue(new Date());
+        
+        // Block LMS access
+        if (lmsAccess === "Yes") {
+          es.getRange(i+1, ec["LMS Access"]+1).setValue("No");
+          audit("LMS BLOCKED", appRef, "Payment overdue for " + instalment + " (" + amountStr + " due " + dueDateStr + "). LMS access revoked.", "System");
+          Logger.log("LMS blocked for " + stuNum + " — overdue payment: " + instalment);
+          
+          // Notify student LMS is blocked
+          try {
+            GmailApp.sendEmail(email, "CTS ETS \u2014 Learning Portal Access Suspended", "", {
+              htmlBody: '<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">'
+                + '<div style="background:#011E40;padding:20px;text-align:center;border-radius:12px 12px 0 0">'
+                + '<h1 style="color:#D4A843;font-size:20px;margin:0">CTS ETS</h1></div>'
+                + '<div style="padding:28px;background:#fff;border:1px solid #e2e8f0;border-top:none">'
+                + '<h2 style="color:#C62828">Learning Portal Access Suspended</h2>'
+                + '<p style="color:#4A5568;line-height:1.7">Dear ' + firstName + ',</p>'
+                + '<p style="color:#4A5568;line-height:1.7">Your payment for <strong>' + instalment + '</strong> (' + amountStr + ') was due on <strong>' + dueDateStr + '</strong> and has not been received. Your Learning Portal access has been temporarily suspended.</p>'
+                + '<p style="color:#4A5568;line-height:1.7">To restore access, please make your payment as soon as possible:</p>'
+                + '<div style="text-align:center;margin:20px 0"><a href="https://jm.wipayfinancial.com/to_me/cts_empowerment_and_training_solutions" style="display:inline-block;padding:14px 32px;background:#C62828;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Pay Now</a></div>'
+                + '<p style="color:#4A5568;font-size:12px">Reference: <strong>' + stuNum + '</strong></p>'
+                + '<p style="color:#4A5568;line-height:1.7">Once payment is verified, your access will be restored. Contact admin@ctsetsjm.com or WhatsApp 876-381-9771 if you need assistance.</p>'
+                + '</div></body></html>',
+              name: "CTS ETS Finance"
+            });
+          } catch(e) {}
+          
+          // Notify admin
+          try {
+            GmailApp.sendEmail(ADMIN_EMAIL, "LMS Blocked \u2014 " + stuNum + " \u2014 Overdue Payment", "", {
+              htmlBody: "<h2>LMS Access Blocked</h2><p><b>" + stuNum + "</b> \u2014 " + firstName + "</p><p>Overdue: " + instalment + " (" + amountStr + " due " + dueDateStr + ")</p><p>LMS set to No. Restore manually in Enrolled Students when payment received.</p>",
+              name: "CTS ETS System"
+            });
+          } catch(e) {}
+        }
+      }
+      
+      // Only process the first unpaid instalment per student
+      break;
+    }
+  }
+  Logger.log("Payment reminders processed");
+}
+
+function sendPaymentReminder(email, firstName, stuNum, programme, instalment, amount, dueDate, urgency) {
+  var isOverdue = urgency === "overdue";
+  var bgColor = isOverdue ? "#C62828" : urgency === "1 week" ? "#E65100" : "#F57F17";
+  var urgencyText = isOverdue ? "OVERDUE" : "Due in " + urgency;
+  
+  try {
+    GmailApp.sendEmail(email, "CTS ETS \u2014 Payment " + (isOverdue ? "Overdue" : "Reminder") + " \u2014 " + instalment + " (" + amount + ")", "", {
+      htmlBody: '<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">'
+        + '<div style="background:#011E40;padding:20px;text-align:center;border-radius:12px 12px 0 0">'
+        + '<h1 style="color:#D4A843;font-size:20px;margin:0">CTS ETS</h1>'
+        + '<p style="color:rgba(255,255,255,0.6);font-size:11px;margin:4px 0 0">Payment ' + (isOverdue ? "Notice" : "Reminder") + '</p></div>'
+        + '<div style="padding:28px;background:#fff;border:1px solid #e2e8f0;border-top:none">'
+        + '<p style="color:#4A5568;line-height:1.7">Dear ' + firstName + ',</p>'
+        + '<div style="background:' + bgColor + ';color:#fff;padding:14px 20px;border-radius:8px;text-align:center;margin:16px 0">'
+        + '<div style="font-size:12px;opacity:0.8">' + urgencyText.toUpperCase() + '</div>'
+        + '<div style="font-size:24px;font-weight:800;margin:4px 0">' + amount + '</div>'
+        + '<div style="font-size:12px">' + instalment + ' \u2014 Due: ' + dueDate + '</div></div>'
+        + '<p style="color:#4A5568;line-height:1.7">Programme: <strong>' + programme + '</strong></p>'
+        + (isOverdue ? '<p style="color:#C62828;font-weight:700;line-height:1.7">Your Learning Portal access will be suspended until this payment is received.</p>' : '')
+        + '<div style="text-align:center;margin:20px 0"><a href="https://jm.wipayfinancial.com/to_me/cts_empowerment_and_training_solutions" style="display:inline-block;padding:14px 32px;background:' + bgColor + ';color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Pay Now</a></div>'
+        + '<p style="color:#4A5568;font-size:12px">Reference: <strong>' + stuNum + '</strong> \u2014 use this when making payment</p>'
+        + '<p style="color:#4A5568;line-height:1.7;font-size:12px">Questions? Email admin@ctsetsjm.com or WhatsApp 876-381-9771</p>'
+        + '</div></body></html>',
+      name: "CTS ETS Finance"
+    });
+    Logger.log("Payment reminder (" + urgency + ") sent to: " + email + " for " + instalment);
+  } catch(e) { Logger.log("Payment reminder error: " + e.message); }
+}
+
 function processEncouragementEmails() {
   loadIds();
   var s = sTab("Enrolled Students"), d = s.getDataRange().getValues();

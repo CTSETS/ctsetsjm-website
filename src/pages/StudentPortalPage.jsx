@@ -9,6 +9,11 @@ function LoginView({ onLogin }) {
   var [pw, setPw] = useState("");
   var [loading, setLoading] = useState(false);
   var [error, setError] = useState("");
+  var [showReset, setShowReset] = useState(false);
+  var [resetEmail, setResetEmail] = useState("");
+  var [resetLoading, setResetLoading] = useState(false);
+  var [resetMsg, setResetMsg] = useState("");
+  var [resetSuccess, setResetSuccess] = useState(false);
 
   var submit = async function() {
     if (!ref.trim() || !pw.trim()) return;
@@ -22,6 +27,18 @@ function LoginView({ onLogin }) {
     setLoading(false);
   };
 
+  var requestReset = async function() {
+    if (!resetEmail.trim()) return;
+    setResetLoading(true); setResetMsg("");
+    try {
+      var res = await fetch(APPS_SCRIPT_URL + "?action=resetpassword&email=" + encodeURIComponent(resetEmail.trim()));
+      var data = await res.json();
+      setResetMsg(data.message || "If an account exists, a new password has been emailed.");
+      setResetSuccess(true);
+    } catch(e) { setResetMsg("Connection error. Please try again."); }
+    setResetLoading(false);
+  };
+
   return (
     <div style={{ maxWidth: 440, margin: "0 auto" }}>
       <div style={{ background: "#fff", borderRadius: 16, padding: "36px 32px", border: "2px solid " + S.teal + "30", textAlign: "center" }}>
@@ -29,30 +46,64 @@ function LoginView({ onLogin }) {
         <h2 style={{ fontFamily: S.heading, fontSize: 22, color: S.navy, fontWeight: 700, marginBottom: 4 }}>Student Portal</h2>
         <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, marginBottom: 24 }}>Log in with your Application Reference (or Student Number) and portal password.</p>
 
-        <div style={{ marginBottom: 14 }}>
-          <label style={{ display: "block", fontSize: 10, color: S.teal, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600, marginBottom: 6, textAlign: "left" }}>Application Reference</label>
-          <input type="text" value={ref} onChange={function(e) { setRef(e.target.value.toUpperCase()); setError(""); }}
-            onKeyDown={function(e) { if (e.key === "Enter") submit(); }}
-            placeholder="CTSETS-2026-03-XXXXX or CTSETS-STU-XXXXX"
-            style={{ width: "100%", padding: "13px 16px", borderRadius: 8, border: "2px solid " + S.border, fontSize: 14, fontFamily: S.body, color: S.navy, fontWeight: 600, outline: "none", letterSpacing: 1, boxSizing: "border-box" }} />
-        </div>
+        {!showReset ? (
+          <div>
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ display: "block", fontSize: 10, color: S.teal, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600, marginBottom: 6, textAlign: "left" }}>Application Reference</label>
+              <input type="text" value={ref} onChange={function(e) { setRef(e.target.value.toUpperCase()); setError(""); }}
+                onKeyDown={function(e) { if (e.key === "Enter") submit(); }}
+                placeholder="CTSETS-2026-03-XXXXX or CTSETS-STU-XXXXX"
+                style={{ width: "100%", padding: "13px 16px", borderRadius: 8, border: "2px solid " + S.border, fontSize: 14, fontFamily: S.body, color: S.navy, fontWeight: 600, outline: "none", letterSpacing: 1, boxSizing: "border-box" }} />
+            </div>
 
-        <div style={{ marginBottom: 20 }}>
-          <label style={{ display: "block", fontSize: 10, color: S.teal, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600, marginBottom: 6, textAlign: "left" }}>Portal Password</label>
-          <input type="password" value={pw} onChange={function(e) { setPw(e.target.value); setError(""); }}
-            onKeyDown={function(e) { if (e.key === "Enter") submit(); }}
-            placeholder="Enter your password"
-            style={{ width: "100%", padding: "13px 16px", borderRadius: 8, border: "2px solid " + S.border, fontSize: 14, fontFamily: S.body, color: S.navy, fontWeight: 600, outline: "none", boxSizing: "border-box" }} />
-        </div>
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ display: "block", fontSize: 10, color: S.teal, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600, marginBottom: 6, textAlign: "left" }}>Portal Password</label>
+              <input type="password" value={pw} onChange={function(e) { setPw(e.target.value); setError(""); }}
+                onKeyDown={function(e) { if (e.key === "Enter") submit(); }}
+                placeholder="Enter your password"
+                style={{ width: "100%", padding: "13px 16px", borderRadius: 8, border: "2px solid " + S.border, fontSize: 14, fontFamily: S.body, color: S.navy, fontWeight: 600, outline: "none", boxSizing: "border-box" }} />
+            </div>
 
-        {error && <div style={{ marginBottom: 16, padding: "12px 16px", borderRadius: 8, background: S.amberLight, border: "1px solid " + S.amber + "30", fontSize: 13, color: S.amberDark, fontFamily: S.body }}>{error}</div>}
+            <div style={{ textAlign: "right", marginBottom: 16 }}>
+              <button onClick={function() { setShowReset(true); setError(""); setResetMsg(""); setResetSuccess(false); }}
+                style={{ background: "none", border: "none", color: S.coral, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: S.body, textDecoration: "underline" }}>
+                Forgot your password?
+              </button>
+            </div>
 
-        <button onClick={submit} disabled={loading || !ref.trim() || !pw.trim()}
-          style={{ width: "100%", padding: "14px", borderRadius: 10, border: "none", background: (ref.trim() && pw.trim()) ? S.teal : S.border, color: (ref.trim() && pw.trim()) ? "#fff" : S.grayLight, fontSize: 15, fontWeight: 700, cursor: (ref.trim() && pw.trim()) ? "pointer" : "not-allowed", fontFamily: S.body }}>
-          {loading ? "Logging in..." : "Log In"}
-        </button>
+            {error && <div style={{ marginBottom: 16, padding: "12px 16px", borderRadius: 8, background: S.amberLight, border: "1px solid " + S.amber + "30", fontSize: 13, color: S.amberDark, fontFamily: S.body }}>{error}</div>}
 
-        <p style={{ fontFamily: S.body, fontSize: 11, color: S.grayLight, marginTop: 14 }}>Your password was emailed to you when your application was accepted. If you haven't received it, contact <a href="mailto:admin@ctsetsjm.com" style={{ color: S.teal }}>admin@ctsetsjm.com</a></p>
+            <button onClick={submit} disabled={loading || !ref.trim() || !pw.trim()}
+              style={{ width: "100%", padding: "14px", borderRadius: 10, border: "none", background: (ref.trim() && pw.trim()) ? S.teal : S.border, color: (ref.trim() && pw.trim()) ? "#fff" : S.grayLight, fontSize: 15, fontWeight: 700, cursor: (ref.trim() && pw.trim()) ? "pointer" : "not-allowed", fontFamily: S.body }}>
+              {loading ? "Logging in..." : "Log In"}
+            </button>
+          </div>
+        ) : (
+          <div>
+            <div style={{ fontSize: 32, marginBottom: 10 }}>{"\uD83D\uDD11"}</div>
+            <h3 style={{ fontFamily: S.heading, fontSize: 18, color: S.navy, fontWeight: 700, marginBottom: 6 }}>Reset Your Password</h3>
+            <p style={{ fontFamily: S.body, fontSize: 12, color: S.gray, marginBottom: 20, lineHeight: 1.6 }}>Enter your email address, student number, or application reference. If we find your account, a new password will be emailed to you.</p>
+
+            <div style={{ marginBottom: 16 }}>
+              <input type="text" value={resetEmail} onChange={function(e) { setResetEmail(e.target.value); setResetMsg(""); setResetSuccess(false); }}
+                onKeyDown={function(e) { if (e.key === "Enter") requestReset(); }}
+                placeholder="Email, Student Number, or App Reference"
+                style={{ width: "100%", padding: "13px 16px", borderRadius: 8, border: "2px solid " + S.border, fontSize: 14, fontFamily: S.body, color: S.navy, fontWeight: 600, outline: "none", boxSizing: "border-box" }} />
+            </div>
+
+            {resetMsg && <div style={{ marginBottom: 16, padding: "12px 16px", borderRadius: 8, background: resetSuccess ? S.emeraldLight : S.amberLight, border: "1px solid " + (resetSuccess ? S.emerald : S.amber) + "30", fontSize: 13, color: resetSuccess ? S.emeraldDark : S.amberDark, fontFamily: S.body }}>{resetMsg}</div>}
+
+            <button onClick={requestReset} disabled={resetLoading || !resetEmail.trim()}
+              style={{ width: "100%", padding: "14px", borderRadius: 10, border: "none", background: resetEmail.trim() ? S.coral : S.border, color: resetEmail.trim() ? "#fff" : S.grayLight, fontSize: 15, fontWeight: 700, cursor: resetEmail.trim() ? "pointer" : "not-allowed", fontFamily: S.body, marginBottom: 12 }}>
+              {resetLoading ? "Sending..." : "Send New Password"}
+            </button>
+
+            <button onClick={function() { setShowReset(false); setResetMsg(""); setResetSuccess(false); }}
+              style={{ background: "none", border: "none", color: S.teal, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: S.body }}>
+              Back to Login
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -61,6 +112,8 @@ function LoginView({ onLogin }) {
 function Dashboard({ student, onLogout, setPage, onPasswordChanged }) {
   var pct = student.totalFees > 0 ? Math.round((student.totalPaid / student.totalFees) * 100) : 0;
   var [showPwChange, setShowPwChange] = useState(false);
+  var [showPayModal, setShowPayModal] = useState(false);
+  var [payUrl, setPayUrl] = useState("");
   var [oldPw, setOldPw] = useState("");
   var [newPw, setNewPw] = useState("");
   var [confirmPw, setConfirmPw] = useState("");
@@ -87,10 +140,17 @@ function Dashboard({ student, onLogout, setPage, onPasswordChanged }) {
     <div>
       {/* Welcome bar */}
       <div style={{ background: "linear-gradient(135deg, " + S.teal + " 0%, " + S.emerald + " 100%)", borderRadius: 16, padding: "28px 32px", color: "#fff", marginBottom: 24, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
-        <div>
-          <div style={{ fontSize: 12, opacity: 0.7, fontFamily: S.body, marginBottom: 4 }}>Welcome back</div>
-          <h2 style={{ fontFamily: S.heading, fontSize: "clamp(20px,3vw,28px)", fontWeight: 700, margin: 0 }}>{student.name || "Student"}</h2>
-          <div style={{ fontSize: 13, opacity: 0.85, fontFamily: S.body, marginTop: 4 }}>{(student.level ? student.level + " — " : "") + (student.programme || "")}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          {student.photoUrl ? (
+            <img src={student.photoUrl} alt="" style={{ width: 56, height: 56, borderRadius: "50%", objectFit: "cover", border: "3px solid rgba(255,255,255,0.5)" }} referrerPolicy="no-referrer" />
+          ) : (
+            <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 800, color: "#fff" }}>{(student.name || "S").charAt(0)}</div>
+          )}
+          <div>
+            <div style={{ fontSize: 12, opacity: 0.7, fontFamily: S.body, marginBottom: 4 }}>Welcome back</div>
+            <h2 style={{ fontFamily: S.heading, fontSize: "clamp(20px,3vw,28px)", fontWeight: 700, margin: 0 }}>{student.name || "Student"}</h2>
+            <div style={{ fontSize: 13, opacity: 0.85, fontFamily: S.body, marginTop: 4 }}>{(student.level ? student.level + " — " : "") + (student.programme || "")}</div>
+          </div>
         </div>
         <button onClick={onLogout} style={{ padding: "8px 20px", borderRadius: 6, border: "2px solid rgba(255,255,255,0.4)", background: "transparent", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: S.body }}>Log Out</button>
       </div>
@@ -154,7 +214,16 @@ function Dashboard({ student, onLogout, setPage, onPasswordChanged }) {
           })}
 
           {student.outstanding > 0 && (
-            <Btn primary onClick={function() { setPage("Pay"); }} style={{ width: "100%", marginTop: 16, color: "#fff", background: S.coral, fontSize: 13 }}>Make a Payment</Btn>
+            <div>
+              <Btn primary onClick={function() {
+                var url = "https://jm.wipayfinancial.com/to_me/cts_empowerment_and_training_solutions";
+                setShowPayModal(true);
+                setPayUrl(url);
+              }} style={{ width: "100%", marginTop: 16, color: "#fff", background: S.coral, fontSize: 13 }}>Make a Payment</Btn>
+              <div style={{ textAlign: "center", marginTop: 8, fontSize: 10, color: S.grayLight, fontFamily: S.body }}>
+                Reference: <strong>{student.studentNumber || student.ref}</strong> — use this as your payment reference
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -233,7 +302,10 @@ function Dashboard({ student, onLogout, setPage, onPasswordChanged }) {
               : "Your Learning Portal access will be activated once your status is updated to Enrolled. Contact admin@ctsetsjm.com if you have questions."}
           </p>
           {student.status === "Pending Payment" && (
-            <Btn primary onClick={function() { setPage("Pay"); }} style={{ color: "#fff", background: S.coral, fontSize: 14, padding: "14px 32px", marginTop: 12 }}>Make Payment Now</Btn>
+            <Btn primary onClick={function() {
+              setShowPayModal(true);
+              setPayUrl("https://jm.wipayfinancial.com/to_me/cts_empowerment_and_training_solutions");
+            }} style={{ color: "#fff", background: S.coral, fontSize: 14, padding: "14px 32px", marginTop: 12 }}>Make Payment Now</Btn>
           )}
         </div>
       )}
@@ -247,7 +319,7 @@ function Dashboard({ student, onLogout, setPage, onPasswordChanged }) {
             ["Email", student.email || "—"],
             ["Phone", student.phone || "—"],
             ["Gender", student.gender || "—"],
-            ["Date of Birth", student.dob || "—"],
+            ["Date of Birth", student.dob ? new Date(student.dob).toLocaleDateString("en-JM", {year:"numeric",month:"long",day:"numeric"}) : "—"],
             ["Nationality", student.nationality || "—"],
             ["Country", student.country || "—"],
             ["Parish", student.parish || "—"],
@@ -287,8 +359,8 @@ function Dashboard({ student, onLogout, setPage, onPasswordChanged }) {
         </div>
       )}
 
-      {/* Student ID Card — only if photo on file */}
-      {student.studentNumber && student.photoUrl && (
+      {/* Student ID Card — only if photo on file AND at least one payment made */}
+      {student.studentNumber && student.photoUrl && student.totalPaid > 0 && (
         <div style={{ background: "#fff", borderRadius: 14, padding: "20px 24px", border: "1px solid " + S.border, marginBottom: 24 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -315,7 +387,8 @@ function Dashboard({ student, onLogout, setPage, onPasswordChanged }) {
               Print / Save
             </button>
           </div>
-          <div id="cts-id-card" style={{ width: 323, margin: "0 auto" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 20, flexWrap: "wrap" }}>
+            <div id="cts-id-card" style={{ width: 323 }}>
             <div style={{ width: 323, height: 204, background: "linear-gradient(135deg, " + S.navy + " 0%, #0A2347 100%)", borderRadius: 10, padding: "10px 12px", color: "#fff", position: "relative", overflow: "hidden", fontFamily: "Arial, sans-serif" }}>
               {/* Gold top bar */}
               <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg, " + S.gold + ", " + S.gold + "60)" }} />
@@ -351,7 +424,6 @@ function Dashboard({ student, onLogout, setPage, onPasswordChanged }) {
                 <div><div style={{ color: "rgba(255,255,255,0.35)", letterSpacing: 0.3 }}>COHORT</div><div style={{ fontWeight: 700, marginTop: 1, fontSize: 6 }}>{student.cohort || "TBC"}</div></div>
                 <div><div style={{ color: "rgba(255,255,255,0.35)", letterSpacing: 0.3 }}>VALID FROM</div><div style={{ fontWeight: 700, marginTop: 1, fontSize: 6 }}>{student.startDate || "TBC"}</div></div>
                 <div><div style={{ color: "rgba(255,255,255,0.35)", letterSpacing: 0.3 }}>VALID TO</div><div style={{ fontWeight: 700, marginTop: 1, fontSize: 6 }}>{student.endDate || "TBC"}</div></div>
-                <div><div style={{ color: "rgba(255,255,255,0.35)", letterSpacing: 0.3 }}>STATUS</div><div style={{ fontWeight: 700, marginTop: 1, fontSize: 6, color: S.gold }}>{student.status}</div></div>
               </div>
               {/* Footer */}
               <div style={{ textAlign: "center", marginTop: 4, fontSize: 4.5, color: "rgba(255,255,255,0.2)", lineHeight: 1.4 }}>
@@ -360,9 +432,14 @@ function Dashboard({ student, onLogout, setPage, onPasswordChanged }) {
               </div>
             </div>
           </div>
+            {/* School Logo beside card */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+              <img src="/logo.jpg" alt="CTS ETS" style={{ width: 100, height: 100, objectFit: "contain", borderRadius: 8 }} />
+              <div style={{ textAlign: "center", fontSize: 8, color: S.gray, fontFamily: S.body, lineHeight: 1.4, maxWidth: 110 }}>CTS Empowerment &amp; Training Solutions</div>
+            </div>
+          </div>
           <div style={{ textAlign: "center", marginTop: 10, fontSize: 10, color: S.gray, fontFamily: S.body }}>
-            {student.photoUrl ? "Your passport photo is displayed on the card." : "Photo will appear once your application documents are processed."}
-            <br/><span style={{ fontSize: 9, color: S.grayLight }}>Print at 100% scale for exact credit card size (85.6mm x 54mm). Cut and laminate.</span>
+            Print at 100% scale for exact credit card size (85.6mm x 54mm). Cut and laminate.
           </div>
         </div>
       )}
@@ -403,9 +480,45 @@ function Dashboard({ student, onLogout, setPage, onPasswordChanged }) {
         )}
       </div>
 
+      {/* Payment Modal — WiPay inline */}
+      {showPayModal && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(1,30,64,0.85)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)", padding: 20 }}
+          onClick={function(e) { if (e.target === e.currentTarget) setShowPayModal(false); }}>
+          <div style={{ background: "#fff", borderRadius: 16, width: "100%", maxWidth: 520, maxHeight: "90vh", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            <div style={{ padding: "16px 20px", background: S.navy, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <div style={{ color: S.gold, fontSize: 14, fontWeight: 700 }}>Make a Payment</div>
+                <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 11, marginTop: 2 }}>Ref: {student.studentNumber || student.ref} | Outstanding: {fmt(student.outstanding)}</div>
+              </div>
+              <button onClick={function() { setShowPayModal(false); }} style={{ background: "none", border: "none", color: "#fff", fontSize: 22, cursor: "pointer", padding: "0 4px" }}>{"\u2715"}</button>
+            </div>
+            <div style={{ padding: 20 }}>
+              <div style={{ background: S.amberLight, borderRadius: 8, padding: "12px 16px", marginBottom: 16, border: "1px solid " + S.amber + "30" }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: S.amberDark, fontFamily: S.body, marginBottom: 4 }}>Payment Reference</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: S.navy, fontFamily: "monospace", letterSpacing: 1 }}>{student.studentNumber || student.ref}</div>
+                <div style={{ fontSize: 11, color: S.gray, fontFamily: S.body, marginTop: 4 }}>Use this reference when making your payment so we can match it to your account.</div>
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 12 }}>Choose payment method:</div>
+              <a href={payUrl} target="_blank" rel="noopener noreferrer"
+                style={{ display: "block", padding: "16px 20px", borderRadius: 10, background: S.emerald, color: "#fff", textAlign: "center", textDecoration: "none", fontWeight: 700, fontSize: 14, fontFamily: S.body, marginBottom: 10 }}>
+                Pay Online with Credit/Debit Card (WiPay)
+              </a>
+              <div style={{ padding: "14px 20px", borderRadius: 10, background: S.lightBg, border: "1px solid " + S.border, fontSize: 12, fontFamily: S.body, color: S.gray, lineHeight: 1.7 }}>
+                <div style={{ fontWeight: 700, color: S.navy, marginBottom: 6 }}>Bank Transfer</div>
+                NCB — JMD Account<br/>
+                After transfer, email your receipt to <strong>admin@ctsetsjm.com</strong> with your reference number above.<br/>
+                Or WhatsApp your receipt to <strong>876-381-9771</strong>
+              </div>
+              <div style={{ textAlign: "center", marginTop: 14, fontSize: 11, color: S.grayLight, fontFamily: S.body }}>
+                After payment, your status will be updated within 24 hours. You will receive an email confirmation.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Quick links */}
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
-        <Btn onClick={function() { setPage("FAQ"); }} style={{ border: "2px solid " + S.teal, color: S.teal, fontSize: 12 }}>FAQ</Btn>
         <a href="https://wa.me/8763819771" target="_blank" rel="noopener noreferrer" style={{ padding: "10px 20px", borderRadius: 8, background: S.emerald, color: "#fff", fontSize: 12, fontWeight: 700, fontFamily: S.body, textDecoration: "none" }}>WhatsApp Support</a>
         <a href="mailto:admin@ctsetsjm.com" style={{ padding: "10px 20px", borderRadius: 8, border: "2px solid " + S.navy, color: S.navy, fontSize: 12, fontWeight: 700, fontFamily: S.body, textDecoration: "none" }}>Email Support</a>
       </div>
@@ -423,6 +536,28 @@ export default function StudentPortalPage({ setPage }) {
       if (saved) setStudent(JSON.parse(saved));
     } catch(e) {}
   }, []);
+
+  // Auto sign-out after 15 minutes of inactivity
+  useEffect(function() {
+    if (!student) return;
+    var timeout;
+    var IDLE_LIMIT = 15 * 60 * 1000; // 15 minutes
+    var resetTimer = function() {
+      clearTimeout(timeout);
+      timeout = setTimeout(function() {
+        setStudent(null);
+        try { sessionStorage.removeItem("cts_portal_session"); } catch(e) {}
+        alert("You have been signed out due to inactivity.");
+      }, IDLE_LIMIT);
+    };
+    var events = ["mousedown", "mousemove", "keydown", "scroll", "touchstart", "click"];
+    for (var i = 0; i < events.length; i++) { document.addEventListener(events[i], resetTimer); }
+    resetTimer();
+    return function() {
+      clearTimeout(timeout);
+      for (var i = 0; i < events.length; i++) { document.removeEventListener(events[i], resetTimer); }
+    };
+  }, [student]);
 
   var handleLogin = function(data) {
     setStudent(data);
