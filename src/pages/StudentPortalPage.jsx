@@ -3,9 +3,10 @@ import S from "../constants/styles";
 import { APPS_SCRIPT_URL, LEARNING_PORTAL_URL } from "../constants/config";
 import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture } from "../components/shared/CoreComponents";
 import { fmt } from "../utils/formatting";
+import OTPGate from "../components/common/OTPGate";
 
-function LoginView({ onLogin }) {
-  var [ref, setRef] = useState("");
+function LoginView({ onLogin, verifiedId }) {
+  var [ref, setRef] = useState(verifiedId || "");
   var [pw, setPw] = useState("");
   var [loading, setLoading] = useState(false);
   var [error, setError] = useState("");
@@ -14,6 +15,9 @@ function LoginView({ onLogin }) {
   var [resetLoading, setResetLoading] = useState(false);
   var [resetMsg, setResetMsg] = useState("");
   var [resetSuccess, setResetSuccess] = useState(false);
+
+  // If verifiedId changes (OTP completed), update ref
+  useEffect(function() { if (verifiedId) setRef(verifiedId); }, [verifiedId]);
 
   var submit = async function() {
     if (!ref.trim() || !pw.trim()) return;
@@ -50,10 +54,18 @@ function LoginView({ onLogin }) {
           <div>
             <div style={{ marginBottom: 14 }}>
               <label style={{ display: "block", fontSize: 10, color: S.teal, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600, marginBottom: 6, textAlign: "left" }}>Application Reference</label>
+              {verifiedId ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "13px 16px", borderRadius: 8, border: "2px solid #2E7D32", background: "rgba(46,125,50,0.04)", fontSize: 14, fontFamily: S.body, color: S.navy, fontWeight: 700, letterSpacing: 1 }}>
+                  <span style={{ fontSize: 14 }}>{"\u2705"}</span>
+                  <span>{verifiedId}</span>
+                  <span style={{ marginLeft: "auto", fontSize: 10, color: "#2E7D32", fontWeight: 600 }}>Verified</span>
+                </div>
+              ) : (
               <input type="text" value={ref} onChange={function(e) { setRef(e.target.value.toUpperCase()); setError(""); }}
                 onKeyDown={function(e) { if (e.key === "Enter") submit(); }}
                 placeholder="CTSETS-2026-03-XXXXX or CTSETS-STU-XXXXX"
                 style={{ width: "100%", padding: "13px 16px", borderRadius: 8, border: "2px solid " + S.border, fontSize: 14, fontFamily: S.body, color: S.navy, fontWeight: 600, outline: "none", letterSpacing: 1, boxSizing: "border-box" }} />
+              )}
             </div>
 
             <div style={{ marginBottom: 12 }}>
@@ -650,9 +662,26 @@ export default function StudentPortalPage({ setPage }) {
     <PageWrapper>
       {!student ? (
         <div>
-          <SectionHeader tag="Student Portal" title="Welcome Back" desc="Log in to view your programme, payment status, and access the Learning Portal." accentColor={S.teal} />
+          <SectionHeader tag="Student Portal" title="Welcome Back" desc="Verify your identity to access your programme, payment status, and the Learning Portal." accentColor={S.teal} />
           <Container>
-            <LoginView onLogin={handleLogin} />
+            <OTPGate
+              purpose="portal"
+              title="Student Portal Access"
+              subtitle="Enter your Application Number or Student ID. We'll send a verification code to your registered email."
+            >
+              {function(verifiedId) {
+                return (
+                  <div>
+                    <div style={{ maxWidth: 440, margin: "0 auto", marginBottom: 20, padding: "12px 16px", borderRadius: 10, background: "rgba(46,125,50,0.06)", border: "1px solid rgba(46,125,50,0.12)", textAlign: "center" }}>
+                      <span style={{ fontSize: 12, color: "#2E7D32", fontFamily: S.body }}>
+                        {"\uD83D\uDD12"} <strong>Step 2 of 2:</strong> Now enter your portal password to complete login.
+                      </span>
+                    </div>
+                    <LoginView onLogin={handleLogin} verifiedId={verifiedId} />
+                  </div>
+                );
+              }}
+            </OTPGate>
             <Reveal>
               <div style={{ textAlign: "center", marginTop: 32, padding: "24px", borderRadius: 14, background: S.lightBg, border: "1px solid " + S.border }}>
                 <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, marginBottom: 12 }}>Not enrolled yet?</p>

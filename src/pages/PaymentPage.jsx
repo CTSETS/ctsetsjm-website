@@ -9,6 +9,7 @@ import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture } fro
 import { PaymentSecurityNotice, HoneypotField } from "../components/shared/DisplayComponents";
 import { PaymentMethodSelector, PaymentSetupNotice, isOnlinePaymentAvailable } from "../components/apply/SmartPayment";
 import { fmt } from "../utils/formatting";
+import OTPGate from "../components/common/OTPGate";
 // Payment confirmation email sent by backend (Apps Script)
 
 // ── Tuition by level ──
@@ -88,6 +89,9 @@ function calcPricing(level) {
 }
 
 export default function PaymentPage({ setPage }) {
+  // ── OTP Verification Gate ──
+  var _sOtp = useState(null); var verifiedId = _sOtp[0]; var setVerifiedId = _sOtp[1];
+
   // ── Multi-student lookup ──
   var _s = useState(""); var refInput = _s[0]; var setRefInput = _s[1];
   var _s2 = useState("idle"); var lookupState = _s2[0]; var setLookupState = _s2[1];
@@ -114,6 +118,18 @@ export default function PaymentPage({ setPage }) {
   var _s19 = useState(false); var payingReg = _s19[0]; var setPayingReg = _s19[1];
   var _s20 = useState(false); var payingTuition = _s20[0]; var setPayingTuition = _s20[1];
   var startTime = useRef(Date.now());
+
+  // ── Auto-fill and trigger lookup after OTP verification ──
+  useEffect(function() {
+    if (verifiedId && lookupState === "idle") {
+      setRefInput(verifiedId);
+      // Auto-trigger lookup after a short delay to let state settle
+      setTimeout(function() {
+        var lookupBtn = document.getElementById("otp-auto-lookup");
+        if (lookupBtn) lookupBtn.click();
+      }, 300);
+    }
+  }, [verifiedId]);
 
   // ── Check for WiPay return (query params in URL) ──
   useEffect(function() {
@@ -448,6 +464,33 @@ export default function PaymentPage({ setPage }) {
   }
 
   // ═══════════ MAIN ═══════════
+  if (!verifiedId) {
+    return (
+      <PageWrapper bg={S.lightBg}>
+        <SectionHeader tag="Finance" title="Make a Payment" desc="Verify your identity to access the Payment Centre." accentColor={S.gold} />
+        <Container>
+          <div style={{ maxWidth: 680, margin: "0 auto" }}>
+            <OTPGate
+              purpose="payment"
+              title="Payment Centre Access"
+              subtitle="Enter your Application Number or Student ID. We'll send a verification code to your registered email."
+            >
+              {function(id) {
+                setVerifiedId(id);
+                return (
+                  <div style={{ textAlign: "center", padding: "20px 0" }}>
+                    <div style={{ fontSize: 28, marginBottom: 8 }}>{"\u2705"}</div>
+                    <p style={{ fontFamily: S.body, fontSize: 14, color: "#2E7D32", fontWeight: 600 }}>Identity verified. Loading Payment Centre...</p>
+                  </div>
+                );
+              }}
+            </OTPGate>
+          </div>
+        </Container>
+      </PageWrapper>
+    );
+  }
+
   return (
     <PageWrapper bg={S.lightBg}>
       {/* Full-screen overlay — blocks ALL interaction during payment */}
@@ -487,7 +530,7 @@ export default function PaymentPage({ setPage }) {
                   style={{ flex: 1, padding: "14px 16px", borderRadius: 8, border: "2px solid " + (lookupState === "found" ? S.emerald : "rgba(1,30,64,0.12)"), fontSize: 18, fontFamily: "'DM Sans', sans-serif", color: S.navy, fontWeight: 700, outline: "none", letterSpacing: 1, background: lookupState === "found" ? S.emeraldLight + "40" : "#fff" }}
                 />
                 {lookupState !== "found" ? (
-                  <button onClick={handleLookup} disabled={lookupState === "loading" || !refInput.trim()}
+                  <button id="otp-auto-lookup" onClick={handleLookup} disabled={lookupState === "loading" || !refInput.trim()}
                     style={{ padding: "14px 28px", borderRadius: 8, background: refInput.trim() ? S.navy : "rgba(1,30,64,0.08)", color: refInput.trim() ? S.gold : S.grayLight, border: "none", fontSize: 14, fontWeight: 700, cursor: refInput.trim() ? "pointer" : "not-allowed", fontFamily: S.body, opacity: lookupState === "loading" ? 0.6 : 1, whiteSpace: "nowrap" }}>
                     {lookupState === "loading" ? "Searching..." : "Look Up"}
                   </button>
