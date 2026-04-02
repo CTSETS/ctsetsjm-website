@@ -26,7 +26,7 @@ function CertDropdown() {
           <p style={{ marginBottom: 12 }}>All CTS ETS programmes are aligned to NCTVET competency standards. When you complete your training, we arrange your NCTVET assessment through HEART/NSTA — at no additional cost, unless required. NCTVET registration and assessment fees are set by NCTVET where necessary.</p>
           <p style={{ marginBottom: 12 }}>Your NVQ-J qualification is recognised by employers across Jamaica and meets international competency-based education standards.</p>
           <div style={{ padding: "12px 16px", borderRadius: 8, background: S.lightBg, border: "1px solid " + S.border, fontSize: 12, color: S.gray }}>
-            <strong style={{ color: S.navy }}>Qualification Levels:</strong> Job Certificate (entry) → Level 2 (Vocational Certificate) → Level 3 (Diploma) → Level 4 (Associate Equivalent) → Level 5 (Bachelor's Equivalent)
+            <strong style={{ color: S.navy }}>Qualification Levels:</strong> Job Certificate (entry) → Level 2 (Vocational Certificates) → Level 3 (Diploma) → Level 4 (Associate Equivalent) → Level 5 (Bachelor's Equivalent)
           </div>
         </div>
       )}
@@ -131,7 +131,7 @@ function ProgrammeCard({ prog, level, levelColor, expanded, onToggle, setPage })
 
 export default function ProgrammesPage({ setPage }) {
   var [expanded, setExpanded] = useState({});
-  var levelColors = { "Job / Professional Certificates": S.emerald, "Level 2 — Vocational Certificate": S.teal, "Level 3 — Diploma": S.violet, "Level 4 — Associate Equivalent": S.coral, "Level 5 — Bachelor's Equivalent": S.rose };
+  var levelColors = { "Job / Professional Certificates": S.emerald, "Level 2 — Vocational Certificates": S.teal, "Level 3 — Diploma": S.violet, "Level 4 — Associate Equivalent": S.coral, "Level 5 — Bachelor's Equivalent": S.rose };
 
   var toggle = function(key) {
     setExpanded(function(prev) {
@@ -162,7 +162,7 @@ export default function ProgrammesPage({ setPage }) {
         {Object.entries(PROGRAMMES).map(function(entry) {
           var level = entry[0], progs = entry[1];
           var color = levelColors[level] || S.navy;
-          var levelLabel = level.replace("Level 4 — Associate", "Level 4 — Associate Equivalent").replace("Level 5 — Bachelor's", "Level 5 — Bachelor's Equivalent");
+          var levelLabel = level;
           return (
             <Reveal key={level}>
               <div style={{ marginBottom: 32 }}>
