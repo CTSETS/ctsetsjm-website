@@ -26,6 +26,7 @@ const TermsPage = lazy(() => import("./pages/TermsPage"));
 const FAQPage = lazy(() => import("./pages/FAQPage"));
 const StudentPortalPage = lazy(() => import("./pages/StudentPortalPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
+const AIUsagePolicyPage = lazy(() => import("./pages/AIUsagePolicyPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 function PageLoader() {
@@ -42,7 +43,7 @@ class ErrorBoundary extends Component {
   }
 }
 
-const TITLES = { Home: "CTS ETS — Jamaica's Digital Vocational School", About: "About CTS ETS", "Why Choose": "Why Choose CTS ETS", Programmes: "Programmes | CTS ETS", "Fees & Calculator": "Student Finance | CTS ETS", "For Employers": "For Employers | CTS ETS", "Student Journey": "Student Journey | CTS ETS", Apply: "Apply Now | CTS ETS", Pay: "Make a Payment | CTS ETS", Contact: "Contact Us | CTS ETS", International: "International Students | CTS ETS", "Verify Certificate": "Verify Certificate | CTS ETS", Feedback: "Feedback | CTS ETS", FAQ: "Frequently Asked Questions | CTS ETS", "Student Portal": "Student Portal | CTS ETS", Admin: "Admin Console | CTS ETS", Privacy: "Privacy Policy | CTS ETS", Terms: "Terms & Conditions | CTS ETS" };
+const TITLES = { Home: "CTS ETS — Jamaica's Digital Vocational School", About: "About CTS ETS", "Why Choose": "Why Choose CTS ETS", Programmes: "Programmes | CTS ETS", "Fees & Calculator": "Student Finance | CTS ETS", "For Employers": "For Employers | CTS ETS", "Student Journey": "Student Journey | CTS ETS", Apply: "Apply Now | CTS ETS", Pay: "Make a Payment | CTS ETS", Contact: "Contact Us | CTS ETS", International: "International Students | CTS ETS", "Verify Certificate": "Verify Certificate | CTS ETS", Feedback: "Feedback | CTS ETS", FAQ: "Frequently Asked Questions | CTS ETS", "Student Portal": "Student Portal | CTS ETS", Admin: "Admin Console | CTS ETS", "AI Policy": "AI Usage Policy | CTS ETS", Privacy: "Privacy Policy | CTS ETS", Terms: "Terms & Conditions | CTS ETS" };
 
 export default function CTSApp() {
   const [page, setPage] = useState(() => {
@@ -91,6 +92,7 @@ export default function CTSApp() {
       case "FAQ": return <FAQPage {...p} />;
       case "Student Portal": return <StudentPortalPage {...p} />;
       case "Admin": return <AdminPage {...p} />;
+      case "AI Policy": return <AIUsagePolicyPage />;
       case "Privacy": return <PrivacyPage />;
       case "Terms": return <TermsPage />;
       default: return <NotFoundPage {...p} />;

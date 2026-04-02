@@ -69,7 +69,7 @@ function AdminLogin({ onLogin }) {
             <div>
               <h3 style={{ fontFamily: S.body, fontSize: 14, fontWeight: 700, color: S.navy, marginBottom: 6 }}>Enter Admin PIN</h3>
               <p style={{ fontSize: 12, color: S.gray, fontFamily: S.body, marginBottom: 20 }}>Enter your admin PIN to begin authentication.</p>
-              <input type="password" value={pin} onChange={function(e) { setPin(e.target.value); setError(""); }} onKeyDown={function(e) { if (e.key === "Enter") submitPin(); }} placeholder="\u2022\u2022\u2022\u2022\u2022\u2022" style={iStyle} autoFocus />
+              <input type="password" value={pin} onChange={function(e) { setPin(e.target.value); setError(""); }} onKeyDown={function(e) { if (e.key === "Enter") submitPin(); }} placeholder="Enter your PIN" style={iStyle} autoFocus />
             </div>
           ) : (
             <div>
@@ -185,7 +185,7 @@ function DashboardPanel({ token }) {
       {/* Recent activity */}
       {s.recentActivity && s.recentActivity.length > 0 && (
         <Card title="Recent Activity" icon={"\uD83D\uDD54"} color={S.teal}>
-          {s.recentActivity.map(function(a, i) { return <div key={i} style={{ padding: "8px 0", borderBottom: i < s.recentActivity.length - 1 ? "1px solid " + S.border : "none", fontSize: 12, fontFamily: S.body }}><span style={{ color: S.navy, fontWeight: 600 }}>{a.action}</span> <span style={{ color: S.grayLight }}>\u2014 {a.details}</span> <span style={{ color: S.grayLight, fontSize: 10, marginLeft: 8 }}>{a.time}</span></div>; })}
+          {s.recentActivity.map(function(a, i) { return <div key={i} style={{ padding: "8px 0", borderBottom: i < s.recentActivity.length - 1 ? "1px solid " + S.border : "none", fontSize: 12, fontFamily: S.body }}><span style={{ color: S.navy, fontWeight: 600 }}>{a.action}</span> <span style={{ color: S.grayLight }}>{"\u2014"} {a.details}</span> <span style={{ color: S.grayLight, fontSize: 10, marginLeft: 8 }}>{a.time}</span></div>; })}
         </Card>
       )}
       <div style={{ textAlign: "right" }}><button onClick={refresh} style={{ padding: "8px 20px", borderRadius: 6, border: "1px solid " + S.border, background: "#fff", color: S.navy, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: S.body }}>{"\u21BB"} Refresh</button></div>
