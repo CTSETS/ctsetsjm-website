@@ -1,38 +1,37 @@
-/* ─── CTS ETS GLOBAL STYLES v2 ───────────────────────────────────────
+/* ─── CTS ETS GLOBAL STYLES v3 — Modern Colour System ────────────────
    Font optimization, accessibility, mobile-first responsive          */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 
 /* ── ACCESSIBILITY ── */
-/* Skip to main content link — hidden until focused */
 .skip-nav {
   position: absolute; top: -100px; left: 16px; z-index: 10001;
-  padding: 12px 24px; background: #011E40; color: #D4A017;
+  padding: 12px 24px; background: #0B1120; color: #2563EB;
   font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700;
   border-radius: 0 0 8px 8px; text-decoration: none;
   transition: top 0.2s;
 }
 .skip-nav:focus { top: 0; }
 
-/* Focus visible — keyboard-only focus ring */
-:focus-visible { outline: 2px solid #D4A017; outline-offset: 2px; }
+:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; }
 :focus:not(:focus-visible) { outline: none; }
 
-/* Reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
 
 /* ── FORM FOCUS ── */
 input:focus, select:focus, textarea:focus {
-  border-color: #D4A017 !important; outline: none;
-  box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.15);
+  border-color: #2563EB !important; outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 /* ── ANIMATIONS ── */
 @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
 .reveal-section { opacity: 0; transform: translateY(28px); transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1); }
 .reveal-section.revealed { opacity: 1; transform: translateY(0); }
 .reveal-section:nth-child(2) { transition-delay: 0.08s; }
@@ -56,7 +55,6 @@ input:focus, select:focus, textarea:focus {
   .cert-note { flex-direction: column !important; }
   .nav-brand-text { display: none !important; }
   .hide-mobile { display: none !important; }
-  /* Mobile programme cards — stack instead of row */
   .prog-row > div:first-child { margin-bottom: 6px; }
   .mobile-stack { flex-direction: column !important; gap: 8px !important; }
 }
@@ -77,4 +75,3 @@ input:focus, select:focus, textarea:focus {
 /* ── IMAGES ── */
 img { max-width: 100%; height: auto; }
 img[loading="lazy"] { content-visibility: auto; }
-@keyframes spin { to { transform: rotate(360deg); } }
