@@ -36,7 +36,7 @@ function CertDropdown() {
 
 function ProgrammeCard({ prog, level, levelColor, expanded, onToggle, setPage }) {
   var d = PROGRAMME_DETAILS[prog.name];
-  var tuitionNum = parseInt(prog.tuition.replace(/[$,]/g, ""));
+  var tuitionNum = parseInt(prog.tuition.replace(/[^0-9]/g, ""));
   var totalNum = tuitionNum + REG_FEE;
   var usd = Math.round(totalNum / USD_RATE);
   var levelKey = level.indexOf("5") >= 0 ? "Level 5 (Bachelor's Equiv.)" : level.indexOf("4") >= 0 ? "Level 4 (Associate Equiv.)" : level.indexOf("3") >= 0 ? "Level 3" : level.indexOf("2") >= 0 ? "Level 2" : "Job Certificate";
@@ -170,7 +170,7 @@ export default function ProgrammesPage({ setPage }) {
                   <div style={{ width: 4, height: 32, borderRadius: 2, background: color }} />
                   <div>
                     <h2 style={{ fontFamily: S.heading, fontSize: "clamp(18px,2.5vw,24px)", fontWeight: 700, color: S.navy, margin: 0 }}>{levelLabel}</h2>
-                    <div style={{ fontSize: 12, color: S.gray, fontFamily: S.body }}>{progs.length + " programme" + (progs.length > 1 ? "s" : "") + " · Total from " + fmt(parseInt(progs[0].total.replace(/[$,]/g, "")))}</div>
+                    <div style={{ fontSize: 12, color: S.gray, fontFamily: S.body }}>{progs.length + " programme" + (progs.length > 1 ? "s" : "") + " · Total from " + fmt(parseInt(progs[0].total.replace(/[^0-9]/g, "")))}</div>
                   </div>
                 </div>
                 {progs.map(function(prog) {

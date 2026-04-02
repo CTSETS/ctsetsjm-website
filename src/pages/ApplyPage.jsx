@@ -7,7 +7,7 @@ import { useState, useRef, useEffect } from "react";
 import S from "../constants/styles";
 import { PROGRAMMES } from "../constants/programmes";
 import { TESTIMONIALS, PRAYERS, genderPronouns } from "../constants/content";
-import { BOOKING_URLS, REG_FEE } from "../constants/config";
+import { BOOKING_URLS, REG_FEE, APPS_SCRIPT_URL } from "../constants/config";
 import { Container, PageWrapper, Btn, SectionHeader, SectionBlock, Reveal, PageScripture, SocialProofBar, TestimonialCard } from "../components/shared/CoreComponents";
 import { CaptchaChallenge, HoneypotField } from "../components/shared/DisplayComponents";
 import { validateEmail, validatePhone, validateTRN, suggestEmail, MAX_FILE_SIZE, validateFileSize } from "../utils/validation";
@@ -115,6 +115,100 @@ function PrayerModal({ prayer, onClose }) {
 // ═══════════════════════════════════════════════════════════════
 // MAIN APPLY PAGE
 // ═══════════════════════════════════════════════════════════════
+// ── Track My Application ──
+function StatusTracker({ setPage }) {
+  var [lookupVal, setLookupVal] = useState("");
+  var [loading, setLoading] = useState(false);
+  var [result, setResult] = useState(null);
+  var [error, setError] = useState("");
+
+  var statusColors = { "Under Review": { bg: S.goldLight, color: S.gold, icon: "🔍" }, "Documents Needed": { bg: S.coralLight, color: S.coral, icon: "📎" }, "Accepted": { bg: S.emeraldLight, color: S.emerald, icon: "🎉" }, "Enrolled": { bg: S.skyLight, color: S.sky, icon: "🎓" }, "Deferred": { bg: "#F3E5F5", color: S.violet, icon: "⏸️" }, "Withdrawn": { bg: S.lightBg, color: S.gray, icon: "📋" }, "Completed": { bg: S.goldLight, color: S.navy, icon: "🏆" }, "Rejected": { bg: S.roseLight, color: S.error, icon: "📨" }, "Pending Payment": { bg: S.skyLight, color: S.sky, icon: "💳" } };
+
+  var lookup = function() {
+    if (!lookupVal.trim()) { setError("Please enter your Application Number, Student ID, or email."); return; }
+    setLoading(true); setError(""); setResult(null);
+    var param = lookupVal.includes("@") ? "email=" + encodeURIComponent(lookupVal.trim()) : "ref=" + encodeURIComponent(lookupVal.trim());
+    fetch(APPS_SCRIPT_URL + "?action=lookupstudent&" + param)
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        setLoading(false);
+        if (data.found) { setResult(data); }
+        else { setError("No application found. Please check your details and try again."); }
+      })
+      .catch(function() { setLoading(false); setError("Unable to connect. Please try again."); });
+  };
+
+  return (
+    <div style={{ maxWidth: 560, margin: "0 auto" }}>
+      <div style={{ background: "#fff", borderRadius: 16, padding: "32px 28px", border: "1px solid " + S.border, boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
+        <div style={{ textAlign: "center", marginBottom: 24 }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
+          <h2 style={{ fontFamily: S.heading, fontSize: 22, color: S.navy, fontWeight: 700, marginBottom: 8 }}>Track My Application</h2>
+          <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.6 }}>Enter your Application Number, Student ID, or email address to check your status.</p>
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <input value={lookupVal} onChange={function(e) { setLookupVal(e.target.value); setError(""); }}
+            onKeyDown={function(e) { if (e.key === "Enter") lookup(); }}
+            placeholder="e.g. CTSETS-2026-04-12345 or your@email.com"
+            style={{ width: "100%", padding: "14px 18px", borderRadius: 10, border: "2px solid " + (error ? S.error + "60" : S.border), fontSize: 14, fontFamily: "'DM Sans', sans-serif", color: S.navy, outline: "none", boxSizing: "border-box" }} />
+        </div>
+
+        {error && <div style={{ padding: "10px 14px", borderRadius: 8, background: S.roseLight, fontSize: 13, color: S.error, fontFamily: S.body, marginBottom: 16 }}>{error}</div>}
+
+        <button onClick={lookup} disabled={loading}
+          style={{ width: "100%", padding: "14px", borderRadius: 10, background: loading ? S.gray : S.navy, color: "#fff", border: "none", fontSize: 14, fontWeight: 700, cursor: loading ? "wait" : "pointer", fontFamily: S.body }}>
+          {loading ? "Searching..." : "Check Status →"}
+        </button>
+
+        {result && (
+          <div style={{ marginTop: 24 }}>
+            {/* Status badge */}
+            <div style={{ textAlign: "center", marginBottom: 20 }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "12px 24px", borderRadius: 30, background: (statusColors[result.status] || statusColors["Under Review"]).bg, border: "2px solid " + (statusColors[result.status] || statusColors["Under Review"]).color + "40" }}>
+                <span style={{ fontSize: 20 }}>{(statusColors[result.status] || statusColors["Under Review"]).icon}</span>
+                <span style={{ fontSize: 15, fontWeight: 800, color: (statusColors[result.status] || statusColors["Under Review"]).color, fontFamily: S.heading, letterSpacing: 0.5 }}>{result.status || "Under Review"}</span>
+              </div>
+            </div>
+
+            {/* Details card */}
+            <div style={{ background: S.lightBg, borderRadius: 12, padding: "20px", border: "1px solid " + S.border }}>
+              <div style={{ display: "grid", gap: 12 }}>
+                {result.name && <div><div style={{ fontSize: 10, color: S.gray, fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase" }}>Name</div><div style={{ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.body }}>{result.name}</div></div>}
+                {result.ref && <div><div style={{ fontSize: 10, color: S.gray, fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase" }}>Application Reference</div><div style={{ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.heading, letterSpacing: 0.5 }}>{result.ref}</div></div>}
+                {result.studentNumber && <div><div style={{ fontSize: 10, color: S.gray, fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase" }}>Student ID</div><div style={{ fontSize: 16, fontWeight: 800, color: S.coral, fontFamily: S.heading, letterSpacing: 1 }}>{result.studentNumber}</div></div>}
+                {result.programme && <div><div style={{ fontSize: 10, color: S.gray, fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase" }}>Programme</div><div style={{ fontSize: 13, fontWeight: 600, color: S.navy, fontFamily: S.body }}>{(result.level ? result.level + " — " : "") + result.programme}</div></div>}
+                {result.paymentPlan && <div><div style={{ fontSize: 10, color: S.gray, fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase" }}>Payment Plan</div><div style={{ fontSize: 13, fontWeight: 600, color: S.navy, fontFamily: S.body }}>{result.paymentPlan}</div></div>}
+              </div>
+            </div>
+
+            {/* Next steps */}
+            {result.status === "Accepted" && (
+              <div style={{ marginTop: 16, padding: "14px 18px", borderRadius: 10, background: S.emeraldLight, border: "1px solid " + S.emerald + "30", fontSize: 13, fontFamily: S.body, color: S.navy, lineHeight: 1.6 }}>
+                <strong>Next step:</strong> Complete your payment to secure your place. <button onClick={function() { setPage("Pay"); }} style={{ background: "none", border: "none", color: S.coral, fontWeight: 700, cursor: "pointer", fontFamily: S.body, fontSize: 13, padding: 0 }}>Go to Payment Centre →</button>
+              </div>
+            )}
+            {result.status === "Enrolled" && (
+              <div style={{ marginTop: 16, padding: "14px 18px", borderRadius: 10, background: S.skyLight, border: "1px solid " + S.sky + "30", fontSize: 13, fontFamily: S.body, color: S.navy, lineHeight: 1.6 }}>
+                <strong>You're enrolled!</strong> Access your learning materials now. <button onClick={function() { setPage("Student Portal"); }} style={{ background: "none", border: "none", color: S.coral, fontWeight: 700, cursor: "pointer", fontFamily: S.body, fontSize: 13, padding: 0 }}>Go to Student Portal →</button>
+              </div>
+            )}
+            {result.status === "Documents Needed" && (
+              <div style={{ marginTop: 16, padding: "14px 18px", borderRadius: 10, background: S.coralLight, border: "1px solid " + S.coral + "30", fontSize: 13, fontFamily: S.body, color: S.navy, lineHeight: 1.6 }}>
+                <strong>Action required:</strong> Please upload the requested documents. Scroll down to the application form or contact admin@ctsetsjm.com for details.
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div style={{ textAlign: "center", marginTop: 16, fontSize: 12, color: S.gray, fontFamily: S.body }}>
+        Can't find your application? Contact <a href="mailto:info@ctsetsjm.com" style={{ color: S.teal }}>info@ctsetsjm.com</a> or WhatsApp <a href="https://wa.me/8763819771" style={{ color: S.teal }}>876-381-9771</a>
+      </div>
+    </div>
+  );
+}
+
 export default function ApplyPage({ setPage }) {
   // ── State ──
   const [applicantType, setApplicantType] = useState("");
@@ -130,6 +224,7 @@ export default function ApplyPage({ setPage }) {
   const [heartFormDone, setHeartFormDone] = useState(false);
   const [appQueue, setAppQueue] = useState([]); // queued programme selections
   const [showQueuePrompt, setShowQueuePrompt] = useState(false);
+  const [showTracker, setShowTracker] = useState(false);
   // Application number — generated once when the page loads, stays the same throughout
   const appRef = useRef(generateRef());
   const startTime = useRef(Date.now());
@@ -413,8 +508,18 @@ export default function ApplyPage({ setPage }) {
           </div>
         </div>
       )}
-      <SectionHeader tag="Start Here" title="Apply in Under 10 Minutes" desc="Complete the form, upload your documents, and we'll review within 48–72 hours." accentColor={S.coral} />
+      <SectionHeader tag="Start Here" title={showTracker ? "Track My Application" : "Apply in Under 10 Minutes"} desc={showTracker ? "Check the status of your application." : "Complete the form, upload your documents, and we'll review within 48–72 hours."} accentColor={S.coral} />
       <Container>
+        {/* Toggle: Apply vs Track */}
+        <div style={{ display: "flex", gap: 0, marginBottom: 24, borderRadius: 10, overflow: "hidden", border: "2px solid " + S.navy }}>
+          <button onClick={function() { setShowTracker(false); }} style={{ flex: 1, padding: "14px", background: !showTracker ? S.navy : "#fff", color: !showTracker ? "#fff" : S.navy, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>📝 Apply Now</button>
+          <button onClick={function() { setShowTracker(true); }} style={{ flex: 1, padding: "14px", background: showTracker ? S.navy : "#fff", color: showTracker ? "#fff" : S.navy, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body, borderLeft: "2px solid " + S.navy }}>🔍 Track My Application</button>
+        </div>
+
+        {showTracker ? (
+          <StatusTracker setPage={setPage} />
+        ) : (
+        <>
         <SocialProofBar />
 
         {/* Application Number — visible immediately */}
@@ -1017,6 +1122,8 @@ export default function ApplyPage({ setPage }) {
         </div>
 
         <PageScripture page="apply" />
+        </>
+        )}
       </Container>
     </PageWrapper>
   );
