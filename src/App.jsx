@@ -8,7 +8,6 @@ import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import { ScrollNav, WhatsAppBtn, AnnouncementBar, OfflineBanner, CookieBanner } from "./components/layout/LayoutUtilities";
 
-// Lazy imports — MUST be at module level, never inside render
 const HomePage = lazy(() => import("./pages/HomePage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const ProgrammesPage = lazy(() => import("./pages/ProgrammesPage"));
@@ -26,6 +25,7 @@ const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const TermsPage = lazy(() => import("./pages/TermsPage"));
 const FAQPage = lazy(() => import("./pages/FAQPage"));
 const StudentPortalPage = lazy(() => import("./pages/StudentPortalPage"));
+const AdminPage = lazy(() => import("./pages/AdminPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 function PageLoader() {
@@ -42,11 +42,12 @@ class ErrorBoundary extends Component {
   }
 }
 
-const TITLES = { Home: "CTS ETS — Jamaica's Digital Vocational School", About: "About CTS ETS", "Why Choose": "Why Choose CTS ETS", Programmes: "Programmes | CTS ETS", "Fees & Calculator": "Student Finance | CTS ETS", "For Employers": "For Employers | CTS ETS", "Student Journey": "Student Journey | CTS ETS", Apply: "Apply Now | CTS ETS", Pay: "Make a Payment | CTS ETS", Contact: "Contact Us | CTS ETS", International: "International Students | CTS ETS", "Verify Certificate": "Verify Certificate | CTS ETS", Feedback: "Feedback | CTS ETS", FAQ: "Frequently Asked Questions | CTS ETS", "Student Portal": "Student Portal | CTS ETS", Privacy: "Privacy Policy | CTS ETS", Terms: "Terms & Conditions | CTS ETS" };
+const TITLES = { Home: "CTS ETS — Jamaica's Digital Vocational School", About: "About CTS ETS", "Why Choose": "Why Choose CTS ETS", Programmes: "Programmes | CTS ETS", "Fees & Calculator": "Student Finance | CTS ETS", "For Employers": "For Employers | CTS ETS", "Student Journey": "Student Journey | CTS ETS", Apply: "Apply Now | CTS ETS", Pay: "Make a Payment | CTS ETS", Contact: "Contact Us | CTS ETS", International: "International Students | CTS ETS", "Verify Certificate": "Verify Certificate | CTS ETS", Feedback: "Feedback | CTS ETS", FAQ: "Frequently Asked Questions | CTS ETS", "Student Portal": "Student Portal | CTS ETS", Admin: "Admin Console | CTS ETS", Privacy: "Privacy Policy | CTS ETS", Terms: "Terms & Conditions | CTS ETS" };
 
 export default function CTSApp() {
   const [page, setPage] = useState(() => {
     const hash = window.location.hash.replace("#", "").replace(/-/g, " ");
+    if (hash.toLowerCase() === "admin") return "Admin";
     return PAGES.find(p => p.toLowerCase() === hash.toLowerCase()) || "Home";
   });
   const [transitioning, setTransitioning] = useState(false);
@@ -61,13 +62,15 @@ export default function CTSApp() {
     }, 150);
   }, []);
 
-  useEffect(() => { const onPop = () => { const h = window.location.hash.replace("#", "").replace(/-/g, " "); setPage(PAGES.find(p => p.toLowerCase() === h.toLowerCase()) || "Home"); window.scrollTo({ top: 0, behavior: "instant" }); }; window.addEventListener("popstate", onPop); return () => window.removeEventListener("popstate", onPop); }, []);
+  useEffect(() => { const onPop = () => { const h = window.location.hash.replace("#", "").replace(/-/g, " "); if (h.toLowerCase() === "admin") { setPage("Admin"); } else { setPage(PAGES.find(p => p.toLowerCase() === h.toLowerCase()) || "Home"); } window.scrollTo({ top: 0, behavior: "instant" }); }; window.addEventListener("popstate", onPop); return () => window.removeEventListener("popstate", onPop); }, []);
   useEffect(() => { document.title = TITLES[page] || "CTS ETS"; }, [page]);
   useEffect(() => { initGA4(); }, []);
   useEffect(() => { trackPageView(page); }, [page]);
   useEffect(() => { retryQueuedSubmissions(); }, []);
   useEffect(() => { if (!EMAILJS_KEY || document.getElementById("emailjs-sdk")) return; const s = document.createElement("script"); s.id = "emailjs-sdk"; s.async = true; s.src = "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"; s.onload = () => { if (window.emailjs) { try { window.emailjs.init({ publicKey: EMAILJS_KEY }); } catch { window.emailjs.init(EMAILJS_KEY); } } }; document.head.appendChild(s); }, []);
   useEffect(() => { if (!APPS_SCRIPT_URL) return; try { const d = window.innerWidth < 768 ? "mobile" : window.innerWidth < 1100 ? "tablet" : "desktop"; fetch(APPS_SCRIPT_URL + "?action=track&page=" + encodeURIComponent(page) + "&device=" + d).catch(() => {}); } catch {} }, [page]);
+
+  const isAdmin = page === "Admin";
 
   const renderPage = () => {
     const p = { setPage: navigate };
@@ -87,6 +90,7 @@ export default function CTSApp() {
       case "Feedback": return <FeedbackPage {...p} />;
       case "FAQ": return <FAQPage {...p} />;
       case "Student Portal": return <StudentPortalPage {...p} />;
+      case "Admin": return <AdminPage {...p} />;
       case "Privacy": return <PrivacyPage />;
       case "Terms": return <TermsPage />;
       default: return <NotFoundPage {...p} />;
@@ -96,18 +100,18 @@ export default function CTSApp() {
   return (
     <ErrorBoundary>
       <div style={{ fontFamily: S.body, WebkitFontSmoothing: "antialiased" }}>
-        <OfflineBanner />
-        <AnnouncementBar setPage={navigate} />
-        <Navbar page={page} setPage={navigate} />
+        {!isAdmin && <OfflineBanner />}
+        {!isAdmin && <AnnouncementBar setPage={navigate} />}
+        {!isAdmin && <Navbar page={page} setPage={navigate} />}
         <Suspense fallback={<PageLoader />}>
           <div key={page} style={{ opacity: transitioning ? 0 : 1, transform: transitioning ? "translateY(8px)" : "translateY(0)", transition: "opacity 0.3s ease, transform 0.3s ease" }}>
             {renderPage()}
           </div>
         </Suspense>
-        <Footer setPage={navigate} />
-        <ScrollNav />
-        <WhatsAppBtn currentPage={page} />
-        <CookieBanner setPage={navigate} />
+        {!isAdmin && <Footer setPage={navigate} />}
+        {!isAdmin && <ScrollNav />}
+        {!isAdmin && <WhatsAppBtn currentPage={page} />}
+        {!isAdmin && <CookieBanner setPage={navigate} />}
       </div>
     </ErrorBoundary>
   );
