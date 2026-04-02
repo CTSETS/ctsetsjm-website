@@ -44,7 +44,7 @@ export default function FeesPage({ setPage }) {
 
   return (
     <PageWrapper>
-      <SectionHeader tag="Your Investment" title="See Exactly What You'll Pay" desc="$5,000 non-refundable registration fee + training fee. Surcharges apply to training only. No hidden fees." accentColor={S.coral} />
+      <SectionHeader tag="Your Investment" title="See Exactly What You'll Pay" desc="J$5,000 non-refundable registration fee + training fee. Surcharges apply to training only. No hidden fees." accentColor={S.coral} />
       <Container>
         <SocialProofBar />
 
@@ -53,7 +53,7 @@ export default function FeesPage({ setPage }) {
           <div style={{ marginBottom: 36 }}>
             <div style={{ textAlign: "center", marginBottom: 20 }}>
               <h3 style={{ fontFamily: S.heading, fontSize: "clamp(20px,3vw,26px)", color: S.navy, fontWeight: 700, margin: 0 }}>Fee Structure</h3>
-              <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.6, margin: "8px 0 0" }}>Your total cost = $5,000 registration fee + training fee for your level.</p>
+              <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.6, margin: "8px 0 0" }}>Your total cost = J$5,000 registration fee + training fee for your level.</p>
             </div>
             <div style={{ overflowX: "auto", borderRadius: 12, border: "1px solid " + S.border }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: S.body, fontSize: 13 }}>
@@ -62,11 +62,11 @@ export default function FeesPage({ setPage }) {
                 </tr></thead>
                 <tbody>
                   {[
-                    ["Job Certificate", "$5,000", "$5,000", "$10,000"],
-                    ["Level 2 — Vocational", "$15,000", "$5,000", "$20,000"],
-                    ["Level 3 — Diploma", "$25,000", "$5,000", "$30,000"],
-                    ["Level 4 — Associate Equiv.", "$35,000", "$5,000", "$40,000"],
-                    ["Level 5 — Bachelor's Equiv.", "$45,000", "$5,000", "$50,000"],
+                    ["Job Certificate", "J$5,000", "J$5,000", "J$10,000"],
+                    ["Level 2 — Vocational", "J$15,000", "J$5,000", "J$20,000"],
+                    ["Level 3 — Diploma", "J$25,000", "J$5,000", "J$30,000"],
+                    ["Level 4 — Associate Equiv.", "J$35,000", "J$5,000", "J$40,000"],
+                    ["Level 5 — Bachelor's Equiv.", "J$45,000", "J$5,000", "J$50,000"],
                   ].map(function(row, ri) { return (
                     <tr key={ri} style={{ background: ri % 2 === 0 ? "#fff" : S.lightBg }}>
                       <td style={{ padding: "11px 16px", fontWeight: 700, color: S.navy, borderTop: "1px solid " + S.border, fontSize: 12 }}>{row[0]}</td>
@@ -80,7 +80,7 @@ export default function FeesPage({ setPage }) {
             </div>
             <div style={{ display: "flex", gap: 12, marginTop: 12, flexWrap: "wrap", justifyContent: "center" }}>
               {[
-                ["Registration fee", "$5,000 non-refundable — paid once at registration"],
+                ["Registration fee", "J$5,000 non-refundable — paid once at registration"],
                 ["Training fee", "Covers online instruction, study materials, audio sessions, AI assistant"],
                 ["NCTVET assessment", "Arranged through HEART/NSTA at no additional cost, unless required. NCTVET registration and assessment fees are set by NCTVET where necessary"],
                 ["Payment plans", "Silver (+10%) and Bronze (+15%) surcharge applies to training fee only — Levels 3–5 only"],
@@ -138,7 +138,7 @@ export default function FeesPage({ setPage }) {
                 {result.note && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontFamily: S.body, marginTop: 8, textAlign: "right", fontStyle: "italic" }}>{result.note}</div>}
               </div>
               <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", fontSize: 10, color: "rgba(255,255,255,0.4)", fontFamily: S.body, lineHeight: 1.6, textAlign: "center" }}>
-                {"The $5,000 registration fee is non-refundable. All surcharges apply to the training fee only, not the registration fee. Your training fee covers full online instruction, study materials, audio sessions, and AI study assistant. NCTVET registration and assessment fees are not included as they are set by NCTVET where necessary."}
+                {"The J$5,000 registration fee is non-refundable. All surcharges apply to the training fee only, not the registration fee. Your training fee covers full online instruction, study materials, audio sessions, and AI study assistant. NCTVET registration and assessment fees are not included as they are set by NCTVET where necessary."}
               </div>
               <div style={{ marginTop: 16, display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <Btn primary onClick={() => setPage("Apply")} style={{ color: "#fff", background: S.coral, flex: 1 }}>Apply Now</Btn>
