@@ -885,7 +885,7 @@ export default function ApplyPage({ setPage }) {
 
                       {/* Plan breakdown */}
                       {form.paymentPlan && (() => {
-                        var tuition = parseInt(prog.tuition.replace(/[$,]/g, ""));
+                        var tuition = parseInt(prog.tuition.replace(/[^0-9]/g, ""));
                         var plan = form.paymentPlan;
                         if (plan === "Gold") {
                           return (
@@ -1005,14 +1005,14 @@ export default function ApplyPage({ setPage }) {
               var allItems = appQueue.map(function(q) {
                 var progs = PROGRAMMES[q.level] || [];
                 var p = progs.find(function(x) { return x.name === q.programme; });
-                var tuition = p ? parseInt(p.tuition.replace(/[$,]/g, "")) : 0;
+                var tuition = p ? parseInt(p.tuition.replace(/[^0-9]/g, "")) : 0;
                 var total = tuition + REG_FEE;
                 return { ...q, tuition: tuition, total: total };
               });
               if (form.level && form.programme) {
                 var curProgs = PROGRAMMES[form.level] || [];
                 var curP = curProgs.find(function(x) { return x.name === form.programme; });
-                var curTuition = curP ? parseInt(curP.tuition.replace(/[$,]/g, "")) : 0;
+                var curTuition = curP ? parseInt(curP.tuition.replace(/[^0-9]/g, "")) : 0;
                 allItems.push({ level: form.level, programme: form.programme, paymentPlan: form.paymentPlan || "Gold", ref: "(current)", tuition: curTuition, total: curTuition + REG_FEE, isCurrent: true });
               }
               var grandTotal = allItems.reduce(function(sum, q) { return sum + q.total; }, 0);
