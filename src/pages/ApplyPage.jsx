@@ -125,9 +125,9 @@ function StatusTracker({ setPage }) {
   var statusColors = { "Under Review": { bg: S.goldLight, color: S.gold, icon: "🔍" }, "Documents Needed": { bg: S.coralLight, color: S.coral, icon: "📎" }, "Accepted": { bg: S.emeraldLight, color: S.emerald, icon: "🎉" }, "Enrolled": { bg: S.skyLight, color: S.sky, icon: "🎓" }, "Deferred": { bg: "#F3E5F5", color: S.violet, icon: "⏸️" }, "Withdrawn": { bg: S.lightBg, color: S.gray, icon: "📋" }, "Completed": { bg: S.goldLight, color: S.navy, icon: "🏆" }, "Rejected": { bg: S.roseLight, color: S.error, icon: "📨" }, "Pending Payment": { bg: S.skyLight, color: S.sky, icon: "💳" } };
 
   var lookup = function() {
-    if (!lookupVal.trim()) { setError("Please enter your Application Number, Student ID, or email."); return; }
+    if (!lookupVal.trim()) { setError("Please enter your Application Number or Student ID."); return; }
     setLoading(true); setError(""); setResult(null);
-    var param = lookupVal.includes("@") ? "email=" + encodeURIComponent(lookupVal.trim()) : "ref=" + encodeURIComponent(lookupVal.trim());
+    var param = "ref=" + encodeURIComponent(lookupVal.trim());
     fetch(APPS_SCRIPT_URL + "?action=lookupstudent&" + param)
       .then(function(r) { return r.json(); })
       .then(function(data) {
@@ -144,13 +144,13 @@ function StatusTracker({ setPage }) {
         <div style={{ textAlign: "center", marginBottom: 24 }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
           <h2 style={{ fontFamily: S.heading, fontSize: 22, color: S.navy, fontWeight: 700, marginBottom: 8 }}>Track My Application</h2>
-          <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.6 }}>Enter your Application Number, Student ID, or email address to check your status.</p>
+          <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.6 }}>Enter your Application Number or Student ID to check your status.</p>
         </div>
 
         <div style={{ marginBottom: 16 }}>
           <input value={lookupVal} onChange={function(e) { setLookupVal(e.target.value); setError(""); }}
             onKeyDown={function(e) { if (e.key === "Enter") lookup(); }}
-            placeholder="e.g. CTSETS-2026-04-12345 or your@email.com"
+            placeholder="e.g. CTSETSA-2026-04-12345"
             style={{ width: "100%", padding: "14px 18px", borderRadius: 10, border: "2px solid " + (error ? S.error + "60" : S.border), fontSize: 14, fontFamily: "'DM Sans', sans-serif", color: S.navy, outline: "none", boxSizing: "border-box" }} />
         </div>
 
