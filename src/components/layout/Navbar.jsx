@@ -6,7 +6,7 @@ const NAV_GROUPS = [
   { label: "Home", page: "Home" },
   { label: "About", children: [{ label: "Our Story", page: "About" }, { label: "Why Choose CTS ETS", page: "Why Choose" }] },
   { label: "Programmes", page: "Programmes" },
-  { label: "Admissions", children: [{ label: "Apply Now", page: "Apply" }, { label: "Student Journey", page: "Student Journey" }, { label: "For Employers", page: "For Employers" }, { label: "International Students", page: "International" }] },
+  { label: "Admissions", children: [{ label: "Apply / Check Status", page: "Apply" }, { label: "Student Journey", page: "Student Journey" }, { label: "For Employers", page: "For Employers" }, { label: "International Students", page: "International" }] },
   { label: "Student Finance", children: [{ label: "Fees & Calculator", page: "Fees & Calculator" }, { label: "Make a Payment", page: "Pay" }, { label: "Student Portal", page: "Student Portal" }] },
   { label: "Support", children: [{ label: "FAQ", page: "FAQ" }, { label: "Contact Us", page: "Contact" }, { label: "Verify Certificate", page: "Verify Certificate" }, { label: "Feedback", page: "Feedback" }] },
 ];

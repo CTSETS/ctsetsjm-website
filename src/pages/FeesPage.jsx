@@ -132,7 +132,7 @@ export default function FeesPage({ setPage }) {
               <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", fontFamily: S.body, marginBottom: 20 }}>{prog?.name} — {result.plan} Plan</div>
               {result.steps.map((step, i) => <div key={i} style={{ padding: "16px 0", borderBottom: i < result.steps.length - 1 ? "1px solid rgba(255,255,255,0.08)" : "none" }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}><span style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", fontFamily: S.body }}>{step.label}</span><span style={{ fontSize: 22, fontWeight: 700, color: S.coral, fontFamily: S.heading }}>{step.amount}</span></div><div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontFamily: S.body }}>{step.detail}</div></div>)}
               <div style={{ marginTop: 20, padding: "16px 0", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><span style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", fontFamily: S.body }}>Total (USD)</span><span style={{ fontSize: 26, fontWeight: 800, color: "#fff", fontFamily: S.heading }}>US${Math.round(parseInt(result.grandTotal.replace(/[$,]/g, "")) / USD_RATE).toLocaleString()}</span></div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><span style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", fontFamily: S.body }}>Total (USD)</span><span style={{ fontSize: 26, fontWeight: 800, color: "#fff", fontFamily: S.heading }}>US${Math.round(parseInt(result.grandTotal.replace(/[^0-9]/g, "")) / USD_RATE).toLocaleString()}</span></div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}><span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", fontFamily: S.body }}>JMD</span><span style={{ fontSize: 18, fontWeight: 700, color: S.gold, fontFamily: S.heading }}>{result.grandTotal}</span></div>
                 {result.savings && <div style={{ fontSize: 12, color: S.emerald, fontFamily: S.body, marginTop: 8, textAlign: "right" }}>Group discount saves {result.savings}</div>}
                 {result.note && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontFamily: S.body, marginTop: 8, textAlign: "right", fontStyle: "italic" }}>{result.note}</div>}
@@ -142,7 +142,7 @@ export default function FeesPage({ setPage }) {
               </div>
               <div style={{ marginTop: 16, display: "flex", gap: 8, flexWrap: "wrap" }}>
                 <Btn primary onClick={() => setPage("Apply")} style={{ color: "#fff", background: S.coral, flex: 1 }}>Apply Now</Btn>
-                <WhatsAppShare text={`CTS ETS Fees: ${prog?.name} — ${result.plan}: US$${Math.round(parseInt(result.grandTotal.replace(/[$,]/g, "")) / USD_RATE).toLocaleString()} | ctsetsjm.com`} label="Share" />
+                <WhatsAppShare text={`CTS ETS Fees: ${prog?.name} — ${result.plan}: US$${Math.round(parseInt(result.grandTotal.replace(/[^0-9]/g, "")) / USD_RATE).toLocaleString()} | ctsetsjm.com`} label="Share" />
               </div>
             </div>
           </div>}
