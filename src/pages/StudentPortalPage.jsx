@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import S from "../constants/styles";
-import { APPS_SCRIPT_URL, LEARNING_PORTAL_URL } from "../constants/config";
+import { APPS_SCRIPT_URL, LEARNING_PORTAL_URL, BANK_DETAILS } from "../constants/config";
 import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture } from "../components/shared/CoreComponents";
 import { fmt } from "../utils/formatting";
 import OTPGate from "../components/common/OTPGate";
@@ -526,8 +526,8 @@ function Dashboard({ student, onLogout, setPage, onPasswordChanged }) {
                     Pay Online with Credit/Debit Card (WiPay)
                   </a>
                   <div style={{ padding: "14px 20px", borderRadius: 10, background: S.lightBg, border: "1px solid " + S.border, fontSize: 12, fontFamily: S.body, color: S.gray, lineHeight: 1.7, marginBottom: 14 }}>
-                    <div style={{ fontWeight: 700, color: S.navy, marginBottom: 6 }}>Bank Transfer</div>
-                    NCB — JMD Account<br/>
+                    <div style={{ fontWeight: 700, color: S.navy, marginBottom: 6 }}>Bank Transfer / Deposit</div>
+                    {BANK_DETAILS.jmd.bank}<br/><strong>Account Name:</strong> {BANK_DETAILS.jmd.accountName}{BANK_DETAILS.jmd.tradingAs && <span> (t/a {BANK_DETAILS.jmd.tradingAs})</span>}<br/><strong>Account #:</strong> {BANK_DETAILS.jmd.accountNumber}<br/><strong>Branch:</strong> {BANK_DETAILS.jmd.branch}<br/><strong>Type:</strong> {BANK_DETAILS.jmd.accountType}<br/>
                     After transfer, email your receipt to <strong>admin@ctsetsjm.com</strong> with your reference number.
                   </div>
                   <button onClick={function() { setPayStep("confirm"); }}
