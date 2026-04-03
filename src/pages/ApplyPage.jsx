@@ -328,6 +328,10 @@ export default function ApplyPage({ setPage }) {
     if (!form.emergencyName) errs.emergencyName = "Emergency contact name is required";
     if (!form.emergencyPhone) errs.emergencyPhone = "Emergency contact phone is required";
     if (!form.emergencyRelationship) errs.emergencyRelationship = "Emergency contact relationship is required";
+    if (form.emergency2Name && form.emergency2Name.trim()) {
+      if (!form.emergency2Relationship) errs.emergency2Relationship = "Relationship is required when a name is entered";
+      if (!form.emergency2Phone) errs.emergency2Phone = "Phone is required when a name is entered";
+    }
     requiredDocs.forEach(d => { if (!files[d.slot]) errs[d.slot] = d.label + " is required"; else if (!validateFileSize(files[d.slot])) errs[d.slot] = "File too large (max 5 MB)"; });
     if (!captchaOk) errs.captcha = "Please complete the verification";
 
@@ -768,16 +772,16 @@ export default function ApplyPage({ setPage }) {
               <div style={{ fontSize: 11, color: S.coral, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 16, marginTop: 16 }}>Emergency Contact #2 <span style={{ opacity: 0.5, fontSize: 9, letterSpacing: 0 }}>(Optional)</span></div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0 20px" }} className="resp-grid-3">
                 <Field label="Contact Name">
-                  <input style={inputStyle} value={form.emergency2Name} onChange={e => set("emergency2Name", e.target.value)} placeholder="Optional" />
+                  <input style={inputStyle} value={form.emergency2Name} onChange={e => set("emergency2Name", e.target.value)} placeholder="Optional" autoComplete="new-password" />
                 </Field>
-                <Field label="Relationship">
+                <Field label="Relationship" required={!!form.emergency2Name.trim()} error={errors.emergency2Relationship}>
                   <select style={selectStyle} value={form.emergency2Relationship} onChange={e => set("emergency2Relationship", e.target.value)}>
                     <option value="">Select...</option>
                     {["Parent", "Guardian", "Spouse", "Relative", "Friend"].map(o => <option key={o} value={o}>{o}</option>)}
                   </select>
                 </Field>
-                <Field label="Contact Phone">
-                  <input type="tel" style={inputStyle} value={form.emergency2Phone} onChange={e => set("emergency2Phone", e.target.value)} placeholder="Optional" />
+                <Field label="Contact Phone" required={!!form.emergency2Name.trim()} error={errors.emergency2Phone}>
+                  <input type="tel" style={inputStyle} value={form.emergency2Phone} onChange={e => set("emergency2Phone", e.target.value)} placeholder={form.emergency2Name.trim() ? "Required" : "Optional"} autoComplete="new-password" />
                 </Field>
               </div>
             </div>
