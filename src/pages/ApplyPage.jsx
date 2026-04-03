@@ -32,7 +32,7 @@ const DOC_REQUIREMENTS = {
     { slot: "proofId", label: "Proof of Identity (National ID / Passport / Driver's Licence)", required: true, accept: "image/*,.pdf" },
     { slot: "trn", label: "TRN Card", required: true, accept: "image/*,.pdf" },
     { slot: "qualifications", label: "Qualifications (CXC, Diplomas, etc.)", required: false, accept: "image/*,.pdf" },
-    { slot: "heartForm", label: "Signed HEART/NSTA Application Form (download from section above)", required: true, accept: "image/*,.pdf" },
+    { slot: "heartForm", label: "Signed HEART/NSTA Application Form (auto-attached when you sign above)", required: true, accept: "image/*,.pdf,.html" },
   ],
   caribbean: [
     { slot: "passportPhoto", label: "Passport-Size Photo (upload right-side up — this will be used on your Student ID Card)", required: true, accept: "image/*" },
@@ -946,15 +946,15 @@ export default function ApplyPage({ setPage }) {
           </SectionBlock>
           {/* ════════════════════════════════════════════════ */}
           {isJamaican && (
-            <SectionBlock num={secN.heart} title="HEART/NSTA Application Form" desc="Auto-filled from your details. Sign and download, then upload it in the next section." locked={!s3Done} complete={heartFormDone}>
-              <HeartFormBuilder formData={form} onComplete={(sig) => { if (sig) setHeartFormDone(true); }} />
+            <SectionBlock num={secN.heart} title="HEART/NSTA Application Form" desc="Auto-filled from your details. Review, sign, and confirm — it will be automatically attached to your application." locked={!s3Done} complete={heartFormDone}>
+              <HeartFormBuilder formData={form} onComplete={(sig, heartFile) => { if (sig) { setHeartFormDone(true); if (heartFile) setFiles(prev => ({...prev, heartForm: heartFile})); } }} />
             </SectionBlock>
           )}
 
           {/* ════════════════════════════════════════════════ */}
           {/* DOCUMENT UPLOADS */}
           {/* ════════════════════════════════════════════════ */}
-          <SectionBlock num={secN.docs} title="Upload Your Documents" desc={`Required documents for ${APPLICANT_TYPES.find(t => t.key === applicantType)?.label || "your"} applicants. Max 5 MB per file.${isJamaican ? " Include the signed HEART form you just downloaded." : ""}`} locked={!sDocGate} complete={s4Done}>
+          <SectionBlock num={secN.docs} title="Upload Your Documents" desc={`Required documents for ${APPLICANT_TYPES.find(t => t.key === applicantType)?.label || "your"} applicants. Max 5 MB per file.${isJamaican ? " Your signed HEART form has been auto-attached." : ""}`} locked={!sDocGate} complete={s4Done}>
             {applicantType && currentDocs.map(doc => (
               <FileUpload key={doc.slot} doc={doc} file={files[doc.slot]} onFileChange={onFileChange} />
             ))}
