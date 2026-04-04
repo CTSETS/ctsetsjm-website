@@ -64,7 +64,7 @@ function AdminDashboardPage() {
   var [refreshKey, setRefreshKey] = useState(0);
 
   var api = useCallback(function(action, params) {
-    var url = APPS_SCRIPT_URL + "?action=" + action + "&auth=" + encodeURIComponent(auth);
+    var url = APPS_SCRIPT_URL + "?action=" + action + "&key=" + encodeURIComponent(auth);
     if (params) { for (var k in params) { if (params[k] !== undefined && params[k] !== "") url += "&" + k + "=" + encodeURIComponent(params[k]); } }
     return fetch(url).then(function(r) { return r.json(); });
   }, [auth]);
@@ -107,7 +107,7 @@ function AdminDashboardPage() {
   function handleLogin() {
     if (!pw.trim()) return;
     setLoginErr(""); setLoading(true);
-    fetch(APPS_SCRIPT_URL + "?action=admindashboard&auth=" + encodeURIComponent(pw.trim())).then(function(r) { return r.json(); }).then(function(d) {
+    fetch(APPS_SCRIPT_URL + "?action=admindashboard&key=" + encodeURIComponent(pw.trim())).then(function(r) { return r.json(); }).then(function(d) {
       if (d.ok) { setDashboard(d); setLoggedIn(true); setAuth(pw.trim()); try { sessionStorage.setItem(PW_KEY, pw.trim()); } catch(e) {} }
       else setLoginErr("Invalid password");
       setLoading(false);
