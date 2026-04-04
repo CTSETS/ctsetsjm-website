@@ -1,5 +1,8 @@
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZEjUdBknkb-TpUKzufai0DWjG6HPJyR2mZsmjmiapWHTudJX51ZAEpxodw_AZQC4BFA/exec";
 
+// Admin credentials — validated server-side in the proxy
+const ADMIN_PASSWORDS = ["CtsAdmin2026!", "Detailed1982"];
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -10,24 +13,32 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Debug mode — shows what the proxy receives
-    if (req.query && req.query.action === "proxydebug") {
-      return res.status(200).json({
-        method: req.method,
-        query: req.query,
-        url: req.url,
-        rawUrl: APPS_SCRIPT_URL + "?" + new URLSearchParams(req.query).toString()
-      });
-    }
-
     if (req.method === "GET") {
-      const params = new URLSearchParams(req.query);
+      const query = { ...req.query };
+      const action = (query.action || "").toLowerCase();
+
+      // Admin actions: validate password in the proxy, then forward with internal token
+      const adminActions = ["admindashboard","adminlistapps","adminliststudents","adminlistpayments","adminacceptapp","adminrejectapp","adminenrollstudent","adminresetpw","adminauditlog","verifypayment","rejectpayment","generaterecord"];
+
+      if (adminActions.includes(action)) {
+        // Check for password in any of these parameter names (frontend might use any)
+        const pw = query.akey || query.key || query.auth || query.adminpw || "";
+        if (!ADMIN_PASSWORDS.includes(pw)) {
+          return res.status(200).json({ ok: false, error: "Invalid password" });
+        }
+        // Remove all auth params — don't send them to Google (they get stripped anyway)
+        delete query.akey;
+        delete query.key;
+        delete query.auth;
+        delete query.adminpw;
+        // Add internal token that Code.gs will accept
+        query.tok = "Detailed1982";
+      }
+
+      const params = new URLSearchParams(query);
       const url = APPS_SCRIPT_URL + "?" + params.toString();
-      
-      // Use manual redirect following to preserve params
+
       let response = await fetch(url, { redirect: "manual" });
-      
-      // Follow redirects manually
       let redirectCount = 0;
       while (response.status >= 300 && response.status < 400 && redirectCount < 5) {
         const location = response.headers.get("location");
@@ -35,11 +46,10 @@ export default async function handler(req, res) {
         response = await fetch(location, { redirect: "manual" });
         redirectCount++;
       }
-      
+
       const text = await response.text();
       try {
-        const json = JSON.parse(text);
-        return res.status(200).json(json);
+        return res.status(200).json(JSON.parse(text));
       } catch {
         return res.status(200).send(text);
       }
@@ -47,14 +57,14 @@ export default async function handler(req, res) {
 
     if (req.method === "POST") {
       const body = typeof req.body === "string" ? req.body : JSON.stringify(req.body);
-      
+
       let response = await fetch(APPS_SCRIPT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: body,
         redirect: "manual",
       });
-      
+
       let redirectCount = 0;
       while (response.status >= 300 && response.status < 400 && redirectCount < 5) {
         const location = response.headers.get("location");
@@ -62,11 +72,10 @@ export default async function handler(req, res) {
         response = await fetch(location, { redirect: "manual" });
         redirectCount++;
       }
-      
+
       const text = await response.text();
       try {
-        const json = JSON.parse(text);
-        return res.status(200).json(json);
+        return res.status(200).json(JSON.parse(text));
       } catch {
         return res.status(200).send(text);
       }
