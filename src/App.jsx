@@ -7,7 +7,6 @@ import "./styles/global.css";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import { ScrollNav, WhatsAppBtn, AnnouncementBar, OfflineBanner, CookieBanner } from "./components/layout/LayoutUtilities";
-import AdminDashboardPage from "./pages/AdminDashboardPage";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
@@ -26,7 +25,7 @@ const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const TermsPage = lazy(() => import("./pages/TermsPage"));
 const FAQPage = lazy(() => import("./pages/FAQPage"));
 const StudentPortalPage = lazy(() => import("./pages/StudentPortalPage"));
-const AdminPage = lazy(() => import("./pages/AdminPage"));
+const AdminDashboardPage = lazy(() => import("./pages/AdminDashboardPage"));
 const AIUsagePolicyPage = lazy(() => import("./pages/AIUsagePolicyPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
@@ -44,7 +43,7 @@ class ErrorBoundary extends Component {
   }
 }
 
-const TITLES = { Home: "CTS ETS — Jamaica's Digital Vocational School", About: "About CTS ETS", "Why Choose": "Why Choose CTS ETS", Programmes: "Programmes | CTS ETS", "Fees & Calculator": "Student Finance | CTS ETS", "For Employers": "For Employers | CTS ETS", "Student Journey": "Student Journey | CTS ETS", Apply: "Apply Now | CTS ETS", Pay: "Make a Payment | CTS ETS", Contact: "Contact Us | CTS ETS", International: "International Students | CTS ETS", "Verify Certificate": "Verify Certificate | CTS ETS", Feedback: "Feedback | CTS ETS", FAQ: "Frequently Asked Questions | CTS ETS", "Student Portal": "Student Portal | CTS ETS", Admin: "Admin Console | CTS ETS", "AI Policy": "AI Usage Policy | CTS ETS", Privacy: "Privacy Policy | CTS ETS", Terms: "Terms & Conditions | CTS ETS" };
+const TITLES = { Home: "CTS ETS — Jamaica's Digital Vocational School", About: "About CTS ETS", "Why Choose": "Why Choose CTS ETS", Programmes: "Programmes | CTS ETS", "Fees & Calculator": "Student Finance | CTS ETS", "For Employers": "For Employers | CTS ETS", "Student Journey": "Student Journey | CTS ETS", Apply: "Apply Now | CTS ETS", Pay: "Make a Payment | CTS ETS", Contact: "Contact Us | CTS ETS", International: "International Students | CTS ETS", "Verify Certificate": "Verify Certificate | CTS ETS", Feedback: "Feedback | CTS ETS", FAQ: "Frequently Asked Questions | CTS ETS", "Student Portal": "Student Portal | CTS ETS", Admin: "Admin Dashboard | CTS ETS", "AI Policy": "AI Usage Policy | CTS ETS", Privacy: "Privacy Policy | CTS ETS", Terms: "Terms & Conditions | CTS ETS" };
 
 export default function CTSApp() {
   const [page, setPage] = useState(() => {
@@ -92,11 +91,10 @@ export default function CTSApp() {
       case "Feedback": return <FeedbackPage {...p} />;
       case "FAQ": return <FAQPage {...p} />;
       case "Student Portal": return <StudentPortalPage {...p} />;
-      case "Admin": return <AdminPage {...p} />;
+      case "Admin": return <AdminDashboardPage {...p} />;
       case "AI Policy": return <AIUsagePolicyPage />;
       case "Privacy": return <PrivacyPage />;
       case "Terms": return <TermsPage />;
-      Case "Admin": return <AdminDashboardPage />;
       default: return <NotFoundPage {...p} />;
     }
   };
