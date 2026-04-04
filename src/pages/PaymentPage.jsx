@@ -1,6 +1,6 @@
 // ─── PAYMENT / FINANCE PAGE ─────────────────────────────────────────
 // Strict ID lookup → auto-populate → pricing → pay
-// Backend endpoint: ?action=lookupStudent&ref=CTSETS-2026-03-XXXXX
+// Backend endpoint: ?action=lookupStudent&ref=CTSETSA-2026-04-XXXXX
 //   Returns: { count: N }
 import { useState, useRef, useEffect } from "react";
 import S from "../constants/styles";
@@ -22,16 +22,16 @@ var TUITION_MAP = {
 };
 
 function getTuition(level) {
-  for (var key in TUITION_MAP) {
-    if (level && (level === key || key.toLowerCase().indexOf(level.toLowerCase().split(" ")[0]) >= 0 || level.toLowerCase().indexOf(key.toLowerCase().split(" ")[0]) >= 0)) return TUITION_MAP[key];
-  }
-  // Fallback: try matching level number
-  if (level) {
-    if (level.indexOf("5") >= 0) return 45000;
-    if (level.indexOf("4") >= 0) return 35000;
-    if (level.indexOf("3") >= 0) return 25000;
-    if (level.indexOf("2") >= 0) return 15000;
-  }
+  if (!level) return 5000;
+  // Exact match first
+  if (TUITION_MAP[level] !== undefined) return TUITION_MAP[level];
+  // Fuzzy match by level number
+  var l = level.toLowerCase();
+  if (l.indexOf("level 5") >= 0 || l.indexOf("bachelor") >= 0) return 45000;
+  if (l.indexOf("level 4") >= 0 || l.indexOf("associate") >= 0) return 35000;
+  if (l.indexOf("level 3") >= 0 || l.indexOf("diploma") >= 0) return 25000;
+  if (l.indexOf("level 2") >= 0 || l.indexOf("vocational") >= 0) return 15000;
+  if (l.indexOf("job") >= 0 || l.indexOf("certificate") >= 0) return 5000;
   return 5000;
 }
 
@@ -518,14 +518,14 @@ export default function PaymentPage({ setPage }) {
               </div>
 
               <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.6, marginBottom: 16 }}>
-                Your application number was assigned when you started your application. It appears at the top of your Apply page and in your confirmation email: <strong>CTSETS-2026-03-XXXXX</strong>
+                Your application number was assigned when you started your application. It appears at the top of your Apply page and in your confirmation email: <strong>CTSETSA-2026-04-XXXXX</strong>
               </p>
 
               <div style={{ display: "flex", gap: 10 }}>
                 <input type="text" value={refInput}
                   onChange={function(e) { setRefInput(e.target.value.toUpperCase()); setLookupState("idle"); setLookupMsg(""); setDisputeSent(false); }}
                   onKeyDown={function(e) { if (e.key === "Enter") handleLookup(); }}
-                  placeholder="CTSETS-2026-03-XXXXX"
+                  placeholder="CTSETSA-2026-04-XXXXX"
                   disabled={lookupState === "found"}
                   style={{ flex: 1, padding: "14px 16px", borderRadius: 8, border: "2px solid " + (lookupState === "found" ? S.emerald : "rgba(1,30,64,0.12)"), fontSize: 18, fontFamily: "'DM Sans', sans-serif", color: S.navy, fontWeight: 700, outline: "none", letterSpacing: 1, background: lookupState === "found" ? S.emeraldLight + "40" : "#fff" }}
                 />
