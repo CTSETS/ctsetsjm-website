@@ -7,6 +7,7 @@ import "./styles/global.css";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import { ScrollNav, WhatsAppBtn, AnnouncementBar, OfflineBanner, CookieBanner } from "./components/layout/LayoutUtilities";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
@@ -95,6 +96,7 @@ export default function CTSApp() {
       case "AI Policy": return <AIUsagePolicyPage />;
       case "Privacy": return <PrivacyPage />;
       case "Terms": return <TermsPage />;
+      Case "Admin": return <AdminDashboardPage />;
       default: return <NotFoundPage {...p} />;
     }
   };
