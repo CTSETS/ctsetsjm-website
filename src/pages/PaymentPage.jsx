@@ -180,9 +180,9 @@ export default function PaymentPage({ setPage }) {
   var handleLookup = async function() {
     var val = refInput.trim().toUpperCase();
     if (!val) return;
-    if (!val.startsWith("CTSETS-")) {
+    if (!val.startsWith("CTSETS-") && !val.startsWith("CTSETSA-") && !val.startsWith("CTSETSS-")) {
       setLookupState("not_found");
-      setLookupMsg("Application numbers start with CTSETS- (e.g. CTSETS-2026-03-12345).");
+      setLookupMsg("Enter your Application Number (CTSETSA-...) or Student Number (CTSETSS-...).");
       return;
     }
     // Check if already added
