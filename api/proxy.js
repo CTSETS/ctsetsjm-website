@@ -1,7 +1,6 @@
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZEjUdBknkb-TpUKzufai0DWjG6HPJyR2mZsmjmiapWHTudJX51ZAEpxodw_AZQC4BFA/exec";
 
 export default async function handler(req, res) {
-  // CORS headers
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -11,13 +10,33 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Debug mode — shows what the proxy receives
+    if (req.query && req.query.action === "proxydebug") {
+      return res.status(200).json({
+        method: req.method,
+        query: req.query,
+        url: req.url,
+        rawUrl: APPS_SCRIPT_URL + "?" + new URLSearchParams(req.query).toString()
+      });
+    }
+
     if (req.method === "GET") {
-      // Forward query params to Apps Script
       const params = new URLSearchParams(req.query);
       const url = APPS_SCRIPT_URL + "?" + params.toString();
-      const response = await fetch(url, { redirect: "follow" });
-      const text = await response.text();
       
+      // Use manual redirect following to preserve params
+      let response = await fetch(url, { redirect: "manual" });
+      
+      // Follow redirects manually
+      let redirectCount = 0;
+      while (response.status >= 300 && response.status < 400 && redirectCount < 5) {
+        const location = response.headers.get("location");
+        if (!location) break;
+        response = await fetch(location, { redirect: "manual" });
+        redirectCount++;
+      }
+      
+      const text = await response.text();
       try {
         const json = JSON.parse(text);
         return res.status(200).json(json);
@@ -28,14 +47,23 @@ export default async function handler(req, res) {
 
     if (req.method === "POST") {
       const body = typeof req.body === "string" ? req.body : JSON.stringify(req.body);
-      const response = await fetch(APPS_SCRIPT_URL, {
+      
+      let response = await fetch(APPS_SCRIPT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: body,
-        redirect: "follow",
+        redirect: "manual",
       });
+      
+      let redirectCount = 0;
+      while (response.status >= 300 && response.status < 400 && redirectCount < 5) {
+        const location = response.headers.get("location");
+        if (!location) break;
+        response = await fetch(location, { redirect: "manual" });
+        redirectCount++;
+      }
+      
       const text = await response.text();
-
       try {
         const json = JSON.parse(text);
         return res.status(200).json(json);
