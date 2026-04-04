@@ -749,6 +749,7 @@ export default function PaymentPage({ setPage }) {
                   <div style={{ marginTop: 24 }}>
                     <div style={{ padding: "20px 24px", borderRadius: 12, background: S.navy, marginBottom: 20 }}>
                       <div style={{ fontSize: 11, color: S.gold, letterSpacing: 1, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 14 }}>Bank Transfer Details</div>
+                      {BANK_DETAILS.jmd.comingSoon ? (
                       <div style={{ padding: "20px", borderRadius: 10, background: "rgba(255,255,255,0.06)", border: "1px dashed rgba(255,255,255,0.15)", textAlign: "center" }}>
                         <div style={{ fontSize: 20, marginBottom: 8 }}>{"\uD83C\uDFE6"}</div>
                         <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", fontFamily: S.body, marginBottom: 6 }}>Bank Transfer Details Coming Soon</div>
@@ -756,8 +757,25 @@ export default function PaymentPage({ setPage }) {
                           We are finalising our bank transfer details. In the meantime, you can pay online using your Visa or Mastercard, or contact us at <strong style={{ color: S.gold }}>876-381-9771</strong> for alternative payment arrangements.
                         </p>
                       </div>
+                      ) : (
+                      <div style={{ padding: "16px 20px", borderRadius: 10, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}>
+                        {[
+                          ["Bank", BANK_DETAILS.jmd.bank],
+                          ["Account Name", BANK_DETAILS.jmd.accountName + (BANK_DETAILS.jmd.tradingAs ? " (t/a " + BANK_DETAILS.jmd.tradingAs + ")" : "")],
+                          ["Account Number", BANK_DETAILS.jmd.accountNumber],
+                          ["Branch", BANK_DETAILS.jmd.branch],
+                          ["Account Type", BANK_DETAILS.jmd.accountType],
+                          ["Currency", BANK_DETAILS.jmd.currency],
+                        ].map(function(row) { return (
+                          <div key={row[0]} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,0.06)", fontSize: 13, fontFamily: S.body }}>
+                            <span style={{ color: "rgba(255,255,255,0.5)" }}>{row[0]}</span>
+                            <span style={{ color: "#fff", fontWeight: 600 }}>{row[1]}</span>
+                          </div>
+                        ); })}
+                      </div>
+                      )}
                       <div style={{ marginTop: 14, padding: "10px 14px", borderRadius: 8, background: S.gold + "15", border: "1px solid " + S.gold + "30", fontSize: 12, color: S.gold, fontFamily: S.body, fontWeight: 600 }}>
-                        {"When available, use your application number as payment reference: "}<strong>{students.length > 0 ? allRefs : (student ? student.ref : "")}</strong>
+                        {"Use your application number as payment reference: "}<strong>{students.length > 0 ? allRefs : (student ? student.ref : "")}</strong>
                       </div>
                     </div>
 
@@ -797,7 +815,7 @@ export default function PaymentPage({ setPage }) {
 
                     <div style={{ marginBottom: 20 }}>
                       <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 6 }}>Payment Note (optional)</label>
-                      <textarea value={paymentNote} onChange={function(e) { setPaymentNote(e.target.value); }} placeholder={"e.g. " + selectedPlan + " plan payment via NCB online transfer"} style={{ width: "100%", padding: "12px 16px", borderRadius: 8, border: "1.5px solid rgba(1,30,64,0.12)", fontSize: 14, fontFamily: "'DM Sans', sans-serif", color: "#1A202C", outline: "none", background: "#fff", boxSizing: "border-box", height: 80, resize: "vertical" }} />
+                      <textarea value={paymentNote} onChange={function(e) { setPaymentNote(e.target.value); }} placeholder={"e.g. " + selectedPlan + " plan payment via Scotiabank transfer"} style={{ width: "100%", padding: "12px 16px", borderRadius: 8, border: "1.5px solid rgba(1,30,64,0.12)", fontSize: 14, fontFamily: "'DM Sans', sans-serif", color: "#1A202C", outline: "none", background: "#fff", boxSizing: "border-box", height: 80, resize: "vertical" }} />
                     </div>
 
                     <button onClick={handlePaymentSubmit} disabled={submitting || !receipt}
