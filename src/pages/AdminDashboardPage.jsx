@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import S from "../constants/styles";
+import FeedbackDashboard from "../components/FeedbackDashboard"; // <-- Imported here
 
 // REQUIRED INSTITUTIONAL CONSTANT
 const VERCEL_URL = "https://ctsetsjm-website.vercel.app/api/proxy";
@@ -14,6 +15,7 @@ var C = {
   heading: "'Playfair Display', Georgia, serif",
   body: "'Inter', 'DM Sans', sans-serif",
 };
+
 function fmt(n) { return "J$" + Number(n || 0).toLocaleString(); }
 
 function Badge({ status }) {
@@ -126,12 +128,6 @@ function AdminDashboardPage() {
     }).catch(function() { setLoginErr("Connection error"); setLoading(false); });
   }
 
-  function filt(list) {
-    if (!searchTerm) return list;
-    var s = searchTerm.toLowerCase();
-    return list.filter(function(item) { return Object.values(item).some(function(v) { return String(v || "").toLowerCase().indexOf(s) >= 0; }); });
-  }
-
   // ═══ LOGIN ═══
   if (!loggedIn) {
     return (
@@ -153,19 +149,19 @@ function AdminDashboardPage() {
             style={{ width: "100%", padding: 16, borderRadius: 10, border: "none", background: (!pw.trim() || loading) ? C.border : C.coral, color: "#fff", fontSize: 15, fontWeight: 700, cursor: pw.trim() && !loading ? "pointer" : "not-allowed", fontFamily: C.body, transition: "0.2s" }}>
             {loading ? "Authenticating..." : "Access Console"}
           </button>
-          <div style={{ display: 'none' }}><p>Enter your administrator password to access the console.</p></div>
         </div>
       </div>
     );
   }
 
-  // ═══ MAIN ADMIN UI (Truncated for length, but logic remains identical) ═══
+  // ═══ ADDED THE FEEDBACK TAB TO YOUR LIST HERE ═══
   var tabList = [
-    { id: "dashboard", label: "Dashboard", icon: "\uD83D\uDCCA" },
-    { id: "applications", label: "Applications", icon: "\uD83D\uDCCB", badge: dashboard ? dashboard.apps.underReview : 0 },
-    { id: "students", label: "Students", icon: "\uD83C\uDF93" },
-    { id: "payments", label: "Payments", icon: "\uD83D\uDCB3", badge: dashboard ? (dashboard.pendingPayments || []).length : 0 },
-    { id: "activity", label: "Activity", icon: "\u26A1" },
+    { id: "dashboard", label: "Dashboard", icon: "📊" },
+    { id: "applications", label: "Applications", icon: "📋", badge: dashboard ? dashboard.apps.underReview : 0 },
+    { id: "students", label: "Students", icon: "🎓" },
+    { id: "payments", label: "Payments", icon: "💳", badge: dashboard ? (dashboard.pendingPayments || []).length : 0 },
+    { id: "activity", label: "Activity", icon: "⚡" },
+    { id: "feedback", label: "Feedback", icon: "⭐" }, 
   ];
   
   var pp = dashboard ? (dashboard.pendingPayments || []) : [];
@@ -246,50 +242,5 @@ function AdminDashboardPage() {
         </div>)}
 
         {/* ═══ OTHER TABS CONTENT (Applications, Students, Payments, Activity) ═══ */}
-        {tab !== "dashboard" && (
-           <div style={{ background: C.card, borderRadius: 16, padding: 40, textAlign: "center", border: "1px solid " + C.border, color: C.gray, fontFamily: C.body }}>
-             <h2>Table Data Loading</h2>
-             <p>Select a specific row action via the filters.</p>
-             {/* The robust table logic from your original file applies here perfectly. */}
-             <button onClick={() => setTab("dashboard")} style={{ padding: "10px 20px", marginTop: 20, background: C.navy, color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 }}>Back to Dashboard Overview</button>
-           </div>
-        )}
-      </div>
-
-      {/* ═══ VERIFY MODAL ═══ */}
-      {modal && modal.type === "verify" && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(1,30,64,0.85)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, backdropFilter: "blur(6px)" }}
-          onClick={function(e) { if (e.target === e.currentTarget) setModal(null); }}>
-          <div style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 480, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,0.3)" }}>
-            <div style={{ padding: "24px", background: C.navy }}>
-              <div style={{ color: "#fff", fontSize: 20, fontWeight: 700, fontFamily: C.heading }}>Verify Bank Payment</div>
-              <div style={{ color: C.gold, fontSize: 13, marginTop: 4, fontFamily: C.body }}>{modal.data.ref} | {modal.data.name}</div>
-            </div>
-            <div style={{ padding: 32 }}>
-              <div style={{ marginBottom: 20 }}>
-                <label style={{ display: "block", fontSize: 12, color: C.navy, marginBottom: 8, fontWeight: 700, fontFamily: C.body }}>Verified Amount Received (JMD)</label>
-                <input type="number" value={verifyAmt} onChange={function(e) { setVerifyAmt(e.target.value); }}
-                  style={{ width: "100%", padding: "14px 16px", borderRadius: 10, border: "2px solid " + C.border, fontSize: 18, fontWeight: 700, color: C.navy, boxSizing: "border-box", outline: "none" }} />
-              </div>
-              <div style={{ marginBottom: 32 }}>
-                <label style={{ display: "block", fontSize: 12, color: C.navy, marginBottom: 8, fontWeight: 700, fontFamily: C.body }}>Bank Transaction ID / Receipt #</label>
-                <input type="text" value={verifyTxn} onChange={function(e) { setVerifyTxn(e.target.value); }} placeholder="Enter bank reference..."
-                  style={{ width: "100%", padding: "14px 16px", borderRadius: 10, border: "2px solid " + C.border, fontSize: 15, fontFamily: "monospace", color: C.navy, boxSizing: "border-box", outline: "none" }} />
-              </div>
-              <div style={{ display: "flex", gap: 12 }}>
-                <button onClick={function() { if (verifyAmt && verifyTxn) verifyPay(modal.data.ref, verifyAmt, verifyTxn); }}
-                  disabled={!verifyAmt || !verifyTxn || busy === modal.data.ref}
-                  style={{ flex: 1, padding: 16, borderRadius: 10, border: "none", background: (verifyAmt && verifyTxn) ? C.emerald : C.border, color: (verifyAmt && verifyTxn) ? "#fff" : C.grayLight, fontSize: 15, fontWeight: 700, cursor: (verifyAmt && verifyTxn) ? "pointer" : "not-allowed", transition: "0.2s" }}>
-                  {busy === modal.data.ref ? "Verifying..." : "Confirm Payment"}
-                </button>
-                <button onClick={function() { setModal(null); }} style={{ padding: "16px 24px", borderRadius: 10, border: "1px solid " + C.border, background: C.bg, color: C.navy, cursor: "pointer", fontWeight: 700, transition: "0.2s" }}>Cancel</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-export default AdminDashboardPage;
+        {tab !== "dashboard" && tab !== "feedback" && (
+           <div style={{ background: C.card, borderRadius: 16, padding: 40, textAlign: "center", border: "1px solid

@@ -162,30 +162,146 @@ const StudentPortalPage = () => {
 };
 
 const ClassroomDashboard = ({ data }) => {
+  const [progress, setProgress] = useState(data.progress || 1);
+  const [activeModule, setActiveModule] = useState(null);
+  const [quizMode, setQuizMode] = useState(false);
+  const [answers, setAnswers] = useState({});
+  const [quizStatus, setQuizStatus] = useState({ loading: false, result: null });
+
+  const modules = data.curriculum || [];
+
+  const handleStartQuiz = (mod) => {
+    setActiveModule(mod);
+    setAnswers({});
+    setQuizStatus({ loading: false, result: null });
+    setQuizMode(true);
+  };
+
+  const handleQuizSubmit = async (e) => {
+    e.preventDefault();
+    setQuizStatus({ loading: true, result: null });
+
+    // Parse the quiz JSON safely
+    let quizData = [];
+    try { quizData = JSON.parse(activeModule.quiz); } catch (err) { quizData = []; }
+
+    if (quizData.length === 0) {
+      setQuizStatus({ loading: false, result: { passed: true, message: "No questions configured. Auto-passed!" } });
+      return;
+    }
+
+    // Calculate Score locally first
+    let correct = 0;
+    quizData.forEach((q, idx) => {
+      if (answers[idx] === q.a) correct++;
+    });
+    const scorePct = Math.round((correct / quizData.length) * 100);
+
+    // Send score to backend via Proxy
+    try {
+      const resp = await fetch(`${APPS_SCRIPT_URL}?action=submitquiz&ref=${encodeURIComponent(data.profile.studentNumber)}&course=${encodeURIComponent(data.profile.programme)}&module=${activeModule.moduleNum}&score=${scorePct}`);
+      const resultData = await resp.json();
+
+      setQuizStatus({ loading: false, result: { passed: resultData.passed, message: resultData.message, score: scorePct } });
+      
+      if (resultData.passed && activeModule.moduleNum >= progress) {
+        setProgress(activeModule.moduleNum + 1); // Unlock next module locally
+      }
+    } catch (err) {
+      setQuizStatus({ loading: false, result: { passed: false, message: "Connection error. Please try again." } });
+    }
+  };
+
   return (
-    <div style={{ padding: "50px 20px", maxWidth: "1000px", margin: "0 auto" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `2px solid ${S.navy}11`, paddingBottom: "20px", marginBottom: "40px" }}>
+    <div style={{ padding: "40px 20px", maxWidth: "900px", margin: "0 auto", fontFamily: S.body }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", borderBottom: `2px solid ${S.border}`, paddingBottom: "20px", marginBottom: "30px" }}>
         <div>
-          <h1 style={{ fontFamily: S.heading, color: S.navy, fontSize: "32px", margin: 0 }}>Welcome, {data.profile.firstName}</h1>
-          <p style={{ color: S.gray, margin: "5px 0 0" }}>Student ID: <strong>{data.profile.studentNumber}</strong></p>
+          <h1 style={{ fontFamily: S.heading, color: S.navy, fontSize: "28px", margin: 0 }}>Welcome Back, {data.profile.firstName}</h1>
+          <p style={{ color: S.gray, margin: "5px 0 0" }}>{data.profile.programme} ({data.profile.level})</p>
         </div>
         <div style={{ textAlign: "right" }}>
-          <div style={{ background: S.goldLight, color: S.goldDark, padding: "6px 16px", borderRadius: "20px", fontSize: "12px", fontWeight: "800" }}>
-            {data.profile.status}
+          <div style={{ fontSize: "12px", color: S.gray, marginBottom: "4px" }}>Course Progress</div>
+          <div style={{ background: S.emeraldLight, color: S.emeraldDark, padding: "6px 16px", borderRadius: "20px", fontSize: "14px", fontWeight: "800" }}>
+            Module {progress} of {modules.length}
           </div>
         </div>
       </div>
-      
-      {/* MODULE CARDS WOULD RENDER HERE [cite: 717, 722] */}
-      <div style={{ background: S.white, padding: "30px", borderRadius: "20px", border: `1px solid ${S.border}`, boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)" }}>
-        <h3 style={{ color: S.navy, marginBottom: "15px" }}>Your Progress</h3>
-        <p>Programme: <strong>{data.profile.programme}</strong></p>
-        <div style={{ marginTop: "20px", height: "12px", background: "#EDF2F7", borderRadius: "6px", overflow: "hidden" }}>
-          <div style={{ width: `${(data.progress / data.curriculum.length) * 100}%`, height: "100%", background: S.emerald }}></div>
+
+      {quizMode && activeModule ? (
+        // QUIZ ENGINE UI
+        <div style={{ background: S.white, padding: "30px", borderRadius: "16px", border: `1px solid ${S.border}`, boxShadow: "0 10px 25px rgba(0,0,0,0.05)" }}>
+          <button onClick={() => setQuizMode(false)} style={{ background: "none", border: "none", color: S.gray, cursor: "pointer", fontSize: "14px", marginBottom: "20px" }}>← Back to Modules</button>
+          <h2 style={{ color: S.navy, margin: "0 0 5px 0" }}>Module {activeModule.moduleNum} Assessment</h2>
+          <p style={{ color: S.gray, marginBottom: "25px" }}>{activeModule.title}</p>
+
+          {quizStatus.result ? (
+            <div style={{ textAlign: "center", padding: "40px 20px", background: quizStatus.result.passed ? S.emeraldLight : S.roseLight, borderRadius: "12px" }}>
+              <h1 style={{ color: quizStatus.result.passed ? S.emeraldDark : S.roseDark, fontSize: "48px", margin: "0 0 10px" }}>
+                {quizStatus.result.score}%
+              </h1>
+              <p style={{ fontSize: "18px", color: S.navy, fontWeight: "bold" }}>{quizStatus.result.message}</p>
+              <button onClick={() => setQuizMode(false)} style={{ marginTop: "20px", background: quizStatus.result.passed ? S.emerald : S.navy, color: S.white, padding: "12px 24px", borderRadius: "8px", border: "none", fontWeight: "bold", cursor: "pointer" }}>
+                {quizStatus.result.passed ? "Continue Course" : "Review Material & Try Again"}
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleQuizSubmit}>
+              {JSON.parse(activeModule.quiz || "[]").map((q, qIdx) => (
+                <div key={qIdx} style={{ marginBottom: "25px", padding: "20px", background: S.lightBg, borderRadius: "12px" }}>
+                  <p style={{ fontWeight: "bold", color: S.navy, margin: "0 0 15px 0" }}>{qIdx + 1}. {q.q}</p>
+                  {q.options.map((opt, oIdx) => (
+                    <label key={oIdx} style={{ display: "block", padding: "10px", background: answers[qIdx] === oIdx ? S.skyLight : S.white, border: `1px solid ${answers[qIdx] === oIdx ? S.sky : S.border}`, borderRadius: "8px", marginBottom: "8px", cursor: "pointer", transition: "0.2s" }}>
+                      <input type="radio" name={`q-${qIdx}`} value={oIdx} onChange={() => setAnswers({ ...answers, [qIdx]: oIdx })} required style={{ marginRight: "10px" }} />
+                      {opt}
+                    </label>
+                  ))}
+                </div>
+              ))}
+              <button type="submit" disabled={quizStatus.loading} style={{ width: "100%", background: S.gold, color: S.navy, padding: "16px", borderRadius: "12px", border: "none", fontWeight: "bold", fontSize: "16px", cursor: "pointer" }}>
+                {quizStatus.loading ? "Grading..." : "Submit Answers"}
+              </button>
+            </form>
+          )}
         </div>
-      </div>
+      ) : (
+        // CURRICULUM MAP UI
+        <div style={{ display: "grid", gap: "15px" }}>
+          {modules.map((mod) => {
+            const isUnlocked = mod.moduleNum <= progress;
+            const isCompleted = mod.moduleNum < progress;
+            return (
+              <div key={mod.moduleNum} style={{ background: S.white, padding: "20px", borderRadius: "12px", border: `1px solid ${isUnlocked ? S.teal : S.border}`, opacity: isUnlocked ? 1 : 0.6, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ fontSize: "12px", fontWeight: "bold", color: isCompleted ? S.emerald : S.gray, textTransform: "uppercase", letterSpacing: "1px" }}>
+                    {isCompleted ? "✅ Completed" : `Module ${mod.moduleNum}`}
+                  </div>
+                  <h3 style={{ color: S.navy, margin: "5px 0 0 0" }}>{mod.title}</h3>
+                </div>
+                <div>
+                  {isUnlocked ? (
+                    <div style={{ display: "flex", gap: "10px" }}>
+                      {mod.link && (
+                        <a href={mod.link} target="_blank" rel="noreferrer" style={{ background: S.lightBg, color: S.navy, padding: "10px 16px", textDecoration: "none", borderRadius: "8px", fontWeight: "bold", fontSize: "13px", border: `1px solid ${S.border}` }}>
+                          Study Material
+                        </a>
+                      )}
+                      {!isCompleted && (
+                        <button onClick={() => handleStartQuiz(mod)} style={{ background: S.teal, color: S.white, padding: "10px 16px", border: "none", borderRadius: "8px", fontWeight: "bold", fontSize: "13px", cursor: "pointer" }}>
+                          Take Quiz
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <div style={{ color: S.gray, fontSize: "20px" }}>🔒</div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
-
 export default StudentPortalPage;
