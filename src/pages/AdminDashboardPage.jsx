@@ -244,3 +244,12 @@ function AdminDashboardPage() {
         {/* ═══ OTHER TABS CONTENT (Applications, Students, Payments, Activity) ═══ */}
         {tab !== "dashboard" && tab !== "feedback" && (
          <div style={{ background: C.card, borderRadius: 16, padding: 40, textAlign: "center", border: "1px solid #e2e8f0" }}>
+	<h3 style={{ color: C.navy, fontSize: "20px", marginBottom: "10px" }}>Module Loading</h3>
+              <p style={{ color: C.gray, fontSize: "15px" }}>The {tab} module is currently being populated...</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
