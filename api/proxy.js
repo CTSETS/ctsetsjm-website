@@ -1,7 +1,7 @@
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZEjUdBknkb-TpUKzufai0DWjG6HPJyR2mZsmjmiapWHTudJX51ZAEpxodw_AZQC4BFA/exec";
 
 // Admin credentials — validated server-side in the proxy
-const ADMIN_PASSWORDS = ["CtsAdmin2026!", "Detailed1982"];
+const ADMIN_PASSWORDS = ["CtsAdmin2026", "Detailed1982"];
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
