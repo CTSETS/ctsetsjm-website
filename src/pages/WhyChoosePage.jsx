@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import S from "../constants/styles";
-import { TESTIMONIALS } from "../constants/content"; //
+import { TESTIMONIALS } from "../constants/content"; 
 import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture, SocialProofBar, TestimonialCard } from "../components/shared/CoreComponents";
 import { PartnerLogos } from "../components/shared/DisplayComponents";
 
@@ -13,18 +13,6 @@ const FEATURES = [
   { icon: "👥", title: "Real Support", desc: "WhatsApp support, email guidance, and optional consultations. You're never alone in your journey. We respond within 48–72 hours.", color: S.sky },
   { icon: "🏢", title: "Employer Partnerships", desc: "15% group discount for 8+ learners. Employers can invest in their team's growth with recognised qualifications.", color: S.gold },
   { icon: "🌍", title: "International Access", desc: "Open to applicants worldwide. Caribbean and international students welcome. Pay seamlessly in JMD or USD.", color: S.rose },
-];
-
-const COMPARISONS = [
-  ["Feature", "CTS ETS", "Traditional College", "Other Online"],
-  ["100% Online", "✓", "✗ Hybrid / In-person", "✓"],
-  ["NCTVET (NVQ-J) Aligned", "✓", "Varies", "Rarely"],
-  ["Interactive AI Study Tools", "✓", "✗", "✗"],
-  ["Self-Paced", "✓", "✗ Fixed schedule", "Sometimes"],
-  ["Flexible Payment Plans", "3 plans", "Limited", "Varies"],
-  ["WhatsApp Support", "✓ 48-72hr", "✗", "✗"],
-  ["Employer Group Discounts", "15%", "Rare", "✗"],
-  ["No Campus Visits", "✓", "✗", "✓"],
 ];
 
 export default function WhyChoosePage({ setPage }) {
@@ -185,4 +173,4 @@ export default function WhyChoosePage({ setPage }) {
       </Container>
     </PageWrapper>
   );
-}-+-
+}
