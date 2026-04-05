@@ -21,23 +21,24 @@ export default async function handler(req, res) {
       const adminActions = ["admindashboard","adminlistapps","adminliststudents","adminlistpayments","adminacceptapp","adminrejectapp","adminenrollstudent","adminresetpw","adminauditlog","verifypayment","rejectpayment","generaterecord"];
 
       if (adminActions.includes(action)) {
-        // We added query.pw and query.password so the proxy catches what the frontend sends!
-        const pw = query.akey || query.key || query.auth || query.adminpw || query.pw || query.password || "";
-        
-        if (!ADMIN_PASSWORDS.includes(pw)) {
+        let isAuthorized = false;
+
+        // BULLETPROOF CHECK: Look through EVERY parameter sent by the frontend
+        // This guarantees we find the password even if the frontend named it something weird.
+        for (const key in query) {
+          const val = String(query[key]).trim();
+          if (ADMIN_PASSWORDS.includes(val)) {
+            isAuthorized = true;
+            delete query[key]; // Remove the password from the URL securely
+          }
+        }
+
+        if (!isAuthorized) {
           return res.status(200).json({ ok: false, error: "Invalid password" });
         }
-        
-        // Remove all auth params — don't send them to Google (they get stripped anyway)
-        delete query.akey;
-        delete query.key;
-        delete query.auth;
-        delete query.adminpw;
-        delete query.pw;
-        delete query.password;
-        delete query.v;
-        
+
         // Add the safe internal token that Code.gs is now looking for
+        delete query.v;
         query.proxysig = "Detailed1982";
       }
 
