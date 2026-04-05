@@ -1,4 +1,4 @@
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZEjUdBknkb-TpUKzufai0DWjG6HPJyR2mZsmjmiapWHTudJX51ZAEpxodw_AZQC4BFA/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzC3HXsZj4LJS3FgaASU8UFliHc_aIqA_qYMr4dqasdSoYzwSplVAF9zJeu9AE_-gseIA/exec";
 
 // Accept BOTH the version with and without the exclamation mark
 const ADMIN_PASSWORDS = ["CtsAdmin2026!", "CtsAdmin2026", "Detailed1982"];
