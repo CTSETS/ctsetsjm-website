@@ -1,20 +1,19 @@
 // ─── APPLY PAGE ─────────────────────────────────────────────────────
-// 3-tab application: Jamaican / Caribbean / International
-// Stage-gated sections with progressive reveal
-// Anti-spam: honeypot, timing, captcha
-// Submission to Apps Script with prayer/blessing modal
 import { useState, useRef, useEffect } from "react";
 import S from "../constants/styles";
 import { PROGRAMMES } from "../constants/programmes";
 import { TESTIMONIALS, PRAYERS, genderPronouns } from "../constants/content";
-import { BOOKING_URLS, REG_FEE, APPS_SCRIPT_URL } from "../constants/config";
+import { BOOKING_URLS, REG_FEE } from "../constants/config";
 import { Container, PageWrapper, Btn, SectionHeader, SectionBlock, Reveal, PageScripture, SocialProofBar, TestimonialCard } from "../components/shared/CoreComponents";
 import { CaptchaChallenge, HoneypotField } from "../components/shared/DisplayComponents";
-import { validateEmail, validatePhone, validateTRN, suggestEmail, MAX_FILE_SIZE, validateFileSize } from "../utils/validation";
-import { submitToAppsScript, generateRef } from "../utils/submission";
+import { validateEmail, validatePhone, validateTRN, suggestEmail, validateFileSize } from "../utils/validation";
+import { generateRef } from "../utils/submission";
 import { fmt, fmtDate } from "../utils/formatting";
 import { registerDripSequence } from "../utils/email";
 import HeartFormBuilder from "../components/apply/HeartFormBuilder";
+
+// REQUIRED INSTITUTIONAL CONSTANT
+const VERCEL_URL = "https://ctsetsjm-website.vercel.app/api/proxy";
 
 // ── Constants ──
 const APPLICANT_TYPES = [
@@ -124,18 +123,18 @@ function StatusTracker({ setPage }) {
 
   var statusColors = { "Under Review": { bg: S.goldLight, color: S.gold, icon: "🔍" }, "Documents Needed": { bg: S.coralLight, color: S.coral, icon: "📎" }, "Accepted": { bg: S.emeraldLight, color: S.emerald, icon: "🎉" }, "Enrolled": { bg: S.skyLight, color: S.sky, icon: "🎓" }, "Deferred": { bg: "#F3E5F5", color: S.violet, icon: "⏸️" }, "Withdrawn": { bg: S.lightBg, color: S.gray, icon: "📋" }, "Completed": { bg: S.goldLight, color: S.navy, icon: "🏆" }, "Rejected": { bg: S.roseLight, color: S.error, icon: "📨" }, "Pending Payment": { bg: S.skyLight, color: S.sky, icon: "💳" } };
 
-  var lookup = function() {
+  var lookup = async function() {
     if (!lookupVal.trim()) { setError("Please enter your Application Number or Student ID."); return; }
     setLoading(true); setError(""); setResult(null);
-    var param = "ref=" + encodeURIComponent(lookupVal.trim());
-    fetch(APPS_SCRIPT_URL + "?action=lookupstudent&" + param)
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        setLoading(false);
-        if (data.found) { setResult(data); }
-        else { setError("No application found. Please check your details and try again."); }
-      })
-      .catch(function() { setLoading(false); setError("Unable to connect. Please try again."); });
+    try {
+      const res = await fetch(`${VERCEL_URL}?action=lookupstudent&ref=${encodeURIComponent(lookupVal.trim().toUpperCase())}`);
+      const data = await res.json();
+      if (data.found) { setResult(data); }
+      else { setError("No application found. Please check your details and try again."); }
+    } catch(e) {
+      setError("Unable to connect. Please try again.");
+    }
+    setLoading(false);
   };
 
   return (
@@ -148,7 +147,7 @@ function StatusTracker({ setPage }) {
         </div>
 
         <div style={{ marginBottom: 16 }}>
-          <input value={lookupVal} onChange={function(e) { setLookupVal(e.target.value); setError(""); }}
+          <input value={lookupVal} onChange={function(e) { setLookupVal(e.target.value.toUpperCase()); setError(""); }}
             onKeyDown={function(e) { if (e.key === "Enter") lookup(); }}
             placeholder="e.g. CTSETSA-2026-04-12345"
             style={{ width: "100%", padding: "14px 18px", borderRadius: 10, border: "2px solid " + (error ? S.error + "60" : S.border), fontSize: 14, fontFamily: "'DM Sans', sans-serif", color: S.navy, outline: "none", boxSizing: "border-box" }} />
@@ -293,6 +292,14 @@ export default function ApplyPage({ setPage }) {
     setAppQueue(appQueue.filter((_, i) => i !== idx));
   };
 
+  // Helper to convert File to Base64 for transit
+  const toBase64 = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = error => reject(error);
+    reader.readAsDataURL(file);
+  });
+
   // ── Submit all applications ──
   const handleSubmit = async () => {
     if (hp) return;
@@ -342,16 +349,30 @@ export default function ApplyPage({ setPage }) {
     var allRefs = [];
     var anyDuplicate = false;
 
+    // Convert files to Base64 for the payload
+    const fileDataArray = [];
+    for (const slot in files) {
+      if (files[slot]) {
+        try {
+          const b64 = await toBase64(files[slot]);
+          fileDataArray.push({ slot: slot, name: files[slot].name, type: files[slot].type, data: b64 });
+        } catch (e) {
+          console.error("File conversion error:", e);
+        }
+      }
+    }
+
     for (var ai = 0; ai < allApps.length; ai++) {
       var app = allApps[ai];
       var ref = app.ref || generateRef();
       allRefs.push(ref);
 
-      const formData = {
+      const payload = {
+        action: "submitapplication",
         form_type: "Student Application",
-        ref,
-        applicantType,
-        fullName,
+        ref: ref,
+        applicantType: applicantType,
+        fullName: fullName,
         firstName: form.firstName.trim(),
         middleName: form.middleName.trim(),
         lastName: form.lastName.trim(),
@@ -393,18 +414,28 @@ export default function ApplyPage({ setPage }) {
         hearAbout: form.hearAbout || "",
         message: form.message || "",
         timestamp: new Date().toISOString(),
+        // Attach files only to the first application to save bandwidth
+        files: ai === 0 ? fileDataArray : []
       };
 
-      // Only send files with the first application (shared documents)
-      const result = await submitToAppsScript(formData, ai === 0 ? files : {});
+      try {
+        const response = await fetch(VERCEL_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json();
 
-      if (result.duplicate) {
-        setErrors({ submit: app.programme + " — an application already exists with this TRN/email (Ref: " + (result.existingRef || "—") + "). Contact admin@ctsetsjm.com if unexpected." });
-        anyDuplicate = true;
-        break;
+        if (result.duplicate) {
+          setErrors({ submit: app.programme + " — an application already exists with this TRN/email (Ref: " + (result.existingRef || "—") + "). Contact admin@ctsetsjm.com if unexpected." });
+          anyDuplicate = true;
+          break;
+        }
+      } catch (err) {
+        setErrors({ submit: "Network error submitting application. Please try again." });
+        setSubmitting(false);
+        return;
       }
-
-      // Confirmation email sent by backend (Apps Script)
     }
 
     if (anyDuplicate) { setSubmitting(false); return; }

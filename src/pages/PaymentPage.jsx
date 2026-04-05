@@ -1,16 +1,15 @@
 // ─── PAYMENT / FINANCE PAGE ─────────────────────────────────────────
-// Strict ID lookup → auto-populate → pricing → pay
-// Backend endpoint: ?action=lookupStudent&ref=CTSETSA-2026-04-XXXXX
-//   Returns: { count: N }
 import { useState, useRef, useEffect } from "react";
 import S from "../constants/styles";
-import { APPS_SCRIPT_URL, BANK_DETAILS, BOOKING_URLS, REG_FEE, USD_RATE, WIPAY_CONFIG } from "../constants/config";
+import { BANK_DETAILS, BOOKING_URLS, REG_FEE, USD_RATE, WIPAY_CONFIG } from "../constants/config";
 import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture } from "../components/shared/CoreComponents";
 import { PaymentSecurityNotice, HoneypotField } from "../components/shared/DisplayComponents";
 import { PaymentMethodSelector, PaymentSetupNotice, isOnlinePaymentAvailable } from "../components/apply/SmartPayment";
 import { fmt } from "../utils/formatting";
 import OTPGate from "../components/common/OTPGate";
-// Payment confirmation email sent by backend (Apps Script)
+
+// REQUIRED INSTITUTIONAL CONSTANT
+const VERCEL_URL = "https://ctsetsjm-website.vercel.app/api/proxy";
 
 // ── Tuition by level ──
 var TUITION_MAP = {
@@ -23,9 +22,7 @@ var TUITION_MAP = {
 
 function getTuition(level) {
   if (!level) return 5000;
-  // Exact match first
   if (TUITION_MAP[level] !== undefined) return TUITION_MAP[level];
-  // Fuzzy match by level number
   var l = level.toLowerCase();
   if (l.indexOf("level 5") >= 0 || l.indexOf("bachelor") >= 0) return 45000;
   if (l.indexOf("level 4") >= 0 || l.indexOf("associate") >= 0) return 35000;
@@ -52,10 +49,8 @@ function calcPricing(level) {
   var total = regFee + tuition;
 
   var plans = [];
-  // Gold — always available
   plans.push({ name: "Gold", label: "Pay in Full", surcharge: 0, total: total, payments: [{ label: "Full Payment", amount: total }] });
 
-  // Silver — L3+ only, +10% on tuition
   if (l3plus) {
     var silverTuition = Math.round(tuition * 1.10);
     var silverTotal = regFee + silverTuition;
@@ -64,7 +59,6 @@ function calcPricing(level) {
     plans.push({ name: "Silver", label: "60/40 Split", surcharge: 10, total: silverTotal, payments: [{ label: "First Payment (60%)", amount: silver1 }, { label: "Second Payment (40%)", amount: silver2 }] });
   }
 
-  // Bronze — L3+ only, calculated from actual 15% surcharge
   if (l3plus) {
     var months = level && level.indexOf("5") >= 0 ? 8 : level && level.indexOf("4") >= 0 ? 7 : 6;
     var bronzeTuition = Math.round(tuition * 1.15);
@@ -80,19 +74,12 @@ function calcPricing(level) {
     plans.push({ name: "Bronze", label: "20% Deposit + Monthly", surcharge: 15, total: bronzeTotal, payments: bronzePayments });
   }
 
-  return {
-    tuition: tuition,
-    regFee: regFee,
-    total: total,
-    plans: plans,
-  };
+  return { tuition: tuition, regFee: regFee, total: total, plans: plans };
 }
 
 export default function PaymentPage({ setPage }) {
-  // ── OTP Verification Gate ──
   var _sOtp = useState(null); var verifiedId = _sOtp[0]; var setVerifiedId = _sOtp[1];
 
-  // ── Multi-student lookup ──
   var _s = useState(""); var refInput = _s[0]; var setRefInput = _s[1];
   var _s2 = useState("idle"); var lookupState = _s2[0]; var setLookupState = _s2[1];
   var _s3 = useState(null); var student = _s3[0]; var setStudent = _s3[1];
@@ -100,11 +87,9 @@ export default function PaymentPage({ setPage }) {
   var _s5 = useState(false); var disputeSent = _s5[0]; var setDisputeSent = _s5[1];
   var _sStudents = useState([]); var students = _sStudents[0]; var setStudents = _sStudents[1];
 
-  // ── Pricing ──
   var _s8 = useState(null); var pricing = _s8[0]; var setPricing = _s8[1];
   var _s9 = useState("Gold"); var selectedPlan = _s9[0]; var setSelectedPlan = _s9[1];
 
-  // ── Payment ──
   var _s10 = useState("upload"); var payMethod = _s10[0]; var setPayMethod = _s10[1];
   var _s11 = useState(null); var receipt = _s11[0]; var setReceipt = _s11[1];
   var _s12 = useState(""); var paymentNote = _s12[0]; var setPaymentNote = _s12[1];
@@ -114,16 +99,14 @@ export default function PaymentPage({ setPage }) {
   var _s16 = useState(false); var submitted = _s16[0]; var setSubmitted = _s16[1];
   var _s17 = useState(""); var hp = _s17[0]; var setHp = _s17[1];
   var _s18 = useState(null); var wipayReturn = _s18[0]; var setWipayReturn = _s18[1];
-  // ── Fee type selection ──
+  
   var _s19 = useState(false); var payingReg = _s19[0]; var setPayingReg = _s19[1];
   var _s20 = useState(false); var payingTuition = _s20[0]; var setPayingTuition = _s20[1];
   var startTime = useRef(Date.now());
 
-  // ── Auto-fill and trigger lookup after OTP verification ──
   useEffect(function() {
     if (verifiedId && lookupState === "idle") {
       setRefInput(verifiedId);
-      // Auto-trigger lookup after a short delay to let state settle
       setTimeout(function() {
         var lookupBtn = document.getElementById("otp-auto-lookup");
         if (lookupBtn) lookupBtn.click();
@@ -131,7 +114,6 @@ export default function PaymentPage({ setPage }) {
     }
   }, [verifiedId]);
 
-  // ── Check for WiPay return (query params in URL) ──
   useEffect(function() {
     var params = new URLSearchParams(window.location.search);
     var status = params.get("status");
@@ -139,13 +121,14 @@ export default function PaymentPage({ setPage }) {
     var transId = params.get("transaction_id");
     if (status && orderId) {
       setWipayReturn({ status: status, orderId: orderId, transactionId: transId, total: params.get("total") || "" });
-      // Clean URL without reloading
       window.history.replaceState(null, "", window.location.pathname + window.location.hash);
-      // Log to Apps Script
+      
       try {
-        fetch(APPS_SCRIPT_URL, {
+        fetch(VERCEL_URL, {
           method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            action: "submitpayment",
             form_type: "WiPay Payment Confirmation",
             ref: orderId,
             wipayStatus: status,
@@ -155,28 +138,22 @@ export default function PaymentPage({ setPage }) {
             responseCode: params.get("responseCode") || "",
             timestamp: new Date().toISOString(),
           }),
-          mode: "no-cors",
         });
       } catch (e) { /* silent */ }
     }
   }, []);
 
-  // ── Calculate pricing when student found or students list changes ──
   useEffect(function() {
     if (students.length > 0) {
-      // Use first student's pricing for plan display
       setPricing(students[0].pricing);
     } else if (student && student.level) {
       setPricing(calcPricing(student.level));
     }
   }, [student, students]);
 
-  // Combined total for multi-student
   var combinedTotal = students.reduce(function(sum, s) { return sum + (s.pricing ? s.pricing.total : 0); }, 0);
-
   var inputStyle = { width: "100%", padding: "12px 16px", borderRadius: 8, border: "1.5px solid rgba(1,30,64,0.12)", fontSize: 14, fontFamily: "'DM Sans', sans-serif", color: "#1A202C", outline: "none", background: "#fff", boxSizing: "border-box" };
 
-  // ── Lookup handler ──
   var handleLookup = async function() {
     var val = refInput.trim().toUpperCase();
     if (!val) return;
@@ -185,22 +162,18 @@ export default function PaymentPage({ setPage }) {
       setLookupMsg("Enter your Application Number (CTSETSA-...) or Student Number (CTSETSS-...).");
       return;
     }
-    // Check if already added
     if (students.some(function(s) { return s.ref === val; })) {
       setLookupState("not_found");
       setLookupMsg("This application (" + val + ") is already in your payment list.");
       return;
     }
-    setLookupState("loading");
-    setStudent(null);
-    setLookupMsg("");
-    setPricing(null);
+    setLookupState("loading"); setStudent(null); setLookupMsg(""); setPricing(null);
+    
     try {
-      var res = await fetch(APPS_SCRIPT_URL + "?action=lookupStudent&ref=" + encodeURIComponent(val));
+      var res = await fetch(`${VERCEL_URL}?action=lookupstudent&ref=${encodeURIComponent(val)}`);
       if (res.ok) {
         var data = await res.json();
         if (data.found) {
-          // Check if status allows payment
           var allowedStatuses = ["Accepted", "Pending Payment", "Enrolled", "Active", "Completed", "Graduated"];
           var statusOk = false;
           for (var si = 0; si < allowedStatuses.length; si++) {
@@ -219,20 +192,16 @@ export default function PaymentPage({ setPage }) {
               setLookupMsg("Application " + val + " has status \"" + st + "\" and is not eligible for payment at this time. Contact admin@ctsetsjm.com.");
             }
           } else {
-            setStudent(data);
-            setLookupState("found");
+            setStudent(data); setLookupState("found");
           }
         } else {
-          setLookupState("not_found");
-          setLookupMsg("No application found for " + val + ".");
+          setLookupState("not_found"); setLookupMsg("No application found for " + val + ".");
         }
       } else {
-        setLookupState("error");
-        setLookupMsg("Server error. Please try again.");
+        setLookupState("error"); setLookupMsg("Server error. Please try again.");
       }
     } catch (err) {
-      setLookupState("error");
-      setLookupMsg("Connection error. Check your internet and try again.");
+      setLookupState("error"); setLookupMsg("Connection error. Check your internet and try again.");
     }
   };
 
@@ -240,67 +209,67 @@ export default function PaymentPage({ setPage }) {
     if (!student) return;
     var p = calcPricing(student.level);
     setStudents(function(prev) { return prev.concat([Object.assign({}, student, { pricing: p })]); });
-    setStudent(null);
-    setRefInput("");
-    setLookupState("idle");
-    setPricing(null);
+    setStudent(null); setRefInput(""); setLookupState("idle"); setPricing(null);
   };
 
   var removeStudentFromList = function(ref) {
     setStudents(function(prev) { return prev.filter(function(s) { return s.ref !== ref; }); });
   };
 
-  // Use first student in list as primary for payment (or single lookup)
   var activeStudent = students.length > 0 ? students[0] : student;
   var allRefs = students.map(function(s) { return s.ref; }).join(", ");
 
-  // ── Dispute → email admin ──
   var handleDispute = async function() {
     if (disputeSent) return;
     try {
-      await fetch(APPS_SCRIPT_URL, {
+      await fetch(VERCEL_URL, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          action: "submitpayment",
           form_type: "Payment Lookup Dispute",
           ref: refInput.trim().toUpperCase(),
-          message: "Student attempted payment using " + refInput.trim().toUpperCase() + " but lookup returned no match. They confirmed the number is correct. Please investigate.",
+          message: "Student attempted payment using " + refInput.trim().toUpperCase() + " but lookup returned no match.",
           timestamp: new Date().toISOString(),
         }),
-        mode: "no-cors",
       });
     } catch (e) { /* silent */ }
     setDisputeSent(true);
   };
 
-  // ── Submit payment ──
+  // Helper to convert File to Base64 for transit
+  const toBase64 = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = error => reject(error);
+    reader.readAsDataURL(file);
+  });
+
   var handlePaymentSubmit = async function() {
     if (hp || Date.now() - startTime.current < 3000) return;
     if (!receipt || (!student && students.length === 0)) return;
     setSubmitting(true);
     var payAmount = amountPaid || String(selectedAmount);
     var activePlan = pricing ? pricing.plans.find(function(p) { return p.name === selectedPlan; }) : null;
+    
     try {
       var fileData = [];
       if (receipt) {
-        var b64 = await new Promise(function(resolve, reject) {
-          var reader = new FileReader();
-          reader.onload = function() { resolve(reader.result.split(",")[1]); };
-          reader.onerror = reject;
-          reader.readAsDataURL(receipt);
-        });
+        var b64 = await toBase64(receipt);
         fileData.push({ slot: "paymentReceipt", name: receipt.name, type: receipt.type, data: b64 });
       }
-      await fetch(APPS_SCRIPT_URL, {
+      
+      await fetch(VERCEL_URL, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          action: "submitpayment",
           form_type: "Payment Evidence",
           ref: students.length > 0 ? allRefs : student.ref,
           studentName: activeStudent ? activeStudent.name : "",
           email: activeStudent ? activeStudent.email : "",
           programme: activeStudent ? activeStudent.programme : "" || "",
           level: activeStudent ? activeStudent.level : "" || "",
-          
-          
           paymentPlan: selectedPlan,
           feeType: feeLabel,
           payingRegistration: payingReg,
@@ -315,33 +284,30 @@ export default function PaymentPage({ setPage }) {
         }),
       });
     } catch (e) {
-      try {
-        await fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({ form_type: "Payment Evidence", ref: students.length > 0 ? allRefs : student.ref, studentName: activeStudent ? activeStudent.name : "", email: activeStudent ? activeStudent.email : "", amountPaid: payAmount, feeType: feeLabel, paymentPlan: selectedPlan,  timestamp: new Date().toISOString() }), mode: "no-cors" });
-      } catch (e2) { /* silent */ }
+      console.error("Payment Submission Error", e);
     }
     setSubmitting(false);
-    // Payment confirmation email sent by backend (Apps Script)
     setSubmitted(true);
   };
 
-  // ── WiPay online payment ──
   var handleWiPaySubmit = function() {
     if (submitting) return;
     var payAmount = amountPaid || String(selectedAmount);
     if (!student || !payAmount || parseInt(payAmount) <= 0) return;
     setSubmitting(true);
-    // Log payment intent to Apps Script before redirect
+    
     try {
-      fetch(APPS_SCRIPT_URL, {
+      fetch(VERCEL_URL, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          action: "submitpayment",
           form_type: "Payment Intent",
           ref: student.ref,
           studentName: student.name,
           email: student.email,
           programme: student.programme || "",
           level: student.level || "",
-          
           paymentPlan: selectedPlan,
           feeType: feeLabel,
           payingRegistration: payingReg,
@@ -350,11 +316,9 @@ export default function PaymentPage({ setPage }) {
           paymentMethod: "WiPay Online",
           timestamp: new Date().toISOString(),
         }),
-        mode: "no-cors",
       });
-    } catch (e) { /* silent — don't block payment */ }
+    } catch (e) { /* silent */ }
 
-    // Redirect to WiPay hosted payment page
     var orderId = (students.length > 0 ? students.map(function(s) { return s.ref; }).join("+") : student.ref) + "-" + (payingReg && payingTuition ? "BOTH" : payingReg ? "REG" : "TUI");
     var wipayUrl = WIPAY_CONFIG.baseUrl
       + "?total=" + encodeURIComponent(payAmount)
@@ -368,7 +332,6 @@ export default function PaymentPage({ setPage }) {
 
   var activePlan = pricing ? pricing.plans.find(function(p) { return p.name === selectedPlan; }) : null;
 
-  // ── Computed amount based on fee type selection ──
   var regFeeAmount = pricing ? pricing.regFee : 5000;
   var tuitionAmount = activePlan ? activePlan.total - regFeeAmount : 0;
   var selectedAmount = 0;
@@ -493,7 +456,6 @@ export default function PaymentPage({ setPage }) {
 
   return (
     <PageWrapper bg={S.lightBg}>
-      {/* Full-screen overlay — blocks ALL interaction during payment */}
       {submitting && (
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99999, background: "rgba(1,30,64,0.9)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
           <div style={{ background: "#fff", borderRadius: 16, padding: "40px", textAlign: "center", maxWidth: 420, margin: "0 20px" }}>
@@ -540,7 +502,6 @@ export default function PaymentPage({ setPage }) {
                 )}
               </div>
 
-              {/* Not found + dispute */}
               {lookupState === "not_found" && (
                 <div style={{ marginTop: 16, padding: "16px 20px", borderRadius: 12, background: S.roseLight, border: "1px solid " + S.rose + "30" }}>
                   <div style={{ fontSize: 13, color: S.roseDark, fontFamily: S.body, fontWeight: 600, marginBottom: 8 }}>{lookupMsg}</div>
@@ -565,12 +526,8 @@ export default function PaymentPage({ setPage }) {
                 </div>
               )}
 
-              {/* ── STUDENT FOUND CARD ── */}
               {lookupState === "found" && student && (
                 <div style={{ marginTop: 20 }}>
-
-
-                  {/* Student details */}
                   <div style={{ padding: "20px 24px", borderRadius: 12, background: S.emeraldLight + "60", border: "2px solid " + S.emerald + "40" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
                       <div style={{ width: 22, height: 22, borderRadius: "50%", background: S.emerald, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12 }}>{"\u2713"}</div>
@@ -584,7 +541,6 @@ export default function PaymentPage({ setPage }) {
                         </div>
                       );
                     })}
-                    {/* Add to Payment button */}
                     <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
                       <button onClick={addStudentToList}
                         style={{ flex: 1, padding: "12px", borderRadius: 8, border: "none", background: S.emerald, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>
@@ -593,7 +549,6 @@ export default function PaymentPage({ setPage }) {
                     </div>
                   </div>
 
-                  {/* Multi-student list */}
                   {students.length > 0 && (
                     <div style={{ marginTop: 16, padding: "16px 20px", borderRadius: 10, background: "#fff", border: "1px solid " + S.border }}>
                       <div style={{ fontSize: 11, color: S.navy, letterSpacing: 1, fontFamily: S.body, fontWeight: 700, marginBottom: 10 }}>PAYMENT LIST ({students.length} application{students.length > 1 ? "s" : ""})</div>
@@ -626,7 +581,6 @@ export default function PaymentPage({ setPage }) {
                   <div style={{ fontSize: 16, fontWeight: 700, color: S.navy, fontFamily: S.heading }}>Your Pricing</div>
                 </div>
 
-                {/* Price breakdown */}
                 <div style={{ padding: "20px 24px", borderRadius: 12, background: S.lightBg, marginBottom: 20 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", fontSize: 13, fontFamily: S.body }}>
                     <span style={{ color: S.gray }}>Training Fee</span>
@@ -643,7 +597,6 @@ export default function PaymentPage({ setPage }) {
                   <div style={{ fontSize: 11, color: S.gray, fontFamily: S.body, textAlign: "right" }}>{"US$" + Math.round(pricing.total / USD_RATE)}</div>
                 </div>
 
-                {/* Plan selection */}
                 <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 14 }}>Choose Payment Plan</div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(" + pricing.plans.length + ", 1fr)", gap: 12, marginBottom: 20 }} className="resp-grid-2">
                   {pricing.plans.map(function(plan) {
@@ -662,7 +615,6 @@ export default function PaymentPage({ setPage }) {
                   })}
                 </div>
 
-                {/* Plan payment schedule */}
                 {activePlan && activePlan.payments.length > 1 && (
                   <div style={{ padding: "16px 20px", borderRadius: 10, background: S.lightBg, border: "1px solid " + S.border }}>
                     <div style={{ fontSize: 11, color: S.navy, fontWeight: 700, fontFamily: S.body, marginBottom: 10 }}>{selectedPlan + " Payment Schedule"}</div>
@@ -691,11 +643,9 @@ export default function PaymentPage({ setPage }) {
 
                 <PaymentSetupNotice />
 
-                {/* ── Fee Type Selection ── */}
                 <div style={{ marginBottom: 24 }}>
                   <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 14 }}>What Are You Paying For?</div>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }} className="resp-grid-2">
-                    {/* Registration Fee */}
                     <button onClick={function() { setPayingReg(!payingReg); if (!amountPaid || amountPaid === String(selectedAmount)) setAmountPaid(""); }}
                       style={{ padding: "18px 20px", borderRadius: 12, border: payingReg ? "2.5px solid " + S.gold : "1.5px solid " + S.border, background: payingReg ? S.goldLight : "#fff", cursor: regFeeAmount > 0 ? "pointer" : "not-allowed", textAlign: "left", transition: "all 0.2s", opacity: regFeeAmount > 0 ? 1 : 0.5 }}
                       disabled={regFeeAmount <= 0}>
@@ -706,14 +656,11 @@ export default function PaymentPage({ setPage }) {
                       {regFeeAmount > 0 ? (
                         <div style={{ fontSize: 22, fontWeight: 800, color: S.navy, fontFamily: S.heading }}>{fmt(regFeeAmount)}</div>
                       ) : (
-                        <div>
-                          <div style={{ fontSize: 14, fontWeight: 700, color: S.emerald, fontFamily: S.body }}>{"\u2B50 WAIVED"}</div>
-                        </div>
+                        <div><div style={{ fontSize: 14, fontWeight: 700, color: S.emerald, fontFamily: S.body }}>{"\u2B50 WAIVED"}</div></div>
                       )}
                       <div style={{ fontSize: 10, color: S.gray, fontFamily: S.body, marginTop: 4 }}>One-time fee — paid once at registration</div>
                     </button>
 
-                    {/* Training Fee */}
                     <button onClick={function() { setPayingTuition(!payingTuition); if (!amountPaid || amountPaid === String(selectedAmount)) setAmountPaid(""); }}
                       style={{ padding: "18px 20px", borderRadius: 12, border: payingTuition ? "2.5px solid " + S.teal : "1.5px solid " + S.border, background: payingTuition ? S.tealLight : "#fff", cursor: "pointer", textAlign: "left", transition: "all 0.2s" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
@@ -725,7 +672,6 @@ export default function PaymentPage({ setPage }) {
                     </button>
                   </div>
 
-                  {/* Selected total */}
                   {(payingReg || payingTuition) && (
                     <div style={{ marginTop: 14, padding: "14px 20px", borderRadius: 10, background: S.emeraldLight, border: "1px solid " + S.emerald + "30", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <div>
