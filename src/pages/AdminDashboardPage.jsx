@@ -243,4 +243,4 @@ function AdminDashboardPage() {
 
         {/* ═══ OTHER TABS CONTENT (Applications, Students, Payments, Activity) ═══ */}
         {tab !== "dashboard" && tab !== "feedback" && (
-           <div style={{ background: C.card, borderRadius: 16, padding: 40, textAlign: "center", border: "1px solid
+         <div style={{ background: C.card, borderRadius: 16, padding: 40, textAlign: "center", border: "1px solid #e2e8f0" }}>
