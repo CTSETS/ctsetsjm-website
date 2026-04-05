@@ -10,9 +10,11 @@ const VERCEL_URL = "https://ctsetsjm-website.vercel.app/api/proxy";
 // HELPER: Converts blocked Google Drive links into embeddable Thumbnail links
 const getDriveImageUrl = (url) => {
   if (!url) return null;
-  const match = url.match(/id=([a-zA-Z0-9_-]+)/);
+  // Extract the file ID whether it's formatted as ?id=XXX or /d/XXX
+  const match = url.match(/id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
   if (match && match[1]) {
-    return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w400`;
+    // This is Google's dedicated image content server. It bypasses most CORS blocks.
+    return `https://lh3.googleusercontent.com/d/${match[1]}`;
   }
   return url;
 };
