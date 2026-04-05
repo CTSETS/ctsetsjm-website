@@ -24,15 +24,18 @@ export default async function handler(req, res) {
         // Check for password in any of these parameter names (frontend might use any)
         const pw = query.akey || query.key || query.auth || query.adminpw || "";
         if (!ADMIN_PASSWORDS.includes(pw)) {
-          return res.status(200).json({ ok: false, error: "Invalid password" });
+          return res.status(401).json({ ok: false, error: "Unauthorized access" });
         }
-        // Remove all auth params — don't send them to Google (they get stripped anyway)
-        delete query.akey;
-        delete query.key;
-        delete query.auth;
-        delete query.adminpw;
-        // Add internal token that Code.gs will accept
-        query.v = "1";
+
+        // Strip out the cleartext password and stripped parameters
+        delete query.akey; 
+        delete query.key; 
+        delete query.auth; 
+        delete query.adminpw; 
+        delete query.v;
+        
+        // Append the safe parameter that Google won't strip
+        query.proxysig = "Detailed1982";
       }
 
       const params = new URLSearchParams(query);
