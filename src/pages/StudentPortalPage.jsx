@@ -407,4 +407,4 @@ function Dashboard({ studentData, onLogout }) {
             if(!portfolioLink) return alert("Please paste a link first.");
             alert(`Submission recorded securely for Assessor review. (External link: ${portfolioLink})`); 
             setPortfolioLink(""); 
-          }} style={{ background: S.coral, color: "#fff
+          }} style={{ background: S.coral, color: "#fff", fontSize: 14, width: "100%", maxWidth: "300px" }}>Submit Evidence to Assessor</Btn>
