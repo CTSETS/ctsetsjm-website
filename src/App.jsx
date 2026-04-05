@@ -71,7 +71,7 @@ export default function CTSApp() {
   useEffect(() => { if (!EMAILJS_KEY || document.getElementById("emailjs-sdk")) return; const s = document.createElement("script"); s.id = "emailjs-sdk"; s.async = true; s.src = "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"; s.onload = () => { if (window.emailjs) { try { window.emailjs.init({ publicKey: EMAILJS_KEY }); } catch { window.emailjs.init(EMAILJS_KEY); } } }; document.head.appendChild(s); }, []);
   useEffect(() => { if (!APPS_SCRIPT_URL) return; try { const d = window.innerWidth < 768 ? "mobile" : window.innerWidth < 1100 ? "tablet" : "desktop"; fetch(APPS_SCRIPT_URL + "?action=track&page=" + encodeURIComponent(page) + "&device=" + d).catch(() => {}); } catch {} }, [page]);
 
-  const isAdmin = page === "Admin";
+  const isAppUI = page === "Admin" || page === "Student Portal";
 
   const renderPage = () => {
     const p = { setPage: navigate };
@@ -102,19 +102,20 @@ export default function CTSApp() {
   return (
     <ErrorBoundary>
       <div style={{ fontFamily: S.body, WebkitFontSmoothing: "antialiased" }}>
-        {!isAdmin && <OfflineBanner />}
-        {!isAdmin && <AnnouncementBar setPage={navigate} />}
-        {!isAdmin && <Navbar page={page} setPage={navigate} />}
+        {!isAppUI && <OfflineBanner />}
+        {!isAppUI && <AnnouncementBar setPage={navigate} />}
+        {!isAppUI && <Navbar page={page} setPage={navigate} />}
+        
         <Suspense fallback={<PageLoader />}>
           <div key={page} style={{ opacity: transitioning ? 0 : 1, transform: transitioning ? "translateY(8px)" : "translateY(0)", transition: "opacity 0.3s ease, transform 0.3s ease" }}>
             {renderPage()}
           </div>
         </Suspense>
-        {!isAdmin && <Footer setPage={navigate} />}
-        {!isAdmin && <ScrollNav />}
-        {!isAdmin && <WhatsAppBtn currentPage={page} />}
-        {!isAdmin && <CookieBanner setPage={navigate} />}
+        
+        {!isAppUI && <Footer setPage={navigate} />}
+        {!isAppUI && <ScrollNav />}
+        {!isAppUI && <WhatsAppBtn currentPage={page} />}
+        {!isAppUI && <CookieBanner setPage={navigate} />}
       </div>
     </ErrorBoundary>
   );
-}
