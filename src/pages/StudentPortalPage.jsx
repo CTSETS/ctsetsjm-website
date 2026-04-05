@@ -399,6 +399,66 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
   );
 }
 
+function AIStudyAssistant({ profile }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [history, setHistory] = useState([{ role: "ai", text: `Hi ${profile.firstName}! I'm your CTS ETS Study Assistant. Ask me to explain a concept from your ${profile.programme} course!` }]);
+  const [isTyping, setIsTyping] = useState(false);
+
+  const askAI = async () => {
+    if (!query.trim()) return;
+    const userMsg = query.trim();
+    setHistory(prev => [...prev, { role: "user", text: userMsg }]);
+    setQuery("");
+    setIsTyping(true);
+
+    try {
+      const res = await fetch(`${VERCEL_URL}?action=aichat&query=${encodeURIComponent(userMsg)}&course=${encodeURIComponent(profile.programme)}`);
+      const data = await res.json();
+      setHistory(prev => [...prev, { role: "ai", text: data.response || "I'm having trouble connecting to my knowledge base right now. Please try again later." }]);
+    } catch(e) {
+      setHistory(prev => [...prev, { role: "ai", text: "Network error. Please check your connection." }]);
+    }
+    setIsTyping(false);
+  };
+
+  return (
+    <>
+      {/* Floating Chat Button */}
+      <button onClick={() => setIsOpen(!isOpen)} style={{ position: "fixed", bottom: 24, right: 24, width: 64, height: 64, borderRadius: "50%", background: S.navy, color: "#fff", fontSize: 28, border: `3px solid ${S.gold}`, boxShadow: "0 8px 24px rgba(1,30,64,0.3)", cursor: "pointer", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", transition: "transform 0.2s" }}>
+        {isOpen ? "✕" : "🤖"}
+      </button>
+
+      {/* Chat Window */}
+      {isOpen && (
+        <div style={{ position: "fixed", bottom: 100, right: 24, width: "calc(100% - 48px)", maxWidth: 380, height: 500, background: "#fff", borderRadius: 16, border: `1px solid ${S.border}`, boxShadow: "0 12px 40px rgba(0,0,0,0.15)", zIndex: 9998, display: "flex", flexDirection: "column", overflow: "hidden", animation: "fadeIn 0.2s" }}>
+          <div style={{ background: S.navy, padding: "16px 20px", display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ fontSize: 24 }}>🤖</div>
+            <div>
+              <div style={{ color: "#fff", fontFamily: S.heading, fontSize: 16, fontWeight: 700 }}>CTS Study Assistant</div>
+              <div style={{ color: S.gold, fontFamily: S.body, fontSize: 11 }}>24/7 AI Tutor</div>
+            </div>
+          </div>
+          
+          <div style={{ flex: 1, padding: 16, overflowY: "auto", background: S.lightBg, display: "flex", flexDirection: "column", gap: 12 }}>
+            {history.map((msg, i) => (
+              <div key={i} style={{ alignSelf: msg.role === "user" ? "flex-end" : "flex-start", background: msg.role === "user" ? S.teal : "#fff", color: msg.role === "user" ? "#fff" : S.navy, padding: "12px 16px", borderRadius: msg.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px", maxWidth: "85%", fontSize: 14, fontFamily: S.body, border: msg.role === "ai" ? `1px solid ${S.border}` : "none", lineHeight: 1.5 }}>
+                {msg.text}
+              </div>
+            ))}
+            {isTyping && <div style={{ alignSelf: "flex-start", background: "#fff", padding: "12px 16px", borderRadius: "16px 16px 16px 4px", border: `1px solid ${S.border}`, fontSize: 12, color: S.gray }}>Assistant is typing...</div>}
+          </div>
+
+          <div style={{ padding: 16, background: "#fff", borderTop: `1px solid ${S.border}`, display: "flex", gap: 8 }}>
+            <input type="text" value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === "Enter" && askAI()} placeholder="Ask a question..." style={{ flex: 1, padding: "12px 16px", borderRadius: 20, border: `1px solid ${S.border}`, outline: "none", fontFamily: S.body, fontSize: 14 }} />
+            <button onClick={askAI} disabled={!query.trim() || isTyping} style={{ width: 44, height: 44, borderRadius: "50%", background: query.trim() ? S.coral : S.border, color: "#fff", border: "none", cursor: query.trim() ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>↑</button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function StudentPortalPage({ setPage }) {
   const [studentData, setStudentData] = useState(null);
   const [isFetching, setIsFetching] = useState(false);
