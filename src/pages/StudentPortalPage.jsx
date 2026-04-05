@@ -10,7 +10,7 @@ const VERCEL_URL = "https://ctsetsjm-website.vercel.app/api/proxy";
 const getDriveImageUrl = (url) => {
   if (!url) return null;
   const match = url.match(/id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-  if (match && match[1]) return `https://lh3.googleusercontent.com/d/${match[1]}`;
+  if (match && match[1]) return `https://lh3.googleusercontent.com/d/$${match[1]}`;
   return url;
 };
 
@@ -23,6 +23,66 @@ const loadConfetti = () => {
   document.body.appendChild(script);
 };
 
+// ─── AI Study Assistant Component ───
+function AIStudyAssistant({ profile }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [history, setHistory] = useState([{ role: "ai", text: `Hi ${profile.firstName}! I'm your CTS ETS Study Assistant. Ask me to explain a concept from your ${profile.programme} course!` }]);
+  const [isTyping, setIsTyping] = useState(false);
+
+  const askAI = async () => {
+    if (!query.trim()) return;
+    const userMsg = query.trim();
+    setHistory(prev => [...prev, { role: "user", text: userMsg }]);
+    setQuery("");
+    setIsTyping(true);
+
+    try {
+      const res = await fetch(`${VERCEL_URL}?action=aichat&query=${encodeURIComponent(userMsg)}&course=${encodeURIComponent(profile.programme)}`);
+      const data = await res.json();
+      setHistory(prev => [...prev, { role: "ai", text: data.response || "I'm having trouble connecting right now. Please try again later." }]);
+    } catch(e) {
+      setHistory(prev => [...prev, { role: "ai", text: "Network error. Please check your connection." }]);
+    }
+    setIsTyping(false);
+  };
+
+  return (
+    <>
+      <button onClick={() => setIsOpen(!isOpen)} style={{ position: "fixed", bottom: 24, right: 24, width: 64, height: 64, borderRadius: "50%", background: S.navy, color: "#fff", fontSize: 28, border: `3px solid ${S.gold}`, boxShadow: "0 8px 24px rgba(1,30,64,0.3)", cursor: "pointer", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", transition: "transform 0.2s" }}>
+        {isOpen ? "✕" : "🤖"}
+      </button>
+
+      {isOpen && (
+        <div style={{ position: "fixed", bottom: 100, right: 24, width: "calc(100% - 48px)", maxWidth: 380, height: 500, background: "#fff", borderRadius: 16, border: `1px solid ${S.border}`, boxShadow: "0 12px 40px rgba(0,0,0,0.15)", zIndex: 9998, display: "flex", flexDirection: "column", overflow: "hidden", animation: "fadeIn 0.2s" }}>
+          <div style={{ background: S.navy, padding: "16px 20px", display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ fontSize: 24 }}>🤖</div>
+            <div>
+              <div style={{ color: "#fff", fontFamily: S.heading, fontSize: 16, fontWeight: 700 }}>CTS Study Assistant</div>
+              <div style={{ color: S.gold, fontFamily: S.body, fontSize: 11 }}>24/7 AI Tutor</div>
+            </div>
+          </div>
+          
+          <div style={{ flex: 1, padding: 16, overflowY: "auto", background: S.lightBg, display: "flex", flexDirection: "column", gap: 12 }}>
+            {history.map((msg, i) => (
+              <div key={i} style={{ alignSelf: msg.role === "user" ? "flex-end" : "flex-start", background: msg.role === "user" ? S.teal : "#fff", color: msg.role === "user" ? "#fff" : S.navy, padding: "12px 16px", borderRadius: msg.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px", maxWidth: "85%", fontSize: 14, fontFamily: S.body, border: msg.role === "ai" ? `1px solid ${S.border}` : "none", lineHeight: 1.5 }}>
+                {msg.text}
+              </div>
+            ))}
+            {isTyping && <div style={{ alignSelf: "flex-start", background: "#fff", padding: "12px 16px", borderRadius: "16px 16px 16px 4px", border: `1px solid ${S.border}`, fontSize: 12, color: S.gray }}>Assistant is typing...</div>}
+          </div>
+
+          <div style={{ padding: 16, background: "#fff", borderTop: `1px solid ${S.border}`, display: "flex", gap: 8 }}>
+            <input type="text" value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === "Enter" && askAI()} placeholder="Ask a question..." style={{ flex: 1, padding: "12px 16px", borderRadius: 20, border: `1px solid ${S.border}`, outline: "none", fontFamily: S.body, fontSize: 14 }} />
+            <button onClick={askAI} disabled={!query.trim() || isTyping} style={{ width: 44, height: 44, borderRadius: "50%", background: query.trim() ? S.coral : S.border, color: "#fff", border: "none", cursor: query.trim() ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>↑</button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ─── Main Dashboard Component ───
 function Dashboard({ studentData, onLogout, fetchDashboard }) {
   const profile = studentData.profile;
   const curriculum = studentData.curriculum || [];
@@ -59,12 +119,10 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
     setQuizFeedback("Grading assessment...");
 
     try {
-      // Send the score to the backend
       const res = await fetch(`${VERCEL_URL}?action=submitquiz&ref=${encodeURIComponent(profile.studentNumber)}&course=${encodeURIComponent(profile.programme)}&module=${activeQuiz.moduleNum}&score=${scorePct}`);
       const data = await res.json();
 
       if (data.ok && data.passed) {
-        // Gamification: Trigger Confetti
         if (window.confetti) {
           window.confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: [S.gold, S.teal, S.coral, S.emerald] });
         }
@@ -77,6 +135,26 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
       }
     } catch(e) { setQuizFeedback("Error saving score. Please check your connection."); }
     setQuizLoading(false);
+  };
+
+  const printIDCard = () => {
+    const idHtml = document.getElementById('student-id-card').outerHTML;
+    const win = window.open('', '', 'width=800,height=600');
+    win.document.write(`
+      <html><head><title>CTS ETS Student ID - ${profile.name}</title>
+      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+      <style>
+        body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        @media print {
+          @page { margin: 0; size: auto; }
+          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+      </style>
+      </head><body>${idHtml}</body></html>
+    `);
+    win.document.close();
+    win.focus();
+    setTimeout(() => { win.print(); win.close(); }, 500);
   };
 
   const DataRow = ({ label, value }) => (
@@ -111,7 +189,7 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
       <div style={{ display: "flex", gap: 12, marginBottom: 32, borderBottom: `2px solid ${S.border}`, overflowX: "auto", whiteSpace: "nowrap", paddingBottom: 4 }}>
         {[
           { id: "classroom", label: "📚 My Classroom" },
-          { id: "profile", label: "👤 My Profile" },
+          { id: "profile", label: "👤 My Profile & ID" },
           { id: "portfolio", label: "📁 NCTVET Portfolio" },
           { id: "finance", label: "💳 My Finances" }
         ].map(t => (
@@ -187,7 +265,6 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
                       <div key={mod.moduleNum} style={{ background: isUnlocked ? "#fff" : S.lightBg, borderRadius: 16, border: `2px solid ${isCompleted ? S.emerald + "50" : isUnlocked ? S.border : S.border}`, padding: "28px", display: "flex", flexWrap: "wrap", gap: "24px", justifyContent: "space-between", alignItems: "center", opacity: isUnlocked ? 1 : 0.5, transition: "0.3s", boxShadow: isUnlocked && !isCompleted ? "0 4px 15px rgba(0,0,0,0.04)" : "none" }}>
                         <div style={{ flex: 1, minWidth: "280px" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-                            {/* Gamified Badge Indicator */}
                             {isCompleted ? (
                               <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 20, background: S.emerald, color: "#fff", fontSize: 11, fontWeight: 800, fontFamily: S.body, textTransform: "uppercase", letterSpacing: 1, boxShadow: `0 2px 8px ${S.emerald}50` }}>🏆 Badge Earned</span>
                             ) : isUnlocked ? (
@@ -219,6 +296,74 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
         </div>
       )}
 
+      {/* PROFILE & DIGITAL ID TAB */}
+      {activeTab === "profile" && (
+         <div style={{ animation: "fadeIn 0.3s", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))", gap: "24px" }}>
+             
+             {/* Left Column: The ID Card */}
+             <div>
+               <div style={{ background: "#fff", borderRadius: 16, padding: "32px", border: `1px solid ${S.border}`, display: "flex", flexDirection: "column", alignItems: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
+                  <div style={{ fontSize: 11, color: S.navy, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 24 }}>Digital Student ID</div>
+                  
+                  {/* The Physical ID Card Design */}
+                  <div id="student-id-card" style={{ width: "350px", height: "220px", borderRadius: "14px", background: `linear-gradient(135deg, ${S.navy} 0%, #0a2d4d 100%)`, color: "#fff", position: "relative", overflow: "hidden", fontFamily: "'DM Sans', sans-serif", boxShadow: "0 10px 25px rgba(1, 30, 64, 0.25)", border: `1px solid ${S.gold}50` }}>
+                    {/* Background Graphic */}
+                    <div style={{ position: "absolute", top: -40, right: -40, width: 120, height: 120, borderRadius: "50%", background: "rgba(196, 145, 18, 0.15)" }} />
+                    
+                    {/* Header */}
+                    <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.1)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: S.gold, letterSpacing: 0.5 }}>CTS ETS</div>
+                      <div style={{ fontSize: 8, textTransform: "uppercase", letterSpacing: 1, opacity: 0.8 }}>Student Identity Card</div>
+                    </div>
+
+                    {/* Body */}
+                    <div style={{ padding: "16px 20px", display: "flex", gap: "16px", alignItems: "center" }}>
+                      {/* Photo */}
+                      {secureImgUrl && !imgError ? (
+                        <img src={secureImgUrl} alt="Student" onError={() => setImgError(true)} style={{ width: 85, height: 105, objectFit: "cover", borderRadius: "6px", border: `2px solid ${S.gold}` }} referrerPolicy="no-referrer" crossOrigin="anonymous" />
+                      ) : (
+                        <div style={{ width: 85, height: 105, background: "rgba(255,255,255,0.1)", borderRadius: "6px", border: `2px solid ${S.gold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, fontWeight: 800, color: "#fff" }}>{(profile.name || "S").charAt(0)}</div>
+                      )}
+                      
+                      {/* Details */}
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 16, fontWeight: 800, lineHeight: 1.2, marginBottom: 4 }}>{profile.name}</div>
+                        <div style={{ fontSize: 10, color: S.gold, fontWeight: 700, marginBottom: 12 }}>{profile.studentNumber}</div>
+                        
+                        <div style={{ fontSize: 9, opacity: 0.7, textTransform: "uppercase", marginBottom: 2 }}>Programme</div>
+                        <div style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.3, marginBottom: 8 }}>{profile.programme}</div>
+                        
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+                          <div>
+                            <div style={{ fontSize: 9, opacity: 0.7, textTransform: "uppercase", marginBottom: 2 }}>Valid Term</div>
+                            <div style={{ fontSize: 10, fontWeight: 600 }}>2026 - 2027</div>
+                          </div>
+                          <div style={{ width: 24, height: 24, borderRadius: "50%", background: profile.status === "Enrolled" || profile.status === "Active" ? S.emerald : S.amber, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>✓</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Btn primary onClick={printIDCard} style={{ marginTop: 24, background: S.coral, color: "#fff", width: "100%", maxWidth: "350px", fontSize: 14 }}>📥 Download / Print ID</Btn>
+               </div>
+             </div>
+
+             {/* Right Column: Institutional Data */}
+             <div style={{ background: "#fff", borderRadius: 16, padding: "32px", border: `1px solid ${S.border}`, boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
+                 <h3 style={{ fontFamily: S.heading, color: S.navy, marginBottom: 24, fontSize: 20 }}>Official Institutional Record</h3>
+                 <DataRow label="Full Name" value={profile.name} />
+                 <DataRow label="Student Number" value={profile.studentNumber} />
+                 <DataRow label="Email Address" value={profile.email} />
+                 <DataRow label="Enrolled Programme" value={profile.programme} />
+                 <DataRow label="Qualification Level" value={profile.level} />
+                 <DataRow label="Academic Status" value={profile.status} />
+                 <div style={{ marginTop: 24, padding: "16px", background: S.amberLight, borderRadius: 8, fontSize: 13, color: S.amberDark, fontFamily: S.body, lineHeight: 1.6, border: `1px solid ${S.amber}40` }}>
+                     To request corrections to your official name or email, please contact <strong>admin@ctsetsjm.com</strong>.
+                 </div>
+             </div>
+         </div>
+      )}
+
       {/* PORTFOLIO TAB */}
       {activeTab === "portfolio" && (
         <div style={{ background: "#fff", borderRadius: 16, padding: "48px", border: `1px solid ${S.border}`, animation: "fadeIn 0.3s" }}>
@@ -236,7 +381,7 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
         </div>
       )}
 
-      {/* FINANCE & PROFILE TABS (Truncated visually but logic remains exactly as you had it previously to display their DataRows) */}
+      {/* FINANCE TAB */}
       {activeTab === "finance" && (
         <div style={{ animation: "fadeIn 0.3s" }}>
             <div style={{ background: "#fff", borderRadius: 16, padding: "40px", border: `1px solid ${S.border}`, textAlign: "center", marginBottom: 24 }}>
@@ -249,20 +394,6 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
               </div>
             </div>
         </div>
-      )}
-
-      {activeTab === "profile" && (
-         <div style={{ background: "#fff", borderRadius: 16, padding: "40px", border: `1px solid ${S.border}`, animation: "fadeIn 0.3s" }}>
-             <h3 style={{ fontFamily: S.heading, color: S.navy, marginBottom: 24, fontSize: 24 }}>Institutional Record</h3>
-             <DataRow label="Full Name" value={profile.name} />
-             <DataRow label="Student Number" value={profile.studentNumber} />
-             <DataRow label="Email Address" value={profile.email} />
-             <DataRow label="Enrolled Programme" value={profile.programme} />
-             <DataRow label="Academic Status" value={profile.status} />
-             <div style={{ marginTop: 32, padding: "16px", background: S.amberLight, borderRadius: 8, fontSize: 13, color: S.amberDark, fontFamily: S.body }}>
-                 To update your official records, please contact admin@ctsetsjm.com.
-             </div>
-         </div>
       )}
     </div>
   );
@@ -341,7 +472,6 @@ export default function StudentPortalPage({ setPage }) {
               ) : (
                 <OTPGate purpose="portal" title="Passwordless Login" subtitle="We will send a secure, one-time code to the email address associated with your student record.">
                   {(verifiedId) => {
-                    // OTPGate successful! Instantly trigger the passwordless fetch.
                     fetchDashboard(verifiedId);
                     return (
                       <div style={{ textAlign: "center", padding: "32px 0" }}>
@@ -362,6 +492,7 @@ export default function StudentPortalPage({ setPage }) {
       ) : (
         <div style={{ background: S.bg, minHeight: "85vh", padding: "48px 20px" }}>
           <Dashboard studentData={studentData} onLogout={handleLogout} fetchDashboard={fetchDashboard} />
+          <AIStudyAssistant profile={studentData.profile} />
           {/* Required Institutional Constant */}
           <div style={{ display: 'none' }}><p>Enter your administrator password to access the console.</p></div>
         </div>
