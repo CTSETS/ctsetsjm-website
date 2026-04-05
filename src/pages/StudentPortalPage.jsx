@@ -7,6 +7,16 @@ import OTPGate from "../components/common/OTPGate";
 // REQUIRED INSTITUTIONAL CONSTANTS
 const VERCEL_URL = "https://ctsetsjm-website.vercel.app/api/proxy";
 
+// HELPER: Converts blocked Google Drive links into embeddable Thumbnail links
+const getDriveImageUrl = (url) => {
+  if (!url) return null;
+  const match = url.match(/id=([a-zA-Z0-9_-]+)/);
+  if (match && match[1]) {
+    return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w400`;
+  }
+  return url;
+};
+
 function LoginView({ onLogin, verifiedId }) {
   const [ref, setRef] = useState(verifiedId || "");
   const [pw, setPw] = useState("");
@@ -128,8 +138,8 @@ function Dashboard({ studentData, onLogout }) {
   const [quizLoading, setQuizLoading] = useState(false);
   const [portfolioLink, setPortfolioLink] = useState("");
   
-  // State to handle broken Google Drive image links gracefully
   const [imgError, setImgError] = useState(false);
+  const secureImgUrl = getDriveImageUrl(profile.photoUrl); // Parse the image securely
 
   const pct = profile.totalFees > 0 ? Math.round((profile.totalPaid / profile.totalFees) * 100) : 0;
 
@@ -177,7 +187,6 @@ function Dashboard({ studentData, onLogout }) {
   return (
     <div className="portal-container">
       <style>{`
-        /* Increased max-width to 1280px for better widescreen utilization */
         .portal-container { width: 100%; max-width: 1280px; margin: 0 auto; }
         .welcome-bar { background: linear-gradient(135deg, ${S.navy} 0%, ${S.teal} 100%); border-radius: 16px; padding: 28px 32px; color: #fff; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; box-shadow: 0 4px 12px rgba(1, 30, 64, 0.15); }
         .welcome-info { display: flex; align-items: center; gap: 20px; }
@@ -195,9 +204,9 @@ function Dashboard({ studentData, onLogout }) {
 
       <div className="welcome-bar">
         <div className="welcome-info">
-          {profile.photoUrl && !imgError ? (
+          {secureImgUrl && !imgError ? (
             <img 
-              src={profile.photoUrl} 
+              src={secureImgUrl} 
               alt="Profile" 
               onError={() => setImgError(true)} 
               style={{ width: 72, height: 72, borderRadius: "50%", objectFit: "cover", border: "3px solid rgba(255,255,255,0.5)" }} 
@@ -326,8 +335,8 @@ function Dashboard({ studentData, onLogout }) {
                 <div style={{ fontSize: 12, color: S.navy, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 24, borderBottom: `2px solid ${S.border}`, paddingBottom: 10 }}>Identity & Status</div>
                 
                 <div style={{ textAlign: "center", marginBottom: 28 }}>
-                  {profile.photoUrl && !imgError ? (
-                    <img src={profile.photoUrl} alt="Profile" onError={() => setImgError(true)} className="profile-img-large" referrerPolicy="no-referrer" crossOrigin="anonymous" />
+                  {secureImgUrl && !imgError ? (
+                    <img src={secureImgUrl} alt="Profile" onError={() => setImgError(true)} className="profile-img-large" referrerPolicy="no-referrer" crossOrigin="anonymous" />
                   ) : (
                     <div className="profile-img-large" style={{ background: S.lightBg, display: "flex", alignItems: "center", justifyContent: "center", color: S.gray, fontSize: 13, fontFamily: S.body, margin: "0 auto 16px" }}>No Photo<br/>Available</div>
                   )}
@@ -459,12 +468,18 @@ function Dashboard({ studentData, onLogout }) {
 export default function StudentPortalPage({ setPage }) {
   const [studentData, setStudentData] = useState(null);
 
+  // 1. Check for saved session on load
   useEffect(() => {
     try {
       const saved = sessionStorage.getItem("cts_portal_session");
       if (saved) setStudentData(JSON.parse(saved));
     } catch(e) {}
   }, []);
+
+  const handleLogout = () => {
+    setStudentData(null);
+    try { sessionStorage.removeItem("cts_portal_session"); } catch(e) {}
+  };
 
   const handleLogin = (data) => {
     const rawPw = document.querySelector('input[type="password"]') ? document.querySelector('input[type="password"]').value : "";
@@ -473,10 +488,33 @@ export default function StudentPortalPage({ setPage }) {
     try { sessionStorage.setItem("cts_portal_session", JSON.stringify(payload)); } catch(e) {}
   };
 
-  const handleLogout = () => {
-    setStudentData(null);
-    try { sessionStorage.removeItem("cts_portal_session"); } catch(e) {}
-  };
+  // 2. Auto sign-out after 15 minutes of inactivity
+  useEffect(() => {
+    if (!studentData) return; // Only track if logged in
+    
+    let timeout;
+    const IDLE_LIMIT = 15 * 60 * 1000; // 15 minutes in milliseconds
+
+    const resetTimer = () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        handleLogout();
+        alert("For your security, you have been signed out due to 15 minutes of inactivity.");
+      }, IDLE_LIMIT);
+    };
+
+    // Listen for any user interaction
+    const events = ["mousedown", "mousemove", "keydown", "scroll", "touchstart", "click"];
+    events.forEach(evt => document.addEventListener(evt, resetTimer));
+    
+    resetTimer(); // Start the timer initially
+
+    // Cleanup listeners when component unmounts or student logs out
+    return () => {
+      clearTimeout(timeout);
+      events.forEach(evt => document.removeEventListener(evt, resetTimer));
+    };
+  }, [studentData]);
 
   return (
     <PageWrapper>
@@ -496,6 +534,7 @@ export default function StudentPortalPage({ setPage }) {
                 </div>
               )}
             </OTPGate>
+            {/* Required Institutional Constant */}
             <div style={{ display: 'none' }}><p>Enter your administrator password to access the console.</p></div>
             <PageScripture page="home" />
           </Container>
@@ -503,6 +542,7 @@ export default function StudentPortalPage({ setPage }) {
       ) : (
         <div style={{ background: S.lightBg, minHeight: "80vh", padding: "40px 20px" }}>
           <Dashboard studentData={studentData} onLogout={handleLogout} />
+          {/* Required Institutional Constant */}
           <div style={{ display: 'none' }}><p>Enter your administrator password to access the console.</p></div>
         </div>
       )}
