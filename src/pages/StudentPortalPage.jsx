@@ -4,7 +4,7 @@ import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture } fro
 import { fmt } from "../utils/formatting";
 import OTPGate from "../components/common/OTPGate";
 
-// REQUIRED INSTITUTIONAL CONSTANT
+// REQUIRED INSTITUTIONAL CONSTANTS
 const VERCEL_URL = "https://ctsetsjm-website.vercel.app/api/proxy";
 
 function LoginView({ onLogin, verifiedId }) {
@@ -127,6 +127,9 @@ function Dashboard({ studentData, onLogout }) {
   const [quizFeedback, setQuizFeedback] = useState("");
   const [quizLoading, setQuizLoading] = useState(false);
   const [portfolioLink, setPortfolioLink] = useState("");
+  
+  // State to handle broken Google Drive image links gracefully
+  const [imgError, setImgError] = useState(false);
 
   const pct = profile.totalFees > 0 ? Math.round((profile.totalPaid / profile.totalFees) * 100) : 0;
 
@@ -174,35 +177,47 @@ function Dashboard({ studentData, onLogout }) {
   return (
     <div className="portal-container">
       <style>{`
-        .portal-container { width: 100%; max-width: 1000px; margin: 0 auto; }
-        .welcome-bar { background: linear-gradient(135deg, ${S.navy} 0%, ${S.teal} 100%); border-radius: 16px; padding: 24px; color: #fff; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
-        .welcome-info { display: flex; align-items: center; gap: 16px; }
-        .nav-tabs { display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 2px solid ${S.border}; overflow-x: auto; white-space: nowrap; padding-bottom: 4px; scrollbar-width: none; }
+        /* Increased max-width to 1280px for better widescreen utilization */
+        .portal-container { width: 100%; max-width: 1280px; margin: 0 auto; }
+        .welcome-bar { background: linear-gradient(135deg, ${S.navy} 0%, ${S.teal} 100%); border-radius: 16px; padding: 28px 32px; color: #fff; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; box-shadow: 0 4px 12px rgba(1, 30, 64, 0.15); }
+        .welcome-info { display: flex; align-items: center; gap: 20px; }
+        .nav-tabs { display: flex; gap: 12px; margin-bottom: 28px; border-bottom: 2px solid ${S.border}; overflow-x: auto; white-space: nowrap; padding-bottom: 4px; scrollbar-width: none; }
         .nav-tabs::-webkit-scrollbar { display: none; }
-        .resp-grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .profile-img-large { width: 120px; height: 150px; object-fit: cover; border-radius: 8px; border: 3px solid ${S.border}; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 16px; }
+        .resp-grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 24px; }
+        .profile-img-large { width: 140px; height: 160px; object-fit: cover; border-radius: 8px; border: 3px solid ${S.border}; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 16px; }
         
         @media (max-width: 768px) {
-          .welcome-bar { flex-direction: column; text-align: center; justify-content: center; }
-          .welcome-info { flex-direction: column; text-align: center; }
+          .welcome-bar { flex-direction: column; text-align: center; justify-content: center; padding: 24px 20px; }
+          .welcome-info { flex-direction: column; text-align: center; gap: 12px; }
           .nav-tabs { padding-bottom: 8px; }
         }
       `}</style>
 
       <div className="welcome-bar">
         <div className="welcome-info">
-          {profile.photoUrl ? (
-            <img src={profile.photoUrl} alt="Student" style={{ width: 64, height: 64, borderRadius: "50%", objectFit: "cover", border: "3px solid rgba(255,255,255,0.5)" }} referrerPolicy="no-referrer" crossOrigin="anonymous" />
+          {profile.photoUrl && !imgError ? (
+            <img 
+              src={profile.photoUrl} 
+              alt="Profile" 
+              onError={() => setImgError(true)} 
+              style={{ width: 72, height: 72, borderRadius: "50%", objectFit: "cover", border: "3px solid rgba(255,255,255,0.5)" }} 
+              referrerPolicy="no-referrer" 
+              crossOrigin="anonymous" 
+            />
           ) : (
-            <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 800, color: "#fff" }}>{(profile.name || "S").charAt(0)}</div>
+            <div style={{ width: 72, height: 72, borderRadius: "50%", background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, fontWeight: 800, color: "#fff", border: "3px solid rgba(255,255,255,0.5)" }}>
+              {(profile.name || "S").charAt(0).toUpperCase()}
+            </div>
           )}
           <div>
-            <div style={{ fontSize: 12, opacity: 0.8, fontFamily: S.body, marginBottom: 2 }}>Welcome back</div>
-            <h2 style={{ fontFamily: S.heading, fontSize: "clamp(20px, 4vw, 26px)", fontWeight: 700, margin: 0 }}>{profile.name || "Student"}</h2>
-            <div style={{ fontSize: 13, opacity: 0.9, fontFamily: S.body, marginTop: 4 }}>{profile.studentNumber} • {profile.level}</div>
+            <div style={{ fontSize: 13, opacity: 0.8, fontFamily: S.body, marginBottom: 2 }}>Welcome back</div>
+            <h2 style={{ fontFamily: S.heading, fontSize: "clamp(22px, 4vw, 28px)", fontWeight: 700, margin: 0 }}>{profile.name || "Student"}</h2>
+            <div style={{ fontSize: 14, opacity: 0.95, fontFamily: S.body, marginTop: 4 }}>
+              {profile.studentNumber} • {profile.level} — <strong style={{ color: S.gold }}>{profile.programme}</strong>
+            </div>
           </div>
         </div>
-        <button onClick={onLogout} style={{ padding: "8px 24px", borderRadius: 6, border: "2px solid rgba(255,255,255,0.3)", background: "transparent", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: S.body, transition: "0.2s" }}>Log Out</button>
+        <button onClick={onLogout} style={{ padding: "10px 28px", borderRadius: 6, border: "2px solid rgba(255,255,255,0.3)", background: "transparent", color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: S.body, transition: "0.2s" }}>Log Out</button>
       </div>
 
       <div className="nav-tabs">
@@ -213,7 +228,7 @@ function Dashboard({ studentData, onLogout }) {
           { id: "finance", label: "💳 My Finances" }
         ].map(t => (
           <button key={t.id} onClick={() => { setActiveTab(t.id); setActiveQuiz(null); }} 
-            style={{ padding: "12px 20px", background: "none", border: "none", borderBottom: activeTab === t.id ? `3px solid ${S.teal}` : "3px solid transparent", color: activeTab === t.id ? S.teal : S.gray, fontWeight: activeTab === t.id ? 700 : 500, fontSize: 14, fontFamily: S.body, cursor: "pointer", transition: "0.2s" }}>
+            style={{ padding: "14px 24px", background: "none", border: "none", borderBottom: activeTab === t.id ? `3px solid ${S.teal}` : "3px solid transparent", color: activeTab === t.id ? S.teal : S.gray, fontWeight: activeTab === t.id ? 700 : 500, fontSize: 15, fontFamily: S.body, cursor: "pointer", transition: "0.2s" }}>
             {t.label}
           </button>
         ))}
@@ -222,33 +237,33 @@ function Dashboard({ studentData, onLogout }) {
       {activeTab === "classroom" && (
         <div style={{ animation: "fadeIn 0.3s" }}>
           {!profile.lmsAccess ? (
-            <div style={{ background: S.amberLight, borderRadius: 14, padding: "32px", border: `1px solid ${S.amber}30`, textAlign: "center" }}>
-              <div style={{ fontSize: 36, marginBottom: 12 }}>⏳</div>
-              <h3 style={{ fontFamily: S.heading, color: S.navy, marginBottom: 10 }}>Learning Portal Locked</h3>
-              <p style={{ fontFamily: S.body, color: S.gray, fontSize: 14 }}>Your learning portal access is currently restricted. If you have an outstanding balance, please navigate to the <b>My Finances</b> tab to clear it.</p>
+            <div style={{ background: S.amberLight, borderRadius: 14, padding: "40px", border: `1px solid ${S.amber}30`, textAlign: "center" }}>
+              <div style={{ fontSize: 40, marginBottom: 16 }}>⏳</div>
+              <h3 style={{ fontFamily: S.heading, color: S.navy, marginBottom: 12 }}>Learning Portal Locked</h3>
+              <p style={{ fontFamily: S.body, color: S.gray, fontSize: 15, maxWidth: "600px", margin: "0 auto" }}>Your learning portal access is currently restricted. If you have an outstanding balance, please navigate to the <b>My Finances</b> tab to clear it.</p>
             </div>
           ) : activeQuiz ? (
-            <div style={{ background: "#fff", borderRadius: 14, padding: "32px 20px", border: `1px solid ${S.border}` }}>
-              <button onClick={() => { setActiveQuiz(null); setQuizFeedback(""); setQuizAnswers({}); }} style={{ background: "none", border: "none", color: S.teal, fontWeight: 700, cursor: "pointer", marginBottom: 20, fontFamily: S.body }}>← Back to Modules</button>
+            <div style={{ background: "#fff", borderRadius: 14, padding: "32px", border: `1px solid ${S.border}` }}>
+              <button onClick={() => { setActiveQuiz(null); setQuizFeedback(""); setQuizAnswers({}); }} style={{ background: "none", border: "none", color: S.teal, fontWeight: 700, cursor: "pointer", marginBottom: 24, fontSize: 15, fontFamily: S.body }}>← Back to Modules</button>
               
               {JSON.parse(activeQuiz.quiz || "[]").length === 0 ? (
                 <div>
-                  <h3 style={{ fontFamily: S.heading, color: S.navy, marginBottom: 20 }}>Module {activeQuiz.moduleNum}: {activeQuiz.title}</h3>
-                  <p style={{ fontFamily: S.body, color: S.gray, fontSize: 14 }}>No assessment configured for this module yet. Please review your reading materials.</p>
+                  <h3 style={{ fontFamily: S.heading, color: S.navy, marginBottom: 20, fontSize: 24 }}>Module {activeQuiz.moduleNum}: {activeQuiz.title}</h3>
+                  <p style={{ fontFamily: S.body, color: S.gray, fontSize: 15 }}>No assessment configured for this module yet. Please review your reading materials.</p>
                 </div>
               ) : (
                 <div>
-                  <div style={{ fontSize: 11, color: S.violet, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 8 }}>Module {activeQuiz.moduleNum} Assessment</div>
-                  <h3 style={{ fontFamily: S.heading, color: S.navy, fontSize: 22, marginBottom: 24 }}>{activeQuiz.title}</h3>
+                  <div style={{ fontSize: 12, color: S.violet, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 10 }}>Module {activeQuiz.moduleNum} Assessment</div>
+                  <h3 style={{ fontFamily: S.heading, color: S.navy, fontSize: 26, marginBottom: 32 }}>{activeQuiz.title}</h3>
                   
                   {JSON.parse(activeQuiz.quiz || "[]").map((q, i) => (
-                    <div key={i} style={{ marginBottom: 24 }}>
-                      <p style={{ fontFamily: S.body, fontWeight: 700, color: S.navy, marginBottom: 12 }}>{i + 1}. {q.q}</p>
+                    <div key={i} style={{ marginBottom: 32 }}>
+                      <p style={{ fontFamily: S.body, fontWeight: 700, color: S.navy, marginBottom: 16, fontSize: 15 }}>{i + 1}. {q.q}</p>
                       {q.options.map((opt, optIndex) => {
                         const isSelected = quizAnswers[i] === optIndex;
                         return (
-                          <label key={optIndex} style={{ display: "block", padding: "12px 16px", border: `1px solid ${isSelected ? S.teal : S.border}`, background: isSelected ? `${S.teal}10` : "#fff", borderRadius: 8, marginBottom: 8, cursor: "pointer", fontFamily: S.body, fontSize: 13, transition: "0.2s" }}>
-                            <input type="radio" name={`q_${i}`} value={optIndex} checked={isSelected} onChange={() => handleQuizSelect(i, optIndex)} style={{ marginRight: 10 }} />
+                          <label key={optIndex} style={{ display: "block", padding: "14px 20px", border: `1px solid ${isSelected ? S.teal : S.border}`, background: isSelected ? `${S.teal}10` : "#fff", borderRadius: 8, marginBottom: 10, cursor: "pointer", fontFamily: S.body, fontSize: 14, transition: "0.2s" }}>
+                            <input type="radio" name={`q_${i}`} value={optIndex} checked={isSelected} onChange={() => handleQuizSelect(i, optIndex)} style={{ marginRight: 12 }} />
                             {opt}
                           </label>
                         );
@@ -256,38 +271,38 @@ function Dashboard({ studentData, onLogout }) {
                     </div>
                   ))}
                   
-                  {quizFeedback && <div style={{ padding: "12px 16px", borderRadius: 8, background: quizFeedback.includes("Success") ? S.emeraldLight : S.amberLight, color: quizFeedback.includes("Success") ? S.emeraldDark : S.amberDark, fontFamily: S.body, fontSize: 13, marginBottom: 16, border: `1px solid ${quizFeedback.includes("Success") ? S.emerald : S.amber}30` }}>{quizFeedback}</div>}
-                  <Btn primary onClick={submitQuiz} disabled={quizLoading} style={{ background: S.teal, color: "#fff", width: "100%", fontSize: 14 }}>{quizLoading ? "Grading..." : "Submit Assessment"}</Btn>
+                  {quizFeedback && <div style={{ padding: "16px 20px", borderRadius: 8, background: quizFeedback.includes("Success") ? S.emeraldLight : S.amberLight, color: quizFeedback.includes("Success") ? S.emeraldDark : S.amberDark, fontFamily: S.body, fontSize: 14, marginBottom: 20, border: `1px solid ${quizFeedback.includes("Success") ? S.emerald : S.amber}30` }}>{quizFeedback}</div>}
+                  <Btn primary onClick={submitQuiz} disabled={quizLoading} style={{ background: S.teal, color: "#fff", width: "100%", maxWidth: "300px", fontSize: 15 }}>{quizLoading ? "Grading..." : "Submit Assessment"}</Btn>
                 </div>
               )}
             </div>
           ) : (
             <div>
-              <div style={{ marginBottom: 24 }}>
-                <h3 style={{ fontFamily: S.heading, fontSize: 20, color: S.navy, margin: 0 }}>My Curriculum</h3>
-                <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray }}>Complete modules sequentially. You must score 70% or higher to unlock the next module.</p>
+              <div style={{ marginBottom: 28 }}>
+                <h3 style={{ fontFamily: S.heading, fontSize: 22, color: S.navy, margin: "0 0 8px 0" }}>My Curriculum</h3>
+                <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray }}>Complete modules sequentially. You must score 70% or higher to unlock the next module.</p>
               </div>
               
               {curriculum.length === 0 ? (
-                <div style={{ padding: 24, textAlign: "center", background: "#fff", border: `1px solid ${S.border}`, borderRadius: 12, color: S.gray, fontFamily: S.body }}>Your curriculum is currently being built by your instructor.</div>
+                <div style={{ padding: 32, textAlign: "center", background: "#fff", border: `1px solid ${S.border}`, borderRadius: 12, color: S.gray, fontFamily: S.body, fontSize: 15 }}>Your curriculum is currently being built by your instructor.</div>
               ) : (
                 curriculum.map((mod) => {
                   const isUnlocked = mod.moduleNum <= progress;
                   return (
-                    <div key={mod.moduleNum} style={{ background: isUnlocked ? "#fff" : S.lightBg, borderRadius: 12, border: `1px solid ${S.border}`, padding: "20px", marginBottom: 16, display: "flex", flexWrap: "wrap", gap: "16px", justifyContent: "space-between", alignItems: "center", opacity: isUnlocked ? 1 : 0.6 }}>
+                    <div key={mod.moduleNum} style={{ background: isUnlocked ? "#fff" : S.lightBg, borderRadius: 12, border: `1px solid ${S.border}`, padding: "24px", marginBottom: 16, display: "flex", flexWrap: "wrap", gap: "20px", justifyContent: "space-between", alignItems: "center", opacity: isUnlocked ? 1 : 0.6 }}>
                       <div>
-                        <span style={{ display: "inline-block", padding: "4px 10px", borderRadius: 20, background: isUnlocked ? S.emeraldLight : S.border, color: isUnlocked ? S.emeraldDark : S.gray, fontSize: 10, fontWeight: 700, fontFamily: S.body, marginBottom: 8 }}>
+                        <span style={{ display: "inline-block", padding: "6px 12px", borderRadius: 20, background: isUnlocked ? S.emeraldLight : S.border, color: isUnlocked ? S.emeraldDark : S.gray, fontSize: 11, fontWeight: 700, fontFamily: S.body, marginBottom: 10 }}>
                           {isUnlocked ? "Unlocked" : "🔒 Locked"}
                         </span>
-                        <h4 style={{ fontFamily: S.heading, fontSize: "clamp(15px, 3vw, 17px)", color: S.navy, margin: 0 }}>Module {mod.moduleNum}: {mod.title}</h4>
+                        <h4 style={{ fontFamily: S.heading, fontSize: "clamp(16px, 3vw, 18px)", color: S.navy, margin: 0 }}>Module {mod.moduleNum}: {mod.title}</h4>
                       </div>
                       {isUnlocked ? (
-                        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", width: "100%", maxWidth: "300px" }}>
-                          {mod.link && <a href={mod.link} target="_blank" rel="noopener noreferrer" style={{ flex: 1, textAlign: "center", padding: "10px 16px", borderRadius: 8, border: `1px solid ${S.navy}`, color: S.navy, textDecoration: "none", fontSize: 12, fontWeight: 600, fontFamily: S.body }}>Read Material</a>}
-                          <button onClick={() => setActiveQuiz(mod)} style={{ flex: 1, padding: "10px 16px", borderRadius: 8, border: "none", background: S.teal, color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: S.body }}>Take Assessment</button>
+                        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", width: "100%", maxWidth: "340px" }}>
+                          {mod.link && <a href={mod.link} target="_blank" rel="noopener noreferrer" style={{ flex: 1, textAlign: "center", padding: "12px 20px", borderRadius: 8, border: `2px solid ${S.navy}`, color: S.navy, textDecoration: "none", fontSize: 13, fontWeight: 700, fontFamily: S.body, transition: "0.2s" }}>Read Material</a>}
+                          <button onClick={() => setActiveQuiz(mod)} style={{ flex: 1, padding: "12px 20px", borderRadius: 8, border: "none", background: S.teal, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: S.body, transition: "0.2s" }}>Take Assessment</button>
                         </div>
                       ) : (
-                        <span style={{ fontSize: 12, color: S.gray, fontFamily: S.body }}>Pass previous module</span>
+                        <span style={{ fontSize: 13, color: S.gray, fontFamily: S.body }}>Pass previous module</span>
                       )}
                     </div>
                   );
@@ -300,25 +315,25 @@ function Dashboard({ studentData, onLogout }) {
 
       {activeTab === "profile" && (
         <div style={{ animation: "fadeIn 0.3s" }}>
-          <div style={{ background: S.amberLight, padding: "12px 20px", borderRadius: 8, border: `1px solid ${S.amber}40`, marginBottom: 20, color: S.amberDark, fontSize: 12, fontFamily: S.body, display: "flex", gap: 10, alignItems: "center" }}>
-            <span style={{ fontSize: 18 }}>ℹ️</span>
+          <div style={{ background: S.amberLight, padding: "16px 24px", borderRadius: 10, border: `1px solid ${S.amber}40`, marginBottom: 24, color: S.amberDark, fontSize: 13, fontFamily: S.body, display: "flex", gap: 12, alignItems: "center" }}>
+            <span style={{ fontSize: 20 }}>ℹ️</span>
             <span>This is your official institutional record. To request updates or corrections to this information, please contact <b>admin@ctsetsjm.com</b>.</span>
           </div>
 
           <div className="resp-grid-2">
             <div>
-              <div style={{ background: "#fff", borderRadius: 14, padding: "24px", border: `1px solid ${S.border}`, marginBottom: 20 }}>
-                <div style={{ fontSize: 11, color: S.navy, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 20, borderBottom: `2px solid ${S.border}`, paddingBottom: 8 }}>Identity & Status</div>
+              <div style={{ background: "#fff", borderRadius: 14, padding: "32px 24px", border: `1px solid ${S.border}`, marginBottom: 24 }}>
+                <div style={{ fontSize: 12, color: S.navy, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 24, borderBottom: `2px solid ${S.border}`, paddingBottom: 10 }}>Identity & Status</div>
                 
-                <div style={{ textAlign: "center", marginBottom: 20 }}>
-                  {profile.photoUrl ? (
-                    <img src={profile.photoUrl} alt="Profile" className="profile-img-large" referrerPolicy="no-referrer" crossOrigin="anonymous" />
+                <div style={{ textAlign: "center", marginBottom: 28 }}>
+                  {profile.photoUrl && !imgError ? (
+                    <img src={profile.photoUrl} alt="Profile" onError={() => setImgError(true)} className="profile-img-large" referrerPolicy="no-referrer" crossOrigin="anonymous" />
                   ) : (
-                    <div className="profile-img-large" style={{ background: S.lightBg, display: "flex", alignItems: "center", justifyContent: "center", color: S.gray, fontSize: 12, fontFamily: S.body, margin: "0 auto 16px" }}>No Photo<br/>Uploaded</div>
+                    <div className="profile-img-large" style={{ background: S.lightBg, display: "flex", alignItems: "center", justifyContent: "center", color: S.gray, fontSize: 13, fontFamily: S.body, margin: "0 auto 16px" }}>No Photo<br/>Available</div>
                   )}
-                  <div style={{ fontSize: 16, fontWeight: 700, color: S.navy, fontFamily: S.heading }}>{profile.name}</div>
-                  <div style={{ fontSize: 12, color: S.gray, fontFamily: S.body }}>{profile.studentNumber}</div>
-                  <div style={{ display: "inline-block", marginTop: 8, padding: "4px 12px", background: profile.status === "Enrolled" || profile.status === "Active" ? S.emeraldLight : S.amberLight, color: profile.status === "Enrolled" || profile.status === "Active" ? S.emeraldDark : S.amberDark, borderRadius: 20, fontSize: 11, fontWeight: 700 }}>{profile.status}</div>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: S.navy, fontFamily: S.heading }}>{profile.name}</div>
+                  <div style={{ fontSize: 14, color: S.gray, fontFamily: S.body, marginTop: 4 }}>{profile.studentNumber}</div>
+                  <div style={{ display: "inline-block", marginTop: 12, padding: "6px 16px", background: profile.status === "Enrolled" || profile.status === "Active" ? S.emeraldLight : S.amberLight, color: profile.status === "Enrolled" || profile.status === "Active" ? S.emeraldDark : S.amberDark, borderRadius: 20, fontSize: 12, fontWeight: 700 }}>{profile.status}</div>
                 </div>
 
                 <DataRow label="Programme" value={profile.programme} />
@@ -328,8 +343,8 @@ function Dashboard({ studentData, onLogout }) {
                 <DataRow label="End Date" value={profile.endDate || "TBC"} />
               </div>
 
-              <div style={{ background: "#fff", borderRadius: 14, padding: "24px", border: `1px solid ${S.border}`, marginBottom: 20 }}>
-                <div style={{ fontSize: 11, color: S.navy, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 16, borderBottom: `2px solid ${S.border}`, paddingBottom: 8 }}>Personal Details</div>
+              <div style={{ background: "#fff", borderRadius: 14, padding: "32px 24px", border: `1px solid ${S.border}`, marginBottom: 24 }}>
+                <div style={{ fontSize: 12, color: S.navy, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 20, borderBottom: `2px solid ${S.border}`, paddingBottom: 10 }}>Personal Details</div>
                 <DataRow label="First Name" value={profile.firstName} />
                 <DataRow label="Middle Name" value={profile.middleName} />
                 <DataRow label="Last Name" value={profile.lastName} />
@@ -345,8 +360,8 @@ function Dashboard({ studentData, onLogout }) {
             </div>
 
             <div>
-              <div style={{ background: "#fff", borderRadius: 14, padding: "24px", border: `1px solid ${S.border}`, marginBottom: 20 }}>
-                <div style={{ fontSize: 11, color: S.navy, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 16, borderBottom: `2px solid ${S.border}`, paddingBottom: 8 }}>Contact & Address</div>
+              <div style={{ background: "#fff", borderRadius: 14, padding: "32px 24px", border: `1px solid ${S.border}`, marginBottom: 24 }}>
+                <div style={{ fontSize: 12, color: S.navy, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 20, borderBottom: `2px solid ${S.border}`, paddingBottom: 10 }}>Contact & Address</div>
                 <DataRow label="Email" value={profile.email} />
                 <DataRow label="Primary Phone" value={profile.phone} />
                 <DataRow label="Secondary Phone" value={profile.phone2} />
@@ -357,8 +372,8 @@ function Dashboard({ studentData, onLogout }) {
                 <DataRow label="Country" value={profile.country} />
               </div>
 
-              <div style={{ background: "#fff", borderRadius: 14, padding: "24px", border: `1px solid ${S.border}`, marginBottom: 20 }}>
-                <div style={{ fontSize: 11, color: S.navy, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 16, borderBottom: `2px solid ${S.border}`, paddingBottom: 8 }}>Education & Employment</div>
+              <div style={{ background: "#fff", borderRadius: 14, padding: "32px 24px", border: `1px solid ${S.border}`, marginBottom: 24 }}>
+                <div style={{ fontSize: 12, color: S.navy, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 20, borderBottom: `2px solid ${S.border}`, paddingBottom: 10 }}>Education & Employment</div>
                 <DataRow label="Highest Qualification" value={profile.highestQualification} />
                 <DataRow label="Last School Attended" value={profile.schoolLastAttended} />
                 <DataRow label="Year Completed" value={profile.yearCompleted} />
@@ -367,16 +382,16 @@ function Dashboard({ studentData, onLogout }) {
                 <DataRow label="Job Title" value={profile.jobTitle} />
               </div>
 
-              <div style={{ background: "#fff", borderRadius: 14, padding: "24px", border: `1px solid ${S.border}`, marginBottom: 20 }}>
-                <div style={{ fontSize: 11, color: S.navy, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 16, borderBottom: `2px solid ${S.border}`, paddingBottom: 8 }}>Emergency Contacts</div>
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: S.gray, marginBottom: 8 }}>Primary Contact</div>
+              <div style={{ background: "#fff", borderRadius: 14, padding: "32px 24px", border: `1px solid ${S.border}`, marginBottom: 24 }}>
+                <div style={{ fontSize: 12, color: S.navy, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 20, borderBottom: `2px solid ${S.border}`, paddingBottom: 10 }}>Emergency Contacts</div>
+                <div style={{ marginBottom: 24 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: S.gray, marginBottom: 12 }}>Primary Contact</div>
                   <DataRow label="Name" value={profile.emergencyName} />
                   <DataRow label="Phone" value={profile.emergencyPhone} />
                   <DataRow label="Relationship" value={profile.emergencyRelationship} />
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: S.gray, marginBottom: 8 }}>Secondary Contact</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: S.gray, marginBottom: 12 }}>Secondary Contact</div>
                   <DataRow label="Name" value={profile.emergency2Name} />
                   <DataRow label="Phone" value={profile.emergency2Phone} />
                   <DataRow label="Relationship" value={profile.emergency2Relationship} />
@@ -388,32 +403,32 @@ function Dashboard({ studentData, onLogout }) {
       )}
 
       {activeTab === "portfolio" && (
-        <div style={{ background: "#fff", borderRadius: 14, padding: "32px 24px", border: `1px solid ${S.border}`, animation: "fadeIn 0.3s" }}>
-          <h3 style={{ fontFamily: S.heading, color: S.navy, marginBottom: 10 }}>Submit Practical Evidence</h3>
-          <p style={{ fontFamily: S.body, color: S.gray, fontSize: 14, marginBottom: 24, lineHeight: 1.6 }}>NCTVET requires evidence of practical competency. Upload your large videos or documents to Google Drive or YouTube, set the permission to "Anyone with the link can view", and paste the link below to submit it to your assessor.</p>
+        <div style={{ background: "#fff", borderRadius: 14, padding: "40px 32px", border: `1px solid ${S.border}`, animation: "fadeIn 0.3s" }}>
+          <h3 style={{ fontFamily: S.heading, color: S.navy, marginBottom: 12, fontSize: 22 }}>Submit Practical Evidence</h3>
+          <p style={{ fontFamily: S.body, color: S.gray, fontSize: 15, marginBottom: 28, lineHeight: 1.7, maxWidth: "800px" }}>NCTVET requires evidence of practical competency. Upload your large videos or documents to Google Drive or YouTube, set the permission to "Anyone with the link can view", and paste the link below to submit it to your assessor.</p>
           
-          <input type="text" value={portfolioLink} onChange={(e) => setPortfolioLink(e.target.value)} placeholder="https://drive.google.com/..." style={{ width: "100%", padding: "14px", borderRadius: 8, border: `2px solid ${S.border}`, fontSize: 14, fontFamily: S.body, marginBottom: 16, outline: "none" }} />
+          <input type="text" value={portfolioLink} onChange={(e) => setPortfolioLink(e.target.value)} placeholder="https://drive.google.com/..." style={{ width: "100%", padding: "16px 20px", borderRadius: 8, border: `2px solid ${S.border}`, fontSize: 15, fontFamily: S.body, marginBottom: 20, outline: "none" }} />
           
           <Btn primary onClick={() => { 
             if(!portfolioLink) return alert("Please paste a link first.");
             alert(`Submission recorded securely for Assessor review. (External link: ${portfolioLink})`); 
             setPortfolioLink(""); 
-          }} style={{ background: S.coral, color: "#fff", fontSize: 14, width: "100%", maxWidth: "300px" }}>Submit Evidence to Assessor</Btn>
+          }} style={{ background: S.coral, color: "#fff", fontSize: 15, width: "100%", maxWidth: "300px", padding: "16px" }}>Submit Evidence</Btn>
         </div>
       )}
 
       {activeTab === "finance" && (
         <div className="resp-grid-2" style={{ animation: "fadeIn 0.3s" }}>
-          <div style={{ background: "#fff", borderRadius: 14, padding: "32px 24px", border: `1px solid ${S.border}` }}>
-            <div style={{ fontSize: 11, color: S.coral, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 24 }}>Financial Summary</div>
-            <div style={{ textAlign: "center", marginBottom: 24 }}>
-              <div style={{ fontSize: "clamp(24px, 4vw, 32px)", fontWeight: 800, color: S.navy, fontFamily: S.heading }}>{fmt(profile.totalFees)}</div>
-              <div style={{ fontSize: 12, color: S.gray, fontFamily: S.body }}>Total Programme Cost</div>
+          <div style={{ background: "#fff", borderRadius: 14, padding: "40px 32px", border: `1px solid ${S.border}` }}>
+            <div style={{ fontSize: 12, color: S.coral, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 28 }}>Financial Summary</div>
+            <div style={{ textAlign: "center", marginBottom: 32 }}>
+              <div style={{ fontSize: "clamp(28px, 5vw, 38px)", fontWeight: 800, color: S.navy, fontFamily: S.heading }}>{fmt(profile.totalFees)}</div>
+              <div style={{ fontSize: 13, color: S.gray, fontFamily: S.body }}>Total Programme Cost</div>
             </div>
-            <div style={{ background: S.border, borderRadius: 6, height: 12, marginBottom: 12, overflow: "hidden" }}>
+            <div style={{ background: S.border, borderRadius: 6, height: 14, marginBottom: 12, overflow: "hidden" }}>
               <div style={{ width: `${pct}%`, height: "100%", borderRadius: 6, background: pct >= 100 ? S.emerald : S.coral, transition: "width 0.5s" }} />
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontFamily: S.body, marginBottom: 24 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontFamily: S.body, marginBottom: 32 }}>
               <span style={{ color: S.emerald, fontWeight: 700 }}>Paid: {fmt(profile.totalPaid)}</span>
               <span style={{ color: profile.outstanding > 0 ? S.coral : S.emerald, fontWeight: 700 }}>Outstanding: {fmt(profile.outstanding)}</span>
             </div>
@@ -421,17 +436,17 @@ function Dashboard({ studentData, onLogout }) {
             <DataRow label="Payment Status" value={profile.paymentStatus || "Pending"} />
           </div>
           
-          <div style={{ background: "#fff", borderRadius: 14, padding: "32px 24px", border: `1px solid ${S.border}`, overflowX: "auto" }}>
-            <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 24 }}>Payment History</div>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: S.body, fontSize: 13 }}>
+          <div style={{ background: "#fff", borderRadius: 14, padding: "40px 32px", border: `1px solid ${S.border}`, overflowX: "auto" }}>
+            <div style={{ fontSize: 12, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 28 }}>Payment History</div>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: S.body, fontSize: 14 }}>
               <tbody>
                 {profile.payments && profile.payments.length > 0 ? profile.payments.map((p, i) => (
                   <tr key={i}>
-                    <td style={{ padding: "12px 0", borderBottom: `1px solid ${S.border}`, color: S.gray }}>{p.date}</td>
-                    <td style={{ padding: "12px 0", borderBottom: `1px solid ${S.border}`, color: S.navy, fontWeight: 700 }}>{fmt(p.amount)}</td>
-                    <td style={{ padding: "12px 0", borderBottom: `1px solid ${S.border}`, color: p.status.includes("Paid") ? S.emerald : S.amber, fontWeight: 700, textAlign: "right" }}>{p.status}</td>
+                    <td style={{ padding: "16px 0", borderBottom: `1px solid ${S.border}`, color: S.gray }}>{p.date}</td>
+                    <td style={{ padding: "16px 0", borderBottom: `1px solid ${S.border}`, color: S.navy, fontWeight: 700 }}>{fmt(p.amount)}</td>
+                    <td style={{ padding: "16px 0", borderBottom: `1px solid ${S.border}`, color: p.status.includes("Paid") ? S.emerald : S.amber, fontWeight: 700, textAlign: "right" }}>{p.status}</td>
                   </tr>
-                )) : <tr><td colSpan="3" style={{ padding: "12px 0", color: S.gray }}>No payment history recorded.</td></tr>}
+                )) : <tr><td colSpan="3" style={{ padding: "16px 0", color: S.gray }}>No payment history recorded.</td></tr>}
               </tbody>
             </table>
           </div>
@@ -486,7 +501,7 @@ export default function StudentPortalPage({ setPage }) {
           </Container>
         </div>
       ) : (
-        <div style={{ background: S.lightBg, minHeight: "80vh", padding: "32px 20px" }}>
+        <div style={{ background: S.lightBg, minHeight: "80vh", padding: "40px 20px" }}>
           <Dashboard studentData={studentData} onLogout={handleLogout} />
           <div style={{ display: 'none' }}><p>Enter your administrator password to access the console.</p></div>
         </div>
