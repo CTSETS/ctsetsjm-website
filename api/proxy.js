@@ -17,27 +17,32 @@ export default async function handler(req, res) {
       const query = { ...req.query };
       const action = (query.action || "").toLowerCase();
 
-      // Admin actions: validate password in the proxy, then forward with internal token
       const adminActions = ["admindashboard","adminlistapps","adminliststudents","adminlistpayments","adminacceptapp","adminrejectapp","adminenrollstudent","adminresetpw","adminauditlog","verifypayment","rejectpayment","generaterecord"];
 
       if (adminActions.includes(action)) {
         let isAuthorized = false;
+        let debugData = {}; // We will use this to see what the frontend sent
 
-        // BULLETPROOF CHECK: Look through EVERY parameter sent by the frontend
-        // This guarantees we find the password even if the frontend named it something weird.
         for (const key in query) {
-          const val = String(query[key]).trim();
-          if (ADMIN_PASSWORDS.includes(val)) {
+          let val = String(query[key]).trim();
+          let decodedVal = decodeURIComponent(val); // Fixes %21 instead of !
+          
+          debugData[key] = decodedVal; // Save to show you on screen
+
+          if (ADMIN_PASSWORDS.includes(val) || ADMIN_PASSWORDS.includes(decodedVal)) {
             isAuthorized = true;
-            delete query[key]; // Remove the password from the URL securely
+            delete query[key]; 
           }
         }
 
         if (!isAuthorized) {
-          return res.status(200).json({ ok: false, error: "Invalid password" });
+          // DIAGNOSTIC ERROR MESSAGE: This will print the exact data to your screen
+          return res.status(200).json({ 
+            ok: false, 
+            error: "DEBUG: " + JSON.stringify(debugData) 
+          });
         }
 
-        // Add the safe internal token that Code.gs is now looking for
         delete query.v;
         query.proxysig = "Detailed1982";
       }
@@ -55,11 +60,8 @@ export default async function handler(req, res) {
       }
 
       const text = await response.text();
-      try {
-        return res.status(200).json(JSON.parse(text));
-      } catch {
-        return res.status(200).send(text);
-      }
+      try { return res.status(200).json(JSON.parse(text)); } 
+      catch { return res.status(200).send(text); }
     }
 
     if (req.method === "POST") {
@@ -81,11 +83,8 @@ export default async function handler(req, res) {
       }
 
       const text = await response.text();
-      try {
-        return res.status(200).json(JSON.parse(text));
-      } catch {
-        return res.status(200).send(text);
-      }
+      try { return res.status(200).json(JSON.parse(text)); } 
+      catch { return res.status(200).send(text); }
     }
 
     return res.status(405).json({ error: "Method not allowed" });
