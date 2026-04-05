@@ -1,96 +1,159 @@
-// ─── VERIFY CERTIFICATE PAGE ────────────────────────────────────────
-import { useState } from "react";
+import React, { useState } from "react";
 import S from "../constants/styles";
-import { APPS_SCRIPT_URL } from "../constants/config";
+import { APPS_SCRIPT_URL } from "../constants/config"; //
 import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture } from "../components/shared/CoreComponents";
 
 export default function VerifyCertificatePage({ setPage }) {
+  const [lookupType, setLookupType] = useState("certificate"); // 'certificate' or 'student'
+  const [studentId, setStudentId] = useState("");
   const [certNum, setCertNum] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
 
   const handleVerify = async () => {
-    if (!certNum.trim()) return;
+    // Validation based on type
+    if (lookupType === "certificate" && (!certNum.trim() || !studentId.trim())) return;
+    if (lookupType === "student" && !studentId.trim()) return;
+
     setLoading(true);
     setResult(null);
+    
     try {
-      const res = await fetch(APPS_SCRIPT_URL + "?action=verifyCert&cert=" + encodeURIComponent(certNum.trim().toUpperCase()));
-      if (res.ok) { const data = await res.json(); setResult(data); }
-      else setResult({ valid: false });
-    } catch { setResult({ valid: false }); }
-    setLoading(false);
+      // Direct call to your backend with conditional parameters
+      const action = lookupType === "certificate" ? "verifyCert" : "verifyStudentStatus";
+      let url = `${APPS_SCRIPT_URL}?action=${action}&student=${encodeURIComponent(studentId.trim().toUpperCase())}`;
+      
+      if (lookupType === "certificate") {
+        url += `&cert=${encodeURIComponent(certNum.trim().toUpperCase())}`;
+      }
+
+      const res = await fetch(url);
+      if (res.ok) { 
+        const data = await res.json(); 
+        setResult(data); 
+      } else {
+        setResult({ valid: false });
+      }
+    } catch { 
+      setResult({ valid: false }); 
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const inputStyle = { width: "100%", padding: "16px 20px", borderRadius: "12px", border: `2px solid ${S.border}`, fontSize: "15px", fontFamily: S.body, color: S.navy, fontWeight: "700", outline: "none", letterSpacing: "1px", textTransform: "uppercase", transition: "all 0.2s", boxSizing: "border-box", background: S.white };
+  const labelStyle = { display: "block", fontSize: "11px", fontWeight: "800", color: S.gray, fontFamily: S.body, marginBottom: "8px", textTransform: "uppercase", letterSpacing: "1px" };
 
   return (
     <PageWrapper bg={S.lightBg}>
-      <SectionHeader tag="For Employers & Institutions" title="Verify a CTS ETS Certificate" desc="Enter a certificate number to confirm its authenticity." accentColor={S.emerald} />
+      <SectionHeader 
+        tag="Verification Centre" 
+        title="Credential & Enrollment Lookup" 
+        desc="Verify the authenticity of CTS ETS Student IDs or Certificate Awards for employment or institutional processing." 
+        accentColor={S.emerald} 
+      />
       <Container>
-        <div style={{ maxWidth: 560, margin: "0 auto" }}>
-          {/* Info */}
-          <Reveal>
-            <div style={{ padding: "18px 24px", borderRadius: 12, background: S.tealLight, border: "1px solid " + S.teal + "30", marginBottom: 32 }}>
-              <p style={{ fontSize: 13, color: "#2D3748", fontFamily: S.body, lineHeight: 1.7, margin: 0 }}>
-                Every CTS ETS certificate includes a unique reference number. Enter it below to verify the holder's name, programme, and completion date. This service is free for employers and institutions.
-              </p>
-            </div>
-          </Reveal>
+        <div style={{ maxWidth: "700px", margin: "0 auto 80px" }}>
+          
+          {/* ─── LOOKUP TOGGLE ─── */}
+          <div style={{ display: "flex", background: "rgba(1,30,64,0.05)", padding: "6px", borderRadius: "14px", marginBottom: "30px" }}>
+            <button 
+              onClick={() => { setLookupType("certificate"); setResult(null); }}
+              style={{ flex: 1, padding: "12px", borderRadius: "10px", border: "none", background: lookupType === "certificate" ? S.white : "transparent", color: S.navy, fontWeight: "700", cursor: "pointer", fontSize: "14px", boxShadow: lookupType === "certificate" ? "0 4px 10px rgba(0,0,0,0.05)" : "none", transition: "0.2s" }}
+            >
+              Verify Certificate
+            </button>
+            <button 
+              onClick={() => { setLookupType("student"); setResult(null); }}
+              style={{ flex: 1, padding: "12px", borderRadius: "10px", border: "none", background: lookupType === "student" ? S.white : "transparent", color: S.navy, fontWeight: "700", cursor: "pointer", fontSize: "14px", boxShadow: lookupType === "student" ? "0 4px 10px rgba(0,0,0,0.05)" : "none", transition: "0.2s" }}
+            >
+              Verify Student ID
+            </button>
+          </div>
 
-          {/* Lookup form */}
-          <Reveal delay={0.1}>
-            <div style={{ background: "#fff", borderRadius: 16, padding: "32px", border: "1px solid " + S.border, marginBottom: 32 }}>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: S.navy, fontFamily: S.body, marginBottom: 8 }}>Certificate Number</label>
-              <div style={{ display: "flex", gap: 10 }}>
-                <input
-                  type="text" value={certNum} onChange={e => setCertNum(e.target.value.toUpperCase())} onKeyDown={e => e.key === "Enter" && handleVerify()}
-                  placeholder="e.g. CTS-CERT-2026-00001"
-                  style={{ flex: 1, padding: "14px 16px", borderRadius: 8, border: "1.5px solid rgba(1,30,64,0.12)", fontSize: 15, fontFamily: S.body, color: S.navy, fontWeight: 600, outline: "none", letterSpacing: 0.5 }}
-                />
-                <button onClick={handleVerify} disabled={loading || !certNum.trim()}
-                  style={{ padding: "14px 28px", borderRadius: 8, background: certNum.trim() ? S.emerald : "rgba(1,30,64,0.08)", color: certNum.trim() ? "#fff" : S.grayLight, border: "none", fontSize: 14, fontWeight: 700, cursor: certNum.trim() ? "pointer" : "not-allowed", fontFamily: S.body, opacity: loading ? 0.6 : 1 }}>
-                  {loading ? "Checking..." : "Verify"}
-                </button>
+          <Reveal>
+            <div style={{ background: S.white, borderRadius: "24px", padding: "40px", border: `1px solid ${S.border}`, boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
+              
+              <div style={{ display: "grid", gridTemplateColumns: lookupType === "certificate" ? "1fr 1fr" : "1fr", gap: "20px", marginBottom: "30px" }}>
+                <div>
+                  <label style={labelStyle}>Student ID Number</label>
+                  <input
+                    type="text" 
+                    value={studentId} 
+                    onChange={e => setStudentId(e.target.value.toUpperCase())} 
+                    placeholder="CTSETSS-XXXXX"
+                    style={{ ...inputStyle, borderColor: studentId.trim() ? S.emerald : S.border }}
+                  />
+                </div>
+                {lookupType === "certificate" && (
+                  <div>
+                    <label style={labelStyle}>Certificate Reference</label>
+                    <input
+                      type="text" 
+                      value={certNum} 
+                      onChange={e => setCertNum(e.target.value.toUpperCase())} 
+                      placeholder="CTS-CERT-XXXXX"
+                      style={{ ...inputStyle, borderColor: certNum.trim() ? S.emerald : S.border }}
+                    />
+                  </div>
+                )}
               </div>
 
-              {/* Result */}
+              <button 
+                onClick={handleVerify} 
+                disabled={loading || !studentId.trim() || (lookupType === "certificate" && !certNum.trim())}
+                style={{ width: "100%", padding: "18px", borderRadius: "14px", background: S.navy, color: S.white, border: "none", fontSize: "16px", fontWeight: "800", cursor: "pointer", transition: "0.2s", boxShadow: `0 8px 20px ${S.navy}30` }}
+              >
+                {loading ? "Accessing Registry..." : `Verify ${lookupType === "certificate" ? "Certificate" : "Enrollment Status"}`}
+              </button>
+
+              {/* ─── DYNAMIC RESULT CARDS ─── */}
               {result && (
-                <div style={{ marginTop: 24 }}>
+                <div style={{ marginTop: "40px", animation: "fadeIn 0.3s ease-out" }}>
                   {result.valid ? (
-                    <div style={{ padding: "24px", borderRadius: 12, background: S.emeraldLight, border: "2px solid " + S.emerald }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                        <div style={{ width: 36, height: 36, borderRadius: "50%", background: S.emerald, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 18 }}>✓</div>
-                        <div style={{ fontFamily: S.heading, fontSize: 18, fontWeight: 700, color: S.emeraldDark }}>Certificate Verified</div>
-                      </div>
-                      {[["Name", result.name], ["Programme", result.programme], ["Level", result.level], ["Completed", result.date], ["Reference", result.ref]].map(([k, v]) => v && (
-                        <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid " + S.emerald + "20", fontSize: 13, fontFamily: S.body }}>
-                          <span style={{ color: S.gray }}>{k}</span>
-                          <span style={{ color: S.navy, fontWeight: 700 }}>{v}</span>
+                    <div style={{ padding: "30px", borderRadius: "20px", background: lookupType === "certificate" ? S.navy : S.white, border: `2px solid ${S.emerald}`, position: "relative" }}>
+                      
+                      {/* Status Header */}
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
+                        <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: S.emerald, color: S.white, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px" }}>✓</div>
+                        <div>
+                          <div style={{ fontWeight: "800", color: lookupType === "certificate" ? S.white : S.navy, fontSize: "18px", fontFamily: S.heading }}>Record Verified</div>
+                          <div style={{ fontSize: "12px", color: lookupType === "certificate" ? S.emeraldLight : S.emerald }}>Status: {result.status || "Active Student"}</div>
                         </div>
-                      ))}
+                      </div>
+
+                      {/* Detail Grid */}
+                      <div style={{ display: "grid", gap: "12px" }}>
+                        {[
+                          ["Student Name", result.name], //
+                          ["Programme", result.programme], //
+                          ["Current Level", result.level], //
+                          ["Enrollment Date", result.enrollmentDate || result.date], //
+                          lookupType === "certificate" ? ["Certificate Ref", result.ref] : ["Student ID", studentId] //
+                        ].map(([k, v]) => v && (
+                          <div key={k} style={{ display: "flex", justifyContent: "space-between", borderBottom: `1px solid ${lookupType === "certificate" ? "rgba(255,255,255,0.1)" : S.border}`, paddingBottom: "8px" }}>
+                            <span style={{ fontSize: "13px", color: lookupType === "certificate" ? "rgba(255,255,255,0.6)" : S.gray }}>{k}</span>
+                            <span style={{ fontSize: "14px", fontWeight: "700", color: lookupType === "certificate" ? S.white : S.navy }}>{v}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ) : (
-                    <div style={{ padding: "20px", borderRadius: 12, background: S.roseLight, border: "2px solid " + S.rose + "50" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <span style={{ fontSize: 20 }}>⚠️</span>
-                        <div>
-                          <div style={{ fontFamily: S.body, fontSize: 14, fontWeight: 700, color: S.roseDark }}>Certificate Not Found</div>
-                          <p style={{ fontFamily: S.body, fontSize: 12, color: S.gray, margin: "4px 0 0", lineHeight: 1.6 }}>
-                            This certificate number was not found in our system. Check the number and try again, or contact admin@ctsetsjm.com for assistance.
-                          </p>
-                        </div>
-                      </div>
+                    <div style={{ padding: "30px", borderRadius: "20px", background: S.roseLight, border: `2px solid ${S.rose}40`, textAlign: "center" }}>
+                      <div style={{ fontSize: "32px", marginBottom: "12px" }}>⚠️</div>
+                      <div style={{ fontWeight: "800", color: S.roseDark, fontFamily: S.heading, fontSize: "18px" }}>Verification Failed</div>
+                      <p style={{ fontSize: "14px", color: S.navy, marginTop: "8px", lineHeight: "1.6" }}>
+                        We could not verify this {lookupType}. Please ensure the ID and Reference numbers are entered exactly as shown on the document.
+                      </p>
                     </div>
                   )}
                 </div>
               )}
             </div>
           </Reveal>
-
-          <Reveal delay={0.2}>
-            <div style={{ textAlign: "center" }}>
-              <Btn onClick={() => setPage("Contact")} style={{ fontSize: 13, border: "2px solid " + S.teal, color: S.teal }}>Contact Us for Help</Btn>
-            </div>
-          </Reveal>
         </div>
+        
+        <TrustSection />
         <PageScripture page="verify" />
       </Container>
     </PageWrapper>

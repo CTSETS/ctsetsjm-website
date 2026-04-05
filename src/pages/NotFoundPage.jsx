@@ -1,47 +1,49 @@
-// ─── 404 NOT FOUND PAGE ─────────────────────────────────────────────
+import React from "react";
 import S from "../constants/styles";
 import { Container, PageWrapper, Btn, Reveal } from "../components/shared/CoreComponents";
 
 export default function NotFoundPage({ setPage }) {
+  const quickLinks = [
+    { label: "Apply Now", page: "Apply", color: S.coral },
+    { label: "Fees & Calculator", page: "Fees & Calculator", color: S.teal },
+    { label: "Our Programmes", page: "Programmes", color: S.violet },
+    { label: "Contact Support", page: "Contact", color: S.emerald },
+  ];
+
   return (
     <PageWrapper bg={S.lightBg}>
-      <Container style={{ paddingTop: 60 }}>
+      <Container style={{ paddingTop: "80px", paddingBottom: "80px" }}>
         <Reveal>
-          <div style={{ textAlign: "center", maxWidth: 520, margin: "0 auto" }}>
-            <div style={{ fontSize: 80, marginBottom: 16, lineHeight: 1 }}>🔍</div>
-            <h1 style={{ fontFamily: S.heading, fontSize: "clamp(48px,8vw,72px)", color: S.navy, fontWeight: 800, marginBottom: 8, lineHeight: 1 }}>404</h1>
-            <h2 style={{ fontFamily: S.heading, fontSize: "clamp(18px,3vw,24px)", color: S.navy, fontWeight: 700, marginBottom: 16 }}>Page Not Found</h2>
-            <p style={{ fontFamily: S.body, fontSize: 15, color: S.gray, lineHeight: 1.7, marginBottom: 36 }}>
-              The page you're looking for doesn't exist or has been moved. Let's get you back on track.
+          <div style={{ textAlign: "center", maxWidth: "600px", margin: "0 auto" }}>
+            <div style={{ fontSize: "100px", lineHeight: "1", marginBottom: "20px" }}>🔭</div>
+            <h1 style={{ fontFamily: S.heading, fontSize: "80px", color: S.navy, fontWeight: "800", margin: 0, lineHeight: "1" }}>404</h1>
+            <h2 style={{ fontFamily: S.heading, fontSize: "28px", color: S.navy, fontWeight: "700", marginBottom: "20px" }}>Page Not Found</h2>
+            <p style={{ fontFamily: S.body, fontSize: "16px", color: S.gray, lineHeight: "1.7", marginBottom: "40px" }}>
+              It looks like you've wandered off the study path. Don't worry, even the best learners get lost sometimes. Let's get you back to class.
             </p>
 
-            <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap", marginBottom: 40 }}>
-              <Btn primary onClick={() => setPage("Home")} style={{ background: S.coral, color: "#fff", fontSize: 15, padding: "14px 32px" }}>Go Home</Btn>
-              <Btn onClick={() => setPage("Programmes")} style={{ fontSize: 14, border: "2px solid " + S.teal, color: S.teal }}>View Programmes</Btn>
+            <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap", marginBottom: "50px" }}>
+              <Btn primary onClick={() => setPage("Home")} style={{ background: S.navy, color: S.white, padding: "16px 40px" }}>Go to Homepage</Btn>
+              <Btn onClick={() => setPage("Contact")} style={{ border: `2px solid ${S.teal}`, color: S.teal, background: "transparent" }}>Get Help</Btn>
             </div>
 
-            <div style={{ background: "#fff", borderRadius: 14, padding: "24px 28px", border: "1px solid " + S.border, textAlign: "left" }}>
-              <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 14 }}>Popular Pages</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                {[
-                  ["Apply Now", "Apply", S.coral],
-                  ["Fees & Calculator", "Fees & Calculator", S.teal],
-                  ["Contact Us", "Contact", S.emerald],
-                  ["About CTS ETS", "About", S.sky],
-                  ["Career Outcomes", "Careers", S.amber],
-                ].map(([label, page, color]) => (
-                  <button key={page} onClick={() => setPage(page)}
-                    style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid " + S.border, background: "#fff", cursor: "pointer", textAlign: "left", fontFamily: S.body, fontSize: 13, color: S.navy, fontWeight: 500, transition: "all 0.15s", display: "flex", alignItems: "center", gap: 8 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: color, flexShrink: 0 }} />
-                    {label}
+            <div style={{ background: S.white, borderRadius: "20px", padding: "30px", border: `1px solid ${S.border}`, textAlign: "left", boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
+              <div style={{ fontSize: "12px", color: S.gold, letterSpacing: "2px", textTransform: "uppercase", fontFamily: S.body, fontWeight: "800", marginBottom: "20px" }}>Looking for something specific?</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
+                {quickLinks.map((link) => (
+                  <button 
+                    key={link.page} 
+                    onClick={() => setPage(link.page)}
+                    style={{ padding: "14px 18px", borderRadius: "12px", border: `1px solid ${S.border}`, background: S.lightBg, cursor: "pointer", textAlign: "left", fontFamily: S.body, fontSize: "14px", color: S.navy, fontWeight: "600", transition: "0.2s", display: "flex", alignItems: "center", gap: "10px" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = link.color; e.currentTarget.style.background = S.white; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = S.border; e.currentTarget.style.background = S.lightBg; }}
+                  >
+                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: link.color }} />
+                    {link.label}
                   </button>
                 ))}
               </div>
             </div>
-
-            <p style={{ fontFamily: S.body, fontSize: 12, color: S.gray, marginTop: 24, lineHeight: 1.6 }}>
-              Still can't find what you're looking for? <button onClick={() => setPage("Contact")} style={{ background: "none", border: "none", color: S.teal, cursor: "pointer", fontFamily: S.body, fontSize: 12, fontWeight: 700, padding: 0 }}>Contact us</button> or WhatsApp <strong>876-381-9771</strong>.
-            </p>
           </div>
         </Reveal>
       </Container>
