@@ -1,562 +1,191 @@
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
 import S from "../constants/styles";
-import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture } from "../components/shared/CoreComponents";
-import { fmt } from "../utils/formatting";
-import OTPGate from "../components/common/OTPGate";
+import { APPS_SCRIPT_URL, WHATSAPP_NUMBER, NAV_LOGO } from "../constants/config";
 
-// REQUIRED INSTITUTIONAL CONSTANT
-const VERCEL_URL = "https://ctsetsjm-website.vercel.app/api/proxy";
+const StudentPortalPage = () => {
+  const [step, setStep] = useState(1); 
+  const [studentId, setStudentId] = useState("");
+  const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [maskedEmail, setMaskedEmail] = useState("");
+  const [dashboardData, setDashboardData] = useState(null);
 
-const getDriveImageUrl = (url) => {
-  if (!url) return null;
-  const match = url.match(/id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-  if (match && match[1]) return `https://lh3.googleusercontent.com/d/$${match[1]}`;
-  return url;
-};
-
-// Gamification: Inject Confetti Library
-const loadConfetti = () => {
-  if (window.confetti) return;
-  const script = document.createElement("script");
-  script.src = "https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js";
-  script.async = true;
-  document.body.appendChild(script);
-};
-
-// ─── AI Study Assistant Component ───
-function AIStudyAssistant({ profile }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const [history, setHistory] = useState([{ role: "ai", text: `Hi ${profile.firstName}! I'm your CTS ETS Study Assistant. Ask me to explain a concept from your ${profile.programme} course!` }]);
-  const [isTyping, setIsTyping] = useState(false);
-
-  const askAI = async () => {
-    if (!query.trim()) return;
-    const userMsg = query.trim();
-    setHistory(prev => [...prev, { role: "user", text: userMsg }]);
-    setQuery("");
-    setIsTyping(true);
-
+  const handleRequestOTP = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
     try {
-      const res = await fetch(`${VERCEL_URL}?action=aichat&query=${encodeURIComponent(userMsg)}&course=${encodeURIComponent(profile.programme)}`);
-      const data = await res.json();
-      setHistory(prev => [...prev, { role: "ai", text: data.response || "I'm having trouble connecting right now. Please try again later." }]);
-    } catch(e) {
-      setHistory(prev => [...prev, { role: "ai", text: "Network error. Please check your connection." }]);
+      // Action name matches the backend Student Number Only logic [cite: 193]
+      const resp = await fetch(`${APPS_SCRIPT_URL}?action=sendotp&identifier=${encodeURIComponent(studentId.trim().toUpperCase())}&purpose=portal`);
+      const data = await resp.json();
+      if (data.success) {
+        setMaskedEmail(data.maskedEmail);
+        setStep(2);
+      } else {
+        setError(data.message || "Student Number not recognized.");
+      }
+    } catch (err) {
+      setError("System connection error. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setIsTyping(false);
   };
+
+  const handleVerifyAndLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      const verifyResp = await fetch(`${APPS_SCRIPT_URL}?action=verifyotp&identifier=${encodeURIComponent(studentId.toUpperCase())}&code=${otp.trim()}&purpose=portal`);
+      const verifyData = await verifyResp.json();
+      if (verifyData.success) {
+        // Fetches dashboard using the specialized Student Number endpoint [cite: 193, 761]
+        const dashResp = await fetch(`${APPS_SCRIPT_URL}?action=getstudentdashboard_otp&ref=${encodeURIComponent(studentId.toUpperCase())}`);
+        const dashData = await dashResp.json();
+        if (dashData.ok) {
+          setDashboardData(dashData);
+          setStep(3);
+        } else {
+          setError(dashData.error || "Profile load failed.");
+        }
+      } else {
+        setError(verifyData.message || "Invalid code.");
+      }
+    } catch (err) {
+      setError("Authentication failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (step === 3) return <ClassroomDashboard data={dashboardData} />;
 
   return (
-    <>
-      <button onClick={() => setIsOpen(!isOpen)} style={{ position: "fixed", bottom: 24, right: 24, width: 64, height: 64, borderRadius: "50%", background: S.navy, color: "#fff", fontSize: 28, border: `3px solid ${S.gold}`, boxShadow: "0 8px 24px rgba(1,30,64,0.3)", cursor: "pointer", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", transition: "transform 0.2s" }}>
-        {isOpen ? "✕" : "🤖"}
-      </button>
-
-      {isOpen && (
-        <div style={{ position: "fixed", bottom: 100, right: 24, width: "calc(100% - 48px)", maxWidth: 380, height: 500, background: "#fff", borderRadius: 16, border: `1px solid ${S.border}`, boxShadow: "0 12px 40px rgba(0,0,0,0.15)", zIndex: 9998, display: "flex", flexDirection: "column", overflow: "hidden", animation: "fadeIn 0.2s" }}>
-          <div style={{ background: S.navy, padding: "16px 20px", display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ fontSize: 24 }}>🤖</div>
-            <div>
-              <div style={{ color: "#fff", fontFamily: S.heading, fontSize: 16, fontWeight: 700 }}>CTS Study Assistant</div>
-              <div style={{ color: S.gold, fontFamily: S.body, fontSize: 11 }}>24/7 AI Tutor</div>
-            </div>
-          </div>
-          
-          <div style={{ flex: 1, padding: 16, overflowY: "auto", background: S.lightBg, display: "flex", flexDirection: "column", gap: 12 }}>
-            {history.map((msg, i) => (
-              <div key={i} style={{ alignSelf: msg.role === "user" ? "flex-end" : "flex-start", background: msg.role === "user" ? S.teal : "#fff", color: msg.role === "user" ? "#fff" : S.navy, padding: "12px 16px", borderRadius: msg.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px", maxWidth: "85%", fontSize: 14, fontFamily: S.body, border: msg.role === "ai" ? `1px solid ${S.border}` : "none", lineHeight: 1.5 }}>
-                {msg.text}
-              </div>
-            ))}
-            {isTyping && <div style={{ alignSelf: "flex-start", background: "#fff", padding: "12px 16px", borderRadius: "16px 16px 16px 4px", border: `1px solid ${S.border}`, fontSize: 12, color: S.gray }}>Assistant is typing...</div>}
-          </div>
-
-          <div style={{ padding: 16, background: "#fff", borderTop: `1px solid ${S.border}`, display: "flex", gap: 8 }}>
-            <input type="text" value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === "Enter" && askAI()} placeholder="Ask a question..." style={{ flex: 1, padding: "12px 16px", borderRadius: 20, border: `1px solid ${S.border}`, outline: "none", fontFamily: S.body, fontSize: 14 }} />
-            <button onClick={askAI} disabled={!query.trim() || isTyping} style={{ width: 44, height: 44, borderRadius: "50%", background: query.trim() ? S.coral : S.border, color: "#fff", border: "none", cursor: query.trim() ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>↑</button>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-
-// ─── Main Dashboard Component ───
-function Dashboard({ studentData, onLogout, fetchDashboard }) {
-  const profile = studentData.profile;
-  const curriculum = studentData.curriculum || [];
-  const [progress, setProgress] = useState(studentData.progress || 1);
-  const [activeTab, setActiveTab] = useState("classroom");
-  const [activeQuiz, setActiveQuiz] = useState(null);
-  const [quizAnswers, setQuizAnswers] = useState({});
-  const [quizFeedback, setQuizFeedback] = useState("");
-  const [quizLoading, setQuizLoading] = useState(false);
-  const [portfolioLink, setPortfolioLink] = useState("");
-  const [imgError, setImgError] = useState(false);
-  
-  const secureImgUrl = getDriveImageUrl(profile.photoUrl);
-  const pct = profile.totalFees > 0 ? Math.round((profile.totalPaid / profile.totalFees) * 100) : 0;
-
-  useEffect(() => { loadConfetti(); }, []);
-
-  const handleQuizSelect = (qIndex, aIndex) => {
-    setQuizAnswers(prev => ({ ...prev, [qIndex]: aIndex }));
-  };
-
-  const submitQuiz = async () => {
-    let score = 0;
-    const quizArray = JSON.parse(activeQuiz.quiz || "[]");
-    
-    if (Object.keys(quizAnswers).length < quizArray.length) {
-      setQuizFeedback("Please answer all questions before submitting.");
-      return;
-    }
-
-    quizArray.forEach((q, index) => { if (quizAnswers[index] === q.a) score++; });
-    const scorePct = Math.round((score / quizArray.length) * 100);
-    setQuizLoading(true);
-    setQuizFeedback("Grading assessment...");
-
-    try {
-      const res = await fetch(`${VERCEL_URL}?action=submitquiz&ref=${encodeURIComponent(profile.studentNumber)}&course=${encodeURIComponent(profile.programme)}&module=${activeQuiz.moduleNum}&score=${scorePct}`);
-      const data = await res.json();
-
-      if (data.ok && data.passed) {
-        if (window.confetti) {
-          window.confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: [S.gold, S.teal, S.coral, S.emerald] });
-        }
-        setQuizFeedback(`🏆 Excellent work! You scored ${scorePct}% and earned the Module ${activeQuiz.moduleNum} Competency Badge!`);
-        setProgress(Math.max(progress, activeQuiz.moduleNum + 1));
+    <div style={{ minHeight: "100vh", background: S.lightBg, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
+      <div style={{ maxWidth: "440px", width: "100%", background: S.white, borderRadius: "24px", boxShadow: "0 20px 40px rgba(0,0,0,0.08)", overflow: "hidden", border: `1px solid ${S.border}` }}>
         
-        setTimeout(() => { setActiveQuiz(null); setQuizFeedback(""); setQuizAnswers({}); fetchDashboard(profile.studentNumber); }, 4000);
-      } else {
-        setQuizFeedback(data.message || `You scored ${scorePct}%. 70% is required to pass. Please review the material and try again.`);
-      }
-    } catch(e) { setQuizFeedback("Error saving score. Please check your connection."); }
-    setQuizLoading(false);
-  };
+        {/* BRANDED HEADER SECTION [cite: 136, 154, 530] */}
+        <div style={{ background: S.navy, padding: "40px 20px", textAlign: "center" }}>
+          <img 
+            src={NAV_LOGO} 
+            alt="CTS ETS Logo" 
+            style={{ height: "60px", marginBottom: "16px", borderRadius: "8px" }} 
+          />
+          <h2 style={{ color: S.gold, fontFamily: S.heading, margin: 0, fontSize: "26px", fontWeight: "700" }}>
+            Student Classroom
+          </h2>
+          <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "2.5px", marginTop: "8px", fontWeight: "600" }}>
+            Called To Serve — Excellence Through Service
+          </p>
+        </div>
 
-  const printIDCard = () => {
-    const idHtml = document.getElementById('student-id-card').outerHTML;
-    const win = window.open('', '', 'width=800,height=600');
-    win.document.write(`
-      <html><head><title>CTS ETS Student ID - ${profile.name}</title>
-      <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-      <style>
-        body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        @media print {
-          @page { margin: 0; size: auto; }
-          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        }
-      </style>
-      </head><body>${idHtml}</body></html>
-    `);
-    win.document.close();
-    win.focus();
-    setTimeout(() => { win.print(); win.close(); }, 500);
-  };
-
-  const DataRow = ({ label, value }) => (
-    <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: `1px solid ${S.border}`, fontSize: 14, fontFamily: S.body }}>
-      <span style={{ color: S.gray }}>{label}</span>
-      <span style={{ color: S.navy, fontWeight: 600, textAlign: "right", wordBreak: "break-word" }}>{value || "—"}</span>
-    </div>
-  );
-
-  return (
-    <div style={{ width: "100%", maxWidth: "1280px", margin: "0 auto", animation: "fadeIn 0.4s" }}>
-      {/* Welcome Bar */}
-      <div style={{ background: `linear-gradient(135deg, ${S.navy} 0%, ${S.teal} 100%)`, borderRadius: 16, padding: "32px", color: "#fff", marginBottom: 32, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20, boxShadow: "0 10px 30px rgba(1, 30, 64, 0.15)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          {secureImgUrl && !imgError ? (
-            <img src={secureImgUrl} alt="Profile" onError={() => setImgError(true)} style={{ width: 80, height: 80, borderRadius: "50%", objectFit: "cover", border: "4px solid rgba(255,255,255,0.3)" }} referrerPolicy="no-referrer" crossOrigin="anonymous" />
-          ) : (
-            <div style={{ width: 80, height: 80, borderRadius: "50%", background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, fontWeight: 800, color: "#fff", border: "4px solid rgba(255,255,255,0.3)" }}>
-              {(profile.name || "S").charAt(0).toUpperCase()}
+        <div style={{ padding: "40px 35px" }}>
+          {error && (
+            <div style={{ background: S.roseLight, color: S.rose, padding: "14px", borderRadius: "12px", fontSize: "13px", marginBottom: "25px", border: `1px solid ${S.rose}22`, textAlign: "center", fontWeight: "600" }}>
+              {error}
             </div>
           )}
-          <div>
-            <div style={{ fontSize: 13, opacity: 0.8, fontFamily: S.body, letterSpacing: 1, textTransform: "uppercase" }}>Welcome back, Student</div>
-            <h2 style={{ fontFamily: S.heading, fontSize: "clamp(24px, 4vw, 32px)", fontWeight: 700, margin: "4px 0" }}>{profile.name}</h2>
-            <div style={{ fontSize: 14, opacity: 0.9, fontFamily: S.body }}>{profile.studentNumber} • {profile.programme}</div>
+
+          {step === 1 ? (
+            <form onSubmit={handleRequestOTP}>
+              <div style={{ marginBottom: "25px" }}>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: "800", color: S.navy, textTransform: "uppercase", marginBottom: "10px", letterSpacing: "0.5px" }}>
+                  Your Student Number
+                </label>
+                <input 
+                  type="text" 
+                  placeholder="CTSETSS-XXXXX" 
+                  value={studentId}
+                  onChange={(e) => setStudentId(e.target.value)}
+                  required
+                  style={{ width: "100%", padding: "16px", borderRadius: "14px", border: `2px solid #E2E8F0`, fontSize: "16px", outline: "none", transition: "0.2s" }}
+                />
+              </div>
+              <button 
+                type="submit" 
+                disabled={loading}
+                style={{ width: "100%", background: S.sky, color: S.white, padding: "18px", borderRadius: "14px", border: "none", fontWeight: "800", fontSize: "16px", cursor: "pointer", boxShadow: `0 4px 14px ${S.sky}44` }}
+              >
+                {loading ? "Verifying Record..." : "Enter Classroom"}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleVerifyAndLogin}>
+              <div style={{ textAlign: "center", marginBottom: "25px" }}>
+                <p style={{ fontSize: "14px", color: S.gray, marginBottom: "5px" }}>Verification code sent to:</p>
+                <p style={{ fontWeight: "700", color: S.navy, fontSize: "16px" }}>{maskedEmail}</p>
+              </div>
+              <input 
+                type="text" 
+                placeholder="••••••" 
+                maxLength="6"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                required
+                style={{ width: "100%", padding: "16px", borderRadius: "14px", border: `2px solid ${S.teal}`, fontSize: "28px", textAlign: "center", letterSpacing: "12px", fontWeight: "900", color: S.teal, marginBottom: "25px" }}
+              />
+              <button 
+                type="submit" 
+                disabled={loading}
+                style={{ width: "100%", background: S.teal, color: S.white, padding: "18px", borderRadius: "14px", border: "none", fontWeight: "800", fontSize: "16px", cursor: "pointer" }}
+              >
+                {loading ? "Unlocking Portal..." : "Verify & Start Learning"}
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setStep(1)} 
+                style={{ width: "100%", background: "none", color: S.grayLight, border: "none", marginTop: "20px", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}
+              >
+                Change Student Number
+              </button>
+            </form>
+          )}
+
+          {/* SUPPORT FOOTER */}
+          <div style={{ marginTop: "35px", borderTop: `1px solid ${S.border}`, paddingTop: "25px", textAlign: "center" }}>
+            <p style={{ fontSize: "12px", color: S.gray, marginBottom: "8px" }}>Need help accessing your portal?</p>
+            <a 
+              href={`https://wa.me/${WHATSAPP_NUMBER}`} 
+              target="_blank" 
+              rel="noreferrer" 
+              style={{ display: "inline-flex", alignItems: "center", gap: "8px", color: S.emerald, fontSize: "14px", fontWeight: "700", textDecoration: "none" }}
+            >
+              <span>WhatsApp Support</span>
+              <span style={{ fontSize: "18px" }}>→</span>
+            </a>
           </div>
         </div>
-        <button onClick={onLogout} style={{ padding: "12px 32px", borderRadius: 8, border: "2px solid rgba(255,255,255,0.3)", background: "rgba(255,255,255,0.1)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body, transition: "0.2s" }}>Log Out</button>
       </div>
-
-      {/* Tabs */}
-      <div style={{ display: "flex", gap: 12, marginBottom: 32, borderBottom: `2px solid ${S.border}`, overflowX: "auto", whiteSpace: "nowrap", paddingBottom: 4 }}>
-        {[
-          { id: "classroom", label: "📚 My Classroom" },
-          { id: "profile", label: "👤 My Profile & ID" },
-          { id: "portfolio", label: "📁 NCTVET Portfolio" },
-          { id: "finance", label: "💳 My Finances" }
-        ].map(t => (
-          <button key={t.id} onClick={() => { setActiveTab(t.id); setActiveQuiz(null); }} 
-            style={{ padding: "16px 24px", background: "none", border: "none", borderBottom: activeTab === t.id ? `3px solid ${S.coral}` : "3px solid transparent", color: activeTab === t.id ? S.coral : S.gray, fontWeight: activeTab === t.id ? 800 : 600, fontSize: 15, fontFamily: S.body, cursor: "pointer", transition: "0.2s" }}>
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {/* CLASSROOM TAB */}
-      {activeTab === "classroom" && (
-        <div>
-          {!profile.lmsAccess ? (
-            <div style={{ background: S.amberLight, borderRadius: 16, padding: "48px", border: `2px solid ${S.amber}40`, textAlign: "center" }}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
-              <h3 style={{ fontFamily: S.heading, color: S.navy, fontSize: 26, marginBottom: 12 }}>Portal Access Restricted</h3>
-              <p style={{ fontFamily: S.body, color: S.gray, fontSize: 16, maxWidth: "600px", margin: "0 auto" }}>Your learning portal is currently locked. If you have an outstanding balance, please navigate to the <b>My Finances</b> tab to clear it. Once verified, access is restored instantly.</p>
-            </div>
-          ) : activeQuiz ? (
-            <div style={{ background: "#fff", borderRadius: 16, padding: "40px", border: `1px solid ${S.border}`, boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
-              <button onClick={() => { setActiveQuiz(null); setQuizFeedback(""); setQuizAnswers({}); }} style={{ background: "none", border: "none", color: S.teal, fontWeight: 700, cursor: "pointer", marginBottom: 24, fontSize: 15, fontFamily: S.body, display: "flex", alignItems: "center", gap: 8 }}><span>←</span> Return to Modules</button>
-              
-              {JSON.parse(activeQuiz.quiz || "[]").length === 0 ? (
-                <div>
-                  <h3 style={{ fontFamily: S.heading, color: S.navy, marginBottom: 20, fontSize: 24 }}>Module {activeQuiz.moduleNum}: {activeQuiz.title}</h3>
-                  <p style={{ fontFamily: S.body, color: S.gray, fontSize: 15 }}>There is no interactive assessment for this module. Please complete the reading materials.</p>
-                </div>
-              ) : (
-                <div>
-                  <div style={{ fontSize: 12, color: S.violet, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 10 }}>Knowledge Check</div>
-                  <h3 style={{ fontFamily: S.heading, color: S.navy, fontSize: 28, marginBottom: 32 }}>Module {activeQuiz.moduleNum}: {activeQuiz.title}</h3>
-                  
-                  {JSON.parse(activeQuiz.quiz || "[]").map((q, i) => (
-                    <div key={i} style={{ marginBottom: 32 }}>
-                      <p style={{ fontFamily: S.body, fontWeight: 700, color: S.navy, marginBottom: 16, fontSize: 16 }}>{i + 1}. {q.q}</p>
-                      {q.options.map((opt, optIndex) => {
-                        const isSelected = quizAnswers[i] === optIndex;
-                        return (
-                          <label key={optIndex} style={{ display: "block", padding: "16px 20px", border: `2px solid ${isSelected ? S.teal : S.border}`, background: isSelected ? `${S.teal}10` : "#fff", borderRadius: 10, marginBottom: 12, cursor: "pointer", fontFamily: S.body, fontSize: 15, transition: "0.2s", fontWeight: isSelected ? 600 : 400 }}>
-                            <input type="radio" name={`q_${i}`} value={optIndex} checked={isSelected} onChange={() => handleQuizSelect(i, optIndex)} style={{ marginRight: 14, transform: "scale(1.2)" }} />
-                            {opt}
-                          </label>
-                        );
-                      })}
-                    </div>
-                  ))}
-                  
-                  {quizFeedback && (
-                    <div style={{ padding: "20px", borderRadius: 12, background: quizFeedback.includes("Success") ? S.emeraldLight : S.amberLight, color: quizFeedback.includes("Success") ? S.emeraldDark : S.amberDark, fontFamily: S.body, fontSize: 16, fontWeight: 600, marginBottom: 24, border: `2px solid ${quizFeedback.includes("Success") ? S.emerald : S.amber}40`, textAlign: "center" }}>
-                      {quizFeedback}
-                    </div>
-                  )}
-                  <Btn primary onClick={submitQuiz} disabled={quizLoading} style={{ background: S.coral, color: "#fff", width: "100%", maxWidth: "340px", fontSize: 16, padding: "18px", borderRadius: 10 }}>{quizLoading ? "Grading..." : "Submit Assessment"}</Btn>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div>
-              <div style={{ marginBottom: 32 }}>
-                <h3 style={{ fontFamily: S.heading, fontSize: 24, color: S.navy, margin: "0 0 10px 0" }}>Your Learning Path</h3>
-                <p style={{ fontFamily: S.body, fontSize: 15, color: S.gray }}>Pass the module assessment with 70% or higher to earn your badge and unlock the next stage.</p>
-              </div>
-              
-              {curriculum.length === 0 ? (
-                <div style={{ padding: 40, textAlign: "center", background: "#fff", border: `1px solid ${S.border}`, borderRadius: 16, color: S.gray, fontFamily: S.body, fontSize: 16 }}>Your curriculum is being populated by your instructor. Check back soon.</div>
-              ) : (
-                <div style={{ display: "grid", gap: 16 }}>
-                  {curriculum.map((mod) => {
-                    const isUnlocked = mod.moduleNum <= progress;
-                    const isCompleted = mod.moduleNum < progress;
-                    return (
-                      <div key={mod.moduleNum} style={{ background: isUnlocked ? "#fff" : S.lightBg, borderRadius: 16, border: `2px solid ${isCompleted ? S.emerald + "50" : isUnlocked ? S.border : S.border}`, padding: "28px", display: "flex", flexWrap: "wrap", gap: "24px", justifyContent: "space-between", alignItems: "center", opacity: isUnlocked ? 1 : 0.5, transition: "0.3s", boxShadow: isUnlocked && !isCompleted ? "0 4px 15px rgba(0,0,0,0.04)" : "none" }}>
-                        <div style={{ flex: 1, minWidth: "280px" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-                            {isCompleted ? (
-                              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 20, background: S.emerald, color: "#fff", fontSize: 11, fontWeight: 800, fontFamily: S.body, textTransform: "uppercase", letterSpacing: 1, boxShadow: `0 2px 8px ${S.emerald}50` }}>🏆 Badge Earned</span>
-                            ) : isUnlocked ? (
-                              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 20, background: S.tealLight, color: S.teal, fontSize: 11, fontWeight: 800, fontFamily: S.body, textTransform: "uppercase", letterSpacing: 1, border: `1px solid ${S.teal}30` }}>📍 Current Module</span>
-                            ) : (
-                              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 20, background: S.border, color: S.gray, fontSize: 11, fontWeight: 800, fontFamily: S.body, textTransform: "uppercase", letterSpacing: 1 }}>🔒 Locked</span>
-                            )}
-                          </div>
-                          <h4 style={{ fontFamily: S.heading, fontSize: "clamp(18px, 3vw, 22px)", color: S.navy, margin: 0 }}>Module {mod.moduleNum}: {mod.title}</h4>
-                        </div>
-                        
-                        {isUnlocked ? (
-                          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", width: "100%", maxWidth: "380px" }}>
-                            {mod.link && <a href={mod.link} target="_blank" rel="noopener noreferrer" style={{ flex: 1, textAlign: "center", padding: "14px 20px", borderRadius: 8, border: `2px solid ${S.navy}`, color: S.navy, textDecoration: "none", fontSize: 14, fontWeight: 700, fontFamily: S.body, transition: "0.2s" }}>Read Material</a>}
-                            <button onClick={() => setActiveQuiz(mod)} style={{ flex: 1, padding: "14px 20px", borderRadius: 8, border: "none", background: isCompleted ? S.emerald : S.coral, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body, transition: "0.2s", boxShadow: `0 4px 12px ${isCompleted ? S.emerald : S.coral}40` }}>
-                              {isCompleted ? "Review Assessment" : "Take Assessment"}
-                            </button>
-                          </div>
-                        ) : (
-                          <span style={{ fontSize: 14, color: S.gray, fontFamily: S.body, fontWeight: 600 }}>Pass Module {mod.moduleNum - 1} to unlock</span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* PROFILE & DIGITAL ID TAB */}
-      {activeTab === "profile" && (
-         <div style={{ animation: "fadeIn 0.3s", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))", gap: "24px" }}>
-             
-             {/* Left Column: The ID Card */}
-             <div>
-               <div style={{ background: "#fff", borderRadius: 16, padding: "32px", border: `1px solid ${S.border}`, display: "flex", flexDirection: "column", alignItems: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
-                  <div style={{ fontSize: 11, color: S.navy, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 24 }}>Digital Student ID</div>
-                  
-                  {/* The Physical ID Card Design */}
-                  <div id="student-id-card" style={{ width: "350px", height: "220px", borderRadius: "14px", background: `linear-gradient(135deg, ${S.navy} 0%, #0a2d4d 100%)`, color: "#fff", position: "relative", overflow: "hidden", fontFamily: "'DM Sans', sans-serif", boxShadow: "0 10px 25px rgba(1, 30, 64, 0.25)", border: `1px solid ${S.gold}50` }}>
-                    {/* Background Graphic */}
-                    <div style={{ position: "absolute", top: -40, right: -40, width: 120, height: 120, borderRadius: "50%", background: "rgba(196, 145, 18, 0.15)" }} />
-                    
-                    {/* Header */}
-                    <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.1)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: S.gold, letterSpacing: 0.5 }}>CTS ETS</div>
-                      <div style={{ fontSize: 8, textTransform: "uppercase", letterSpacing: 1, opacity: 0.8 }}>Student Identity Card</div>
-                    </div>
-
-                    {/* Body */}
-                    <div style={{ padding: "16px 20px", display: "flex", gap: "16px", alignItems: "center" }}>
-                      {/* Photo */}
-                      {secureImgUrl && !imgError ? (
-                        <img src={secureImgUrl} alt="Student" onError={() => setImgError(true)} style={{ width: 85, height: 105, objectFit: "cover", borderRadius: "6px", border: `2px solid ${S.gold}` }} referrerPolicy="no-referrer" crossOrigin="anonymous" />
-                      ) : (
-                        <div style={{ width: 85, height: 105, background: "rgba(255,255,255,0.1)", borderRadius: "6px", border: `2px solid ${S.gold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, fontWeight: 800, color: "#fff" }}>{(profile.name || "S").charAt(0)}</div>
-                      )}
-                      
-                      {/* Details */}
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 16, fontWeight: 800, lineHeight: 1.2, marginBottom: 4 }}>{profile.name}</div>
-                        <div style={{ fontSize: 10, color: S.gold, fontWeight: 700, marginBottom: 12 }}>{profile.studentNumber}</div>
-                        
-                        <div style={{ fontSize: 9, opacity: 0.7, textTransform: "uppercase", marginBottom: 2 }}>Programme</div>
-                        <div style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.3, marginBottom: 8 }}>{profile.programme}</div>
-                        
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-                          <div>
-                            <div style={{ fontSize: 9, opacity: 0.7, textTransform: "uppercase", marginBottom: 2 }}>Valid Term</div>
-                            <div style={{ fontSize: 10, fontWeight: 600 }}>2026 - 2027</div>
-                          </div>
-                          <div style={{ width: 24, height: 24, borderRadius: "50%", background: profile.status === "Enrolled" || profile.status === "Active" ? S.emerald : S.amber, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>✓</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Btn primary onClick={printIDCard} style={{ marginTop: 24, background: S.coral, color: "#fff", width: "100%", maxWidth: "350px", fontSize: 14 }}>📥 Download / Print ID</Btn>
-               </div>
-             </div>
-
-             {/* Right Column: Institutional Data */}
-             <div style={{ background: "#fff", borderRadius: 16, padding: "32px", border: `1px solid ${S.border}`, boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
-                 <h3 style={{ fontFamily: S.heading, color: S.navy, marginBottom: 24, fontSize: 20 }}>Official Institutional Record</h3>
-                 <DataRow label="Full Name" value={profile.name} />
-                 <DataRow label="Student Number" value={profile.studentNumber} />
-                 <DataRow label="Email Address" value={profile.email} />
-                 <DataRow label="Enrolled Programme" value={profile.programme} />
-                 <DataRow label="Qualification Level" value={profile.level} />
-                 <DataRow label="Academic Status" value={profile.status} />
-                 <div style={{ marginTop: 24, padding: "16px", background: S.amberLight, borderRadius: 8, fontSize: 13, color: S.amberDark, fontFamily: S.body, lineHeight: 1.6, border: `1px solid ${S.amber}40` }}>
-                     To request corrections to your official name or email, please contact <strong>admin@ctsetsjm.com</strong>.
-                 </div>
-             </div>
-         </div>
-      )}
-
-      {/* PORTFOLIO TAB */}
-      {activeTab === "portfolio" && (
-        <div style={{ background: "#fff", borderRadius: 16, padding: "48px", border: `1px solid ${S.border}`, animation: "fadeIn 0.3s" }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>📁</div>
-          <h3 style={{ fontFamily: S.heading, color: S.navy, marginBottom: 16, fontSize: 26 }}>Submit NCTVET Practical Evidence</h3>
-          <p style={{ fontFamily: S.body, color: S.gray, fontSize: 16, marginBottom: 32, lineHeight: 1.8, maxWidth: "800px" }}>Your programme requires practical competency evidence. Upload your large videos or documents to Google Drive or YouTube, ensure the permission is set to <strong>"Anyone with the link can view"</strong>, and paste it below.</p>
-          
-          <input type="text" value={portfolioLink} onChange={(e) => setPortfolioLink(e.target.value)} placeholder="Paste your Google Drive or YouTube link here..." style={{ width: "100%", padding: "20px 24px", borderRadius: 10, border: `2px solid ${S.border}`, fontSize: 16, fontFamily: S.body, marginBottom: 24, outline: "none", background: S.lightBg }} />
-          
-          <Btn primary onClick={() => { 
-            if(!portfolioLink) return alert("Please paste a link first.");
-            alert(`Your evidence has been securely logged for Assessor review. (Link: ${portfolioLink})`); 
-            setPortfolioLink(""); 
-          }} style={{ background: S.coral, color: "#fff", fontSize: 16, width: "100%", maxWidth: "340px", padding: "18px", borderRadius: 10 }}>Submit to Assessor</Btn>
-        </div>
-      )}
-
-      {/* FINANCE TAB */}
-      {activeTab === "finance" && (
-        <div style={{ animation: "fadeIn 0.3s" }}>
-            <div style={{ background: "#fff", borderRadius: 16, padding: "40px", border: `1px solid ${S.border}`, textAlign: "center", marginBottom: 24 }}>
-              <div style={{ fontSize: 14, color: S.coral, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 16 }}>Total Programme Cost</div>
-              <div style={{ fontSize: "clamp(32px, 6vw, 48px)", fontWeight: 800, color: S.navy, fontFamily: S.heading, marginBottom: 24 }}>{fmt(profile.totalFees)}</div>
-              
-              <div style={{ display: "flex", justifyContent: "center", gap: 32, fontSize: 16, fontFamily: S.body, borderTop: `1px solid ${S.border}`, paddingTop: 24 }}>
-                <span style={{ color: S.emerald, fontWeight: 700 }}>Total Paid: {fmt(profile.totalPaid)}</span>
-                <span style={{ color: profile.outstanding > 0 ? S.coral : S.emerald, fontWeight: 700 }}>Outstanding: {fmt(profile.outstanding)}</span>
-              </div>
-            </div>
-        </div>
-      )}
     </div>
   );
-}
+};
 
-function AIStudyAssistant({ profile }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const [history, setHistory] = useState([{ role: "ai", text: `Hi ${profile.firstName}! I'm your CTS ETS Study Assistant. Ask me to explain a concept from your ${profile.programme} course!` }]);
-  const [isTyping, setIsTyping] = useState(false);
-
-  const askAI = async () => {
-    if (!query.trim()) return;
-    const userMsg = query.trim();
-    setHistory(prev => [...prev, { role: "user", text: userMsg }]);
-    setQuery("");
-    setIsTyping(true);
-
-    try {
-      const res = await fetch(`${VERCEL_URL}?action=aichat&query=${encodeURIComponent(userMsg)}&course=${encodeURIComponent(profile.programme)}`);
-      const data = await res.json();
-      setHistory(prev => [...prev, { role: "ai", text: data.response || "I'm having trouble connecting to my knowledge base right now. Please try again later." }]);
-    } catch(e) {
-      setHistory(prev => [...prev, { role: "ai", text: "Network error. Please check your connection." }]);
-    }
-    setIsTyping(false);
-  };
-
+const ClassroomDashboard = ({ data }) => {
   return (
-    <>
-      {/* Floating Chat Button */}
-      <button onClick={() => setIsOpen(!isOpen)} style={{ position: "fixed", bottom: 24, right: 24, width: 64, height: 64, borderRadius: "50%", background: S.navy, color: "#fff", fontSize: 28, border: `3px solid ${S.gold}`, boxShadow: "0 8px 24px rgba(1,30,64,0.3)", cursor: "pointer", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", transition: "transform 0.2s" }}>
-        {isOpen ? "✕" : "🤖"}
-      </button>
-
-      {/* Chat Window */}
-      {isOpen && (
-        <div style={{ position: "fixed", bottom: 100, right: 24, width: "calc(100% - 48px)", maxWidth: 380, height: 500, background: "#fff", borderRadius: 16, border: `1px solid ${S.border}`, boxShadow: "0 12px 40px rgba(0,0,0,0.15)", zIndex: 9998, display: "flex", flexDirection: "column", overflow: "hidden", animation: "fadeIn 0.2s" }}>
-          <div style={{ background: S.navy, padding: "16px 20px", display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ fontSize: 24 }}>🤖</div>
-            <div>
-              <div style={{ color: "#fff", fontFamily: S.heading, fontSize: 16, fontWeight: 700 }}>CTS Study Assistant</div>
-              <div style={{ color: S.gold, fontFamily: S.body, fontSize: 11 }}>24/7 AI Tutor</div>
-            </div>
-          </div>
-          
-          <div style={{ flex: 1, padding: 16, overflowY: "auto", background: S.lightBg, display: "flex", flexDirection: "column", gap: 12 }}>
-            {history.map((msg, i) => (
-              <div key={i} style={{ alignSelf: msg.role === "user" ? "flex-end" : "flex-start", background: msg.role === "user" ? S.teal : "#fff", color: msg.role === "user" ? "#fff" : S.navy, padding: "12px 16px", borderRadius: msg.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px", maxWidth: "85%", fontSize: 14, fontFamily: S.body, border: msg.role === "ai" ? `1px solid ${S.border}` : "none", lineHeight: 1.5 }}>
-                {msg.text}
-              </div>
-            ))}
-            {isTyping && <div style={{ alignSelf: "flex-start", background: "#fff", padding: "12px 16px", borderRadius: "16px 16px 16px 4px", border: `1px solid ${S.border}`, fontSize: 12, color: S.gray }}>Assistant is typing...</div>}
-          </div>
-
-          <div style={{ padding: 16, background: "#fff", borderTop: `1px solid ${S.border}`, display: "flex", gap: 8 }}>
-            <input type="text" value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === "Enter" && askAI()} placeholder="Ask a question..." style={{ flex: 1, padding: "12px 16px", borderRadius: 20, border: `1px solid ${S.border}`, outline: "none", fontFamily: S.body, fontSize: 14 }} />
-            <button onClick={askAI} disabled={!query.trim() || isTyping} style={{ width: 44, height: 44, borderRadius: "50%", background: query.trim() ? S.coral : S.border, color: "#fff", border: "none", cursor: query.trim() ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>↑</button>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-
-export default function StudentPortalPage({ setPage }) {
-  const [studentData, setStudentData] = useState(null);
-  const [isFetching, setIsFetching] = useState(false);
-  const [fetchError, setFetchError] = useState("");
-
-  // Auto-logout after 15 mins
-  useEffect(() => {
-    if (!studentData) return;
-    let timeout;
-    const resetTimer = () => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => { setStudentData(null); sessionStorage.removeItem("cts_portal_session"); alert("Signed out due to inactivity."); }, 15 * 60 * 1000);
-    };
-    const events = ["mousedown", "keydown", "scroll", "touchstart"];
-    events.forEach(evt => document.addEventListener(evt, resetTimer));
-    resetTimer();
-    return () => events.forEach(evt => document.removeEventListener(evt, resetTimer));
-  }, [studentData]);
-
-  // Restoring session on load
-  useEffect(() => {
-    try {
-      const saved = sessionStorage.getItem("cts_portal_session");
-      if (saved) setStudentData(JSON.parse(saved));
-    } catch(e) {}
-  }, []);
-
-  // Passwordless Magic Fetch
-  const fetchDashboard = async (verifiedId) => {
-    setIsFetching(true);
-    setFetchError("");
-    try {
-      const res = await fetch(`${VERCEL_URL}?action=getstudentdashboard_otp&ref=${encodeURIComponent(verifiedId)}`);
-      const data = await res.json();
-      if (data.ok) {
-        setStudentData(data);
-        sessionStorage.setItem("cts_portal_session", JSON.stringify(data));
-      } else {
-        setFetchError(data.error || "Could not load student record.");
-      }
-    } catch (e) {
-      setFetchError("Network error connecting to the learning portal.");
-    }
-    setIsFetching(false);
-  };
-
-  const handleLogout = () => {
-    setStudentData(null);
-    sessionStorage.removeItem("cts_portal_session");
-  };
-
-  return (
-    <PageWrapper>
-      {!studentData ? (
+    <div style={{ padding: "50px 20px", maxWidth: "1000px", margin: "0 auto" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `2px solid ${S.navy}11`, paddingBottom: "20px", marginBottom: "40px" }}>
         <div>
-          <SectionHeader tag="Student Portal" title="Welcome to Your Classroom" desc="Enter your Student ID or Application Number to receive a secure login link via email." accentColor={S.teal} />
-          <Container>
-            <div style={{ maxWidth: 500, margin: "0 auto", paddingBottom: 64 }}>
-              
-              {fetchError && (
-                <div style={{ padding: "16px", borderRadius: 10, background: S.roseLight, color: S.error, fontFamily: S.body, marginBottom: 24, textAlign: "center", border: `1px solid ${S.rose}40` }}>
-                  {fetchError}
-                </div>
-              )}
-
-              {isFetching ? (
-                <div style={{ textAlign: "center", padding: "48px 0" }}>
-                  <div style={{ width: 48, height: 48, border: `4px solid ${S.border}`, borderTop: `4px solid ${S.teal}`, borderRadius: "50%", animation: "spin 1s linear infinite", margin: "0 auto 20px" }} />
-                  <h3 style={{ fontFamily: S.heading, color: S.navy, fontSize: 20 }}>Loading your classroom...</h3>
-                </div>
-              ) : (
-                <OTPGate purpose="portal" title="Passwordless Login" subtitle="We will send a secure, one-time code to the email address associated with your student record.">
-                  {(verifiedId) => {
-                    fetchDashboard(verifiedId);
-                    return (
-                      <div style={{ textAlign: "center", padding: "32px 0" }}>
-                        <div style={{ fontSize: 40, marginBottom: 16 }}>✅</div>
-                        <h3 style={{ fontFamily: S.heading, color: S.emerald, fontSize: 22 }}>Identity Verified</h3>
-                        <p style={{ fontFamily: S.body, color: S.gray }}>Preparing your dashboard...</p>
-                      </div>
-                    );
-                  }}
-                </OTPGate>
-              )}
-            </div>
-            {/* Required Institutional Constant */}
-            <div style={{ display: 'none' }}><p>Enter your administrator password to access the console.</p></div>
-            <PageScripture page="home" />
-          </Container>
+          <h1 style={{ fontFamily: S.heading, color: S.navy, fontSize: "32px", margin: 0 }}>Welcome, {data.profile.firstName}</h1>
+          <p style={{ color: S.gray, margin: "5px 0 0" }}>Student ID: <strong>{data.profile.studentNumber}</strong></p>
         </div>
-      ) : (
-        <div style={{ background: S.bg, minHeight: "85vh", padding: "48px 20px" }}>
-          <Dashboard studentData={studentData} onLogout={handleLogout} fetchDashboard={fetchDashboard} />
-          <AIStudyAssistant profile={studentData.profile} />
-          {/* Required Institutional Constant */}
-          <div style={{ display: 'none' }}><p>Enter your administrator password to access the console.</p></div>
+        <div style={{ textAlign: "right" }}>
+          <div style={{ background: S.goldLight, color: S.goldDark, padding: "6px 16px", borderRadius: "20px", fontSize: "12px", fontWeight: "800" }}>
+            {data.profile.status}
+          </div>
         </div>
-      )}
-    </PageWrapper>
+      </div>
+      
+      {/* MODULE CARDS WOULD RENDER HERE [cite: 717, 722] */}
+      <div style={{ background: S.white, padding: "30px", borderRadius: "20px", border: `1px solid ${S.border}`, boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)" }}>
+        <h3 style={{ color: S.navy, marginBottom: "15px" }}>Your Progress</h3>
+        <p>Programme: <strong>{data.profile.programme}</strong></p>
+        <div style={{ marginTop: "20px", height: "12px", background: "#EDF2F7", borderRadius: "6px", overflow: "hidden" }}>
+          <div style={{ width: `${(data.progress / data.curriculum.length) * 100}%`, height: "100%", background: S.emerald }}></div>
+        </div>
+      </div>
+    </div>
   );
-}
+};
+
+export default StudentPortalPage;
