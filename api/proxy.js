@@ -32,7 +32,7 @@ export default async function handler(req, res) {
         delete query.auth;
         delete query.adminpw;
         // Add internal token that Code.gs will accept
-        query.p = "Detailed1982";
+        query.v = "1";
       }
 
       const params = new URLSearchParams(query);
