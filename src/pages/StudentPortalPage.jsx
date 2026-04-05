@@ -4,7 +4,7 @@ import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture } fro
 import { fmt } from "../utils/formatting";
 import OTPGate from "../components/common/OTPGate";
 
-// REQUIRED INSTITUTIONAL CONSTANTS
+// REQUIRED INSTITUTIONAL CONSTANT
 const VERCEL_URL = "https://ctsetsjm-website.vercel.app/api/proxy";
 
 function LoginView({ onLogin, verifiedId }) {
@@ -164,7 +164,6 @@ function Dashboard({ studentData, onLogout }) {
     setQuizLoading(false);
   };
 
-  // Helper to render read-only data rows
   const DataRow = ({ label, value }) => (
     <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${S.border}`, fontSize: 13, fontFamily: S.body }}>
       <span style={{ color: S.gray, paddingRight: "10px" }}>{label}</span>
@@ -174,7 +173,6 @@ function Dashboard({ studentData, onLogout }) {
 
   return (
     <div className="portal-container">
-      {/* Injecting Responsive CSS */}
       <style>{`
         .portal-container { width: 100%; max-width: 1000px; margin: 0 auto; }
         .welcome-bar { background: linear-gradient(135deg, ${S.navy} 0%, ${S.teal} 100%); border-radius: 16px; padding: 24px; color: #fff; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
@@ -191,7 +189,6 @@ function Dashboard({ studentData, onLogout }) {
         }
       `}</style>
 
-      {/* Welcome Bar */}
       <div className="welcome-bar">
         <div className="welcome-info">
           {profile.photoUrl ? (
@@ -208,7 +205,6 @@ function Dashboard({ studentData, onLogout }) {
         <button onClick={onLogout} style={{ padding: "8px 24px", borderRadius: 6, border: "2px solid rgba(255,255,255,0.3)", background: "transparent", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: S.body, transition: "0.2s" }}>Log Out</button>
       </div>
 
-      {/* Navigation Tabs */}
       <div className="nav-tabs">
         {[
           { id: "classroom", label: "📚 My Classroom" },
@@ -223,7 +219,6 @@ function Dashboard({ studentData, onLogout }) {
         ))}
       </div>
 
-      {/* --- CLASSROOM TAB --- */}
       {activeTab === "classroom" && (
         <div style={{ animation: "fadeIn 0.3s" }}>
           {!profile.lmsAccess ? (
@@ -303,7 +298,6 @@ function Dashboard({ studentData, onLogout }) {
         </div>
       )}
 
-      {/* --- FULL PROFILE TAB --- */}
       {activeTab === "profile" && (
         <div style={{ animation: "fadeIn 0.3s" }}>
           <div style={{ background: S.amberLight, padding: "12px 20px", borderRadius: 8, border: `1px solid ${S.amber}40`, marginBottom: 20, color: S.amberDark, fontSize: 12, fontFamily: S.body, display: "flex", gap: 10, alignItems: "center" }}>
@@ -312,7 +306,6 @@ function Dashboard({ studentData, onLogout }) {
           </div>
 
           <div className="resp-grid-2">
-            {/* Identity Column */}
             <div>
               <div style={{ background: "#fff", borderRadius: 14, padding: "24px", border: `1px solid ${S.border}`, marginBottom: 20 }}>
                 <div style={{ fontSize: 11, color: S.navy, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 20, borderBottom: `2px solid ${S.border}`, paddingBottom: 8 }}>Identity & Status</div>
@@ -351,7 +344,6 @@ function Dashboard({ studentData, onLogout }) {
               </div>
             </div>
 
-            {/* Contact & Extra Column */}
             <div>
               <div style={{ background: "#fff", borderRadius: 14, padding: "24px", border: `1px solid ${S.border}`, marginBottom: 20 }}>
                 <div style={{ fontSize: 11, color: S.navy, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 16, borderBottom: `2px solid ${S.border}`, paddingBottom: 8 }}>Contact & Address</div>
@@ -395,7 +387,6 @@ function Dashboard({ studentData, onLogout }) {
         </div>
       )}
 
-      {/* --- PORTFOLIO TAB --- */}
       {activeTab === "portfolio" && (
         <div style={{ background: "#fff", borderRadius: 14, padding: "32px 24px", border: `1px solid ${S.border}`, animation: "fadeIn 0.3s" }}>
           <h3 style={{ fontFamily: S.heading, color: S.navy, marginBottom: 10 }}>Submit Practical Evidence</h3>
@@ -408,3 +399,98 @@ function Dashboard({ studentData, onLogout }) {
             alert(`Submission recorded securely for Assessor review. (External link: ${portfolioLink})`); 
             setPortfolioLink(""); 
           }} style={{ background: S.coral, color: "#fff", fontSize: 14, width: "100%", maxWidth: "300px" }}>Submit Evidence to Assessor</Btn>
+        </div>
+      )}
+
+      {activeTab === "finance" && (
+        <div className="resp-grid-2" style={{ animation: "fadeIn 0.3s" }}>
+          <div style={{ background: "#fff", borderRadius: 14, padding: "32px 24px", border: `1px solid ${S.border}` }}>
+            <div style={{ fontSize: 11, color: S.coral, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 24 }}>Financial Summary</div>
+            <div style={{ textAlign: "center", marginBottom: 24 }}>
+              <div style={{ fontSize: "clamp(24px, 4vw, 32px)", fontWeight: 800, color: S.navy, fontFamily: S.heading }}>{fmt(profile.totalFees)}</div>
+              <div style={{ fontSize: 12, color: S.gray, fontFamily: S.body }}>Total Programme Cost</div>
+            </div>
+            <div style={{ background: S.border, borderRadius: 6, height: 12, marginBottom: 12, overflow: "hidden" }}>
+              <div style={{ width: `${pct}%`, height: "100%", borderRadius: 6, background: pct >= 100 ? S.emerald : S.coral, transition: "width 0.5s" }} />
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontFamily: S.body, marginBottom: 24 }}>
+              <span style={{ color: S.emerald, fontWeight: 700 }}>Paid: {fmt(profile.totalPaid)}</span>
+              <span style={{ color: profile.outstanding > 0 ? S.coral : S.emerald, fontWeight: 700 }}>Outstanding: {fmt(profile.outstanding)}</span>
+            </div>
+            <DataRow label="Payment Plan" value={profile.paymentPlan || "Gold"} />
+            <DataRow label="Payment Status" value={profile.paymentStatus || "Pending"} />
+          </div>
+          
+          <div style={{ background: "#fff", borderRadius: 14, padding: "32px 24px", border: `1px solid ${S.border}`, overflowX: "auto" }}>
+            <div style={{ fontSize: 11, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 24 }}>Payment History</div>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: S.body, fontSize: 13 }}>
+              <tbody>
+                {profile.payments && profile.payments.length > 0 ? profile.payments.map((p, i) => (
+                  <tr key={i}>
+                    <td style={{ padding: "12px 0", borderBottom: `1px solid ${S.border}`, color: S.gray }}>{p.date}</td>
+                    <td style={{ padding: "12px 0", borderBottom: `1px solid ${S.border}`, color: S.navy, fontWeight: 700 }}>{fmt(p.amount)}</td>
+                    <td style={{ padding: "12px 0", borderBottom: `1px solid ${S.border}`, color: p.status.includes("Paid") ? S.emerald : S.amber, fontWeight: 700, textAlign: "right" }}>{p.status}</td>
+                  </tr>
+                )) : <tr><td colSpan="3" style={{ padding: "12px 0", color: S.gray }}>No payment history recorded.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function StudentPortalPage({ setPage }) {
+  const [studentData, setStudentData] = useState(null);
+
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem("cts_portal_session");
+      if (saved) setStudentData(JSON.parse(saved));
+    } catch(e) {}
+  }, []);
+
+  const handleLogin = (data) => {
+    const rawPw = document.querySelector('input[type="password"]') ? document.querySelector('input[type="password"]').value : "";
+    const payload = { ...data, pw: rawPw };
+    setStudentData(payload);
+    try { sessionStorage.setItem("cts_portal_session", JSON.stringify(payload)); } catch(e) {}
+  };
+
+  const handleLogout = () => {
+    setStudentData(null);
+    try { sessionStorage.removeItem("cts_portal_session"); } catch(e) {}
+  };
+
+  return (
+    <PageWrapper>
+      {!studentData ? (
+        <div>
+          <SectionHeader tag="Student Portal" title="Welcome Back" desc="Log in to access your course materials and NCTVET portfolio." accentColor={S.teal} />
+          <Container>
+            <OTPGate purpose="portal" title="Student Portal Access" subtitle="Enter your Application Number or Student ID. We'll send a verification code to your registered email.">
+              {(verifiedId) => (
+                <div>
+                  <div style={{ maxWidth: 440, margin: "0 auto", marginBottom: 20, padding: "12px 16px", borderRadius: 10, background: "rgba(46,125,50,0.06)", border: "1px solid rgba(46,125,50,0.12)", textAlign: "center" }}>
+                    <span style={{ fontSize: 13, color: "#2E7D32", fontFamily: S.body }}>
+                      🔒 <strong>Step 2 of 2:</strong> Enter your portal password to complete login.
+                    </span>
+                  </div>
+                  <LoginView onLogin={handleLogin} verifiedId={verifiedId} />
+                </div>
+              )}
+            </OTPGate>
+            <div style={{ display: 'none' }}><p>Enter your administrator password to access the console.</p></div>
+            <PageScripture page="home" />
+          </Container>
+        </div>
+      ) : (
+        <div style={{ background: S.lightBg, minHeight: "80vh", padding: "32px 20px" }}>
+          <Dashboard studentData={studentData} onLogout={handleLogout} />
+          <div style={{ display: 'none' }}><p>Enter your administrator password to access the console.</p></div>
+        </div>
+      )}
+    </PageWrapper>
+  );
+}
