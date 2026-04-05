@@ -1,7 +1,7 @@
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZEjUdBknkb-TpUKzufai0DWjG6HPJyR2mZsmjmiapWHTudJX51ZAEpxodw_AZQC4BFA/exec";
 
-// Admin credentials — validated server-side in the proxy
-const ADMIN_PASSWORDS = ["CtsAdmin2026", "Detailed1982"];
+// Accept BOTH the version with and without the exclamation mark
+const ADMIN_PASSWORDS = ["CtsAdmin2026!", "CtsAdmin2026", "Detailed1982"];
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -20,29 +20,18 @@ export default async function handler(req, res) {
       const adminActions = ["admindashboard","adminlistapps","adminliststudents","adminlistpayments","adminacceptapp","adminrejectapp","adminenrollstudent","adminresetpw","adminauditlog","verifypayment","rejectpayment","generaterecord"];
 
       if (adminActions.includes(action)) {
-        let isAuthorized = false;
-        let debugData = {}; // We will use this to see what the frontend sent
-
-        for (const key in query) {
-          let val = String(query[key]).trim();
-          let decodedVal = decodeURIComponent(val); // Fixes %21 instead of !
-          
-          debugData[key] = decodedVal; // Save to show you on screen
-
-          if (ADMIN_PASSWORDS.includes(val) || ADMIN_PASSWORDS.includes(decodedVal)) {
-            isAuthorized = true;
-            delete query[key]; 
-          }
+        // We know exactly what the frontend is sending now: query.pw
+        const pw = query.pw || query.password || query.key || "";
+        
+        if (!ADMIN_PASSWORDS.includes(pw)) {
+          // If the password is wrong, tell the user gracefully
+          return res.status(200).json({ ok: false, error: "Invalid Administrator Password." });
         }
 
-        if (!isAuthorized) {
-          // DIAGNOSTIC ERROR MESSAGE: This will print the exact data to your screen
-          return res.status(200).json({ 
-            ok: false, 
-            error: "DEBUG: " + JSON.stringify(debugData) 
-          });
-        }
-
+        // The password is correct! Delete it so it's secure, and add the proxy signal
+        delete query.pw;
+        delete query.password;
+        delete query.key;
         delete query.v;
         query.proxysig = "Detailed1982";
       }
