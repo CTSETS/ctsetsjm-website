@@ -29,7 +29,11 @@ function fmtTime(d) {
   if (!d) return "—";
   const date = new Date(d);
   if (isNaN(date.getTime())) return String(d);
-  return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+  return date.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+}
+
+function getFolderUrl(obj) {
+  return obj?.folder || obj?.folderUrl || obj?.["Drive Folder Link"] || "";
 }
 
 function Badge({ status }) {
@@ -102,7 +106,7 @@ function AdminDashboardPage() {
   var [verifyAmt, setVerifyAmt] = useState("");
   var [verifyTxn, setVerifyTxn] = useState("");
   var [refreshKey, setRefreshKey] = useState(0);
-  var [sortConfig, setSortConfig] = useState({ key: "date", dir: "desc" });
+  var [sortConfig, setSortConfig] = useState({ key: "timestamp", dir: "desc" });
 
   var api = useCallback(async function(action, params) {
     let url = `${VERCEL_URL}?action=${action}&pw=${encodeURIComponent(auth)}`;
@@ -168,7 +172,20 @@ function AdminDashboardPage() {
       doAction(ref, "adminenrollstudent", { ref: ref }); 
     }
   }
-  function genRecord(sn) { doAction(sn, "generaterecord", { student: sn }); }
+  
+  // ═══ FIXED RECORD GENERATOR (OPENS PDF) ═══
+  function genRecord(sn) { 
+    setBusy(sn);
+    api("generaterecord", { student: sn }).then(d => {
+      if (d && d.ok) {
+        toast("Record generated successfully!", true);
+        if (d.url) window.open(d.url, "_blank"); // Automatically pop open the PDF tab!
+      } else {
+        toast("Error: " + ((d && d.error) || "Failed"), false);
+      }
+      setBusy("");
+    }).catch(() => { toast("Network error", false); setBusy(""); });
+  }
   
   function rejectPay(ref) { 
     if (confirm("Reject payment for " + ref + "?")) {
@@ -229,10 +246,10 @@ function AdminDashboardPage() {
     
     if (sortConfig.key) {
       safeList.sort((a, b) => {
-        let valA = a[sortConfig.key] || a["Date Submitted"] || a["Timestamp"]; // Fallbacks for backend keys
-        let valB = b[sortConfig.key] || b["Date Submitted"] || b["Timestamp"];
+        let valA = a[sortConfig.key] || a["Date Submitted"] || a["Timestamp"] || a["date"];
+        let valB = b[sortConfig.key] || b["Date Submitted"] || b["Timestamp"] || b["date"];
         
-        if (sortConfig.key === 'date' || sortConfig.key === 'timestamp') {
+        if (sortConfig.key === 'date' || sortConfig.key === 'timestamp' || sortConfig.key === 'Date Submitted') {
           valA = new Date(valA).getTime() || 0; valB = new Date(valB).getTime() || 0;
         } else if (sortConfig.key === 'amount') {
           valA = Number(String(valA).replace(/[^0-9.-]+/g,"")) || 0; valB = Number(String(valB).replace(/[^0-9.-]+/g,"")) || 0;
@@ -295,8 +312,9 @@ function AdminDashboardPage() {
   
   var pp = Array.isArray(dashboard?.pendingPayments) ? processData(dashboard.pendingPayments) : [];
 
+  // ═══ FULL WIDTH WRAPPER FIX ═══
   return (
-    <div style={{ minHeight: "100vh", background: C.bg, fontFamily: C.body }}>
+    <div style={{ minHeight: "100vh", background: C.bg, fontFamily: C.body, width: "100%", overflowX: "hidden" }}>
       <style>{`.sortable-th { cursor: pointer; user-select: none; } .sortable-th:hover { background: #E2E8F0 !important; }`}</style>
       
       <div style={{ background: C.navy, padding: "14px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 200, boxShadow: "0 2px 10px rgba(0,0,0,0.1)" }}>
@@ -313,7 +331,7 @@ function AdminDashboardPage() {
       <div style={{ background: C.card, borderBottom: "1px solid " + C.border, padding: "0 24px", display: "flex", overflowX: "auto", boxShadow: "0 1px 3px rgba(0,0,0,0.02)" }}>
         {tabList.map(function(t) {
           var active = tab === t.id;
-          return <button key={t.id} onClick={function() { setTab(t.id); setSearchTerm(""); setSortConfig({key: "date", dir: "desc"}); }} style={{ padding: "18px 24px", border: "none", background: "none", cursor: "pointer", fontSize: 14, fontWeight: active ? 800 : 600, color: active ? C.navy : C.gray, borderBottom: active ? "3px solid " + C.navy : "3px solid transparent", display: "flex", alignItems: "center", gap: 10, whiteSpace: "nowrap", flexShrink: 0, fontFamily: C.body, transition: "0.2s" }}>
+          return <button key={t.id} onClick={function() { setTab(t.id); setSearchTerm(""); setSortConfig({key: "timestamp", dir: "desc"}); }} style={{ padding: "18px 24px", border: "none", background: "none", cursor: "pointer", fontSize: 14, fontWeight: active ? 800 : 600, color: active ? C.navy : C.gray, borderBottom: active ? "3px solid " + C.navy : "3px solid transparent", display: "flex", alignItems: "center", gap: 10, whiteSpace: "nowrap", flexShrink: 0, fontFamily: C.body, transition: "0.2s" }}>
             <span style={{ fontSize: 18 }}>{t.icon}</span> {t.label}
             {t.badge > 0 && <span style={{ background: C.coral, color: "#fff", borderRadius: 12, padding: "2px 8px", fontSize: 11, fontWeight: 800 }}>{t.badge}</span>}
           </button>;
@@ -329,7 +347,8 @@ function AdminDashboardPage() {
 
       {loading && <div style={{ height: 4, background: `linear-gradient(90deg, ${C.coral}, ${C.gold}, ${C.teal})`, animation: "pulse 1.5s infinite" }} />}
 
-      <div style={{ padding: "32px 24px", maxWidth: 1400, margin: "0 auto" }}>
+      {/* ULTRA-WIDE CONTAINER */}
+      <div style={{ padding: "32px 24px", maxWidth: "1600px", margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
 
         {tab === "dashboard" && dashboard && (<div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 20, marginBottom: 40 }}>
@@ -353,7 +372,7 @@ function AdminDashboardPage() {
             {pp.length === 0 ? <div style={{ padding: 80, textAlign: "center", color: C.grayLight, fontSize: 16, fontFamily: C.body, fontWeight: 600 }}>✅ You are all caught up! No pending payments.</div> : (
               <div style={{ overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead><tr>
-                  <TH sortKey="date" currentSort={sortConfig} onSort={handleSort}>Date</TH>
+                  <TH sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Date & Time</TH>
                   <TH sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Reference</TH>
                   <TH sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</TH>
                   <TH sortKey="amount" currentSort={sortConfig} onSort={handleSort}>Amount</TH>
@@ -363,7 +382,7 @@ function AdminDashboardPage() {
                 </tr></thead>
                 <tbody>{pp.map(function(p, i) { return (
                   <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}>
-                    <TD color={C.gray} bold>{fmtDate(p?.date || p?.timestamp)}</TD><TD mono bold>{p?.ref}</TD><TD bold color={C.navy}>{p?.name}</TD>
+                    <TD color={C.gray} bold>{fmtTime(p?.timestamp || p?.date || p?.["Date Submitted"])}</TD><TD mono bold>{p?.ref}</TD><TD bold color={C.navy}>{p?.name}</TD>
                     <TD bold color={C.emerald}>{fmt(p?.amount)}</TD><TD color={C.gray}>{p?.plan}</TD><TD color={C.gray} max={200}>{p?.notes}</TD>
                     <td style={{ padding: "16px", borderBottom: "1px solid " + C.border }}><div style={{ display: "flex", gap: 10 }}>
                       <Btn onClick={function() { setModal({ type: "verify", data: p }); setVerifyAmt(String(p?.amount || "")); setVerifyTxn(""); }}>Verify</Btn>
@@ -390,7 +409,7 @@ function AdminDashboardPage() {
               return fa.length === 0 ? <div style={{ padding: 60, textAlign: "center", color: C.grayLight, fontWeight: 600 }}>No applications found in this view</div> : (
               <div style={{ overflowX: "auto", maxHeight: "70vh", overflowY: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead><tr>
-                  <TH sortKey="date" currentSort={sortConfig} onSort={handleSort}>Date Received</TH>
+                  <TH sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Date & Time Received</TH>
                   <TH sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Ref</TH>
                   <TH sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</TH>
                   <TH sortKey="email" currentSort={sortConfig} onSort={handleSort}>Email</TH>
@@ -398,17 +417,22 @@ function AdminDashboardPage() {
                   <TH sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</TH>
                   <TH>Actions</TH>
                 </tr></thead>
-                <tbody>{fa.map(function(a, i) { return (
+                <tbody>{fa.map(function(a, i) { 
+                  let fUrl = getFolderUrl(a);
+                  return (
                   <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff", opacity: busy === a.ref ? 0.5 : 1 }}>
-                    <TD color={C.gray} bold>{fmtDate(a?.date || a?.timestamp || a?.["Date Submitted"])}</TD><TD mono bold>{a?.ref}</TD><TD bold>{a?.name}</TD>
-                    <TD color={C.gray} max={200}>{a?.email}</TD>
-                    <TD max={240}>{a?.programme}</TD>
+                    <TD color={C.gray} bold>{fmtTime(a?.timestamp || a?.["Date Submitted"] || a?.date)}</TD><TD mono bold>{a?.ref}</TD><TD bold>{a?.name}</TD>
+                    <TD color={C.gray} max={250}>{a?.email}</TD>
+                    <TD max={300}>{a?.programme}</TD>
                     <td style={{ padding: "16px", borderBottom: "1px solid " + C.border }}><Badge status={a?.status} /></td>
                     <td style={{ padding: "16px", borderBottom: "1px solid " + C.border }}>
-                      {a?.status === "Under Review" && <div style={{ display: "flex", gap: 10 }}>
-                        <Btn small onClick={function() { acceptApp(a.ref); }} disabled={busy === a.ref}>{busy === a.ref ? "..." : "Accept"}</Btn>
-                        <Btn small bg={C.redLight} color={C.red} onClick={function() { rejectApp(a.ref); }} disabled={busy === a.ref}>Reject</Btn>
-                      </div>}
+                      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                        {a?.status === "Under Review" && <>
+                          <Btn small onClick={function() { acceptApp(a.ref); }} disabled={busy === a.ref}>{busy === a.ref ? "..." : "Accept"}</Btn>
+                          <Btn small bg={C.redLight} color={C.red} onClick={function() { rejectApp(a.ref); }} disabled={busy === a.ref}>Reject</Btn>
+                        </>}
+                        {fUrl && <Btn small bg={C.blueLight} color={C.blue} onClick={() => window.open(fUrl, "_blank")}>📁 Folder</Btn>}
+                      </div>
                     </td>
                   </tr>
                 ); })}</tbody>
@@ -433,6 +457,7 @@ function AdminDashboardPage() {
               return fs.length === 0 ? <div style={{ padding: 60, textAlign: "center", color: C.grayLight, fontWeight: 600 }}>No students found in this view</div> : (
                 <div style={{ overflowX: "auto", maxHeight: "70vh", overflowY: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead><tr>
+                    <TH sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Status Date & Time</TH>
                     <TH sortKey="studentNumber" currentSort={sortConfig} onSort={handleSort}>Student #</TH>
                     <TH sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</TH>
                     <TH sortKey="programme" currentSort={sortConfig} onSort={handleSort}>Programme</TH>
@@ -440,16 +465,20 @@ function AdminDashboardPage() {
                     <TH sortKey="lmsAccess" currentSort={sortConfig} onSort={handleSort}>LMS Access</TH>
                     <TH>Actions</TH>
                   </tr></thead>
-                  <tbody>{fs.map(function(s, i) { return (
+                  <tbody>{fs.map(function(s, i) { 
+                    let fUrl = getFolderUrl(s);
+                    return (
                     <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff", opacity: busy === s.ref ? 0.5 : 1 }}>
+                      <TD color={C.gray} bold>{fmtTime(s?.timestamp || s?.date)}</TD>
                       <TD mono bold>{s?.studentNumber}</TD><TD bold>{s?.name}</TD>
-                      <TD max={240}>{s?.programme}</TD>
+                      <TD max={300}>{s?.programme}</TD>
                       <td style={{ padding: "16px", borderBottom: "1px solid " + C.border }}><Badge status={s?.status} /></td>
                       <td style={{ padding: "16px", borderBottom: "1px solid " + C.border }}><Badge status={s?.lmsAccess} /></td>
                       <td style={{ padding: "16px", borderBottom: "1px solid " + C.border }}>
-                        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
                           {s?.status === "Pending Payment" && <Btn small onClick={function() { enrollStu(s.ref); }} disabled={busy === s.ref}>{busy === s.ref ? "..." : "Enroll"}</Btn>}
-                          <Btn small bg={C.navy} onClick={function() { genRecord(s.studentNumber); }} disabled={busy === s.studentNumber}>Record</Btn>
+                          <Btn small bg={C.navy} onClick={function() { genRecord(s.studentNumber); }} disabled={busy === s.studentNumber}>{busy === s.studentNumber ? "..." : "📄 Record"}</Btn>
+                          {fUrl && <Btn small bg={C.blueLight} color={C.blue} onClick={() => window.open(fUrl, "_blank")}>📁 Folder</Btn>}
                         </div>
                       </td>
                     </tr>
@@ -477,7 +506,7 @@ function AdminDashboardPage() {
               return fp.length === 0 ? <div style={{ padding: 60, textAlign: "center", color: C.grayLight, fontWeight: 600 }}>No payments found in this view</div> : (
                 <div style={{ overflowX: "auto", maxHeight: "70vh", overflowY: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead><tr>
-                    <TH sortKey="date" currentSort={sortConfig} onSort={handleSort}>Date Received</TH>
+                    <TH sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Date & Time Submitted</TH>
                     <TH sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Ref</TH>
                     <TH sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</TH>
                     <TH sortKey="amount" currentSort={sortConfig} onSort={handleSort}>Amount</TH>
@@ -489,7 +518,7 @@ function AdminDashboardPage() {
                     var isPending = (p?.status || "").indexOf("Pending") >= 0;
                     return (
                       <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff", opacity: busy === p.ref ? 0.5 : 1 }}>
-                        <TD color={C.gray} bold>{fmtDate(p?.date || p?.timestamp)}</TD><TD mono bold>{p?.ref}</TD><TD bold>{p?.name}</TD>
+                        <TD color={C.gray} bold>{fmtTime(p?.timestamp || p?.["Date Submitted"] || p?.date)}</TD><TD mono bold>{p?.ref}</TD><TD bold>{p?.name}</TD>
                         <TD bold color={C.emerald}>{fmt(p?.amount)}</TD>
                         <td style={{ padding: "16px", borderBottom: "1px solid " + C.border }}><Badge status={p?.status} /></td>
                         <td style={{ padding: "16px", borderBottom: "1px solid " + C.border }}>{p?.receipt && <a href={p.receipt} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: C.blue, fontWeight: 800, textDecoration: "underline" }}>View</a>}</td>
@@ -533,7 +562,7 @@ function AdminDashboardPage() {
                   <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}>
                     <TD color={C.gray} bold>{fmtTime(e?.timestamp || e?.date)}</TD>
                     <td style={{ padding: "14px 16px", borderBottom: "1px solid " + C.border }}><span style={{ padding: "4px 10px", borderRadius: 8, background: C.blueLight, color: C.blue, fontSize: 12, fontWeight: 800 }}>{e?.action}</span></td>
-                    <TD mono>{e?.ref}</TD><TD color={C.gray} max={300}>{e?.details}</TD><TD color={C.gray}>{e?.by}</TD>
+                    <TD mono>{e?.ref}</TD><TD color={C.gray} max={400}>{e?.details}</TD><TD color={C.gray}>{e?.by}</TD>
                   </tr>
                 ); })}</tbody>
               </table></div>
@@ -566,17 +595,4 @@ function AdminDashboardPage() {
               <div style={{ display: "flex", gap: 16 }}>
                 <button onClick={function() { if (verifyAmt && verifyTxn) verifyPay(modal.data.ref, verifyAmt, verifyTxn); }}
                   disabled={!verifyAmt || !verifyTxn || busy === modal.data.ref}
-                  style={{ flex: 1, padding: 18, borderRadius: 12, border: "none", background: (verifyAmt && verifyTxn) ? C.emerald : C.border, color: (verifyAmt && verifyTxn) ? "#fff" : C.grayLight, fontSize: 16, fontWeight: 800, cursor: (verifyAmt && verifyTxn) ? "pointer" : "not-allowed", transition: "0.2s" }}>
-                  {busy === modal.data.ref ? "Verifying..." : "Confirm Payment"}
-                </button>
-                <button onClick={function() { setModal(null); }} style={{ padding: "18px 28px", borderRadius: 12, border: "2px solid " + C.border, background: C.bg, color: C.navy, cursor: "pointer", fontWeight: 800, transition: "0.2s" }}>Cancel</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-export default AdminDashboardPage;
+                  style={{ flex: 1, padding: 18, borderRadius: 12, border: "none", background: (verifyAmt && verifyTxn) ? C.emerald
