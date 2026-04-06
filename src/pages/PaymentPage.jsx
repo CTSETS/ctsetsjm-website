@@ -3,7 +3,7 @@ import S from "../constants/styles";
 import { BANK_DETAILS, BOOKING_URLS, REG_FEE, USD_RATE, WIPAY_CONFIG, APPS_SCRIPT_URL } from "../constants/config"; 
 import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture } from "../components/shared/CoreComponents";
 import { PaymentSecurityNotice, HoneypotField } from "../components/shared/DisplayComponents";
-import { PaymentSetupNotice, isOnlinePaymentAvailable } from "../components/apply/SmartPayment";
+import { isOnlinePaymentAvailable } from "../components/apply/SmartPayment";
 import { fmt } from "../utils/formatting";
 import OTPGate from "../components/common/OTPGate";
 
@@ -174,19 +174,30 @@ export default function PaymentPage({ setPage }) {
     
     var orderId = student.ref + "-" + selectedPlan.substring(0,3).toUpperCase(); 
     var payAmount = userPayAmount.toString();
-
-    // 🚀 BUNDLE EVERYTHING INTO THE WIPAY MESSAGE BOX
     var paymentDescription = `Ref: ${orderId} | Name: ${student.name} | Email: ${student.email || "Not Provided"}`;
 
-    // 🚀 Format it with slashes for the WiPay "to_me" link
+    try {
+      fetch(APPS_SCRIPT_URL, { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify({ 
+          action: "submitpayment", 
+          form_type: "WiPay Payment Attempt", 
+          ref: student.ref, 
+          studentName: student.name, 
+          paymentPlan: selectedPlan, 
+          amountPaid: userPayAmount, 
+          paymentMethod: "online", 
+          timestamp: new Date().toISOString() 
+        }) 
+      });
+    } catch (e) {}
+
     if (WIPAY_CONFIG.baseUrl.includes("/to_me/")) {
       let base = WIPAY_CONFIG.baseUrl;
-      if (base.endsWith("/")) base = base.slice(0, -1); // Clean up trailing slash if it exists
-      
-      // The WiPay Me2Me Format: .../to_me/username/AMOUNT/DESCRIPTION
+      if (base.endsWith("/")) base = base.slice(0, -1); 
       window.location.href = `${base}/${payAmount}/${encodeURIComponent(paymentDescription)}`;
     } else {
-      // Standard Developer API fallback
       window.location.href = `${WIPAY_CONFIG.baseUrl}?total=${encodeURIComponent(payAmount)}&currency=${encodeURIComponent(WIPAY_CONFIG.currency)}&order_id=${encodeURIComponent(orderId)}&return_url=${encodeURIComponent(WIPAY_CONFIG.returnUrl)}`;
     }
   };
@@ -216,41 +227,6 @@ export default function PaymentPage({ setPage }) {
     );
   }
 
-var handleWiPaySubmit = () => {
-    if (submitting || !student || !currentPlanObj || !isAmountValid) return;
-    setSubmitting(true);
-    
-    var orderId = student.ref + "-" + selectedPlan.substring(0,3).toUpperCase(); 
-    var payAmount = userPayAmount.toString();
-    var paymentDescription = `Ref: ${orderId} | Name: ${student.name} | Email: ${student.email || "Not Provided"}`;
-
-    // 🚀 NEW: Silently tell the backend a WiPay attempt is happening so it shows up on the Admin Dashboard!
-    try {
-      fetch(APPS_SCRIPT_URL, { 
-        method: "POST", 
-        headers: { "Content-Type": "application/json" }, 
-        body: JSON.stringify({ 
-          action: "submitpayment", 
-          form_type: "WiPay Payment Attempt", 
-          ref: student.ref, 
-          studentName: student.name, 
-          paymentPlan: selectedPlan, 
-          amountPaid: userPayAmount, 
-          paymentMethod: "online", 
-          timestamp: new Date().toISOString() 
-        }) 
-      });
-    } catch (e) {} // We don't await this; we "fire and forget" so the user isn't delayed!
-
-    // 🚀 Redirect to WiPay
-    if (WIPAY_CONFIG.baseUrl.includes("/to_me/")) {
-      let base = WIPAY_CONFIG.baseUrl;
-      if (base.endsWith("/")) base = base.slice(0, -1); 
-      window.location.href = `${base}/${payAmount}/${encodeURIComponent(paymentDescription)}`;
-    } else {
-      window.location.href = `${WIPAY_CONFIG.baseUrl}?total=${encodeURIComponent(payAmount)}&currency=${encodeURIComponent(WIPAY_CONFIG.currency)}&order_id=${encodeURIComponent(orderId)}&return_url=${encodeURIComponent(WIPAY_CONFIG.returnUrl)}`;
-    }
-  };
   return (
     <PageWrapper bg={S.lightBg}>
       <SectionHeader tag="Finance" title="Make a Payment" />
@@ -356,7 +332,20 @@ var handleWiPaySubmit = () => {
                           <div style={{ background: S.gold, color: "#fff", width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, flexShrink: 0, fontSize: 18 }}>1</div>
                           <div style={{ flex: 1 }}>
                             <p style={{ margin: "0 0 12px 0", fontWeight: 800, color: S.navy, fontSize: 16 }}>Use our account details below</p>
-                            <PaymentSetupNotice method="upload" />
+                            
+                            {/* 🚀 FIXED: The Bank Details are now hardcoded and guaranteed to display beautifully! */}
+                            <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 12, padding: 20, color: S.navy, fontSize: 14, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+                              {BANK_DETAILS ? BANK_DETAILS : (
+                                <>
+                                  <strong style={{color: S.navy}}>Bank Name:</strong> National Commercial Bank (NCB)<br/>
+                                  <strong style={{color: S.navy}}>Account Name:</strong> CTS Empowerment & Training Solutions<br/>
+                                  <strong style={{color: S.navy}}>Account Number:</strong> 061036323<br/>
+                                  <strong style={{color: S.navy}}>Account Type:</strong> Business/Chequing<br/>
+                                  <strong style={{color: S.navy}}>Branch:</strong> Half Way Tree
+                                </>
+                              )}
+                            </div>
+                            
                           </div>
                         </div>
 
