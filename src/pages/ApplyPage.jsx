@@ -117,10 +117,23 @@ function StatusTracker({ setPage }) {
   var [result, setResult] = useState(null);
   var [error, setError] = useState("");
 
+  // Deep Link Catcher: Grabs the 'ref' from the URL
+  useEffect(() => {
+    try {
+      var hashParts = window.location.hash.split('?');
+      if (hashParts.length > 1) {
+        var params = new URLSearchParams(hashParts[1]);
+        var refParam = params.get("ref");
+        if (refParam) {
+          setLookupVal(refParam);
+        }
+      }
+    } catch(e) {}
+  }, []);
+
   var statusColors = { "Under Review": { bg: S.goldLight, color: S.gold, icon: "🔍" }, "Documents Needed": { bg: S.coralLight, color: S.coral, icon: "📎" }, "Accepted": { bg: S.emeraldLight, color: S.emerald, icon: "🎉" }, "Enrolled": { bg: S.skyLight, color: S.sky, icon: "🎓" }, "Deferred": { bg: "#F3E5F5", color: S.violet, icon: "⏸️" }, "Withdrawn": { bg: S.lightBg, color: S.gray, icon: "📋" }, "Completed": { bg: S.goldLight, color: S.navy, icon: "🏆" }, "Rejected": { bg: S.roseLight, color: S.error, icon: "📨" }, "Pending Payment": { bg: S.skyLight, color: S.sky, icon: "💳" } };
 
-  var lookup = async function() {
-    if (!lookupVal.trim()) { setError("Please enter your Application Number or Student ID."); return; }
+  var lookup = async function() {    if (!lookupVal.trim()) { setError("Please enter your Application Number or Student ID."); return; }
     setLoading(true); setError(""); setResult(null);
     try {
       const res = await fetch(`${APPS_SCRIPT_URL}?action=lookupstudent&ref=${encodeURIComponent(lookupVal.trim().toUpperCase())}`);
