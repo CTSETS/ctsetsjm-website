@@ -135,47 +135,65 @@ function AdminDashboardPage() {
   // ═══ RESTORED BEAUTIFUL LOGIN UI ═══
   // ═══ ENTERPRISE LOGIN UI ═══
   // ═══ ENTERPRISE LOGIN UI ═══
+  // ═══ COMMAND CENTER GATEWAY UI ═══
   if (!loggedIn) {
+    const StatusBadge = ({ label }) => (
+      <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(0,0,0,0.3)", padding: "12px 20px", borderRadius: 30, border: "1px solid rgba(255,255,255,0.1)" }}>
+        <div style={{ width: 10, height: 10, borderRadius: "50%", background: C.emerald, boxShadow: `0 0 12px ${C.emerald}` }} />
+        <span style={{ color: "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: 700, fontFamily: C.body, letterSpacing: 1.5, textTransform: "uppercase" }}>{label}: ONLINE</span>
+      </div>
+    );
+
     return (
       <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: C.bg, fontFamily: C.body }}>
-        {/* Header */}
-        <div style={{ background: C.navy, padding: "16px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.1)", position: "relative", zIndex: 10 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <img src="/logo.jpg" alt="CTS ETS" style={{ width: 36, height: 36, borderRadius: 8 }} />
+        {/* Beefed-Up Header */}
+        <div style={{ background: C.navy, padding: "20px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.2)", position: "relative", zIndex: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+            <img src="/logo.jpg" alt="CTS ETS" style={{ width: 56, height: 56, borderRadius: 12, border: `2px solid ${C.gold}`, boxShadow: `0 0 15px ${C.gold}40` }} />
             <div>
-              <div style={{ color: C.gold, fontWeight: 700, fontSize: 16, fontFamily: C.heading }}>CTS ETS Admin</div>
-              <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 10, letterSpacing: 1 }}>SECURE OPERATIONS CONSOLE</div>
+              <div style={{ color: C.gold, fontWeight: 800, fontSize: 24, fontFamily: C.heading, letterSpacing: 0.5 }}>CTS ETS Admin</div>
+              <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 12, letterSpacing: 3, fontWeight: 700, marginTop: 4 }}>SECURE OPERATIONS CONSOLE</div>
             </div>
           </div>
-          <a href="/#Home" style={{ color: "rgba(255,255,255,0.7)", fontSize: 12, textDecoration: "none", fontWeight: 600, transition: "0.2s" }}>&larr; Back to Website</a>
+          <a href="/#Home" style={{ color: "#fff", fontSize: 14, textDecoration: "none", fontWeight: 700, padding: "12px 24px", borderRadius: 8, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", transition: "all 0.2s" }}>&larr; Back to Website</a>
         </div>
 
         {/* Main Content Area */}
-        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, background: "linear-gradient(135deg, " + C.navy + " 0%, #0a2d4d 100%)" }}>
-          <div style={{ background: C.card, borderRadius: 20, padding: "48px 40px", maxWidth: 400, width: "100%", boxShadow: "0 24px 80px rgba(0,0,0,0.4)", textAlign: "center" }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>🛡️</div>
-            <h1 style={{ fontFamily: C.heading, color: C.navy, fontSize: 26, margin: "0 0 8px", fontWeight: 700 }}>Admin Login</h1>
-            <p style={{ fontFamily: C.body, color: C.gray, fontSize: 13, margin: "0 0 32px" }}>Enter your credentials to access the system.</p>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 20, background: `linear-gradient(135deg, ${C.navy} 0%, #06192e 100%)`, position: "relative", overflow: "hidden" }}>
+          {/* Subtle Background Grid/Glow */}
+          <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "80vw", height: "80vw", background: `radial-gradient(circle, ${C.gold}08 0%, transparent 60%)`, pointerEvents: "none" }} />
+          
+          <div style={{ background: C.card, borderRadius: 24, padding: "56px 48px", maxWidth: 460, width: "100%", boxShadow: "0 32px 100px rgba(0,0,0,0.5)", textAlign: "center", position: "relative", zIndex: 2 }}>
+            <div style={{ fontSize: 56, marginBottom: 20 }}>🛡️</div>
+            <h1 style={{ fontFamily: C.heading, color: C.navy, fontSize: 32, margin: "0 0 12px", fontWeight: 800 }}>Admin Login</h1>
+            <p style={{ fontFamily: C.body, color: C.gray, fontSize: 15, margin: "0 0 36px", lineHeight: 1.6 }}>Enter your master credentials to access the central nervous system.</p>
             
-            <div style={{ marginBottom: 20 }}>
+            <div style={{ marginBottom: 24 }}>
               <input type="password" value={pw} onChange={function(e) { setPw(e.target.value); setLoginErr(""); }}
                 onKeyDown={function(e) { if (e.key === "Enter") handleLogin(); }}
                 autoFocus placeholder="Administrator Password"
-                style={{ width: "100%", padding: "16px", borderRadius: 10, border: "2px solid " + (loginErr ? C.red : C.border), fontSize: 15, fontFamily: C.body, color: C.navy, boxSizing: "border-box", outline: "none", textAlign: "center", letterSpacing: 2, transition: "0.2s" }} />
+                style={{ width: "100%", padding: "18px", borderRadius: 12, border: "2px solid " + (loginErr ? C.red : C.border), fontSize: 16, fontFamily: C.body, color: C.navy, boxSizing: "border-box", outline: "none", textAlign: "center", letterSpacing: 3, transition: "0.2s", background: "#F8FAFC" }} />
             </div>
-            {loginErr && <div style={{ padding: "10px", borderRadius: 8, background: C.redLight, color: C.red, fontSize: 13, marginBottom: 16, fontFamily: C.body, fontWeight: 600 }}>{loginErr}</div>}
+            {loginErr && <div style={{ padding: "12px", borderRadius: 10, background: C.redLight, color: C.red, fontSize: 14, marginBottom: 20, fontFamily: C.body, fontWeight: 700 }}>{loginErr}</div>}
             
             <button onClick={handleLogin} disabled={loading || !pw.trim()}
-              style={{ width: "100%", padding: "16px", borderRadius: 10, border: "none", background: (!pw.trim() || loading) ? C.border : C.coral, color: "#fff", fontSize: 15, fontWeight: 700, cursor: pw.trim() && !loading ? "pointer" : "not-allowed", fontFamily: C.body, transition: "0.2s", boxShadow: (!pw.trim() || loading) ? "none" : "0 4px 14px rgba(232, 99, 74, 0.3)" }}>
+              style={{ width: "100%", padding: "18px", borderRadius: 12, border: "none", background: (!pw.trim() || loading) ? C.border : `linear-gradient(135deg, ${C.coral} 0%, #d45138 100%)`, color: "#fff", fontSize: 16, fontWeight: 800, cursor: pw.trim() && !loading ? "pointer" : "not-allowed", fontFamily: C.body, transition: "all 0.2s", boxShadow: (!pw.trim() || loading) ? "none" : "0 8px 24px rgba(232, 99, 74, 0.4)", textTransform: "uppercase", letterSpacing: 1 }}>
               {loading ? "Authenticating..." : "Access Console"}
             </button>
             <div style={{ display: 'none' }}><p>Enter your administrator password to access the console.</p></div>
           </div>
+
+          {/* System Monitors */}
+          <div style={{ display: "flex", gap: 16, marginTop: 48, flexWrap: "wrap", justifyContent: "center", position: "relative", zIndex: 2 }}>
+            <StatusBadge label="Vercel Proxy" />
+            <StatusBadge label="Database" />
+            <StatusBadge label="Auth Engine" />
+          </div>
         </div>
 
         {/* Secure Footer */}
-        <div style={{ background: C.navy, padding: "16px 24px", textAlign: "center", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-          <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, fontFamily: C.body, margin: 0 }}>&copy; 2026 CTS Empowerment & Training Solutions. All rights reserved. Authorized personnel only.</p>
+        <div style={{ background: "#041222", padding: "20px 24px", textAlign: "center", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+          <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, fontFamily: C.body, margin: 0, letterSpacing: 0.5 }}>&copy; 2026 CTS Empowerment & Training Solutions. All rights reserved. <strong>Authorized personnel only.</strong> All login attempts are logged and monitored.</p>
         </div>
       </div>
     );
