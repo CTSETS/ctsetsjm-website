@@ -13,6 +13,14 @@ const getDriveImageUrl = (url) => {
   return url;
 };
 
+// Helper for Dynamic Valid Term
+const getValidTerm = (level) => {
+  const currentYear = new Date().getFullYear();
+  // Levels 4 and 5 are typically 2 years, others 1 year
+  const duration = (level && (level.includes("4") || level.includes("5"))) ? 2 : 1;
+  return `${currentYear} - ${currentYear + duration}`;
+};
+
 // Gamification: Inject Confetti Library
 const loadConfetti = () => {
   if (window.confetti) return;
@@ -86,7 +94,7 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
   const profile = studentData.profile;
   const curriculum = studentData.curriculum || [];
   const [progress, setProgress] = useState(studentData.progress || 1);
-  const [activeTab, setActiveTab] = useState("classroom");
+  const [activeTab, setActiveTab] = useState("profile");
   const [activeQuiz, setActiveQuiz] = useState(null);
   const [quizAnswers, setQuizAnswers] = useState({});
   const [quizFeedback, setQuizFeedback] = useState("");
@@ -302,35 +310,47 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
                <div style={{ background: "#fff", borderRadius: 16, padding: "32px", border: `1px solid ${S.border}`, display: "flex", flexDirection: "column", alignItems: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
                   <div style={{ fontSize: 11, color: S.navy, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 24 }}>Digital Student ID</div>
                   
-                  {/* The Physical ID Card Design */}
-                  <div id="student-id-card" style={{ width: "350px", height: "220px", borderRadius: "14px", background: `linear-gradient(135deg, ${S.navy} 0%, #0a2d4d 100%)`, color: "#fff", position: "relative", overflow: "hidden", fontFamily: "'DM Sans', sans-serif", boxShadow: "0 10px 25px rgba(1, 30, 64, 0.25)", border: `1px solid ${S.gold}50` }}>
+                  {/* 🚀 UPGRADED: The Physical ID Card Design */}
+                  <div id="student-id-card" style={{ width: "380px", height: "230px", borderRadius: "14px", background: `linear-gradient(135deg, ${S.navy} 0%, #0a2d4d 100%)`, color: "#fff", position: "relative", overflow: "hidden", fontFamily: "'DM Sans', sans-serif", boxShadow: "0 10px 25px rgba(1, 30, 64, 0.25)", border: `1px solid ${S.gold}50` }}>
                     <div style={{ position: "absolute", top: -40, right: -40, width: 120, height: 120, borderRadius: "50%", background: "rgba(196, 145, 18, 0.15)" }} />
-                    <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.1)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: S.gold, letterSpacing: 0.5 }}>CTS ETS</div>
-                      <div style={{ fontSize: 8, textTransform: "uppercase", letterSpacing: 1, opacity: 0.8 }}>Student Identity Card</div>
+                    
+                    {/* TOP HEADER: Logo & School Name */}
+                    <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,0.1)", display: "flex", gap: "10px", alignItems: "center", background: "rgba(0,0,0,0.2)" }}>
+                      <img src="/logo.jpg" alt="Logo" style={{ width: 32, height: 32, borderRadius: "6px", border: `1px solid ${S.gold}` }} />
+                      <div>
+                        <div style={{ fontSize: 12, fontWeight: 900, color: S.gold, letterSpacing: 0.5, lineHeight: 1.1 }}>CTS Empowerment &</div>
+                        <div style={{ fontSize: 12, fontWeight: 900, color: S.gold, letterSpacing: 0.5, lineHeight: 1.1 }}>Training Solutions</div>
+                      </div>
+                      <div style={{ marginLeft: "auto", fontSize: 8, textTransform: "uppercase", letterSpacing: 1, opacity: 0.8, textAlign: "right" }}>Student<br/>Identity Card</div>
                     </div>
-                    <div style={{ padding: "16px 20px", display: "flex", gap: "16px", alignItems: "center" }}>
+
+                    <div style={{ padding: "16px", display: "flex", gap: "16px", alignItems: "flex-start" }}>
+                      {/* PHOTO */}
                       {secureImgUrl && !imgError ? (
-                        <img src={secureImgUrl} alt="Student" onError={() => setImgError(true)} style={{ width: 85, height: 105, objectFit: "cover", borderRadius: "6px", border: `2px solid ${S.gold}` }} referrerPolicy="no-referrer" crossOrigin="anonymous" />
+                        <img src={secureImgUrl} alt="Student" onError={() => setImgError(true)} style={{ width: 85, height: 110, objectFit: "cover", borderRadius: "6px", border: `2px solid ${S.gold}`, background: "#fff", zIndex: 2, position: "relative" }} referrerPolicy="no-referrer" crossOrigin="anonymous" />
                       ) : (
-                        <div style={{ width: 85, height: 105, background: "rgba(255,255,255,0.1)", borderRadius: "6px", border: `2px solid ${S.gold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, fontWeight: 800, color: "#fff" }}>{(profile.name || "S").charAt(0)}</div>
+                        <div style={{ width: 85, height: 110, background: "rgba(255,255,255,0.1)", borderRadius: "6px", border: `2px solid ${S.gold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, fontWeight: 800, color: "#fff", zIndex: 2, position: "relative" }}>{(profile.name || "S").charAt(0)}</div>
                       )}
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 16, fontWeight: 800, lineHeight: 1.2, marginBottom: 4 }}>{profile.name}</div>
-                        <div style={{ fontSize: 10, color: S.gold, fontWeight: 700, marginBottom: 12 }}>{profile.studentNumber}</div>
-                        <div style={{ fontSize: 9, opacity: 0.7, textTransform: "uppercase", marginBottom: 2 }}>Programme</div>
-                        <div style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.3, marginBottom: 8 }}>{profile.programme}</div>
+                      
+                      {/* DETAILS */}
+                      <div style={{ flex: 1, zIndex: 2, position: "relative" }}>
+                        <div style={{ fontSize: 16, fontWeight: 800, lineHeight: 1.1, marginBottom: 2 }}>{profile.name}</div>
+                        <div style={{ fontSize: 10, color: S.gold, fontWeight: 700, marginBottom: 10, fontFamily: "monospace", letterSpacing: 1 }}>{profile.studentNumber}</div>
+                        
+                        <div style={{ fontSize: 8, opacity: 0.7, textTransform: "uppercase", marginBottom: 2, letterSpacing: 0.5 }}>Programme & Level</div>
+                        <div style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.2, marginBottom: 8 }}>{profile.level ? `${profile.level} in ${profile.programme}` : profile.programme}</div>
+                        
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
                           <div>
-                            <div style={{ fontSize: 9, opacity: 0.7, textTransform: "uppercase", marginBottom: 2 }}>Valid Term</div>
-                            <div style={{ fontSize: 10, fontWeight: 600 }}>2026 - 2027</div>
+                            <div style={{ fontSize: 8, opacity: 0.7, textTransform: "uppercase", marginBottom: 2, letterSpacing: 0.5 }}>Valid Term</div>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>{getValidTerm(profile.level)}</div>
                           </div>
-                          <div style={{ width: 24, height: 24, borderRadius: "50%", background: profile.status === "Enrolled" || profile.status === "Active" ? S.emerald : S.amber, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>✓</div>
+                          <div style={{ width: 24, height: 24, borderRadius: "50%", background: profile.status === "Enrolled" || profile.status === "Active" ? S.emerald : S.amber, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, border: "2px solid #fff", boxShadow: "0 2px 4px rgba(0,0,0,0.3)" }}>✓</div>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <Btn primary onClick={printIDCard} style={{ marginTop: 24, background: S.coral, color: "#fff", width: "100%", maxWidth: "350px", fontSize: 14 }}>📥 Download / Print ID</Btn>
+                  <Btn primary onClick={printIDCard} style={{ marginTop: 24, background: S.coral, color: "#fff", width: "100%", maxWidth: "380px", fontSize: 14 }}>📥 Download / Print ID</Btn>
                </div>
              </div>
 
