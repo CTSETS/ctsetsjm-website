@@ -87,8 +87,7 @@ export default function PaymentPage({ setPage }) {
   var [pricing, setPricing] = useState(null);
   var [selectedPlan, setSelectedPlan] = useState("Gold");
   
-  // Default to bank transfer so the bank details show immediately
-  var [payMethod, setPayMethod] = useState("upload"); 
+  var [payMethod, setPayMethod] = useState(""); 
   
   var [receipt, setReceipt] = useState(null);
   var [submitting, setSubmitting] = useState(false);
@@ -234,4 +233,138 @@ export default function PaymentPage({ setPage }) {
                   {currentPlanObj && (
                     <div style={{ marginTop: 24, padding: 24, background: "#F8FAFC", borderRadius: 16, border: "2px solid #E2E8F0" }}>
                       <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 8, padding: 16, marginBottom: 24 }}>
-                        <h5 style={{ margin: "0 0 1
+                        <h5 style={{ margin: "0 0 12px 0", color: S.navy, fontSize: 13, textTransform: "uppercase", letterSpacing: 1 }}>{currentPlanObj.name} Plan Breakdown</h5>
+                        {currentPlanObj.breakdown.map((item, i) => (
+                          <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: i === currentPlanObj.breakdown.length - 1 ? "none" : "1px dashed #E2E8F0", fontSize: 14 }}>
+                            <span style={{ color: item.dueNow ? S.navy : S.gray, fontWeight: item.dueNow ? 700 : 500 }}>{item.label}</span>
+                            <span style={{ fontWeight: 700, color: item.dueNow ? S.navy : S.gray }}>{fmt(item.value)}</span>
+                          </div>
+                        ))}
+                        <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 12, borderTop: "2px solid #E2E8F0", marginTop: 8 }}>
+                          <span style={{ color: S.navy, fontWeight: 800 }}>Total Program Cost:</span>
+                          <strong style={{ color: S.navy, fontSize: 16 }}>{fmt(currentPlanObj.total)}</strong>
+                        </div>
+                      </div>
+                      
+                      {paidAlready > 0 && (
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16, padding: "12px 16px", background: "#E8F5E9", borderRadius: 8, border: "1px solid #C8E6C9", fontSize: 14 }}>
+                          <span style={{ color: "#2E7D32", fontWeight: 700 }}>Total Paid to Date:</span>
+                          <strong style={{ color: "#2E7D32" }}>{fmt(paidAlready)}</strong>
+                        </div>
+                      )}
+
+                      <div style={{ marginBottom: 16 }}>
+                        <label style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", fontSize: 13, fontWeight: 700, color: S.navy, marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>
+                          <span>Amount To Pay Today (JMD)</span>
+                          <span style={{ color: S.emerald, fontSize: 11, background: "#E8F5E9", padding: "2px 8px", borderRadius: 12 }}>Min Due: {fmt(actualMinDue)}</span>
+                        </label>
+                        <p style={{ fontSize: 12, color: S.gray, margin: "0 0 8px 0" }}>💡 Tip: You can adjust this number to pay more than the minimum amount today.</p>
+                        <input type="number" min={actualMinDue} max={remainingTotal} value={customAmount} onChange={(e) => setCustomAmount(e.target.value)} style={{ width: "100%", padding: 16, fontSize: 24, fontWeight: 900, borderRadius: 10, border: !isAmountValid ? "2px solid " + S.coral : "2px solid " + S.emerald, background: "#fff", color: S.navy, outline: "none" }} />
+                        {!isAmountValid && <div style={{ color: S.coral, fontSize: 12, marginTop: 8, fontWeight: 700 }}>⚠️ You must pay at least {fmt(actualMinDue)} to satisfy this plan.</div>}
+                      </div>
+
+                      {finalBalance > 0 && (
+                        <div style={{ display: "flex", justifyContent: "space-between", color: S.gray, fontSize: 14, paddingTop: 16, borderTop: "1px solid #E2E8F0" }}>
+                          <span>Remaining Balance (After this payment):</span>
+                          <strong>{fmt(finalBalance)}</strong>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  <h4 style={{ marginTop: 40, fontFamily: S.heading, color: S.navy, textAlign: "center" }}>How would you like to pay?</h4>
+                  
+                  <div style={{ display: "flex", gap: 16, marginBottom: 32, flexDirection: "row" }}>
+                    <button 
+                      onClick={() => setPayMethod("online")} 
+                      style={{ flex: 1, padding: 24, borderRadius: 12, border: payMethod === "online" ? `2px solid ${S.navy}` : "2px solid #E2E8F0", background: payMethod === "online" ? "#F8FAFC" : "#fff", cursor: "pointer", transition: "all 0.2s", textAlign: "center" }}
+                    >
+                      <div style={{ fontSize: 32, marginBottom: 8 }}>💳</div>
+                      <div style={{ fontWeight: 800, color: S.navy, fontSize: 16 }}>Pay Online</div>
+                      <div style={{ fontSize: 13, color: S.gray, marginTop: 4 }}>Credit or Visa Debit Card</div>
+                    </button>
+
+                    <button 
+                      onClick={() => setPayMethod("upload")} 
+                      style={{ flex: 1, padding: 24, borderRadius: 12, border: payMethod === "upload" ? `2px solid ${S.navy}` : "2px solid #E2E8F0", background: payMethod === "upload" ? "#F8FAFC" : "#fff", cursor: "pointer", transition: "all 0.2s", textAlign: "center" }}
+                    >
+                      <div style={{ fontSize: 32, marginBottom: 8 }}>🏦</div>
+                      <div style={{ fontWeight: 800, color: S.navy, fontSize: 16 }}>Bank Transfer</div>
+                      <div style={{ fontSize: 13, color: S.gray, marginTop: 4 }}>Direct deposit or wire</div>
+                    </button>
+                  </div>
+                  
+                  {/* 🏦 BANK TRANSFER STEP-BY-STEP FLOW */}
+                  {payMethod === "upload" && (
+                    <Reveal>
+                      <div style={{ marginTop: 24, padding: "24px", background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: "16px" }}>
+                        <h4 style={{ margin: "0 0 24px 0", fontFamily: S.heading, color: S.navy, fontSize: 18 }}>Bank Transfer Instructions</h4>
+                        
+                        {/* STEP 1 */}
+                        <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
+                          <div style={{ background: S.gold, color: "#fff", width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, flexShrink: 0, fontSize: 18 }}>1</div>
+                          <div style={{ flex: 1 }}>
+                            <p style={{ margin: "0 0 12px 0", fontWeight: 800, color: S.navy, fontSize: 16 }}>Use our account details below</p>
+                            <PaymentSetupNotice method="upload" />
+                          </div>
+                        </div>
+
+                        {/* STEP 2 */}
+                        <div style={{ display: "flex", gap: 16, marginBottom: 32 }}>
+                          <div style={{ background: S.gold, color: "#fff", width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, flexShrink: 0, fontSize: 18 }}>2</div>
+                          <div>
+                            <p style={{ margin: "0 0 8px 0", fontWeight: 800, color: S.navy, fontSize: 16 }}>Make your transfer</p>
+                            <p style={{ margin: 0, fontSize: 14, color: S.gray, lineHeight: 1.5 }}>
+                              Complete the transfer of <strong style={{color: S.navy}}>{fmt(userPayAmount)}</strong> using your bank's app or website. <br/><br/>
+                              <span style={{background: "#FFFBEB", padding: "4px 8px", borderRadius: 4, border: "1px solid #FDE68A", color: "#92400E"}}>
+                                ⚠️ <strong>CRITICAL:</strong> You MUST include your reference number <strong>({student.ref})</strong> in the payment memo/notes so we can link it to your profile.
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* STEP 3 */}
+                        <div style={{ display: "flex", gap: 16 }}>
+                          <div style={{ background: S.gold, color: "#fff", width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, flexShrink: 0, fontSize: 18 }}>3</div>
+                          <div style={{ flex: 1 }}>
+                            <p style={{ margin: "0 0 8px 0", fontWeight: 800, color: S.navy, fontSize: 16 }}>Upload your receipt</p>
+                            <p style={{ margin: "0 0 16px 0", fontSize: 14, color: S.gray }}>Take a screenshot or photo of your completed transfer receipt and upload it here to finalize your payment.</p>
+                            
+                            <div style={{ padding: 20, background: "#fff", border: "1px solid #E2E8F0", borderRadius: 12 }}>
+                              <input type="file" onChange={e => setReceipt(e.target.files[0])} style={{ marginBottom: 16, width: "100%", padding: 12, borderRadius: 8, border: "1px dashed #CBD5E1", background: "#F8FAFC" }} />
+                              
+                              <button onClick={handlePaymentSubmit} disabled={submitting || !receipt || !isAmountValid} style={{ padding: 18, background: S.emerald, color: "#fff", border: "none", borderRadius: 10, width: "100%", fontWeight: 800, fontSize: 16, cursor: (submitting || !receipt || !isAmountValid) ? "not-allowed" : "pointer", transition: "all 0.2s", boxShadow: "0 4px 12px rgba(16,185,129,0.2)" }}>
+                                {submitting ? "Processing..." : `Submit Evidence for ${fmt(userPayAmount)}`}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+                    </Reveal>
+                  )}
+
+                  {/* 💳 ONLINE PAYMENT FLOW */}
+                  {payMethod === "online" && (
+                    <Reveal>
+                      <div style={{ marginTop: 20, padding: 32, background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 12, textAlign: "center" }}>
+                        <div style={{ fontSize: 40, marginBottom: 12 }}>🔒</div>
+                        <h4 style={{ margin: "0 0 12px 0", fontFamily: S.heading, color: S.navy }}>Secure Online Checkout</h4>
+                        <p style={{ fontSize: 14, color: S.gray, margin: "0 auto 24px auto", maxWidth: 400 }}>
+                          You will be redirected to our secure WiPay portal to complete your transaction. No evidence upload is required.
+                        </p>
+                        <button onClick={handleWiPaySubmit} disabled={submitting || !isAmountValid} style={{ padding: 18, background: S.navy, color: "#fff", border: "none", borderRadius: 12, width: "100%", fontWeight: 800, fontSize: 16, cursor: (submitting || !isAmountValid) ? "not-allowed" : "pointer", boxShadow: "0 6px 16px rgba(1,30,64,0.2)", transition: "all 0.2s" }}>
+                          {submitting ? "Connecting to WiPay..." : `Pay ${fmt(userPayAmount)} Securely via WiPay`}
+                        </button>
+                      </div>
+                    </Reveal>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </Container>
+    </PageWrapper>
+  );
+}
