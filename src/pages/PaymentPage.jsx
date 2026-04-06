@@ -333,17 +333,13 @@ export default function PaymentPage({ setPage }) {
                           <div style={{ flex: 1 }}>
                             <p style={{ margin: "0 0 12px 0", fontWeight: 800, color: S.navy, fontSize: 16 }}>Use our account details below</p>
                             
-                            {/* 🚀 FIXED: The Bank Details are now hardcoded and guaranteed to display beautifully! */}
+                            {/* 🚀 FIXED: Pure safe React HTML rendering. No crashing variables. */}
                             <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 12, padding: 20, color: S.navy, fontSize: 14, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
-                              {BANK_DETAILS ? BANK_DETAILS : (
-                                <>
-                                  <strong style={{color: S.navy}}>Bank Name:</strong> National Commercial Bank (NCB)<br/>
-                                  <strong style={{color: S.navy}}>Account Name:</strong> CTS Empowerment & Training Solutions<br/>
-                                  <strong style={{color: S.navy}}>Account Number:</strong> 061036323<br/>
-                                  <strong style={{color: S.navy}}>Account Type:</strong> Business/Chequing<br/>
-                                  <strong style={{color: S.navy}}>Branch:</strong> Half Way Tree
-                                </>
-                              )}
+                              <strong style={{color: S.navy}}>Bank Name:</strong> National Commercial Bank (NCB)<br/>
+                              <strong style={{color: S.navy}}>Account Name:</strong> CTS Empowerment & Training Solutions<br/>
+                              <strong style={{color: S.navy}}>Account Number:</strong> 061036323<br/>
+                              <strong style={{color: S.navy}}>Account Type:</strong> Business/Chequing<br/>
+                              <strong style={{color: S.navy}}>Branch:</strong> Half Way Tree
                             </div>
                             
                           </div>
