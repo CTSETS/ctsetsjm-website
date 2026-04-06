@@ -204,20 +204,36 @@ function AdminDashboardPage() {
   // ═══ UPGRADED RECORD GENERATOR ═══
   function genRecord(sn) { 
     setBusy(sn);
+    
+    // 1. Open a blank tab INSTANTLY so the browser doesn't block it
+    var newTab = window.open("about:blank", "_blank");
+    if (newTab) {
+      newTab.document.write("<h2 style='font-family:sans-serif; text-align:center; margin-top:20%; color:#011E40;'>Generating Official Record for " + sn + "...<br><br>Please wait, establishing secure connection to Google Drive...</h2>");
+    } else {
+      toast("Warning: Your browser blocked the pop-up. We will open it in this window instead.", false);
+    }
+
     api("generaterecord", { student: sn }).then(d => {
       let success = d && (d.ok || d.success);
       let link = d ? (d.url || d.fileUrl || d.link || d.pdfUrl) : null;
 
       if (success && link) {
-        window.open(link, "_blank");
-        toast("Record opened in a new tab!", true);
-      } else if (success) {
-        toast("Record generated successfully! (Check your Google Drive folder)", true);
+        if (newTab) {
+          newTab.location.href = link; // Redirect the loading tab to the PDF!
+        } else {
+          window.location.href = link; // Fallback if popups are strictly disabled
+        }
+        toast("Record saved to Student Folder and opened!", true);
       } else {
+        if (newTab) newTab.close(); // Close the blank tab if it failed
         toast("Failed to generate record: " + (d?.error || d?.message || "Unknown Error"), false);
       }
       setBusy("");
-    }).catch(() => { toast("Network error.", false); setBusy(""); });
+    }).catch(() => { 
+      if (newTab) newTab.close();
+      toast("Network error.", false); 
+      setBusy(""); 
+    });
   }
   
   function rejectPay(ref) { 
