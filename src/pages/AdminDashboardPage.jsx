@@ -14,7 +14,23 @@ var C = {
   heading: "'Playfair Display', Georgia, serif",
   body: "'DM Sans', -apple-system, sans-serif",
 };
+
+// ═══ DATETIME FORMATTING ENGINE ═══
 function fmt(n) { return "J$" + Number(n || 0).toLocaleString(); }
+
+function fmtDate(d) {
+  if (!d) return "—";
+  const date = new Date(d);
+  if (isNaN(date.getTime())) return String(d).split("T")[0]; 
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function fmtTime(d) {
+  if (!d) return "—";
+  const date = new Date(d);
+  if (isNaN(date.getTime())) return String(d);
+  return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+}
 
 function Badge({ status }) {
   var map = {
@@ -31,25 +47,34 @@ function Badge({ status }) {
     "Evidence Submitted": { bg: C.amberLight, c: C.amber },
   };
   var s = map[status] || { bg: "#F1F5F9", c: C.gray };
-  return <span style={{ display: "inline-block", padding: "4px 10px", borderRadius: 12, background: s.bg, color: s.c, fontSize: 11, fontWeight: 700, whiteSpace: "nowrap", fontFamily: C.body, transition: "all 0.3s ease" }}>{status || "\u2014"}</span>;
+  return <span style={{ display: "inline-block", padding: "6px 12px", borderRadius: 12, background: s.bg, color: s.c, fontSize: 11, fontWeight: 800, whiteSpace: "nowrap", fontFamily: C.body, transition: "all 0.3s ease", letterSpacing: 0.5 }}>{status || "\u2014"}</span>;
 }
 
-// UPGRADED SORTABLE TABLE HEADER
-function TH({ children, sortKey, currentSort, onSort }) { 
+function TH({ children, sortKey, currentSort, onSort }) {
   var isActive = currentSort && currentSort.key === sortKey;
-  var arrow = isActive ? (currentSort.dir === 'asc' ? ' ↑' : ' ↓') : '';
+  var isAsc = isActive && currentSort.dir === 'asc';
+  var isDesc = isActive && currentSort.dir === 'desc';
+
   return (
-    <th onClick={sortKey ? () => onSort(sortKey) : undefined} 
-        style={{ padding: "12px 16px", textAlign: "left", fontWeight: 700, color: isActive ? C.navy : C.gray, fontSize: 11, borderBottom: "1px solid " + C.border, whiteSpace: "nowrap", position: "sticky", top: 0, background: "#F1F5F9", zIndex: 1, textTransform: "uppercase", letterSpacing: 1, cursor: sortKey ? "pointer" : "default", transition: "0.2s", userSelect: "none" }}>
-      {children}<span style={{ color: C.coral }}>{arrow}</span>
+    <th className={sortKey ? "sortable-th" : ""} onClick={sortKey ? () => onSort(sortKey) : undefined}
+        style={{ padding: "16px", textAlign: "left", fontWeight: 800, color: isActive ? C.navy : C.gray, fontSize: 11, borderBottom: isActive ? "2px solid " + C.navy : "1px solid " + C.border, whiteSpace: "nowrap", position: "sticky", top: 0, background: isActive ? "#E2E8F0" : "#F8FAFC", zIndex: 1, textTransform: "uppercase", letterSpacing: 1 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        {children}
+        {sortKey && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 2, opacity: isActive ? 1 : 0.25, transition: "opacity 0.2s" }}>
+            <svg width="10" height="6" viewBox="0 0 10 6" fill={isAsc ? C.coral : "currentColor"}><path d="M5 0L10 6H0L5 0Z"/></svg>
+            <svg width="10" height="6" viewBox="0 0 10 6" fill={isDesc ? C.coral : "currentColor"}><path d="M5 6L0 0H10L5 6Z"/></svg>
+          </div>
+        )}
+      </div>
     </th>
-  ); 
+  );
 }
 
-function TD({ children, mono, bold, color, max }) { return <td style={{ padding: "12px 16px", fontFamily: mono ? "monospace" : C.body, fontSize: mono ? 11 : 13, fontWeight: bold ? 600 : 400, color: color || C.text, maxWidth: max || "none", overflow: max ? "hidden" : "visible", textOverflow: max ? "ellipsis" : "clip", whiteSpace: max ? "nowrap" : "normal", borderBottom: "1px solid " + C.border, transition: "background 0.3s" }}>{children}</td>; }
-function Btn({ children, color, bg, onClick, disabled, small }) { return <button onClick={onClick} disabled={disabled} style={{ padding: small ? "6px 12px" : "8px 16px", borderRadius: 6, border: "none", background: disabled ? C.border : (bg || C.emerald), color: disabled ? C.grayLight : (color || "#fff"), fontSize: small ? 11 : 13, fontWeight: 600, cursor: disabled ? "not-allowed" : "pointer", fontFamily: C.body, whiteSpace: "nowrap", transition: "0.2s" }}>{children}</button>; }
-function Pill({ label, active, onClick }) { return <button onClick={onClick} style={{ padding: "6px 14px", borderRadius: 20, border: active ? "2px solid " + C.navy : "1px solid " + C.border, background: active ? C.navy : C.card, color: active ? "#fff" : C.gray, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: C.body, transition: "0.2s" }}>{label}</button>; }
-function SearchBox({ value, onChange }) { return <input value={value} onChange={function(e) { onChange(e.target.value); }} placeholder="Search name, ref, email..." style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid " + C.border, fontSize: 13, width: 240, boxSizing: "border-box", fontFamily: C.body, outline: "none", transition: "0.2s" }} />; }
+function TD({ children, mono, bold, color, max }) { return <td style={{ padding: "16px", fontFamily: mono ? "monospace" : C.body, fontSize: mono ? 12 : 13, fontWeight: bold ? 700 : 500, color: color || C.text, maxWidth: max || "none", overflow: max ? "hidden" : "visible", textOverflow: max ? "ellipsis" : "clip", whiteSpace: max ? "nowrap" : "normal", borderBottom: "1px solid " + C.border, transition: "background 0.3s" }}>{children}</td>; }
+function Btn({ children, color, bg, onClick, disabled, small }) { return <button onClick={onClick} disabled={disabled} style={{ padding: small ? "8px 14px" : "10px 18px", borderRadius: 8, border: "none", background: disabled ? C.border : (bg || C.emerald), color: disabled ? C.grayLight : (color || "#fff"), fontSize: small ? 12 : 14, fontWeight: 700, cursor: disabled ? "not-allowed" : "pointer", fontFamily: C.body, whiteSpace: "nowrap", transition: "all 0.2s" }}>{children}</button>; }
+function Pill({ label, active, onClick }) { return <button onClick={onClick} style={{ padding: "8px 16px", borderRadius: 20, border: active ? "2px solid " + C.navy : "1px solid " + C.border, background: active ? C.navy : C.card, color: active ? "#fff" : C.gray, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: C.body, transition: "all 0.2s", boxShadow: active ? "0 2px 8px rgba(1,30,64,0.15)" : "none" }}>{label}</button>; }
+function SearchBox({ value, onChange }) { return <input value={value} onChange={function(e) { onChange(e.target.value); }} placeholder="Filter table by any keyword..." style={{ padding: "10px 16px", borderRadius: 10, border: "2px solid " + C.border, fontSize: 14, width: 280, boxSizing: "border-box", fontFamily: C.body, outline: "none", transition: "0.2s", background: "#fff", fontWeight: 500 }} />; }
 
 function AdminDashboardPage() {
   var [auth, setAuth] = useState(function() { try { return sessionStorage.getItem(PW_KEY) || ""; } catch(e) { return ""; } });
@@ -77,8 +102,6 @@ function AdminDashboardPage() {
   var [verifyAmt, setVerifyAmt] = useState("");
   var [verifyTxn, setVerifyTxn] = useState("");
   var [refreshKey, setRefreshKey] = useState(0);
-
-  // Sorting State
   var [sortConfig, setSortConfig] = useState({ key: "date", dir: "desc" });
 
   var api = useCallback(async function(action, params) {
@@ -123,26 +146,25 @@ function AdminDashboardPage() {
     api(action, params).then(function(d) { 
       toast(d && d.ok ? (d.message || "Done") : ("Error: " + ((d && d.error) || "Failed")), d && d.ok); 
       setBusy(""); 
-      refresh(); // Background refresh to sync true state
+      refresh(); 
     }).catch(function() { toast("Network error", false); setBusy(""); });
   }
 
-  // ═══ OPTIMISTIC UI ACTIONS (SPEED BOOST) ═══
   function acceptApp(ref) { 
     if (confirm("Accept " + ref + "?")) {
-      setApps(prev => prev.map(a => a.ref === ref ? { ...a, status: "Accepted" } : a)); // Instant update
+      setApps(prev => prev.map(a => a.ref === ref ? { ...a, status: "Accepted" } : a)); 
       doAction(ref, "adminacceptapp", { ref: ref }); 
     }
   }
   function rejectApp(ref) { 
     if (confirm("Reject " + ref + "?")) {
-      setApps(prev => prev.map(a => a.ref === ref ? { ...a, status: "Rejected" } : a)); // Instant update
+      setApps(prev => prev.map(a => a.ref === ref ? { ...a, status: "Rejected" } : a)); 
       doAction(ref, "adminrejectapp", { ref: ref }); 
     }
   }
   function enrollStu(ref) { 
     if (confirm("Enroll " + ref + "? Credentials will be sent.")) {
-      setStudents(prev => prev.map(s => s.ref === ref ? { ...s, status: "Enrolled", lmsAccess: "Yes" } : s)); // Instant update
+      setStudents(prev => prev.map(s => s.ref === ref ? { ...s, status: "Enrolled", lmsAccess: "Yes" } : s)); 
       doAction(ref, "adminenrollstudent", { ref: ref }); 
     }
   }
@@ -162,7 +184,6 @@ function AdminDashboardPage() {
     setModal(null); 
   }
 
-  // ═══ FORT KNOX AUTH LOGIC ═══
   async function handlePasswordSubmit() {
     if (!pw.trim()) return;
     setLoginErr(""); setLoading(true);
@@ -191,7 +212,6 @@ function AdminDashboardPage() {
     } catch (e) { setLoginErr("Connection error."); setLoading(false); }
   }
 
-  // ═══ SORTING & FILTERING ENGINE ═══
   function handleSort(key) {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.dir === 'asc') direction = 'desc';
@@ -200,36 +220,24 @@ function AdminDashboardPage() {
 
   function processData(list) {
     if (!Array.isArray(list)) return [];
-    
-    // 1. Filter out nulls
     let safeList = list.filter(item => item != null && typeof item === "object");
     
-    // 2. Search Text
     if (searchTerm) {
       let s = String(searchTerm).toLowerCase();
       safeList = safeList.filter(item => Object.values(item).some(v => String(v || "").toLowerCase().indexOf(s) >= 0));
     }
     
-    // 3. Sort Data
     if (sortConfig.key) {
       safeList.sort((a, b) => {
-        let valA = a[sortConfig.key];
-        let valB = b[sortConfig.key];
+        let valA = a[sortConfig.key] || a["Date Submitted"] || a["Timestamp"]; // Fallbacks for backend keys
+        let valB = b[sortConfig.key] || b["Date Submitted"] || b["Timestamp"];
         
-        // Handle dates
         if (sortConfig.key === 'date' || sortConfig.key === 'timestamp') {
-          valA = new Date(valA).getTime() || 0;
-          valB = new Date(valB).getTime() || 0;
-        } 
-        // Handle money
-        else if (sortConfig.key === 'amount') {
-          valA = Number(String(valA).replace(/[^0-9.-]+/g,"")) || 0;
-          valB = Number(String(valB).replace(/[^0-9.-]+/g,"")) || 0;
-        }
-        // Handle strings
-        else {
-          valA = String(valA || "").toLowerCase();
-          valB = String(valB || "").toLowerCase();
+          valA = new Date(valA).getTime() || 0; valB = new Date(valB).getTime() || 0;
+        } else if (sortConfig.key === 'amount') {
+          valA = Number(String(valA).replace(/[^0-9.-]+/g,"")) || 0; valB = Number(String(valB).replace(/[^0-9.-]+/g,"")) || 0;
+        } else {
+          valA = String(valA || "").toLowerCase(); valB = String(valB || "").toLowerCase();
         }
 
         if (valA < valB) return sortConfig.dir === 'asc' ? -1 : 1;
@@ -240,7 +248,6 @@ function AdminDashboardPage() {
     return safeList;
   }
 
-  // ═══ LOGIN UI ═══
   if (!loggedIn) {
     const animStyles = `@keyframes pulseFortKnox { 0% { box-shadow: 0 0 0 0 rgba(14, 143, 139, 0.4); } 70% { box-shadow: 0 0 0 40px rgba(14, 143, 139, 0); } 100% { box-shadow: 0 0 0 0 rgba(14, 143, 139, 0); } } @keyframes floatShield { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-15px) scale(1.05); } } @keyframes blinkLight { 0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 12px ${C.emerald}; } 50% { opacity: 0.3; transform: scale(0.8); box-shadow: 0 0 2px ${C.emerald}; } }`;
     return (
@@ -278,7 +285,6 @@ function AdminDashboardPage() {
     );
   }
 
-  // ═══ MAIN ADMIN UI ═══
   var tabList = [
     { id: "dashboard", label: "Dashboard", icon: "\uD83D\uDCCA" },
     { id: "applications", label: "Applications", icon: "\uD83D\uDCCB", badge: dashboard?.apps?.underReview || 0 },
@@ -291,63 +297,61 @@ function AdminDashboardPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: C.bg, fontFamily: C.body }}>
-      {/* TOP NAVIGATION */}
+      <style>{`.sortable-th { cursor: pointer; user-select: none; } .sortable-th:hover { background: #E2E8F0 !important; }`}</style>
+      
       <div style={{ background: C.navy, padding: "14px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 200, boxShadow: "0 2px 10px rgba(0,0,0,0.1)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <img src="/logo.jpg" alt="" style={{ width: 34, height: 34, borderRadius: 8 }} />
           <div><div style={{ color: C.gold, fontWeight: 700, fontSize: 15, fontFamily: C.heading }}>CTS ETS Admin</div><div style={{ color: "rgba(255,255,255,0.5)", fontSize: 10, letterSpacing: 1 }}>OPERATIONS CONSOLE</div></div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <button onClick={refresh} style={{ padding: "6px 12px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.2)", background: "transparent", color: "#fff", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><span>↻</span> Refresh</button>
-          <button onClick={function() { setLoggedIn(false); setAuth(""); setPw(""); setLoginStep(0); try { sessionStorage.removeItem(PW_KEY); } catch(e) {} }} style={{ padding: "6px 16px", borderRadius: 6, background: C.coral, border: "none", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Lock Vault</button>
+          <button onClick={refresh} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.2)", background: "transparent", color: "#fff", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontWeight: 700 }}><span>↻</span> Refresh</button>
+          <button onClick={function() { setLoggedIn(false); setAuth(""); setPw(""); setLoginStep(0); try { sessionStorage.removeItem(PW_KEY); } catch(e) {} }} style={{ padding: "8px 18px", borderRadius: 8, background: C.coral, border: "none", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: "0 2px 8px rgba(232, 99, 74, 0.4)" }}>Lock Vault</button>
         </div>
       </div>
 
-      {/* TABS */}
       <div style={{ background: C.card, borderBottom: "1px solid " + C.border, padding: "0 24px", display: "flex", overflowX: "auto", boxShadow: "0 1px 3px rgba(0,0,0,0.02)" }}>
         {tabList.map(function(t) {
           var active = tab === t.id;
-          return <button key={t.id} onClick={function() { setTab(t.id); setSearchTerm(""); setSortConfig({key: "date", dir: "desc"}); }} style={{ padding: "16px 20px", border: "none", background: "none", cursor: "pointer", fontSize: 13, fontWeight: active ? 700 : 500, color: active ? C.navy : C.gray, borderBottom: active ? "3px solid " + C.navy : "3px solid transparent", display: "flex", alignItems: "center", gap: 8, whiteSpace: "nowrap", flexShrink: 0, fontFamily: C.body, transition: "0.2s" }}>
-            <span style={{ fontSize: 16 }}>{t.icon}</span> {t.label}
-            {t.badge > 0 && <span style={{ background: C.coral, color: "#fff", borderRadius: 12, padding: "2px 8px", fontSize: 10, fontWeight: 800 }}>{t.badge}</span>}
+          return <button key={t.id} onClick={function() { setTab(t.id); setSearchTerm(""); setSortConfig({key: "date", dir: "desc"}); }} style={{ padding: "18px 24px", border: "none", background: "none", cursor: "pointer", fontSize: 14, fontWeight: active ? 800 : 600, color: active ? C.navy : C.gray, borderBottom: active ? "3px solid " + C.navy : "3px solid transparent", display: "flex", alignItems: "center", gap: 10, whiteSpace: "nowrap", flexShrink: 0, fontFamily: C.body, transition: "0.2s" }}>
+            <span style={{ fontSize: 18 }}>{t.icon}</span> {t.label}
+            {t.badge > 0 && <span style={{ background: C.coral, color: "#fff", borderRadius: 12, padding: "2px 8px", fontSize: 11, fontWeight: 800 }}>{t.badge}</span>}
           </button>;
         })}
       </div>
 
-      {/* TOAST NOTIFICATION */}
       {actionMsg && (
-        <div style={{ margin: "20px 24px 0", padding: "12px 20px", borderRadius: 8, background: actionMsg.ok ? C.emeraldLight : C.redLight, color: actionMsg.ok ? C.emerald : C.red, fontSize: 14, fontWeight: 600, display: "flex", justifyContent: "space-between", border: "1px solid " + (actionMsg.ok ? C.emerald : C.red) + "30" }}>
+        <div style={{ margin: "20px 24px 0", padding: "14px 20px", borderRadius: 10, background: actionMsg.ok ? C.emeraldLight : C.redLight, color: actionMsg.ok ? C.emerald : C.red, fontSize: 15, fontWeight: 700, display: "flex", justifyContent: "space-between", border: "2px solid " + (actionMsg.ok ? C.emerald : C.red) + "40", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
           <span>{actionMsg.text}</span>
-          <button onClick={function() { setActionMsg(null); }} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 18, color: "inherit", padding: 0 }}>✕</button>
+          <button onClick={function() { setActionMsg(null); }} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: "inherit", padding: 0 }}>✕</button>
         </div>
       )}
 
       {loading && <div style={{ height: 4, background: `linear-gradient(90deg, ${C.coral}, ${C.gold}, ${C.teal})`, animation: "pulse 1.5s infinite" }} />}
 
-      <div style={{ padding: 24, maxWidth: 1400, margin: "0 auto" }}>
+      <div style={{ padding: "32px 24px", maxWidth: 1400, margin: "0 auto" }}>
 
-        {/* ═══ DASHBOARD VIEW ═══ */}
         {tab === "dashboard" && dashboard && (<div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, marginBottom: 32 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 20, marginBottom: 40 }}>
             {[
               { l: "Total Applications", v: dashboard?.apps?.total || 0, c: C.navy, bg: "#fff", go: function() { setTab("applications"); setAppFilter(""); } },
               { l: "Awaiting Review", v: dashboard?.apps?.underReview || 0, c: C.coral, bg: "#fff", go: function() { setTab("applications"); setAppFilter("Under Review"); } },
               { l: "Active Students", v: dashboard?.enrolled?.active || dashboard?.enrolled?.enrolled || 0, c: C.teal, bg: "#fff", go: function() { setTab("students"); setStudentFilter("Enrolled"); } },
               { l: "Revenue Collected", v: fmt(dashboard?.enrolled?.revenue || 0), c: C.emerald, bg: "#fff" },
             ].map(function(s, i) {
-              return <div key={i} onClick={s.go} style={{ background: s.bg, borderRadius: 16, padding: "24px", border: "1px solid " + C.border, cursor: s.go ? "pointer" : "default", boxShadow: "0 2px 8px rgba(0,0,0,0.02)", transition: "0.2s" }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: C.gray, marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>{s.l}</div>
-                <div style={{ fontSize: 32, fontWeight: 800, color: s.c, fontFamily: C.heading }}>{s.v}</div>
+              return <div key={i} onClick={s.go} style={{ background: s.bg, borderRadius: 20, padding: "28px", border: "1px solid " + C.border, cursor: s.go ? "pointer" : "default", boxShadow: "0 4px 15px rgba(0,0,0,0.03)", transition: "all 0.2s ease" }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: C.gray, marginBottom: 10, textTransform: "uppercase", letterSpacing: 1.5 }}>{s.l}</div>
+                <div style={{ fontSize: 36, fontWeight: 900, color: s.c, fontFamily: C.heading }}>{s.v}</div>
               </div>;
             })}
           </div>
 
-          <div style={{ background: C.card, borderRadius: 16, border: "1px solid " + C.border, overflow: "hidden", boxShadow: "0 4px 12px rgba(0,0,0,0.03)" }}>
-            <div style={{ padding: "18px 24px", borderBottom: "1px solid " + C.border, background: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ fontWeight: 700, color: C.navy, fontSize: 16, fontFamily: C.heading }}>Action Required: Pending Payments {pp.length > 0 && <span style={{ background: C.coral, color: "#fff", borderRadius: 12, padding: "2px 10px", fontSize: 12, fontWeight: 700, marginLeft: 8, fontFamily: C.body }}>{pp.length}</span>}</div>
+          <div style={{ background: C.card, borderRadius: 20, border: "1px solid " + C.border, overflow: "hidden", boxShadow: "0 8px 25px rgba(0,0,0,0.04)" }}>
+            <div style={{ padding: "20px 28px", borderBottom: "1px solid " + C.border, background: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ fontWeight: 800, color: C.navy, fontSize: 18, fontFamily: C.heading }}>Action Required: Pending Payments {pp.length > 0 && <span style={{ background: C.coral, color: "#fff", borderRadius: 12, padding: "4px 12px", fontSize: 13, fontWeight: 800, marginLeft: 12, fontFamily: C.body, verticalAlign: "middle" }}>{pp.length}</span>}</div>
             </div>
-            {pp.length === 0 ? <div style={{ padding: 60, textAlign: "center", color: C.grayLight, fontSize: 15, fontFamily: C.body }}>✅ You are all caught up! No pending payments.</div> : (
-              <div style={{ overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+            {pp.length === 0 ? <div style={{ padding: 80, textAlign: "center", color: C.grayLight, fontSize: 16, fontFamily: C.body, fontWeight: 600 }}>✅ You are all caught up! No pending payments.</div> : (
+              <div style={{ overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead><tr>
                   <TH sortKey="date" currentSort={sortConfig} onSort={handleSort}>Date</TH>
                   <TH sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Reference</TH>
@@ -358,10 +362,10 @@ function AdminDashboardPage() {
                   <TH>Actions</TH>
                 </tr></thead>
                 <tbody>{pp.map(function(p, i) { return (
-                  <tr key={i}>
-                    <TD color={C.gray}>{p?.date}</TD><TD mono bold>{p?.ref}</TD><TD bold color={C.navy}>{p?.name}</TD>
+                  <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}>
+                    <TD color={C.gray} bold>{fmtDate(p?.date || p?.timestamp)}</TD><TD mono bold>{p?.ref}</TD><TD bold color={C.navy}>{p?.name}</TD>
                     <TD bold color={C.emerald}>{fmt(p?.amount)}</TD><TD color={C.gray}>{p?.plan}</TD><TD color={C.gray} max={200}>{p?.notes}</TD>
-                    <td style={{ padding: "12px 16px", borderBottom: "1px solid " + C.border }}><div style={{ display: "flex", gap: 8 }}>
+                    <td style={{ padding: "16px", borderBottom: "1px solid " + C.border }}><div style={{ display: "flex", gap: 10 }}>
                       <Btn onClick={function() { setModal({ type: "verify", data: p }); setVerifyAmt(String(p?.amount || "")); setVerifyTxn(""); }}>Verify</Btn>
                       <Btn bg={C.redLight} color={C.red} onClick={function() { rejectPay(p?.ref); }}>Reject</Btn>
                     </div></td>
@@ -374,19 +378,19 @@ function AdminDashboardPage() {
 
         {/* ═══ APPLICATIONS ═══ */}
         {tab === "applications" && (<div>
-          <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap", alignItems: "center", background: "#fff", padding: "16px 20px", borderRadius: 16, border: "1px solid " + C.border, boxShadow: "0 2px 10px rgba(0,0,0,0.02)" }}>
             {["Under Review", "Accepted", "Pending Payment", "Rejected", "Withdrawn", ""].map(function(f) {
               return <Pill key={f || "All"} label={f || "All"} active={appFilter === f} onClick={function() { setAppFilter(f); }} />;
             })}
             <div style={{ marginLeft: "auto" }}><SearchBox value={searchTerm} onChange={setSearchTerm} /></div>
           </div>
-          <div style={{ background: C.card, borderRadius: 16, border: "1px solid " + C.border, overflow: "hidden" }}>
-            {loading && !apps.length ? <div style={{ padding: 40, textAlign: "center", color: C.grayLight }}>Loading...</div> : (function() {
+          <div style={{ background: C.card, borderRadius: 20, border: "1px solid " + C.border, overflow: "hidden", boxShadow: "0 4px 15px rgba(0,0,0,0.03)" }}>
+            {loading && !apps.length ? <div style={{ padding: 60, textAlign: "center", color: C.grayLight, fontWeight: 600 }}>Loading Data Grid...</div> : (function() {
               var fa = processData(apps).filter(function(a) { return !appFilter || a?.status === appFilter; });
-              return fa.length === 0 ? <div style={{ padding: 40, textAlign: "center", color: C.grayLight }}>No applications found</div> : (
-              <div style={{ overflowX: "auto", maxHeight: "68vh", overflowY: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse" }}>
+              return fa.length === 0 ? <div style={{ padding: 60, textAlign: "center", color: C.grayLight, fontWeight: 600 }}>No applications found in this view</div> : (
+              <div style={{ overflowX: "auto", maxHeight: "70vh", overflowY: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead><tr>
-                  <TH sortKey="date" currentSort={sortConfig} onSort={handleSort}>Date</TH>
+                  <TH sortKey="date" currentSort={sortConfig} onSort={handleSort}>Date Received</TH>
                   <TH sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Ref</TH>
                   <TH sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</TH>
                   <TH sortKey="email" currentSort={sortConfig} onSort={handleSort}>Email</TH>
@@ -396,12 +400,12 @@ function AdminDashboardPage() {
                 </tr></thead>
                 <tbody>{fa.map(function(a, i) { return (
                   <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff", opacity: busy === a.ref ? 0.5 : 1 }}>
-                    <TD color={C.gray}>{a?.date}</TD><TD mono bold>{a?.ref}</TD><TD bold>{a?.name}</TD>
-                    <TD color={C.gray} max={180}>{a?.email}</TD>
-                    <TD max={200}>{a?.programme}</TD>
-                    <td style={{ padding: "12px 16px", borderBottom: "1px solid " + C.border }}><Badge status={a?.status} /></td>
-                    <td style={{ padding: "12px 16px", borderBottom: "1px solid " + C.border }}>
-                      {a?.status === "Under Review" && <div style={{ display: "flex", gap: 8 }}>
+                    <TD color={C.gray} bold>{fmtDate(a?.date || a?.timestamp || a?.["Date Submitted"])}</TD><TD mono bold>{a?.ref}</TD><TD bold>{a?.name}</TD>
+                    <TD color={C.gray} max={200}>{a?.email}</TD>
+                    <TD max={240}>{a?.programme}</TD>
+                    <td style={{ padding: "16px", borderBottom: "1px solid " + C.border }}><Badge status={a?.status} /></td>
+                    <td style={{ padding: "16px", borderBottom: "1px solid " + C.border }}>
+                      {a?.status === "Under Review" && <div style={{ display: "flex", gap: 10 }}>
                         <Btn small onClick={function() { acceptApp(a.ref); }} disabled={busy === a.ref}>{busy === a.ref ? "..." : "Accept"}</Btn>
                         <Btn small bg={C.redLight} color={C.red} onClick={function() { rejectApp(a.ref); }} disabled={busy === a.ref}>Reject</Btn>
                       </div>}
@@ -411,23 +415,23 @@ function AdminDashboardPage() {
               </table></div>
               );
             })()}
-            <div style={{ padding: "12px 20px", borderTop: "1px solid " + C.border, fontSize: 12, color: C.grayLight, background: "#F8FAFC" }}>{processData(apps).filter(a => !appFilter || a?.status === appFilter).length} application(s)</div>
+            <div style={{ padding: "16px 24px", borderTop: "1px solid " + C.border, fontSize: 13, color: C.gray, background: "#F8FAFC", fontWeight: 700 }}>Showing {processData(apps).filter(a => !appFilter || a?.status === appFilter).length} applications</div>
           </div>
         </div>)}
 
         {/* ═══ STUDENTS ═══ */}
         {tab === "students" && (<div>
-          <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap", alignItems: "center", background: "#fff", padding: "16px 20px", borderRadius: 16, border: "1px solid " + C.border, boxShadow: "0 2px 10px rgba(0,0,0,0.02)" }}>
             {["", "Pending Payment", "Enrolled", "Active", "On Hold", "Graduated", "Withdrawn"].map(function(f) {
               return <Pill key={f || "All"} label={f || "All"} active={studentFilter === f} onClick={function() { setStudentFilter(f); }} />;
             })}
             <div style={{ marginLeft: "auto" }}><SearchBox value={searchTerm} onChange={setSearchTerm} /></div>
           </div>
-          <div style={{ background: C.card, borderRadius: 16, border: "1px solid " + C.border, overflow: "hidden" }}>
-            {loading && !students.length ? <div style={{ padding: 40, textAlign: "center", color: C.grayLight }}>Loading...</div> : (function() {
+          <div style={{ background: C.card, borderRadius: 20, border: "1px solid " + C.border, overflow: "hidden", boxShadow: "0 4px 15px rgba(0,0,0,0.03)" }}>
+            {loading && !students.length ? <div style={{ padding: 60, textAlign: "center", color: C.grayLight, fontWeight: 600 }}>Loading Data Grid...</div> : (function() {
               var fs = processData(students).filter(function(s) { return !studentFilter || s?.status === studentFilter; });
-              return fs.length === 0 ? <div style={{ padding: 40, textAlign: "center", color: C.grayLight }}>No students found</div> : (
-                <div style={{ overflowX: "auto", maxHeight: "68vh", overflowY: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse" }}>
+              return fs.length === 0 ? <div style={{ padding: 60, textAlign: "center", color: C.grayLight, fontWeight: 600 }}>No students found in this view</div> : (
+                <div style={{ overflowX: "auto", maxHeight: "70vh", overflowY: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead><tr>
                     <TH sortKey="studentNumber" currentSort={sortConfig} onSort={handleSort}>Student #</TH>
                     <TH sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</TH>
@@ -437,4 +441,142 @@ function AdminDashboardPage() {
                     <TH>Actions</TH>
                   </tr></thead>
                   <tbody>{fs.map(function(s, i) { return (
-                    <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#
+                    <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff", opacity: busy === s.ref ? 0.5 : 1 }}>
+                      <TD mono bold>{s?.studentNumber}</TD><TD bold>{s?.name}</TD>
+                      <TD max={240}>{s?.programme}</TD>
+                      <td style={{ padding: "16px", borderBottom: "1px solid " + C.border }}><Badge status={s?.status} /></td>
+                      <td style={{ padding: "16px", borderBottom: "1px solid " + C.border }}><Badge status={s?.lmsAccess} /></td>
+                      <td style={{ padding: "16px", borderBottom: "1px solid " + C.border }}>
+                        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                          {s?.status === "Pending Payment" && <Btn small onClick={function() { enrollStu(s.ref); }} disabled={busy === s.ref}>{busy === s.ref ? "..." : "Enroll"}</Btn>}
+                          <Btn small bg={C.navy} onClick={function() { genRecord(s.studentNumber); }} disabled={busy === s.studentNumber}>Record</Btn>
+                        </div>
+                      </td>
+                    </tr>
+                  ); })}</tbody>
+                </table></div>
+              );
+            })()}
+            <div style={{ padding: "16px 24px", borderTop: "1px solid " + C.border, fontSize: 13, color: C.gray, background: "#F8FAFC", fontWeight: 700 }}>
+              Showing {processData(students).filter(function(s) { return !studentFilter || s?.status === studentFilter; }).length} students
+            </div>
+          </div>
+        </div>)}
+
+        {/* ═══ PAYMENTS ═══ */}
+        {tab === "payments" && (<div>
+          <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap", alignItems: "center", background: "#fff", padding: "16px 20px", borderRadius: 16, border: "1px solid " + C.border, boxShadow: "0 2px 10px rgba(0,0,0,0.02)" }}>
+            {["Pending Verification", "Paid", "Rejected \u2014 Not Found", ""].map(function(f) {
+              return <Pill key={f || "All"} label={f || "All"} active={payFilter === f} onClick={function() { setPayFilter(f); }} />;
+            })}
+            <div style={{ marginLeft: "auto" }}><SearchBox value={searchTerm} onChange={setSearchTerm} /></div>
+          </div>
+          <div style={{ background: C.card, borderRadius: 20, border: "1px solid " + C.border, overflow: "hidden", boxShadow: "0 4px 15px rgba(0,0,0,0.03)" }}>
+            {loading && !payments.length ? <div style={{ padding: 60, textAlign: "center", color: C.grayLight, fontWeight: 600 }}>Loading Data Grid...</div> : (function() {
+              var fp = processData(payments).filter(function(p) { return !payFilter || p?.status === payFilter; });
+              return fp.length === 0 ? <div style={{ padding: 60, textAlign: "center", color: C.grayLight, fontWeight: 600 }}>No payments found in this view</div> : (
+                <div style={{ overflowX: "auto", maxHeight: "70vh", overflowY: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead><tr>
+                    <TH sortKey="date" currentSort={sortConfig} onSort={handleSort}>Date Received</TH>
+                    <TH sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Ref</TH>
+                    <TH sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</TH>
+                    <TH sortKey="amount" currentSort={sortConfig} onSort={handleSort}>Amount</TH>
+                    <TH sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</TH>
+                    <TH>Receipt</TH>
+                    <TH>Actions</TH>
+                  </tr></thead>
+                  <tbody>{fp.map(function(p, i) {
+                    var isPending = (p?.status || "").indexOf("Pending") >= 0;
+                    return (
+                      <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff", opacity: busy === p.ref ? 0.5 : 1 }}>
+                        <TD color={C.gray} bold>{fmtDate(p?.date || p?.timestamp)}</TD><TD mono bold>{p?.ref}</TD><TD bold>{p?.name}</TD>
+                        <TD bold color={C.emerald}>{fmt(p?.amount)}</TD>
+                        <td style={{ padding: "16px", borderBottom: "1px solid " + C.border }}><Badge status={p?.status} /></td>
+                        <td style={{ padding: "16px", borderBottom: "1px solid " + C.border }}>{p?.receipt && <a href={p.receipt} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: C.blue, fontWeight: 800, textDecoration: "underline" }}>View</a>}</td>
+                        <td style={{ padding: "16px", borderBottom: "1px solid " + C.border }}>
+                          {isPending && <div style={{ display: "flex", gap: 10 }}>
+                            <Btn small onClick={function() { setModal({ type: "verify", data: p }); setVerifyAmt(String(p.amount)); setVerifyTxn(""); }} disabled={busy === p.ref}>Verify</Btn>
+                            <Btn small bg={C.redLight} color={C.red} onClick={function() { rejectPay(p.ref); }} disabled={busy === p.ref}>Reject</Btn>
+                          </div>}
+                        </td>
+                      </tr>
+                    );
+                  })}</tbody>
+                </table></div>
+              );
+            })()}
+            <div style={{ padding: "16px 24px", borderTop: "1px solid " + C.border, fontSize: 13, color: C.gray, background: "#F8FAFC", fontWeight: 700 }}>
+              Showing {processData(payments).filter(function(p) { return !payFilter || p?.status === payFilter; }).length} records
+            </div>
+          </div>
+        </div>)}
+
+        {/* ═══ ACTIVITY ═══ */}
+        {tab === "activity" && (<div>
+          <div style={{ display: "flex", gap: 12, marginBottom: 24, alignItems: "center" }}>
+            <h2 style={{ fontFamily: C.heading, color: C.navy, fontSize: 26, margin: 0, fontWeight: 800 }}>Activity Logs</h2>
+            <div style={{ marginLeft: "auto" }}><SearchBox value={searchTerm} onChange={setSearchTerm} /></div>
+          </div>
+
+          <div style={{ background: C.card, borderRadius: 20, border: "1px solid " + C.border, overflow: "hidden", marginBottom: 32, boxShadow: "0 4px 15px rgba(0,0,0,0.03)" }}>
+            <div style={{ padding: "20px 24px", borderBottom: "1px solid " + C.border, fontWeight: 800, color: C.navy, fontSize: 16 }}>System Audit Log</div>
+            {auditLog.length === 0 ? <div style={{ padding: 40, textAlign: "center", color: C.grayLight, fontWeight: 600 }}>No entries</div> : (
+              <div style={{ overflowX: "auto", maxHeight: "60vh", overflowY: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead><tr>
+                  <TH sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Exact Time</TH>
+                  <TH sortKey="action" currentSort={sortConfig} onSort={handleSort}>Action</TH>
+                  <TH sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Ref</TH>
+                  <TH sortKey="details" currentSort={sortConfig} onSort={handleSort}>Details</TH>
+                  <TH sortKey="by" currentSort={sortConfig} onSort={handleSort}>By</TH>
+                </tr></thead>
+                <tbody>{processData(auditLog).map(function(e, i) { return (
+                  <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}>
+                    <TD color={C.gray} bold>{fmtTime(e?.timestamp || e?.date)}</TD>
+                    <td style={{ padding: "14px 16px", borderBottom: "1px solid " + C.border }}><span style={{ padding: "4px 10px", borderRadius: 8, background: C.blueLight, color: C.blue, fontSize: 12, fontWeight: 800 }}>{e?.action}</span></td>
+                    <TD mono>{e?.ref}</TD><TD color={C.gray} max={300}>{e?.details}</TD><TD color={C.gray}>{e?.by}</TD>
+                  </tr>
+                ); })}</tbody>
+              </table></div>
+            )}
+          </div>
+        </div>)}
+
+      </div>
+
+      {/* ═══ VERIFY MODAL ═══ */}
+      {modal && modal.type === "verify" && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(1,30,64,0.85)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, backdropFilter: "blur(6px)" }}
+          onClick={function(e) { if (e.target === e.currentTarget) setModal(null); }}>
+          <div style={{ background: "#fff", borderRadius: 24, width: "100%", maxWidth: 520, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,0.3)" }}>
+            <div style={{ padding: "32px", background: C.navy }}>
+              <div style={{ color: "#fff", fontSize: 24, fontWeight: 800, fontFamily: C.heading }}>Verify Bank Payment</div>
+              <div style={{ color: C.gold, fontSize: 14, marginTop: 6, fontFamily: C.body, fontWeight: 600 }}>{modal.data.ref} | {modal.data.name}</div>
+            </div>
+            <div style={{ padding: 40 }}>
+              <div style={{ marginBottom: 24 }}>
+                <label style={{ display: "block", fontSize: 13, color: C.navy, marginBottom: 10, fontWeight: 800, fontFamily: C.body }}>Verified Amount Received (JMD)</label>
+                <input type="number" value={verifyAmt} onChange={function(e) { setVerifyAmt(e.target.value); }}
+                  style={{ width: "100%", padding: "18px 20px", borderRadius: 12, border: "2px solid " + C.border, fontSize: 20, fontWeight: 800, color: C.navy, boxSizing: "border-box", outline: "none", background: "#F8FAFC" }} />
+              </div>
+              <div style={{ marginBottom: 40 }}>
+                <label style={{ display: "block", fontSize: 13, color: C.navy, marginBottom: 10, fontWeight: 800, fontFamily: C.body }}>Bank Transaction ID / Receipt #</label>
+                <input type="text" value={verifyTxn} onChange={function(e) { setVerifyTxn(e.target.value); }} placeholder="Enter bank reference..."
+                  style={{ width: "100%", padding: "18px 20px", borderRadius: 12, border: "2px solid " + C.border, fontSize: 16, fontFamily: "monospace", color: C.navy, boxSizing: "border-box", outline: "none", background: "#F8FAFC" }} />
+              </div>
+              <div style={{ display: "flex", gap: 16 }}>
+                <button onClick={function() { if (verifyAmt && verifyTxn) verifyPay(modal.data.ref, verifyAmt, verifyTxn); }}
+                  disabled={!verifyAmt || !verifyTxn || busy === modal.data.ref}
+                  style={{ flex: 1, padding: 18, borderRadius: 12, border: "none", background: (verifyAmt && verifyTxn) ? C.emerald : C.border, color: (verifyAmt && verifyTxn) ? "#fff" : C.grayLight, fontSize: 16, fontWeight: 800, cursor: (verifyAmt && verifyTxn) ? "pointer" : "not-allowed", transition: "0.2s" }}>
+                  {busy === modal.data.ref ? "Verifying..." : "Confirm Payment"}
+                </button>
+                <button onClick={function() { setModal(null); }} style={{ padding: "18px 28px", borderRadius: 12, border: "2px solid " + C.border, background: C.bg, color: C.navy, cursor: "pointer", fontWeight: 800, transition: "0.2s" }}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default AdminDashboardPage;
