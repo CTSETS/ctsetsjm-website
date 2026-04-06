@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import S from "../constants/styles";
+import { PROGRAMMES } from "../constants/programmes"; // 🚀 Added import to read your exact course list!
 import { Container, PageWrapper, Btn } from "../components/shared/CoreComponents";
 import { fmt } from "../utils/formatting";
 
@@ -13,12 +14,47 @@ const getDriveImageUrl = (url) => {
   return url;
 };
 
-// Helper for Dynamic Valid Term
-const getValidTerm = (level) => {
-  const currentYear = new Date().getFullYear();
-  // Levels 4 and 5 are typically 2 years, others 1 year
-  const duration = (level && (level.includes("4") || level.includes("5"))) ? 2 : 1;
-  return `${currentYear} - ${currentYear + duration}`;
+// 🚀 SMART VALID TERM CALCULATOR
+const getValidTerm = (programmeName, level, dateEnrolled) => {
+  const start = dateEnrolled ? new Date(dateEnrolled) : new Date();
+  let durationInMonths = 3; // Default fallback
+
+  // 1. Search the imported PROGRAMMES list for the exact course match
+  let found = false;
+  if (programmeName) {
+    const searchName = programmeName.toLowerCase().trim();
+    for (const levelKey in PROGRAMMES) {
+      const coursesInLevel = PROGRAMMES[levelKey];
+      for (const course of coursesInLevel) {
+        if (course.name.toLowerCase().trim() === searchName) {
+          // Extract the number from strings like "3 Months" or "12 Months"
+          const match = course.duration.match(/\d+/);
+          if (match) {
+            durationInMonths = parseInt(match[0], 10);
+            found = true;
+          }
+          break;
+        }
+      }
+      if (found) break;
+    }
+  }
+
+  // 2. Fallback to Level if the course isn't found in the master list
+  if (!found) {
+    const l = (level || "").toLowerCase();
+    if (l.includes("level 2") || l.includes("vocational")) durationInMonths = 6;
+    else if (l.includes("level 3") || l.includes("diploma")) durationInMonths = 12;
+    else if (l.includes("level 4") || l.includes("associate")) durationInMonths = 24;
+    else if (l.includes("level 5") || l.includes("bachelor")) durationInMonths = 24;
+  }
+
+  // Calculate the end date (Subtracting 1 so a 3-month course starting in April ends in June)
+  const end = new Date(start);
+  end.setMonth(start.getMonth() + (durationInMonths - 1));
+
+  const format = (d) => d.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+  return `${format(start)} – ${format(end)}`; 
 };
 
 // Gamification: Inject Confetti Library
@@ -310,7 +346,7 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
                <div style={{ background: "#fff", borderRadius: 16, padding: "32px", border: `1px solid ${S.border}`, display: "flex", flexDirection: "column", alignItems: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
                   <div style={{ fontSize: 11, color: S.navy, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 24 }}>Digital Student ID</div>
                   
-                  {/* 🚀 UPGRADED: The Physical ID Card Design */}
+                  {/* The Physical ID Card Design */}
                   <div id="student-id-card" style={{ width: "380px", height: "230px", borderRadius: "14px", background: `linear-gradient(135deg, ${S.navy} 0%, #0a2d4d 100%)`, color: "#fff", position: "relative", overflow: "hidden", fontFamily: "'DM Sans', sans-serif", boxShadow: "0 10px 25px rgba(1, 30, 64, 0.25)", border: `1px solid ${S.gold}50` }}>
                     <div style={{ position: "absolute", top: -40, right: -40, width: 120, height: 120, borderRadius: "50%", background: "rgba(196, 145, 18, 0.15)" }} />
                     
@@ -343,7 +379,9 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
                           <div>
                             <div style={{ fontSize: 8, opacity: 0.7, textTransform: "uppercase", marginBottom: 2, letterSpacing: 0.5 }}>Valid Term</div>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>{getValidTerm(profile.level)}</div>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>
+                              {getValidTerm(profile.programme, profile.level, profile.dateEnrolled)}
+                            </div>
                           </div>
                           <div style={{ width: 24, height: 24, borderRadius: "50%", background: profile.status === "Enrolled" || profile.status === "Active" ? S.emerald : S.amber, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, border: "2px solid #fff", boxShadow: "0 2px 4px rgba(0,0,0,0.3)" }}>✓</div>
                         </div>
