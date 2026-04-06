@@ -47,7 +47,9 @@ const TITLES = { Home: "CTS ETS — Jamaica's Digital Vocational School", About:
 
 export default function CTSApp() {
   const [page, setPage] = useState(() => {
-    const hash = window.location.hash.replace("#", "").replace(/-/g, " ");
+    // 🚀 FIXED: Ignore anything after the "?" so the router doesn't get confused
+    const rawHash = window.location.hash.split("?")[0];
+    const hash = rawHash.replace("#", "").replace(/-/g, " ");
     if (hash.toLowerCase() === "admin") return "Admin";
     return PAGES.find(p => p.toLowerCase() === hash.toLowerCase()) || "Home";
   });
@@ -63,7 +65,19 @@ export default function CTSApp() {
     }, 150);
   }, []);
 
-  useEffect(() => { const onPop = () => { const h = window.location.hash.replace("#", "").replace(/-/g, " "); if (h.toLowerCase() === "admin") { setPage("Admin"); } else { setPage(PAGES.find(p => p.toLowerCase() === h.toLowerCase()) || "Home"); } window.scrollTo({ top: 0, behavior: "instant" }); }; window.addEventListener("popstate", onPop); return () => window.removeEventListener("popstate", onPop); }, []);
+  useEffect(() => { 
+    const onPop = () => { 
+      // 🚀 FIXED: Ignore anything after the "?" here too
+      const rawHash = window.location.hash.split("?")[0];
+      const h = rawHash.replace("#", "").replace(/-/g, " "); 
+      if (h.toLowerCase() === "admin") { setPage("Admin"); } 
+      else { setPage(PAGES.find(p => p.toLowerCase() === h.toLowerCase()) || "Home"); } 
+      window.scrollTo({ top: 0, behavior: "instant" }); 
+    }; 
+    window.addEventListener("popstate", onPop); 
+    return () => window.removeEventListener("popstate", onPop); 
+  }, []);
+  
   useEffect(() => { document.title = TITLES[page] || "CTS ETS"; }, [page]);
   useEffect(() => { initGA4(); }, []);
   useEffect(() => { trackPageView(page); }, [page]);
