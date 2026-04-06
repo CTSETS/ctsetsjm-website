@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import S from "../constants/styles";
-import { BANK_DETAILS, BOOKING_URLS, REG_FEE, USD_RATE, WIPAY_CONFIG, APPS_SCRIPT_URL } from "../constants/config"; // <-- Updated Import
+import { BANK_DETAILS, BOOKING_URLS, REG_FEE, USD_RATE, WIPAY_CONFIG, APPS_SCRIPT_URL } from "../constants/config"; 
 import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture } from "../components/shared/CoreComponents";
 import { PaymentSecurityNotice, HoneypotField } from "../components/shared/DisplayComponents";
 import { PaymentMethodSelector, PaymentSetupNotice, isOnlinePaymentAvailable } from "../components/apply/SmartPayment";
@@ -76,12 +76,32 @@ export default function PaymentPage({ setPage }) {
   var [payingTuition, setPayingTuition] = useState(false);
   var startTime = useRef(Date.now());
 
+  // 🚀 NEW MAGIC LINK ENGINE
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.includes("?")) {
+      const queryString = hash.split("?")[1];
+      const urlParams = new URLSearchParams(queryString);
+      const passedRef = urlParams.get("ref");
+
+      if (passedRef) {
+        // Since they clicked from their private email, we skip the OTP Gate securely!
+        setVerifiedId(passedRef);
+        setRefInput(passedRef);
+      }
+      
+      // Silently clean the URL so it looks professional in the address bar
+      window.history.replaceState(null, "", "/#pay");
+    }
+  }, []);
+
+  // Triggers the auto-lookup once the Magic Link sets the verified ID
   useEffect(() => {
     if (verifiedId && lookupState === "idle") {
       setRefInput(verifiedId);
       setTimeout(() => { var lookupBtn = document.getElementById("otp-auto-lookup"); if (lookupBtn) lookupBtn.click(); }, 300);
     }
-  }, [verifiedId]);
+  }, [verifiedId, lookupState]);
 
   useEffect(() => {
     var params = new URLSearchParams(window.location.search);
