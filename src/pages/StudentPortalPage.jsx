@@ -360,12 +360,13 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
                   <div id="student-id-card" style={{ width: "380px", height: "230px", borderRadius: "14px", background: `linear-gradient(135deg, ${S.navy} 0%, #0a2d4d 100%)`, color: "#fff", position: "relative", overflow: "hidden", fontFamily: "'DM Sans', sans-serif", boxShadow: "0 10px 25px rgba(1, 30, 64, 0.25)", border: `1px solid ${S.gold}50` }}>
                     <div style={{ position: "absolute", top: -40, right: -40, width: 120, height: 120, borderRadius: "50%", background: "rgba(196, 145, 18, 0.15)" }} />
                     
-                    {/* TOP HEADER: Logo & School Name */}
+                    {/* TOP HEADER: Logo, School Name & TAGLINE */}
                     <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,0.1)", display: "flex", gap: "10px", alignItems: "center", background: "rgba(0,0,0,0.2)" }}>
-                      <img src="/logo.jpg" alt="Logo" style={{ width: 32, height: 32, borderRadius: "6px", border: `1px solid ${S.gold}` }} />
+                      <img src="/logo.jpg" alt="Logo" style={{ width: 36, height: 36, borderRadius: "6px", border: `1px solid ${S.gold}` }} />
                       <div>
                         <div style={{ fontSize: 12, fontWeight: 900, color: S.gold, letterSpacing: 0.5, lineHeight: 1.1 }}>CTS Empowerment &</div>
                         <div style={{ fontSize: 12, fontWeight: 900, color: S.gold, letterSpacing: 0.5, lineHeight: 1.1 }}>Training Solutions</div>
+                        <div style={{ fontSize: 7, color: "#fff", letterSpacing: 0.5, marginTop: 3, textTransform: "uppercase", opacity: 0.9 }}>Committed to Service | Excellence Through Service</div>
                       </div>
                       <div style={{ marginLeft: "auto", fontSize: 8, textTransform: "uppercase", letterSpacing: 1, opacity: 0.8, textAlign: "right" }}>Student<br/>Identity Card</div>
                     </div>
@@ -402,17 +403,31 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
                </div>
              </div>
 
-             {/* Right Column: Institutional Data */}
+             {/* Right Column: FULL Institutional Data */}
              <div style={{ background: "#fff", borderRadius: 16, padding: "32px", border: `1px solid ${S.border}`, boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
                  <h3 style={{ fontFamily: S.heading, color: S.navy, marginBottom: 24, fontSize: 20 }}>Official Institutional Record</h3>
+                 
+                 <div style={{ marginBottom: 8, fontSize: 11, color: S.gray, fontWeight: 800, textTransform: "uppercase", letterSpacing: 1 }}>Personal Details</div>
                  <DataRow label="Full Name" value={profile.name} />
-                 <DataRow label="Student Number" value={profile.studentNumber} />
+                 <DataRow label="Date of Birth" value={profile.dob} />
+                 <DataRow label="TRN" value={profile.trn} />
+                 <DataRow label="Phone Number" value={profile.phone} />
+                 <DataRow label="Home Address" value={profile.address} />
                  <DataRow label="Email Address" value={profile.email} />
+                 
+                 <div style={{ marginTop: 24, marginBottom: 8, fontSize: 11, color: S.gray, fontWeight: 800, textTransform: "uppercase", letterSpacing: 1 }}>Academic & Financial</div>
+                 <DataRow label="Student Number" value={profile.studentNumber} />
                  <DataRow label="Enrolled Programme" value={profile.programme} />
                  <DataRow label="Qualification Level" value={profile.level} />
                  <DataRow label="Academic Status" value={profile.status} />
-                 <div style={{ marginTop: 24, padding: "16px", background: S.amberLight, borderRadius: 8, fontSize: 13, color: S.amberDark, fontFamily: S.body, lineHeight: 1.6, border: `1px solid ${S.amber}40` }}>
-                     To request corrections to your official name or email, please contact <strong>admin@ctsetsjm.com</strong>.
+                 <DataRow label="Date Enrolled" value={profile.dateEnrolled ? new Date(profile.dateEnrolled).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "—"} />
+                 
+                 <div style={{ marginTop: 24, marginBottom: 8, fontSize: 11, color: S.gray, fontWeight: 800, textTransform: "uppercase", letterSpacing: 1 }}>Emergency Contact</div>
+                 <DataRow label="Contact Name" value={profile.emergencyName} />
+                 <DataRow label="Contact Phone" value={profile.emergencyPhone} />
+
+                 <div style={{ marginTop: 32, padding: "16px", background: S.amberLight, borderRadius: 8, fontSize: 13, color: S.amberDark, fontFamily: S.body, lineHeight: 1.6, border: `1px solid ${S.amber}40` }}>
+                     To request corrections to your official record, please contact <strong>admin@ctsetsjm.com</strong>.
                  </div>
              </div>
          </div>
