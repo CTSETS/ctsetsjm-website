@@ -18,14 +18,18 @@ var C = {
 // ═══ IRONCLAD DATA PARSERS ═══
 function fmt(n) { return "J$" + Number(n || 0).toLocaleString(); }
 
+// Aggressively hunt for anything that looks like a date
 function findDate(obj) {
   if (!obj) return null;
+  // Common keys from Google Sheets
   if (obj.timestamp) return obj.timestamp;
   if (obj.Timestamp) return obj.Timestamp;
   if (obj.date) return obj.date;
   if (obj.Date) return obj.Date;
   if (obj["Date Submitted"]) return obj["Date Submitted"];
+  if (obj["Timestamp"]) return obj["Timestamp"];
   
+  // Last resort: search all keys
   for (let key in obj) {
     if (key.toLowerCase().includes("date") || key.toLowerCase().includes("time")) {
       if (obj[key]) return obj[key];
@@ -42,17 +46,19 @@ function fmtTime(d) {
   return date.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
 }
 
+// Aggressively hunt for folder links
 function getFolderUrl(obj) {
   if (!obj) return "";
   if (obj.folder) return obj.folder;
   if (obj.folderUrl) return obj.folderUrl;
   if (obj["Drive Folder Link"]) return obj["Drive Folder Link"];
+  if (obj["Folder Link"]) return obj["Folder Link"];
+  if (obj["Link"]) return obj["Link"];
   
   for (let key in obj) {
-    if (key.toLowerCase().includes("folder") || key.toLowerCase().includes("link") || key.toLowerCase().includes("drive")) {
-      if (typeof obj[key] === 'string' && obj[key].includes("drive.google.com")) {
-        return obj[key];
-      }
+    let val = String(obj[key] || "");
+    if (val.startsWith("http") && (val.includes("drive") || val.includes("folder") || val.includes("sharing"))) {
+      return val;
     }
   }
   return "";
@@ -100,7 +106,7 @@ function TH({ children, sortKey, currentSort, onSort }) {
 function TD({ children, mono, bold, color, max }) { return <td style={{ padding: "16px", fontFamily: mono ? "monospace" : C.body, fontSize: mono ? 12 : 13, fontWeight: bold ? 700 : 500, color: color || C.text, maxWidth: max || "none", overflow: max ? "hidden" : "visible", textOverflow: max ? "ellipsis" : "clip", whiteSpace: max ? "nowrap" : "normal", borderBottom: "1px solid " + C.border, transition: "background 0.3s" }}>{children}</td>; }
 function Btn({ children, color, bg, onClick, disabled, small }) { return <button onClick={onClick} disabled={disabled} style={{ padding: small ? "8px 14px" : "10px 18px", borderRadius: 8, border: "none", background: disabled ? C.border : (bg || C.emerald), color: disabled ? C.grayLight : (color || "#fff"), fontSize: small ? 12 : 14, fontWeight: 700, cursor: disabled ? "not-allowed" : "pointer", fontFamily: C.body, whiteSpace: "nowrap", transition: "all 0.2s" }}>{children}</button>; }
 function Pill({ label, active, onClick }) { return <button onClick={onClick} style={{ padding: "8px 16px", borderRadius: 20, border: active ? "2px solid " + C.navy : "1px solid " + C.border, background: active ? C.navy : C.card, color: active ? "#fff" : C.gray, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: C.body, transition: "all 0.2s", boxShadow: active ? "0 2px 8px rgba(1,30,64,0.15)" : "none" }}>{label}</button>; }
-function SearchBox({ value, onChange }) { return <input value={value} onChange={function(e) { onChange(e.target.value); }} placeholder="Filter by any name, date, or keyword..." style={{ padding: "10px 16px", borderRadius: 10, border: "2px solid " + C.border, fontSize: 14, width: 320, boxSizing: "border-box", fontFamily: C.body, outline: "none", transition: "0.2s", background: "#fff", fontWeight: 500 }} />; }
+function SearchBox({ value, onChange }) { return <input value={value} onChange={function(e) { onChange(e.target.value); }} placeholder="Filter table by any keyword..." style={{ padding: "10px 16px", borderRadius: 10, border: "2px solid " + C.border, fontSize: 14, width: 280, boxSizing: "border-box", fontFamily: C.body, outline: "none", transition: "0.2s", background: "#fff", fontWeight: 500 }} />; }
 
 function AdminDashboardPage() {
   var [auth, setAuth] = useState(function() { try { return sessionStorage.getItem(PW_KEY) || ""; } catch(e) { return ""; } });
@@ -240,8 +246,8 @@ function AdminDashboardPage() {
         const data2 = await res2.json();
         if (data2 && data2.success) setLoginStep(1); 
         else setLoginErr("Failed to trigger 2FA sequence.");
-      } else setLoginErr("Invalid master password.");
-    } catch (e) { setLoginErr("Gateway offline."); }
+      } else setLoginErr("Invalid master password. Intrusion logged.");
+    } catch (e) { setLoginErr("Connection error. Gateway offline."); }
     setLoading(false);
   }
 
@@ -252,7 +258,7 @@ function AdminDashboardPage() {
       const res = await fetch(`${VERCEL_URL}?action=verifyotp&identifier=ADMIN&code=${otpCode.trim()}&purpose=admin_login`);
       const data = await res.json();
       if (data && data.success) loadDash(); 
-      else { setLoginErr(data?.error === "wrong_code" ? "Invalid code." : "Code expired."); setLoading(false); }
+      else { setLoginErr(data?.error === "wrong_code" ? "Invalid 2FA code." : "Code expired. Refresh to try again."); setLoading(false); }
     } catch (e) { setLoginErr("Connection error."); setLoading(false); }
   }
 
@@ -275,6 +281,7 @@ function AdminDashboardPage() {
       safeList.sort((a, b) => {
         let valA = a[sortConfig.key] || findDate(a);
         let valB = b[sortConfig.key] || findDate(b);
+        
         if (sortConfig.key.toLowerCase().includes('date') || sortConfig.key.toLowerCase().includes('time') || sortConfig.key.toLowerCase().includes('timestamp')) {
           valA = new Date(valA).getTime() || 0; valB = new Date(valB).getTime() || 0;
         } else if (sortConfig.key === 'amount') {
@@ -282,6 +289,7 @@ function AdminDashboardPage() {
         } else {
           valA = String(valA || "").toLowerCase(); valB = String(valB || "").toLowerCase();
         }
+
         if (valA < valB) return sortConfig.dir === 'asc' ? -1 : 1;
         if (valA > valB) return sortConfig.dir === 'asc' ? 1 : -1;
         return 0;
@@ -290,6 +298,7 @@ function AdminDashboardPage() {
     return safeList;
   }
 
+  // ═══ LOGIN UI ═══
   if (!loggedIn) {
     const animStyles = `@keyframes pulseFortKnox { 0% { box-shadow: 0 0 0 0 rgba(14, 143, 139, 0.4); } 70% { box-shadow: 0 0 0 40px rgba(14, 143, 139, 0); } 100% { box-shadow: 0 0 0 0 rgba(14, 143, 139, 0); } } @keyframes floatShield { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-15px) scale(1.05); } } @keyframes blinkLight { 0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 12px ${C.emerald}; } 50% { opacity: 0.3; transform: scale(0.8); box-shadow: 0 0 2px ${C.emerald}; } }`;
     return (
@@ -297,8 +306,9 @@ function AdminDashboardPage() {
         <style>{animStyles}</style>
         <div style={{ background: C.navy, padding: "20px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.4)", position: "relative", zIndex: 10, borderBottom: `2px solid ${C.gold}` }}>
           <div style={{ display: "flex", alignItems: "center", gap: 18 }}><img src="/logo.jpg" alt="CTS ETS" style={{ width: 56, height: 56, borderRadius: 12, border: `2px solid ${C.gold}` }} /><div><div style={{ color: C.gold, fontWeight: 900, fontSize: 26, fontFamily: C.heading }}>CTS ETS Admin</div><div style={{ color: "rgba(255,255,255,0.7)", fontSize: 11, letterSpacing: 4, fontWeight: 800 }}>SECURE GATEWAY</div></div></div>
+          <a href="/#Home" style={{ color: "#fff", fontSize: 13, textDecoration: "none", fontWeight: 800, padding: "14px 28px", borderRadius: 8, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", transition: "all 0.2s", textTransform: "uppercase", letterSpacing: 1 }}>&larr; Abort Login</a>
         </div>
-        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", background: `radial-gradient(circle at center, #0a2d4d 0%, ${C.navy} 100%)`, position: "relative", overflow: "hidden" }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 20, background: `radial-gradient(circle at center, #0a2d4d 0%, ${C.navy} 100%)`, position: "relative", overflow: "hidden" }}>
           <div style={{ background: C.card, borderRadius: 24, padding: "64px 48px", maxWidth: 480, width: "100%", textAlign: "center", position: "relative", zIndex: 2, animation: "pulseFortKnox 4s infinite", border: `2px solid ${C.teal}50` }}>
             <div style={{ fontSize: 96, marginBottom: 24, animation: "floatShield 5s ease-in-out infinite" }}>🛡️</div>
             <h1 style={{ fontFamily: C.heading, color: C.navy, fontSize: 36, fontWeight: 900 }}>Identify Yourself</h1>
@@ -323,8 +333,9 @@ function AdminDashboardPage() {
     { id: "activity", label: "Activity Log", icon: "⚡" },
   ];
 
+  // ═══ FULL WIDTH DASHBOARD ═══
   return (
-    <div style={{ minHeight: "100vh", background: C.bg, fontFamily: C.body, width: "100vw", overflowX: "hidden" }}>
+    <div style={{ minHeight: "100vh", background: C.bg, fontFamily: C.body, width: "100%", overflowX: "hidden" }}>
       <style>{`.sortable-th { cursor: pointer; user-select: none; } .sortable-th:hover { background: #E2E8F0 !important; }`}</style>
       
       <div style={{ background: C.navy, padding: "14px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 200, boxShadow: "0 2px 10px rgba(0,0,0,0.1)" }}>
@@ -338,9 +349,9 @@ function AdminDashboardPage() {
         </div>
       </div>
 
-      <div style={{ background: C.card, borderBottom: "1px solid " + C.border, padding: "0 40px", display: "flex", boxShadow: "0 1px 3px rgba(0,0,0,0.02)" }}>
+      <div style={{ background: C.card, borderBottom: "1px solid " + C.border, padding: "0 40px", display: "flex", overflowX: "auto", boxShadow: "0 1px 3px rgba(0,0,0,0.02)" }}>
         {tabList.map(t => (
-          <button key={t.id} onClick={() => { setTab(t.id); setSearchTerm(""); setSortConfig({key: "timestamp", dir: "desc"}); }} style={{ padding: "20px 28px", border: "none", background: "none", cursor: "pointer", fontSize: 14, fontWeight: tab === t.id ? 800 : 600, color: tab === t.id ? C.navy : C.gray, borderBottom: tab === t.id ? `3px solid ${C.navy}` : "3px solid transparent", display: "flex", alignItems: "center", gap: 10 }}>
+          <button key={t.id} onClick={() => { setTab(t.id); setSearchTerm(""); setSortConfig({key: "timestamp", dir: "desc"}); }} style={{ padding: "20px 28px", border: "none", background: "none", cursor: "pointer", fontSize: 14, fontWeight: tab === t.id ? 800 : 600, color: tab === t.id ? C.navy : C.gray, borderBottom: tab === t.id ? `3px solid ${C.navy}` : "3px solid transparent", display: "flex", alignItems: "center", gap: 10, whiteSpace: "nowrap", flexShrink: 0 }}>
             <span style={{ fontSize: 18 }}>{t.icon}</span> {t.label}
             {t.b > 0 && <span style={{ background: C.coral, color: "#fff", borderRadius: 12, padding: "2px 8px", fontSize: 11, fontWeight: 800 }}>{t.b}</span>}
           </button>
@@ -356,6 +367,7 @@ function AdminDashboardPage() {
 
       {loading && <div style={{ height: 4, background: `linear-gradient(90deg, ${C.coral}, ${C.gold}, ${C.teal})`, animation: "pulse 1.5s infinite" }} />}
 
+      {/* FULL WIDTH CONTENT WRAPPER */}
       <div style={{ padding: "40px", width: "100%", boxSizing: "border-box" }}>
 
         {tab === "dashboard" && dashboard && (<div>
@@ -399,7 +411,7 @@ function AdminDashboardPage() {
         </div>)}
 
         {tab === "applications" && (<div>
-          <div style={{ display: "flex", gap: 16, marginBottom: 32, alignItems: "center", background: "#fff", padding: "20px 32px", borderRadius: 20, border: "1px solid " + C.border }}>
+          <div style={{ display: "flex", gap: 16, marginBottom: 32, alignItems: "center", background: "#fff", padding: "20px 32px", borderRadius: 20, border: "1px solid " + C.border, flexWrap: "wrap" }}>
             {["Under Review", "Accepted", "Pending Payment", "Rejected", ""].map(f => (
               <Pill key={f || "All"} label={f || "All"} active={appFilter === f} onClick={() => setAppFilter(f)} />
             ))}
@@ -421,7 +433,7 @@ function AdminDashboardPage() {
                   <TD max={400}>{a?.programme}</TD><td><Badge status={a?.status} /></td>
                   <td style={{ padding: "16px" }}><div style={{ display: "flex", gap: 12 }}>
                     {a?.status === "Under Review" && <><Btn small onClick={() => acceptApp(a.ref)} disabled={busy === a.ref}>{busy === a.ref ? "Processing..." : "Accept"}</Btn><Btn small bg={C.redLight} color={C.red} onClick={() => rejectApp(a.ref)} disabled={busy === a.ref}>Reject</Btn></>}
-                    {getFolderUrl(a) && <Btn small bg={C.blueLight} color={C.blue} onClick={() => window.open(getFolderUrl(a), "_blank")}>📁 Folder</Btn>}
+                    {getFolderUrl(a) ? <Btn small bg={C.blueLight} color={C.blue} onClick={() => window.open(getFolderUrl(a), "_blank")}>📁 Folder</Btn> : <Btn small bg="#E2E8F0" color={C.grayLight} disabled>📁 No Link</Btn>}
                   </div></td>
                 </tr>
               ))}</tbody>
@@ -430,7 +442,7 @@ function AdminDashboardPage() {
         </div>)}
 
         {tab === "students" && (<div>
-          <div style={{ display: "flex", gap: 16, marginBottom: 32, alignItems: "center", background: "#fff", padding: "20px 32px", borderRadius: 20, border: "1px solid " + C.border }}>
+          <div style={{ display: "flex", gap: 16, marginBottom: 32, alignItems: "center", background: "#fff", padding: "20px 32px", borderRadius: 20, border: "1px solid " + C.border, flexWrap: "wrap" }}>
             {["", "Enrolled", "Active", "Pending Payment", "On Hold"].map(f => (
               <Pill key={f || "All"} label={f || "All"} active={studentFilter === f} onClick={() => setStudentFilter(f)} />
             ))}
@@ -450,9 +462,9 @@ function AdminDashboardPage() {
                 <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}>
                   <TD bold color={C.gray}>{fmtTime(s)}</TD><TD mono bold>{s?.studentNumber}</TD><TD bold>{s?.name}</TD>
                   <TD max={400}>{s?.programme}</TD><td><Badge status={s?.status} /></td>
-                  <td style={{ padding: "16px" }}><div style={{ display: "flex", gap: 12 }}>
+                  <td style={{ padding: "16px" }}><div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
                     <Btn small bg={C.navy} onClick={() => genRecord(s.studentNumber)} disabled={busy === s.studentNumber}>{busy === s.studentNumber ? "Generating..." : "📄 Record"}</Btn>
-                    {getFolderUrl(s) && <Btn small bg={C.blueLight} color={C.blue} onClick={() => window.open(getFolderUrl(s), "_blank")}>📁 Folder</Btn>}
+                    {getFolderUrl(s) ? <Btn small bg={C.blueLight} color={C.blue} onClick={() => window.open(getFolderUrl(s), "_blank")}>📁 Folder</Btn> : <Btn small bg="#E2E8F0" color={C.grayLight} disabled>📁 No Link</Btn>}
                     {s?.status === "Pending Payment" && <Btn small onClick={() => enrollStu(s.ref)} disabled={busy === s.ref}>{busy === s.ref ? "Processing..." : "Force Enroll"}</Btn>}
                   </div></td>
                 </tr>
@@ -462,7 +474,7 @@ function AdminDashboardPage() {
         </div>)}
 
         {tab === "payments" && (<div>
-          <div style={{ display: "flex", gap: 16, marginBottom: 32, alignItems: "center", background: "#fff", padding: "20px 32px", borderRadius: 20, border: "1px solid " + C.border }}>
+          <div style={{ display: "flex", gap: 16, marginBottom: 32, alignItems: "center", background: "#fff", padding: "20px 32px", borderRadius: 20, border: "1px solid " + C.border, flexWrap: "wrap" }}>
             {["Pending Verification", "Paid", ""].map(f => (
               <Pill key={f || "All"} label={f || "All"} active={payFilter === f} onClick={() => setPayFilter(f)} />
             ))}
@@ -483,8 +495,8 @@ function AdminDashboardPage() {
                 <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}>
                   <TD bold color={C.gray}>{fmtTime(p)}</TD><TD mono bold>{p?.ref}</TD><TD bold>{p?.name}</TD>
                   <TD bold color={C.emerald}>{fmt(p?.amount)}</TD><td><Badge status={p?.status} /></td>
-                  <TD>{p?.receipt && <a href={p.receipt} target="_blank" rel="noopener noreferrer" style={{ color: C.blue, fontWeight: 800, textDecoration: "underline" }}>View Bank Slip</a>}</TD>
-                  <td style={{ padding: "16px" }}>{p?.status === "Pending Verification" && <div style={{ display: "flex", gap: 10 }}><Btn small onClick={() => { setModal({ type: "verify", data: p }); setVerifyAmt(String(p.amount)); setVerifyTxn(""); }}>Verify</Btn><Btn small bg={C.redLight} color={C.red} onClick={() => rejectPay(p.ref)}>Reject</Btn></div>}</td>
+                  <TD>{p?.receipt ? <a href={p.receipt} target="_blank" rel="noopener noreferrer" style={{ color: C.blue, fontWeight: 800, textDecoration: "underline" }}>View Bank Slip</a> : <span style={{ color: C.grayLight, fontSize: 12 }}>No Slip</span>}</TD>
+                  <td style={{ padding: "16px" }}>{p?.status === "Pending Verification" && <div style={{ display: "flex", gap: 10 }}><Btn small onClick={() => { setModal({ type: "verify", data: p }); setVerifyAmt(String(p.amount)); setVerifyTxn(""); }} disabled={busy === p.ref}>Verify</Btn><Btn small bg={C.redLight} color={C.red} onClick={() => rejectPay(p.ref)} disabled={busy === p.ref}>Reject</Btn></div>}</td>
                 </tr>
               ))}</tbody>
             </table></div>
@@ -530,7 +542,7 @@ function AdminDashboardPage() {
               <input type="number" value={verifyAmt} onChange={e => setVerifyAmt(e.target.value)} style={{ width: "100%", padding: "20px", borderRadius: 12, border: `2px solid ${C.border}`, fontSize: 20, fontWeight: 800, background: "#F8FAFC", marginBottom: 32 }} />
               <label style={{ display: "block", fontSize: 14, fontWeight: 800, color: C.navy, marginBottom: 12 }}>Bank Receipt / TXN ID</label>
               <input type="text" value={verifyTxn} onChange={e => setVerifyTxn(e.target.value)} placeholder="Enter ID..." style={{ width: "100%", padding: "20px", borderRadius: 12, border: `2px solid ${C.border}`, fontSize: 16, fontFamily: "monospace", background: "#F8FAFC", marginBottom: 40 }} />
-              <div style={{ display: "flex", gap: 16 }}><button onClick={() => verifyPay(modal.data.ref, verifyAmt, verifyTxn)} style={{ flex: 1, padding: "20px", borderRadius: 12, border: "none", background: C.emerald, color: "#fff", fontSize: 16, fontWeight: 900, cursor: "pointer" }}>Confirm Verification</button><button onClick={() => setModal(null)} style={{ padding: "20px 32px", borderRadius: 12, border: "none", background: C.bg, color: C.navy, fontWeight: 800, cursor: "pointer" }}>Cancel</button></div>
+              <div style={{ display: "flex", gap: 16 }}><button onClick={() => verifyPay(modal.data.ref, verifyAmt, verifyTxn)} disabled={!verifyAmt || !verifyTxn || busy === modal.data.ref} style={{ flex: 1, padding: "20px", borderRadius: 12, border: "none", background: (verifyAmt && verifyTxn) ? C.emerald : C.border, color: (verifyAmt && verifyTxn) ? "#fff" : C.grayLight, fontSize: 16, fontWeight: 900, cursor: (verifyAmt && verifyTxn) ? "pointer" : "not-allowed" }}>Confirm Verification</button><button onClick={() => setModal(null)} style={{ padding: "20px 32px", borderRadius: 12, border: "none", background: C.bg, color: C.navy, fontWeight: 800, cursor: "pointer" }}>Cancel</button></div>
             </div>
           </div>
         </div>
