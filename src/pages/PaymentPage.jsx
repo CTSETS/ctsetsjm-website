@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import S from "../constants/styles";
-import { BANK_DETAILS, BOOKING_URLS, REG_FEE, USD_RATE, WIPAY_CONFIG, APPS_SCRIPT_URL } from "../constants/config"; 
+import { BOOKING_URLS, REG_FEE, USD_RATE, WIPAY_CONFIG, APPS_SCRIPT_URL } from "../constants/config"; 
 import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture } from "../components/shared/CoreComponents";
 import { PaymentSecurityNotice, HoneypotField } from "../components/shared/DisplayComponents";
 import { isOnlinePaymentAvailable } from "../components/apply/SmartPayment";
@@ -333,13 +333,28 @@ export default function PaymentPage({ setPage }) {
                           <div style={{ flex: 1 }}>
                             <p style={{ margin: "0 0 12px 0", fontWeight: 800, color: S.navy, fontSize: 16 }}>Use our account details below</p>
                             
-                            {/* 🚀 FIXED: Pure safe React HTML rendering. No crashing variables. */}
-                            <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 12, padding: 20, color: S.navy, fontSize: 14, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
-                              <strong style={{color: S.navy}}>Bank Name:</strong> National Commercial Bank (NCB)<br/>
-                              <strong style={{color: S.navy}}>Account Name:</strong> CTS Empowerment & Training Solutions<br/>
-                              <strong style={{color: S.navy}}>Account Number:</strong> 061036323<br/>
-                              <strong style={{color: S.navy}}>Account Type:</strong> Business/Chequing<br/>
-                              <strong style={{color: S.navy}}>Branch:</strong> Half Way Tree
+                            {/* 🚀 FIXED: Dynamic Bank Details with two clear options! */}
+                            <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 12, padding: 20, color: S.navy, fontSize: 14, lineHeight: 1.6 }}>
+                              
+                              {/* Option 1: Scotiabank */}
+                              <div style={{ marginBottom: 16, paddingBottom: 16, borderBottom: "1px dashed #CBD5E1" }}>
+                                <div style={{ fontWeight: 800, color: S.navy, fontSize: 15, marginBottom: 8 }}>🏦 Option 1: Scotiabank</div>
+                                <strong style={{color: S.navy}}>Bank Name:</strong> Bank of Nova Scotia (BNS)<br/>
+                                <strong style={{color: S.navy}}>Account Name:</strong> Mark Lindo trading as CTS Empowerment & Training Solution<br/>
+                                <strong style={{color: S.navy}}>Account Number:</strong> 001041411<br/>
+                                <strong style={{color: S.navy}}>Account Type:</strong> Savings<br/>
+                                <strong style={{color: S.navy}}>Branch / Transit:</strong> Scotia Center / 50765
+                              </div>
+
+                              {/* Option 2: NCB */}
+                              <div>
+                                <div style={{ fontWeight: 800, color: S.navy, fontSize: 15, marginBottom: 8 }}>🏦 Option 2: National Commercial Bank (NCB)</div>
+                                <strong style={{color: S.navy}}>Bank Name:</strong> National Commercial Bank (NCB)<br/>
+                                <strong style={{color: S.navy}}>Account Name:</strong> Mark Lindo<br/>
+                                <strong style={{color: S.navy}}>Account Number:</strong> 214121697<br/>
+                                <strong style={{color: S.navy}}>Account Type:</strong> Personal
+                              </div>
+
                             </div>
                             
                           </div>
