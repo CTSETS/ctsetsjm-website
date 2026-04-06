@@ -133,27 +133,48 @@ function AdminDashboardPage() {
   }
 
   // ═══ RESTORED BEAUTIFUL LOGIN UI ═══
+  // ═══ ENTERPRISE LOGIN UI ═══
   if (!loggedIn) {
     return (
-      <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, " + C.navy + " 0%, #0a2d4d 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-        <div style={{ background: C.card, borderRadius: 20, padding: "44px 36px", maxWidth: 380, width: "100%", boxShadow: "0 24px 80px rgba(0,0,0,0.4)" }}>
-          <div style={{ textAlign: "center", marginBottom: 32 }}>
-            <img src="/logo.jpg" alt="CTS ETS" style={{ width: 72, height: 72, borderRadius: 14, marginBottom: 14, boxShadow: "0 4px 20px rgba(0,0,0,0.15)" }} />
-            <h1 style={{ fontFamily: C.heading, color: C.navy, fontSize: 24, margin: "0 0 4px", fontWeight: 700 }}>Admin Dashboard</h1>
-            <p style={{ fontFamily: C.body, color: C.grayLight, fontSize: 12, margin: 0 }}>CTS Empowerment & Training Solutions</p>
+      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: C.bg, fontFamily: C.body }}>
+        {/* Header */}
+        <div style={{ background: C.navy, padding: "16px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.1)", position: "relative", zIndex: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <img src="/logo.jpg" alt="CTS ETS" style={{ width: 36, height: 36, borderRadius: 8 }} />
+            <div>
+              <div style={{ color: C.gold, fontWeight: 700, fontSize: 16, fontFamily: C.heading }}>CTS ETS Admin</div>
+              <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 10, letterSpacing: 1 }}>SECURE OPERATIONS CONSOLE</div>
+            </div>
           </div>
-          <div style={{ marginBottom: 20 }}>
-            <input type="password" value={pw} onChange={function(e) { setPw(e.target.value); setLoginErr(""); }}
-              onKeyDown={function(e) { if (e.key === "Enter") handleLogin(); }}
-              autoFocus placeholder="Enter admin password"
-              style={{ width: "100%", padding: "14px 16px", borderRadius: 10, border: "2px solid " + (loginErr ? C.coral : C.border), fontSize: 15, fontFamily: C.body, color: C.navy, boxSizing: "border-box", outline: "none", transition: "0.2s" }} />
+          <a href="/#Home" style={{ color: "rgba(255,255,255,0.7)", fontSize: 12, textDecoration: "none", fontWeight: 600, transition: "0.2s" }}>&larr; Back to Website</a>
+        </div>
+
+        {/* Main Content Area */}
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, background: "linear-gradient(135deg, " + C.navy + " 0%, #0a2d4d 100%)" }}>
+          <div style={{ background: C.card, borderRadius: 20, padding: "48px 40px", maxWidth: 400, width: "100%", boxShadow: "0 24px 80px rgba(0,0,0,0.4)", textAlign: "center" }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>🛡️</div>
+            <h1 style={{ fontFamily: C.heading, color: C.navy, fontSize: 26, margin: "0 0 8px", fontWeight: 700 }}>Admin Login</h1>
+            <p style={{ fontFamily: C.body, color: C.gray, fontSize: 13, margin: "0 0 32px" }}>Enter your credentials to access the system.</p>
+            
+            <div style={{ marginBottom: 20 }}>
+              <input type="password" value={pw} onChange={function(e) { setPw(e.target.value); setLoginErr(""); }}
+                onKeyDown={function(e) { if (e.key === "Enter") handleLogin(); }}
+                autoFocus placeholder="Administrator Password"
+                style={{ width: "100%", padding: "16px", borderRadius: 10, border: "2px solid " + (loginErr ? C.red : C.border), fontSize: 15, fontFamily: C.body, color: C.navy, boxSizing: "border-box", outline: "none", textAlign: "center", letterSpacing: 2, transition: "0.2s" }} />
+            </div>
+            {loginErr && <div style={{ padding: "10px", borderRadius: 8, background: C.redLight, color: C.red, fontSize: 13, marginBottom: 16, fontFamily: C.body, fontWeight: 600 }}>{loginErr}</div>}
+            
+            <button onClick={handleLogin} disabled={loading || !pw.trim()}
+              style={{ width: "100%", padding: "16px", borderRadius: 10, border: "none", background: (!pw.trim() || loading) ? C.border : C.coral, color: "#fff", fontSize: 15, fontWeight: 700, cursor: pw.trim() && !loading ? "pointer" : "not-allowed", fontFamily: C.body, transition: "0.2s", boxShadow: (!pw.trim() || loading) ? "none" : "0 4px 14px rgba(232, 99, 74, 0.3)" }}>
+              {loading ? "Authenticating..." : "Access Console"}
+            </button>
+            <div style={{ display: 'none' }}><p>Enter your administrator password to access the console.</p></div>
           </div>
-          {loginErr && <div style={{ padding: "10px 14px", borderRadius: 8, background: C.redLight, color: C.red, fontSize: 13, marginBottom: 16, textAlign: "center", fontFamily: C.body }}>{loginErr}</div>}
-          <button onClick={handleLogin} disabled={loading || !pw.trim()}
-            style={{ width: "100%", padding: "15px", borderRadius: 10, border: "none", background: (!pw.trim() || loading) ? C.border : C.navy, color: (!pw.trim() || loading) ? C.grayLight : C.gold, fontSize: 15, fontWeight: 700, cursor: pw.trim() && !loading ? "pointer" : "not-allowed", fontFamily: C.body, transition: "0.2s" }}>
-            {loading ? "Connecting..." : "Sign In"}
-          </button>
-          <div style={{ display: 'none' }}><p>Enter your administrator password to access the console.</p></div>
+        </div>
+
+        {/* Secure Footer */}
+        <div style={{ background: C.navy, padding: "16px 24px", textAlign: "center", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+          <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, fontFamily: C.body, margin: 0 }}>&copy; 2026 CTS Empowerment & Training Solutions. All rights reserved. Authorized personnel only.</p>
         </div>
       </div>
     );
