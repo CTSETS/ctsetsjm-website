@@ -26,15 +26,13 @@ function getTuition(level) {
   return 5000;
 }
 
-// 🚀 UPGRADED PRICING ENGINE: Creates line-by-line breakdowns just like the website
 function calcPricing(level) {
   var tuition = getTuition(level);
   var l3plus = level ? (level.indexOf("Level 3") >= 0 || level.indexOf("Level 4") >= 0 || level.indexOf("Level 5") >= 0) : false;
-  var regFee = REG_FEE || 5000; // Fallback to 5000 if REG_FEE is missing
+  var regFee = REG_FEE || 5000; 
   
   var plans = [];
   
-  // GOLD PLAN
   plans.push({ 
     name: "Gold", 
     label: "Pay in Full", 
@@ -47,8 +45,7 @@ function calcPricing(level) {
   });
 
   if (l3plus) {
-    // SILVER PLAN
-    var silverTuition = Math.round(tuition * 1.10); // 10% Surcharge
+    var silverTuition = Math.round(tuition * 1.10); 
     var silverFirst = Math.round(silverTuition * 0.60);
     var silverSecond = silverTuition - silverFirst;
     plans.push({ 
@@ -63,8 +60,7 @@ function calcPricing(level) {
       ]
     });
     
-    // BRONZE PLAN
-    var bronzeTuition = Math.round(tuition * 1.15); // 15% Surcharge
+    var bronzeTuition = Math.round(tuition * 1.15); 
     var bronzeDeposit = Math.round(bronzeTuition * 0.20);
     var bronzeBalance = bronzeTuition - bronzeDeposit;
     plans.push({ 
@@ -235,7 +231,6 @@ export default function PaymentPage({ setPage }) {
                   {currentPlanObj && (
                     <div style={{ marginTop: 24, padding: 24, background: "#F8FAFC", borderRadius: 16, border: "2px solid #E2E8F0" }}>
                       
-                      {/* 🚀 THE NEW LINE-BY-LINE ITEMIZED BREAKDOWN */}
                       <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 8, padding: 16, marginBottom: 24 }}>
                         <h5 style={{ margin: "0 0 12px 0", color: S.navy, fontSize: 13, textTransform: "uppercase", letterSpacing: 1 }}>{currentPlanObj.name} Plan Breakdown</h5>
                         
@@ -256,7 +251,6 @@ export default function PaymentPage({ setPage }) {
                         </div>
                       </div>
                       
-                      {/* PAY ALREADY NOTIFICATION */}
                       {paidAlready > 0 && (
                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16, padding: "12px 16px", background: "#E8F5E9", borderRadius: 8, border: "1px solid #C8E6C9", fontSize: 14 }}>
                           <span style={{ color: "#2E7D32", fontWeight: 700 }}>Total Paid to Date:</span>
@@ -264,13 +258,15 @@ export default function PaymentPage({ setPage }) {
                         </div>
                       )}
 
-                      {/* EDITABLE AMOUNT BOX */}
                       <div style={{ marginBottom: 16 }}>
-                        <label style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", fontSize: 13, fontWeight: 700, color: S.navy, marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+                        <label style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", fontSize: 13, fontWeight: 700, color: S.navy, marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>
                           <span>Amount To Pay Today (JMD)</span>
                           <span style={{ color: S.emerald, fontSize: 11, background: "#E8F5E9", padding: "2px 8px", borderRadius: 12 }}>Min Due: {fmt(actualMinDue)}</span>
                         </label>
                         
+                        {/* 🚀 THE TIP EXPLAINING THEY CAN OVERPAY */}
+                        <p style={{ fontSize: 12, color: S.gray, margin: "0 0 8px 0" }}>💡 Tip: You can adjust this number to pay more than the minimum amount today.</p>
+
                         <input 
                           type="number" 
                           min={actualMinDue}
@@ -296,10 +292,17 @@ export default function PaymentPage({ setPage }) {
                   
                   {payMethod === "upload" && (
                     <div style={{ marginTop: 20 }}>
-                      <input type="file" onChange={e => setReceipt(e.target.files[0])} style={{ marginBottom: 20 }} />
-                      <button onClick={handlePaymentSubmit} disabled={submitting || !receipt || !isAmountValid} style={{ padding: 18, background: S.emerald, color: "#fff", border: "none", borderRadius: 12, width: "100%", fontWeight: 800, fontSize: 16, cursor: (submitting || !receipt || !isAmountValid) ? "not-allowed" : "pointer", transition: "all 0.2s" }}>
-                        {submitting ? "Uploading..." : `Submit Evidence for ${fmt(userPayAmount)}`}
-                      </button>
+                      
+                      {/* 🚀 SHOW THE BANK DETAILS BEFORE THEY UPLOAD */}
+                      <PaymentSetupNotice method={payMethod} />
+                      
+                      <div style={{ marginTop: 16, padding: 20, background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 12 }}>
+                        <p style={{ margin: "0 0 12px 0", fontSize: 14, fontWeight: 700, color: S.navy }}>Upload Transfer Receipt</p>
+                        <input type="file" onChange={e => setReceipt(e.target.files[0])} style={{ marginBottom: 16, width: "100%" }} />
+                        <button onClick={handlePaymentSubmit} disabled={submitting || !receipt || !isAmountValid} style={{ padding: 18, background: S.emerald, color: "#fff", border: "none", borderRadius: 12, width: "100%", fontWeight: 800, fontSize: 16, cursor: (submitting || !receipt || !isAmountValid) ? "not-allowed" : "pointer", transition: "all 0.2s" }}>
+                          {submitting ? "Uploading..." : `Submit Evidence for ${fmt(userPayAmount)}`}
+                        </button>
+                      </div>
                     </div>
                   )}
 
