@@ -7,10 +7,20 @@ import { fmt } from "../utils/formatting";
 // REQUIRED INSTITUTIONAL CONSTANT
 const VERCEL_URL = "https://ctsetsjm-website.vercel.app/api/proxy";
 
+// 🚀 UPGRADED: Uses Google's secret Thumbnail API to bypass security blocks!
 const getDriveImageUrl = (url) => {
   if (!url) return null;
+  
+  // If the backend sent just the ID
+  if (url.match(/^[a-zA-Z0-9_-]{20,}$/)) {
+    return `https://drive.google.com/thumbnail?id=${url}&sz=w400`;
+  }
+  
+  // If it's a full link
   const match = url.match(/id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-  if (match && match[1]) return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+  if (match && match[1]) {
+    return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w400`;
+  }
   return url;
 };
 
