@@ -3,7 +3,7 @@ import S from "../constants/styles";
 import { BANK_DETAILS, BOOKING_URLS, REG_FEE, USD_RATE, WIPAY_CONFIG, APPS_SCRIPT_URL } from "../constants/config"; 
 import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture } from "../components/shared/CoreComponents";
 import { PaymentSecurityNotice, HoneypotField } from "../components/shared/DisplayComponents";
-import { PaymentMethodSelector, PaymentSetupNotice, isOnlinePaymentAvailable } from "../components/apply/SmartPayment";
+import { PaymentSetupNotice, isOnlinePaymentAvailable } from "../components/apply/SmartPayment";
 import { fmt } from "../utils/formatting";
 import OTPGate from "../components/common/OTPGate";
 
@@ -86,7 +86,10 @@ export default function PaymentPage({ setPage }) {
   var [lookupMsg, setLookupMsg] = useState("");
   var [pricing, setPricing] = useState(null);
   var [selectedPlan, setSelectedPlan] = useState("Gold");
-  var [payMethod, setPayMethod] = useState("upload");
+  
+  // Default to bank transfer so the bank details show immediately
+  var [payMethod, setPayMethod] = useState("upload"); 
+  
   var [receipt, setReceipt] = useState(null);
   var [submitting, setSubmitting] = useState(false);
   var [submitted, setSubmitted] = useState(false);
@@ -230,95 +233,5 @@ export default function PaymentPage({ setPage }) {
                   
                   {currentPlanObj && (
                     <div style={{ marginTop: 24, padding: 24, background: "#F8FAFC", borderRadius: 16, border: "2px solid #E2E8F0" }}>
-                      
                       <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 8, padding: 16, marginBottom: 24 }}>
-                        <h5 style={{ margin: "0 0 12px 0", color: S.navy, fontSize: 13, textTransform: "uppercase", letterSpacing: 1 }}>{currentPlanObj.name} Plan Breakdown</h5>
-                        
-                        {currentPlanObj.breakdown.map((item, i) => (
-                          <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: i === currentPlanObj.breakdown.length - 1 ? "none" : "1px dashed #E2E8F0", fontSize: 14 }}>
-                            <span style={{ color: item.dueNow ? S.navy : S.gray, fontWeight: item.dueNow ? 700 : 500 }}>
-                              {item.label}
-                            </span>
-                            <span style={{ fontWeight: 700, color: item.dueNow ? S.navy : S.gray }}>
-                              {fmt(item.value)}
-                            </span>
-                          </div>
-                        ))}
-
-                        <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 12, borderTop: "2px solid #E2E8F0", marginTop: 8 }}>
-                          <span style={{ color: S.navy, fontWeight: 800 }}>Total Program Cost:</span>
-                          <strong style={{ color: S.navy, fontSize: 16 }}>{fmt(currentPlanObj.total)}</strong>
-                        </div>
-                      </div>
-                      
-                      {paidAlready > 0 && (
-                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16, padding: "12px 16px", background: "#E8F5E9", borderRadius: 8, border: "1px solid #C8E6C9", fontSize: 14 }}>
-                          <span style={{ color: "#2E7D32", fontWeight: 700 }}>Total Paid to Date:</span>
-                          <strong style={{ color: "#2E7D32" }}>{fmt(paidAlready)}</strong>
-                        </div>
-                      )}
-
-                      <div style={{ marginBottom: 16 }}>
-                        <label style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", fontSize: 13, fontWeight: 700, color: S.navy, marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>
-                          <span>Amount To Pay Today (JMD)</span>
-                          <span style={{ color: S.emerald, fontSize: 11, background: "#E8F5E9", padding: "2px 8px", borderRadius: 12 }}>Min Due: {fmt(actualMinDue)}</span>
-                        </label>
-                        
-                        {/* 🚀 THE TIP EXPLAINING THEY CAN OVERPAY */}
-                        <p style={{ fontSize: 12, color: S.gray, margin: "0 0 8px 0" }}>💡 Tip: You can adjust this number to pay more than the minimum amount today.</p>
-
-                        <input 
-                          type="number" 
-                          min={actualMinDue}
-                          max={remainingTotal}
-                          value={customAmount} 
-                          onChange={(e) => setCustomAmount(e.target.value)} 
-                          style={{ width: "100%", padding: 16, fontSize: 24, fontWeight: 900, borderRadius: 10, border: !isAmountValid ? "2px solid " + S.coral : "2px solid " + S.emerald, background: "#fff", color: S.navy, outline: "none" }}
-                        />
-                        {!isAmountValid && <div style={{ color: S.coral, fontSize: 12, marginTop: 8, fontWeight: 700 }}>⚠️ You must pay at least {fmt(actualMinDue)} to satisfy this plan.</div>}
-                      </div>
-
-                      {finalBalance > 0 && (
-                        <div style={{ display: "flex", justifyContent: "space-between", color: S.gray, fontSize: 14, paddingTop: 16, borderTop: "1px solid #E2E8F0" }}>
-                          <span>Remaining Balance (After this payment):</span>
-                          <strong>{fmt(finalBalance)}</strong>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  
-                  <h4 style={{ marginTop: 32, fontFamily: S.heading, color: S.navy }}>Complete Payment</h4>
-                  <PaymentMethodSelector method={payMethod} setMethod={setPayMethod} />
-                  
-                  {payMethod === "upload" && (
-                    <div style={{ marginTop: 20 }}>
-                      
-                      {/* 🚀 SHOW THE BANK DETAILS BEFORE THEY UPLOAD */}
-                      <PaymentSetupNotice method={payMethod} />
-                      
-                      <div style={{ marginTop: 16, padding: 20, background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 12 }}>
-                        <p style={{ margin: "0 0 12px 0", fontSize: 14, fontWeight: 700, color: S.navy }}>Upload Transfer Receipt</p>
-                        <input type="file" onChange={e => setReceipt(e.target.files[0])} style={{ marginBottom: 16, width: "100%" }} />
-                        <button onClick={handlePaymentSubmit} disabled={submitting || !receipt || !isAmountValid} style={{ padding: 18, background: S.emerald, color: "#fff", border: "none", borderRadius: 12, width: "100%", fontWeight: 800, fontSize: 16, cursor: (submitting || !receipt || !isAmountValid) ? "not-allowed" : "pointer", transition: "all 0.2s" }}>
-                          {submitting ? "Uploading..." : `Submit Evidence for ${fmt(userPayAmount)}`}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {payMethod === "online" && (
-                    <div style={{ marginTop: 20 }}>
-                      <button onClick={handleWiPaySubmit} disabled={submitting || !isAmountValid} style={{ padding: 18, background: S.navy, color: "#fff", border: "none", borderRadius: 12, width: "100%", fontWeight: 800, fontSize: 16, cursor: (submitting || !isAmountValid) ? "not-allowed" : "pointer", boxShadow: "0 6px 16px rgba(1,30,64,0.2)", transition: "all 0.2s" }}>
-                        {submitting ? "Connecting to WiPay..." : `Pay ${fmt(userPayAmount)} Securely via WiPay`}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </Container>
-    </PageWrapper>
-  );
-}
+                        <h5 style={{ margin: "0 0 1
