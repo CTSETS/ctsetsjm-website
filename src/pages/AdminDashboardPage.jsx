@@ -44,6 +44,8 @@ function AdminDashboardPage() {
   var [auth, setAuth] = useState(function() { try { return sessionStorage.getItem(PW_KEY) || ""; } catch(e) { return ""; } });
   var [loggedIn, setLoggedIn] = useState(false);
   var [pw, setPw] = useState("");
+  var [loginStep, setLoginStep] = useState(0); // 0 = Password, 1 = 2FA OTP
+  var [otpCode, setOtpCode] = useState("");
   var [loginErr, setLoginErr] = useState("");
   var [loading, setLoading] = useState(false);
   var [tab, setTab] = useState("dashboard");
@@ -66,7 +68,7 @@ function AdminDashboardPage() {
   var [verifyTxn, setVerifyTxn] = useState("");
   var [refreshKey, setRefreshKey] = useState(0);
 
-  // Secure API Call via Vercel Proxy - USING pw INSTEAD OF akey
+  // Secure API Call via Vercel Proxy
   var api = useCallback(async function(action, params) {
     let url = `${VERCEL_URL}?action=${action}&pw=${encodeURIComponent(auth)}`;
     if (params) {
@@ -87,12 +89,14 @@ function AdminDashboardPage() {
     setLoading(true);
     api("admindashboard").then(function(d) {
       if (d.ok) { setDashboard(d); setLoggedIn(true); try { sessionStorage.setItem(PW_KEY, auth); } catch(e) {} }
-      else { setLoginErr("Invalid credentials"); }
+      else { setLoginErr("Session expired. Please log in again."); setLoggedIn(false); setLoginStep(0); }
       setLoading(false);
     }).catch(function() { setLoginErr("Connection error"); setLoading(false); });
   }
 
+  // Initial load check if session exists
   useEffect(function() { if (auth) loadDash(); }, []);
+  
   useEffect(function() {
     if (!loggedIn) return;
     if (tab === "dashboard") loadDash();
@@ -110,90 +114,151 @@ function AdminDashboardPage() {
   function acceptApp(ref) { if (confirm("Accept " + ref + "?")) doAction(ref, "adminacceptapp", { ref: ref }); }
   function rejectApp(ref) { if (confirm("Reject " + ref + "?")) doAction(ref, "adminrejectapp", { ref: ref }); }
   function enrollStu(ref) { if (confirm("Enroll " + ref + "? Credentials will be sent.")) doAction(ref, "adminenrollstudent", { ref: ref }); }
-  function resetPw(ref) { if (confirm("Reset password for " + ref + "?")) doAction(ref, "adminresetpw", { ref: ref }); }
   function genRecord(sn) { doAction(sn, "generaterecord", { student: sn }); }
   function rejectPay(ref) { if (confirm("Reject payment for " + ref + "?")) doAction(ref, "rejectpayment", { ref: ref, txn: "admin-dashboard" }); }
   function verifyPay(ref, amt, txn) { doAction(ref, "verifypayment", { ref: ref, amount: amt, txn: txn }); setModal(null); }
 
-  function handleLogin() {
+  // ═══ FORT KNOX 2FA LOGIN LOGIC ═══
+  function handlePasswordSubmit() {
     if (!pw.trim()) return;
     setLoginErr(""); setLoading(true);
-    fetch(`${VERCEL_URL}?action=admindashboard&pw=${encodeURIComponent(pw.trim())}`)
-      .then(function(r) { return r.json(); }).then(function(d) {
-        if (d.ok) { setDashboard(d); setLoggedIn(true); setAuth(pw.trim()); try { sessionStorage.setItem(PW_KEY, pw.trim()); } catch(e) {} }
-        else setLoginErr("Invalid password");
-        setLoading(false);
-    }).catch(function() { setLoginErr("Connection error"); setLoading(false); });
+    
+    // Step 1: Verify the Master Password
+    fetch(`${VERCEL_URL}?action=verifyadminpw&pw=${encodeURIComponent(pw.trim())}`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.ok) {
+          setAuth(pw.trim()); // Temporarily hold auth
+          // Step 2: Trigger 2FA Email
+          fetch(`${VERCEL_URL}?action=sendotp&identifier=ADMIN&purpose=admin_login`)
+            .then(r2 => r2.json())
+            .then(res => {
+              if (res.success) {
+                setLoginStep(1); // Move to OTP screen
+              } else {
+                setLoginErr("Failed to trigger 2FA sequence.");
+              }
+              setLoading(false);
+            });
+        } else {
+          setLoginErr("Invalid master password. Intrusion logged.");
+          setLoading(false);
+        }
+      }).catch(() => { setLoginErr("Connection error. Gateway offline."); setLoading(false); });
   }
 
-  function filt(list) {
-    if (!searchTerm) return list;
-    var s = searchTerm.toLowerCase();
-    return list.filter(function(item) { return Object.values(item).some(function(v) { return String(v || "").toLowerCase().indexOf(s) >= 0; }); });
+  function handleOtpSubmit() {
+    if (!otpCode.trim() || otpCode.length !== 6) { setLoginErr("Enter the 6-digit code."); return; }
+    setLoginErr(""); setLoading(true);
+    
+    // Step 3: Verify the OTP
+    fetch(`${VERCEL_URL}?action=verifyotp&identifier=ADMIN&code=${otpCode.trim()}&purpose=admin_login`)
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) {
+          loadDash(); // Boom. Fort Knox opens.
+        } else {
+          setLoginErr(res.error === "wrong_code" ? "Invalid 2FA code." : "Code expired. Refresh to try again.");
+          setLoading(false);
+        }
+      }).catch(() => { setLoginErr("Connection error."); setLoading(false); });
   }
 
-  // ═══ RESTORED BEAUTIFUL LOGIN UI ═══
-  // ═══ ENTERPRISE LOGIN UI ═══
-  // ═══ ENTERPRISE LOGIN UI ═══
-  // ═══ COMMAND CENTER GATEWAY UI ═══
+  // ═══ FORT KNOX GATEWAY UI ═══
   if (!loggedIn) {
-    const StatusBadge = ({ label }) => (
-      <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(0,0,0,0.3)", padding: "12px 20px", borderRadius: 30, border: "1px solid rgba(255,255,255,0.1)" }}>
-        <div style={{ width: 10, height: 10, borderRadius: "50%", background: C.emerald, boxShadow: `0 0 12px ${C.emerald}` }} />
-        <span style={{ color: "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: 700, fontFamily: C.body, letterSpacing: 1.5, textTransform: "uppercase" }}>{label}: ONLINE</span>
+    const animStyles = `
+      @keyframes pulseFortKnox {
+        0% { box-shadow: 0 0 0 0 rgba(14, 143, 139, 0.4); }
+        70% { box-shadow: 0 0 0 40px rgba(14, 143, 139, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(14, 143, 139, 0); }
+      }
+      @keyframes floatShield {
+        0%, 100% { transform: translateY(0) scale(1); }
+        50% { transform: translateY(-15px) scale(1.05); }
+      }
+      @keyframes blinkLight {
+        0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 12px ${C.emerald}; }
+        50% { opacity: 0.3; transform: scale(0.8); box-shadow: 0 0 2px ${C.emerald}; }
+      }
+    `;
+
+    const StatusBadge = ({ label, delay }) => (
+      <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(0,0,0,0.4)", padding: "14px 24px", borderRadius: 30, border: "1px solid rgba(14, 143, 139, 0.3)", backdropFilter: "blur(4px)" }}>
+        <div style={{ width: 12, height: 12, borderRadius: "50%", background: C.emerald, animation: `blinkLight 2s infinite ${delay}` }} />
+        <span style={{ color: C.teal, fontSize: 12, fontWeight: 800, fontFamily: C.body, letterSpacing: 2, textTransform: "uppercase" }}>{label}: ONLINE</span>
       </div>
     );
 
     return (
       <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: C.bg, fontFamily: C.body }}>
+        <style>{animStyles}</style>
+
         {/* Beefed-Up Header */}
-        <div style={{ background: C.navy, padding: "20px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.2)", position: "relative", zIndex: 10 }}>
+        <div style={{ background: C.navy, padding: "20px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.4)", position: "relative", zIndex: 10, borderBottom: `2px solid ${C.gold}` }}>
           <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
             <img src="/logo.jpg" alt="CTS ETS" style={{ width: 56, height: 56, borderRadius: 12, border: `2px solid ${C.gold}`, boxShadow: `0 0 15px ${C.gold}40` }} />
             <div>
-              <div style={{ color: C.gold, fontWeight: 800, fontSize: 24, fontFamily: C.heading, letterSpacing: 0.5 }}>CTS ETS Admin</div>
-              <div style={{ color: "rgba(255,255,255,0.6)", fontSize: 12, letterSpacing: 3, fontWeight: 700, marginTop: 4 }}>SECURE OPERATIONS CONSOLE</div>
+              <div style={{ color: C.gold, fontWeight: 900, fontSize: 26, fontFamily: C.heading, letterSpacing: 1 }}>CTS ETS Command</div>
+              <div style={{ color: "rgba(255,255,255,0.7)", fontSize: 11, letterSpacing: 4, fontWeight: 800, marginTop: 4 }}>FORT KNOX SECURE GATEWAY</div>
             </div>
           </div>
-          <a href="/#Home" style={{ color: "#fff", fontSize: 14, textDecoration: "none", fontWeight: 700, padding: "12px 24px", borderRadius: 8, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", transition: "all 0.2s" }}>&larr; Back to Website</a>
+          <a href="/#Home" style={{ color: "#fff", fontSize: 13, textDecoration: "none", fontWeight: 800, padding: "14px 28px", borderRadius: 8, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", transition: "all 0.2s", textTransform: "uppercase", letterSpacing: 1 }}>&larr; Abort Login</a>
         </div>
 
-        {/* Main Content Area */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 20, background: `linear-gradient(135deg, ${C.navy} 0%, #06192e 100%)`, position: "relative", overflow: "hidden" }}>
-          {/* Subtle Background Grid/Glow */}
-          <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "80vw", height: "80vw", background: `radial-gradient(circle, ${C.gold}08 0%, transparent 60%)`, pointerEvents: "none" }} />
+        {/* Main Vault Area */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 20, background: `radial-gradient(circle at center, #0a2d4d 0%, ${C.navy} 100%)`, position: "relative", overflow: "hidden" }}>
           
-          <div style={{ background: C.card, borderRadius: 24, padding: "56px 48px", maxWidth: 460, width: "100%", boxShadow: "0 32px 100px rgba(0,0,0,0.5)", textAlign: "center", position: "relative", zIndex: 2 }}>
-            <div style={{ fontSize: 56, marginBottom: 20 }}>🛡️</div>
-            <h1 style={{ fontFamily: C.heading, color: C.navy, fontSize: 32, margin: "0 0 12px", fontWeight: 800 }}>Admin Login</h1>
-            <p style={{ fontFamily: C.body, color: C.gray, fontSize: 15, margin: "0 0 36px", lineHeight: 1.6 }}>Enter your master credentials to access the central nervous system.</p>
+          <div style={{ background: C.card, borderRadius: 24, padding: "64px 48px", maxWidth: 480, width: "100%", textAlign: "center", position: "relative", zIndex: 2, animation: "pulseFortKnox 4s infinite", border: `2px solid ${C.teal}50` }}>
             
-            <div style={{ marginBottom: 24 }}>
-              <input type="password" value={pw} onChange={function(e) { setPw(e.target.value); setLoginErr(""); }}
-                onKeyDown={function(e) { if (e.key === "Enter") handleLogin(); }}
-                autoFocus placeholder="Administrator Password"
-                style={{ width: "100%", padding: "18px", borderRadius: 12, border: "2px solid " + (loginErr ? C.red : C.border), fontSize: 16, fontFamily: C.body, color: C.navy, boxSizing: "border-box", outline: "none", textAlign: "center", letterSpacing: 3, transition: "0.2s", background: "#F8FAFC" }} />
-            </div>
-            {loginErr && <div style={{ padding: "12px", borderRadius: 10, background: C.redLight, color: C.red, fontSize: 14, marginBottom: 20, fontFamily: C.body, fontWeight: 700 }}>{loginErr}</div>}
+            <div style={{ fontSize: 96, marginBottom: 24, animation: "floatShield 5s ease-in-out infinite", textShadow: "0 20px 40px rgba(0,0,0,0.3)" }}>🛡️</div>
             
-            <button onClick={handleLogin} disabled={loading || !pw.trim()}
-              style={{ width: "100%", padding: "18px", borderRadius: 12, border: "none", background: (!pw.trim() || loading) ? C.border : `linear-gradient(135deg, ${C.coral} 0%, #d45138 100%)`, color: "#fff", fontSize: 16, fontWeight: 800, cursor: pw.trim() && !loading ? "pointer" : "not-allowed", fontFamily: C.body, transition: "all 0.2s", boxShadow: (!pw.trim() || loading) ? "none" : "0 8px 24px rgba(232, 99, 74, 0.4)", textTransform: "uppercase", letterSpacing: 1 }}>
-              {loading ? "Authenticating..." : "Access Console"}
-            </button>
-            <div style={{ display: 'none' }}><p>Enter your administrator password to access the console.</p></div>
+            <h1 style={{ fontFamily: C.heading, color: C.navy, fontSize: 36, margin: "0 0 12px", fontWeight: 900, letterSpacing: -0.5 }}>{loginStep === 0 ? "Identify Yourself" : "2FA Verification"}</h1>
+            <p style={{ fontFamily: C.body, color: C.gray, fontSize: 15, margin: "0 0 40px", lineHeight: 1.6 }}>
+              {loginStep === 0 ? "Enter master password to initiate secure handshake." : "Military-grade OTP dispatched to Commander's email. Enter to unlock vault."}
+            </p>
+            
+            {loginStep === 0 ? (
+              <div style={{ marginBottom: 24 }}>
+                <input type="password" value={pw} onChange={e => { setPw(e.target.value); setLoginErr(""); }}
+                  onKeyDown={e => { if (e.key === "Enter") handlePasswordSubmit(); }}
+                  autoFocus placeholder="Master Password"
+                  style={{ width: "100%", padding: "20px", borderRadius: 12, border: "2px solid " + (loginErr ? C.red : C.border), fontSize: 18, fontFamily: C.body, color: C.navy, boxSizing: "border-box", outline: "none", textAlign: "center", letterSpacing: 4, background: "#F8FAFC", fontWeight: 800 }} />
+              </div>
+            ) : (
+              <div style={{ marginBottom: 24 }}>
+                <input type="text" value={otpCode} onChange={e => { setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6)); setLoginErr(""); }}
+                  onKeyDown={e => { if (e.key === "Enter") handleOtpSubmit(); }}
+                  autoFocus placeholder="000000"
+                  style={{ width: "100%", padding: "20px", borderRadius: 12, border: "2px solid " + (loginErr ? C.red : C.teal), fontSize: 32, fontFamily: "monospace", color: C.navy, boxSizing: "border-box", outline: "none", textAlign: "center", letterSpacing: 12, background: C.emeraldLight, fontWeight: 900 }} />
+              </div>
+            )}
+
+            {loginErr && <div style={{ padding: "14px", borderRadius: 10, background: C.redLight, color: C.red, fontSize: 14, marginBottom: 24, fontFamily: C.body, fontWeight: 800, border: `1px solid ${C.red}50` }}>{loginErr}</div>}
+            
+            {loginStep === 0 ? (
+              <button onClick={handlePasswordSubmit} disabled={loading || !pw.trim()}
+                style={{ width: "100%", padding: "20px", borderRadius: 12, border: "none", background: (!pw.trim() || loading) ? C.border : C.navy, color: "#fff", fontSize: 16, fontWeight: 900, cursor: pw.trim() && !loading ? "pointer" : "not-allowed", fontFamily: C.body, transition: "all 0.2s", textTransform: "uppercase", letterSpacing: 2 }}>
+                {loading ? "Verifying..." : "Initialize Handshake"}
+              </button>
+            ) : (
+              <button onClick={handleOtpSubmit} disabled={loading || otpCode.length !== 6}
+                style={{ width: "100%", padding: "20px", borderRadius: 12, border: "none", background: (otpCode.length !== 6 || loading) ? C.border : C.emerald, color: "#fff", fontSize: 16, fontWeight: 900, cursor: otpCode.length === 6 && !loading ? "pointer" : "not-allowed", fontFamily: C.body, transition: "all 0.2s", textTransform: "uppercase", letterSpacing: 2, boxShadow: otpCode.length === 6 ? `0 10px 30px ${C.emerald}50` : "none" }}>
+                {loading ? "Decrypting..." : "Unlock Vault"}
+              </button>
+            )}
           </div>
 
-          {/* System Monitors */}
-          <div style={{ display: "flex", gap: 16, marginTop: 48, flexWrap: "wrap", justifyContent: "center", position: "relative", zIndex: 2 }}>
-            <StatusBadge label="Vercel Proxy" />
-            <StatusBadge label="Database" />
-            <StatusBadge label="Auth Engine" />
+          {/* Blinking System Monitors */}
+          <div style={{ display: "flex", gap: 20, marginTop: 60, flexWrap: "wrap", justifyContent: "center", position: "relative", zIndex: 2 }}>
+            <StatusBadge label="Vercel Nodes" delay="0s" />
+            <StatusBadge label="Google DB" delay="0.6s" />
+            <StatusBadge label="2FA Auth" delay="1.2s" />
           </div>
         </div>
 
         {/* Secure Footer */}
-        <div style={{ background: "#041222", padding: "20px 24px", textAlign: "center", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-          <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, fontFamily: C.body, margin: 0, letterSpacing: 0.5 }}>&copy; 2026 CTS Empowerment & Training Solutions. All rights reserved. <strong>Authorized personnel only.</strong> All login attempts are logged and monitored.</p>
+        <div style={{ background: "#020b14", padding: "24px", textAlign: "center", borderTop: "1px solid rgba(14, 143, 139, 0.2)" }}>
+          <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, fontFamily: C.body, margin: 0, letterSpacing: 1, textTransform: "uppercase", fontWeight: 700 }}>&copy; 2026 CTS ETS. Authorized personnel only. Protocol 1982 Active. Unauthorized access will be traced and reported.</p>
         </div>
       </div>
     );
@@ -220,7 +285,7 @@ function AdminDashboardPage() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <button onClick={refresh} style={{ padding: "6px 12px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.2)", background: "transparent", color: "#fff", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}><span>↻</span> Refresh</button>
-          <button onClick={function() { setLoggedIn(false); setAuth(""); setPw(""); try { sessionStorage.removeItem(PW_KEY); } catch(e) {} }} style={{ padding: "6px 16px", borderRadius: 6, background: C.coral, border: "none", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Log Out</button>
+          <button onClick={function() { setLoggedIn(false); setAuth(""); setPw(""); setLoginStep(0); try { sessionStorage.removeItem(PW_KEY); } catch(e) {} }} style={{ padding: "6px 16px", borderRadius: 6, background: C.coral, border: "none", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Lock Vault</button>
         </div>
       </div>
 
