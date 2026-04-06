@@ -26,25 +26,60 @@ function getTuition(level) {
   return 5000;
 }
 
+// 🚀 UPGRADED PRICING ENGINE: Creates line-by-line breakdowns just like the website
 function calcPricing(level) {
   var tuition = getTuition(level);
   var l3plus = level ? (level.indexOf("Level 3") >= 0 || level.indexOf("Level 4") >= 0 || level.indexOf("Level 5") >= 0) : false;
-  var regFee = REG_FEE;
-  var total = regFee + tuition;
-
+  var regFee = REG_FEE || 5000; // Fallback to 5000 if REG_FEE is missing
+  
   var plans = [];
-  plans.push({ name: "Gold", label: "Pay in Full", total: total, minDue: total, labelDue: "Full Payment" });
+  
+  // GOLD PLAN
+  plans.push({ 
+    name: "Gold", 
+    label: "Pay in Full", 
+    total: regFee + tuition, 
+    minDue: regFee + tuition, 
+    breakdown: [
+      { label: "Registration Fee", value: regFee, dueNow: true },
+      { label: "Tuition (No Surcharge)", value: tuition, dueNow: true }
+    ]
+  });
 
   if (l3plus) {
-    var silverTuition = Math.round(tuition * 1.10);
-    var silverTotal = regFee + silverTuition;
-    plans.push({ name: "Silver", label: "60/40 Split", total: silverTotal, minDue: regFee + Math.round(silverTuition * 0.6), labelDue: "First Payment (60%)" });
+    // SILVER PLAN
+    var silverTuition = Math.round(tuition * 1.10); // 10% Surcharge
+    var silverFirst = Math.round(silverTuition * 0.60);
+    var silverSecond = silverTuition - silverFirst;
+    plans.push({ 
+      name: "Silver", 
+      label: "60/40 Split", 
+      total: regFee + silverTuition, 
+      minDue: regFee + silverFirst, 
+      breakdown: [
+        { label: "Registration Fee", value: regFee, dueNow: true },
+        { label: "1st Tuition Payment (60%)", value: silverFirst, dueNow: true },
+        { label: "Final Tuition Payment (40%)", value: silverSecond, dueNow: false }
+      ]
+    });
     
-    var bronzeTuition = Math.round(tuition * 1.15);
+    // BRONZE PLAN
+    var bronzeTuition = Math.round(tuition * 1.15); // 15% Surcharge
     var bronzeDeposit = Math.round(bronzeTuition * 0.20);
-    plans.push({ name: "Bronze", label: "20% Deposit + Monthly", total: regFee + bronzeTuition, minDue: regFee + bronzeDeposit, labelDue: "Registration + Deposit (20%)" });
+    var bronzeBalance = bronzeTuition - bronzeDeposit;
+    plans.push({ 
+      name: "Bronze", 
+      label: "20% Deposit + Monthly", 
+      total: regFee + bronzeTuition, 
+      minDue: regFee + bronzeDeposit, 
+      breakdown: [
+        { label: "Registration Fee", value: regFee, dueNow: true },
+        { label: "Tuition Deposit (20%)", value: bronzeDeposit, dueNow: true },
+        { label: "Remaining Balance (Paid Monthly)", value: bronzeBalance, dueNow: false }
+      ]
+    });
   }
-  return { tuition: tuition, regFee: regFee, total: total, plans: plans };
+  return { tuition: tuition, regFee: regFee, plans: plans };
 }
 
 export default function PaymentPage({ setPage }) {
@@ -63,7 +98,6 @@ export default function PaymentPage({ setPage }) {
   var [wipayReturn, setWipayReturn] = useState(null);
   var startTime = useRef(Date.now());
 
-  // 🚀 The Custom Amount the user decides to type in
   var [customAmount, setCustomAmount] = useState("");
 
   useEffect(() => {
@@ -88,13 +122,12 @@ export default function PaymentPage({ setPage }) {
     if (student && student.level) setPricing(calcPricing(student.level));
   }, [student]);
 
-  // 🚀 Auto-update the custom amount box whenever they switch plans
   const currentPlanObj = pricing?.plans.find(p => p.name === selectedPlan);
+  
   useEffect(() => {
     if (currentPlanObj) {
-      // Set the input box to the minimum due, unless they already paid
       let min = currentPlanObj.minDue;
-      if (student?.totalPaid >= min) min = 5000; // If they already covered the deposit, default to 5k
+      if (student?.totalPaid >= min) min = 5000; 
       setCustomAmount(min.toString());
     }
   }, [selectedPlan, pricing, student]);
@@ -115,15 +148,10 @@ export default function PaymentPage({ setPage }) {
 
   const toBase64 = (file) => new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = error => reject(error); reader.readAsDataURL(file); });
 
-  // 🚀 MATH FOR THE BREAKDOWN
   const paidAlready = student?.totalPaid || 0;
   const baseMinDue = currentPlanObj?.minDue || 0;
-  
-  // If they already paid their deposit, their new minimum is lower (e.g. $5000)
   const actualMinDue = paidAlready >= baseMinDue ? 5000 : (baseMinDue - paidAlready);
-  
   const userPayAmount = Number(customAmount) || 0;
-  // Make sure they can't pay less than the minimum, and can't pay more than the total balance
   const remainingTotal = (currentPlanObj?.total || 0) - paidAlready;
   const isAmountValid = userPayAmount >= actualMinDue && userPayAmount > 0;
   const finalBalance = remainingTotal - userPayAmount;
@@ -180,6 +208,7 @@ export default function PaymentPage({ setPage }) {
       <Container>
         <div style={{ maxWidth: 680, margin: "0 auto", background: "#fff", padding: 32, borderRadius: 16 }}>
           <HoneypotField value={hp} onChange={e => setHp(e.target.value)} />
+          
           <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
             <input type="text" value={refInput} onChange={e => setRefInput(e.target.value.toUpperCase())} placeholder="CTSETSA-..." style={{ flex: 1, padding: 14, borderRadius: 8, border: "1px solid #ccc" }} />
             <button id="otp-auto-lookup" onClick={handleLookup} disabled={lookupState === "loading"} style={{ padding: "14px 28px", borderRadius: 8, background: S.navy, color: "#fff", border: "none" }}>{lookupState === "loading" ? "Searching..." : "Look Up"}</button>
@@ -187,80 +216,25 @@ export default function PaymentPage({ setPage }) {
           
           {lookupState === "found" && student && (
             <div style={{ marginTop: 20 }}>
-              <p>Found profile for: <strong style={{color: S.navy}}>{student.name}</strong> ({student.level})</p>
+              <div style={{ padding: "16px 20px", background: S.lightBg, borderRadius: 12, border: `1px solid ${S.border}` }}>
+                <p style={{ margin: 0, color: S.gray, fontSize: 13, textTransform: "uppercase", letterSpacing: 1, fontWeight: 700 }}>Student Profile</p>
+                <p style={{ margin: "4px 0 0 0", fontSize: 18 }}><strong style={{color: S.navy}}>{student.name}</strong> <span style={{ color: S.gray }}>({student.level})</span></p>
+              </div>
               
               {pricing && (
-                <div style={{ marginTop: 24 }}>
+                <div style={{ marginTop: 28 }}>
                   <h4 style={{fontFamily: S.heading, color: S.navy, marginBottom: 12}}>Select Payment Plan</h4>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
                     {pricing.plans.map(plan => (
-                      <button key={plan.name} onClick={() => setSelectedPlan(plan.name)} style={{ padding: "12px 20px", borderRadius: 8, fontWeight: 700, cursor: "pointer", transition: "all 0.2s", border: selectedPlan === plan.name ? "2px solid " + S.gold : "1px solid " + S.grayLight, background: selectedPlan === plan.name ? S.lightBg : "#fff", color: selectedPlan === plan.name ? S.navy : S.gray }}>
+                      <button key={plan.name} onClick={() => setSelectedPlan(plan.name)} style={{ padding: "12px 20px", borderRadius: 8, fontWeight: 700, cursor: "pointer", transition: "all 0.2s", border: selectedPlan === plan.name ? "2px solid " + S.gold : "1px solid " + S.border, background: selectedPlan === plan.name ? S.lightBg : "#fff", color: selectedPlan === plan.name ? S.navy : S.gray }}>
                         {plan.name}
                       </button>
                     ))}
                   </div>
                   
                   {currentPlanObj && (
-                    <div style={{ marginTop: 20, padding: 24, background: "#F8FAFC", borderRadius: 12, border: "1px solid #E2E8F0" }}>
-                      <h4 style={{ margin: "0 0 16px 0", color: S.navy, fontFamily: S.heading }}>Financial Breakdown</h4>
+                    <div style={{ marginTop: 24, padding: 24, background: "#F8FAFC", borderRadius: 16, border: "2px solid #E2E8F0" }}>
                       
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, fontSize: 14 }}>
-                        <span style={{ color: S.gray }}>Total Program Cost:</span>
-                        <strong style={{ color: S.navy }}>{fmt(currentPlanObj.total)}</strong>
-                      </div>
-                      
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid #E2E8F0", fontSize: 14 }}>
-                        <span style={{ color: S.gray }}>Paid Already:</span>
-                        <strong style={{ color: S.emerald }}>{fmt(paidAlready)}</strong>
-                      </div>
-
-                      <div style={{ marginBottom: 16 }}>
-                        <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: S.navy, marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>Amount You Wish To Pay Today (JMD)</label>
-                        <input 
-                          type="number" 
-                          min={actualMinDue}
-                          max={remainingTotal}
-                          value={customAmount} 
-                          onChange={(e) => setCustomAmount(e.target.value)} 
-                          style={{ width: "100%", padding: 16, fontSize: 20, fontWeight: 800, borderRadius: 8, border: !isAmountValid ? "2px solid " + S.coral : "2px solid " + S.emerald, background: "#fff" }}
-                        />
-                        {!isAmountValid && <div style={{ color: S.coral, fontSize: 12, marginTop: 6, fontWeight: 700 }}>Minimum payment required: {fmt(actualMinDue)}</div>}
-                      </div>
-
-                      {finalBalance > 0 && (
-                        <div style={{ display: "flex", justifyContent: "space-between", color: S.gray, fontSize: 14, paddingTop: 12, borderTop: "1px solid #E2E8F0" }}>
-                          <span>Remaining Balance (After this payment):</span>
-                          <strong>{fmt(finalBalance)}</strong>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  
-                  <h4 style={{ marginTop: 32, fontFamily: S.heading, color: S.navy }}>Payment Method</h4>
-                  <PaymentMethodSelector method={payMethod} setMethod={setPayMethod} />
-                  
-                  {payMethod === "upload" && (
-                    <div style={{ marginTop: 20 }}>
-                      <input type="file" onChange={e => setReceipt(e.target.files[0])} style={{ marginBottom: 20 }} />
-                      <button onClick={handlePaymentSubmit} disabled={submitting || !receipt || !isAmountValid} style={{ padding: 16, background: S.emerald, color: "#fff", border: "none", borderRadius: 8, width: "100%", fontWeight: 800, fontSize: 16, cursor: (submitting || !receipt || !isAmountValid) ? "not-allowed" : "pointer" }}>
-                        {submitting ? "Uploading..." : `Submit Evidence for ${fmt(userPayAmount)}`}
-                      </button>
-                    </div>
-                  )}
-
-                  {payMethod === "online" && (
-                    <div style={{ marginTop: 20 }}>
-                      <button onClick={handleWiPaySubmit} disabled={submitting || !isAmountValid} style={{ padding: 16, background: S.navy, color: "#fff", border: "none", borderRadius: 8, width: "100%", fontWeight: 800, fontSize: 16, cursor: (submitting || !isAmountValid) ? "not-allowed" : "pointer", boxShadow: "0 4px 12px rgba(1,30,64,0.2)" }}>
-                        {submitting ? "Connecting to WiPay..." : `Pay ${fmt(userPayAmount)} Securely via WiPay`}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </Container>
-    </PageWrapper>
-  );
-}
+                      {/* 🚀 THE NEW LINE-BY-LINE ITEMIZED BREAKDOWN */}
+                      <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 8, padding: 16, marginBottom: 24 }}>
+                        <h5 style={{ margin: "0 0 12px 0", color: S.navy, fontSize: 13, textTransform: "uppercase", letterSpacing:
