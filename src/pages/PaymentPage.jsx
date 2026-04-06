@@ -171,8 +171,24 @@ export default function PaymentPage({ setPage }) {
   var handleWiPaySubmit = () => {
     if (submitting || !student || !currentPlanObj || !isAmountValid) return;
     setSubmitting(true);
+    
     var orderId = student.ref + "-" + selectedPlan.substring(0,3).toUpperCase(); 
-    window.location.href = `${WIPAY_CONFIG.baseUrl}?total=${encodeURIComponent(userPayAmount.toString())}&currency=${encodeURIComponent(WIPAY_CONFIG.currency)}&order_id=${encodeURIComponent(orderId)}&return_url=${encodeURIComponent(WIPAY_CONFIG.returnUrl)}`;
+    var payAmount = userPayAmount.toString();
+
+    // 🚀 BUNDLE EVERYTHING INTO THE WIPAY MESSAGE BOX
+    var paymentDescription = `Ref: ${orderId} | Name: ${student.name} | Email: ${student.email || "Not Provided"}`;
+
+    // 🚀 Format it with slashes for the WiPay "to_me" link
+    if (WIPAY_CONFIG.baseUrl.includes("/to_me/")) {
+      let base = WIPAY_CONFIG.baseUrl;
+      if (base.endsWith("/")) base = base.slice(0, -1); // Clean up trailing slash if it exists
+      
+      // The WiPay Me2Me Format: .../to_me/username/AMOUNT/DESCRIPTION
+      window.location.href = `${base}/${payAmount}/${encodeURIComponent(paymentDescription)}`;
+    } else {
+      // Standard Developer API fallback
+      window.location.href = `${WIPAY_CONFIG.baseUrl}?total=${encodeURIComponent(payAmount)}&currency=${encodeURIComponent(WIPAY_CONFIG.currency)}&order_id=${encodeURIComponent(orderId)}&return_url=${encodeURIComponent(WIPAY_CONFIG.returnUrl)}`;
+    }
   };
 
   if (submitted) {
@@ -200,6 +216,41 @@ export default function PaymentPage({ setPage }) {
     );
   }
 
+var handleWiPaySubmit = () => {
+    if (submitting || !student || !currentPlanObj || !isAmountValid) return;
+    setSubmitting(true);
+    
+    var orderId = student.ref + "-" + selectedPlan.substring(0,3).toUpperCase(); 
+    var payAmount = userPayAmount.toString();
+    var paymentDescription = `Ref: ${orderId} | Name: ${student.name} | Email: ${student.email || "Not Provided"}`;
+
+    // 🚀 NEW: Silently tell the backend a WiPay attempt is happening so it shows up on the Admin Dashboard!
+    try {
+      fetch(APPS_SCRIPT_URL, { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify({ 
+          action: "submitpayment", 
+          form_type: "WiPay Payment Attempt", 
+          ref: student.ref, 
+          studentName: student.name, 
+          paymentPlan: selectedPlan, 
+          amountPaid: userPayAmount, 
+          paymentMethod: "online", 
+          timestamp: new Date().toISOString() 
+        }) 
+      });
+    } catch (e) {} // We don't await this; we "fire and forget" so the user isn't delayed!
+
+    // 🚀 Redirect to WiPay
+    if (WIPAY_CONFIG.baseUrl.includes("/to_me/")) {
+      let base = WIPAY_CONFIG.baseUrl;
+      if (base.endsWith("/")) base = base.slice(0, -1); 
+      window.location.href = `${base}/${payAmount}/${encodeURIComponent(paymentDescription)}`;
+    } else {
+      window.location.href = `${WIPAY_CONFIG.baseUrl}?total=${encodeURIComponent(payAmount)}&currency=${encodeURIComponent(WIPAY_CONFIG.currency)}&order_id=${encodeURIComponent(orderId)}&return_url=${encodeURIComponent(WIPAY_CONFIG.returnUrl)}`;
+    }
+  };
   return (
     <PageWrapper bg={S.lightBg}>
       <SectionHeader tag="Finance" title="Make a Payment" />
