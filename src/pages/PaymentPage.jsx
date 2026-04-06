@@ -164,20 +164,18 @@ export default function PaymentPage({ setPage }) {
         fileData.push({ slot: "paymentReceipt", name: receipt.name, type: receipt.type, data: b64 });
       }
       
-      // 🚀 THE FIX: Use text/plain so Google doesn't block the browser!
       var res = await fetch(APPS_SCRIPT_URL, { 
         method: "POST", 
         headers: { "Content-Type": "text/plain;charset=utf-8" }, 
-        body: JSON.stringify({ action: "submitpayment", form_type: "Payment Evidence", ref: student.ref, studentName: student.name, paymentPlan: selectedPlan, amountPaid: userPayAmount, paymentMethod: payMethod, files: fileData, timestamp: new Date().toISOString() }) 
+        // 🚀 FIXED: Added "email: student.email" so the backend knows where to send the receipt!
+        body: JSON.stringify({ action: "submitpayment", form_type: "Payment Evidence", ref: student.ref, studentName: student.name, email: student.email, paymentPlan: selectedPlan, amountPaid: userPayAmount, paymentMethod: payMethod, files: fileData, timestamp: new Date().toISOString() }) 
       });
 
-      // 🚀 THE FIX: Only show the success page if Google actually got it!
       if (res.ok) {
         setSubmitted(true);
       } else {
         alert("Upload failed. Please check your internet connection and try again.");
       }
-
     } catch (e) { 
       console.error(e); 
       alert("A network error occurred. Please try again.");
@@ -194,11 +192,11 @@ export default function PaymentPage({ setPage }) {
     var paymentDescription = `Ref: ${orderId} | Name: ${student.name} | Email: ${student.email || "Not Provided"}`;
 
     try {
-      // 🚀 THE FIX: Use text/plain here too!
       fetch(APPS_SCRIPT_URL, { 
         method: "POST", 
         headers: { "Content-Type": "text/plain;charset=utf-8" }, 
-        body: JSON.stringify({ action: "submitpayment", form_type: "WiPay Payment Attempt", ref: student.ref, studentName: student.name, paymentPlan: selectedPlan, amountPaid: userPayAmount, paymentMethod: "online", timestamp: new Date().toISOString() }) 
+        // 🚀 FIXED: Added "email: student.email" here too!
+        body: JSON.stringify({ action: "submitpayment", form_type: "WiPay Payment Attempt", ref: student.ref, studentName: student.name, email: student.email, paymentPlan: selectedPlan, amountPaid: userPayAmount, paymentMethod: "online", timestamp: new Date().toISOString() }) 
       });
     } catch (e) {}
 
