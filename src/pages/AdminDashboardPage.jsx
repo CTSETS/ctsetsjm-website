@@ -19,7 +19,6 @@ var C = {
 function fmt(n) { return "J$" + Number(n || 0).toLocaleString(); }
 
 function findDate(obj) {
-  // Scans the object for ANY key that sounds like a date
   if (!obj) return null;
   const dateKeys = ["date", "timestamp", "Date Submitted", "Timestamp", "Date Received", "dateSubmitted"];
   for (let key of dateKeys) {
@@ -32,8 +31,8 @@ function fmtTime(d) {
   const raw = findDate(d);
   if (!raw) return "—";
   const date = new Date(raw);
-  if (isNaN(date.getTime())) return String(raw).split("T")[0]; // Fallback to raw string
-  return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+  if (isNaN(date.getTime())) return String(raw).split("T")[0]; 
+  return date.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
 }
 
 function getFolderUrl(obj) {
@@ -245,7 +244,7 @@ function AdminDashboardPage() {
       safeList.sort((a, b) => {
         let valA = a[sortConfig.key] || findDate(a);
         let valB = b[sortConfig.key] || findDate(b);
-        if (sortConfig.key.toLowerCase().includes('date') || sortConfig.key.toLowerCase().includes('time')) {
+        if (sortConfig.key.toLowerCase().includes('date') || sortConfig.key.toLowerCase().includes('time') || sortConfig.key.toLowerCase().includes('timestamp')) {
           valA = new Date(valA).getTime() || 0; valB = new Date(valB).getTime() || 0;
         } else if (sortConfig.key === 'amount') {
           valA = Number(String(valA).replace(/[^0-9.-]+/g,"")) || 0; valB = Number(String(valB).replace(/[^0-9.-]+/g,"")) || 0;
@@ -271,7 +270,7 @@ function AdminDashboardPage() {
         <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", background: `radial-gradient(circle at center, #0a2d4d 0%, ${C.navy} 100%)`, position: "relative", overflow: "hidden" }}>
           <div style={{ background: C.card, borderRadius: 24, padding: "64px 48px", maxWidth: 480, width: "100%", textAlign: "center", position: "relative", zIndex: 2, animation: "pulseFortKnox 4s infinite", border: `2px solid ${C.teal}50` }}>
             <div style={{ fontSize: 96, marginBottom: 24, animation: "floatShield 5s ease-in-out infinite" }}>🛡️</div>
-            <h1 style={{ fontFamily: C.heading, color: C.navy, fontSize: 36, fontWeight: 900 }}>{loginStep === 0 ? "Identify Yourself" : "2FA Sequence"}</h1>
+            <h1 style={{ fontFamily: C.heading, color: C.navy, fontSize: 36, fontWeight: 900 }}>Identify Yourself</h1>
             {loginStep === 0 ? (
               <div style={{ marginTop: 32 }}><input type="password" value={pw} onChange={e => { setPw(e.target.value); setLoginErr(""); }} onKeyDown={e => e.key === "Enter" && handlePasswordSubmit()} autoFocus placeholder="Master Password" style={{ width: "100%", padding: "20px", borderRadius: 12, border: "2px solid " + (loginErr ? C.red : C.border), fontSize: 18, textAlign: "center", letterSpacing: 4, background: "#F8FAFC", fontWeight: 800 }} /></div>
             ) : (
@@ -285,7 +284,6 @@ function AdminDashboardPage() {
     );
   }
 
-  // ═══ MASTER FULL-WIDTH LAYOUT ═══
   return (
     <div style={{ minHeight: "100vh", background: C.bg, fontFamily: C.body, width: "100vw", overflowX: "hidden" }}>
       <style>{`.sortable-th { cursor: pointer; user-select: none; } .sortable-th:hover { background: #E2E8F0 !important; }`}</style>
@@ -302,10 +300,16 @@ function AdminDashboardPage() {
       </div>
 
       <div style={{ background: C.card, borderBottom: "1px solid " + C.border, padding: "0 40px", display: "flex", boxShadow: "0 1px 3px rgba(0,0,0,0.02)" }}>
-        {tabList.map(t => (
+        {[
+          { id: "dashboard", label: "Dashboard", icon: "📊" },
+          { id: "applications", label: "Applications", icon: "📋", b: dashboard?.apps?.underReview },
+          { id: "students", label: "Students", icon: "🎓" },
+          { id: "payments", label: "Payments", icon: "💳", b: dashboard?.pendingPayments?.length },
+          { id: "activity", label: "Activity Log", icon: "⚡" },
+        ].map(t => (
           <button key={t.id} onClick={() => { setTab(t.id); setSearchTerm(""); }} style={{ padding: "20px 28px", border: "none", background: "none", cursor: "pointer", fontSize: 14, fontWeight: tab === t.id ? 800 : 600, color: tab === t.id ? C.navy : C.gray, borderBottom: tab === t.id ? `3px solid ${C.navy}` : "3px solid transparent", display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 18 }}>{t.icon}</span> {t.label}
-            {t.badge > 0 && <span style={{ background: C.coral, color: "#fff", borderRadius: 12, padding: "2px 8px", fontSize: 11, fontWeight: 800 }}>{t.badge}</span>}
+            {t.b > 0 && <span style={{ background: C.coral, color: "#fff", borderRadius: 12, padding: "2px 8px", fontSize: 11, fontWeight: 800 }}>{t.b}</span>}
           </button>
         ))}
       </div>
@@ -313,3 +317,193 @@ function AdminDashboardPage() {
       {actionMsg && (
         <div style={{ margin: "20px 40px 0", padding: "14px 20px", borderRadius: 10, background: actionMsg.ok ? C.emeraldLight : C.redLight, color: actionMsg.ok ? C.emerald : C.red, fontSize: 15, fontWeight: 700, display: "flex", justifyContent: "space-between", border: "2px solid " + (actionMsg.ok ? C.emerald : C.red) + "40" }}>
           <span>{actionMsg.text}</span>
+          <button onClick={() => setActionMsg(null)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: "inherit" }}>✕</button>
+        </div>
+      )}
+
+      {loading && <div style={{ height: 4, background: `linear-gradient(90deg, ${C.coral}, ${C.gold}, ${C.teal})`, animation: "pulse 1.5s infinite" }} />}
+
+      <div style={{ padding: "40px", width: "100%", boxSizing: "border-box" }}>
+
+        {tab === "dashboard" && dashboard && (<div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 24, marginBottom: 48 }}>
+            {[
+              { l: "Total Applications", v: dashboard?.apps?.total || 0, c: C.navy, go: () => { setTab("applications"); setAppFilter(""); } },
+              { l: "Awaiting Review", v: dashboard?.apps?.underReview || 0, c: C.coral, go: () => { setTab("applications"); setAppFilter("Under Review"); } },
+              { l: "Active Students", v: dashboard?.enrolled?.active || 0, c: C.teal, go: () => { setTab("students"); setStudentFilter("Enrolled"); } },
+              { l: "Revenue Collected", v: fmt(dashboard?.enrolled?.revenue || 0), c: C.emerald },
+            ].map((s, i) => (
+              <div key={i} onClick={s.go} style={{ background: "#fff", borderRadius: 24, padding: "32px", border: "1px solid " + C.border, cursor: s.go ? "pointer" : "default", boxShadow: "0 4px 15px rgba(0,0,0,0.03)" }}>
+                <div style={{ fontSize: 14, fontWeight: 800, color: C.gray, marginBottom: 12, textTransform: "uppercase", letterSpacing: 1.5 }}>{s.l}</div>
+                <div style={{ fontSize: 44, fontWeight: 900, color: s.c, fontFamily: C.heading }}>{s.v}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ background: C.card, borderRadius: 24, border: "1px solid " + C.border, overflow: "hidden", boxShadow: "0 8px 25px rgba(0,0,0,0.04)" }}>
+            <div style={{ padding: "24px 32px", borderBottom: "1px solid " + C.border, background: "#fff" }}>
+              <div style={{ fontWeight: 800, color: C.navy, fontSize: 20, fontFamily: C.heading }}>Pending Bank Verifications</div>
+            </div>
+            {processData(dashboard?.pendingPayments).length === 0 ? <div style={{ padding: 100, textAlign: "center", color: C.grayLight, fontSize: 18, fontWeight: 600 }}>✅ Everything is clear.</div> : (
+              <div style={{ overflowX: "auto" }}><table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead><tr>
+                  <TH sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Date & Time</TH>
+                  <TH sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</TH>
+                  <TH sortKey="amount" currentSort={sortConfig} onSort={handleSort}>Amount</TH>
+                  <TH>Notes</TH>
+                  <TH>Actions</TH>
+                </tr></thead>
+                <tbody>{processData(dashboard?.pendingPayments).map((p, i) => (
+                  <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}>
+                    <TD bold color={C.gray}>{fmtTime(p)}</TD><TD bold color={C.navy}>{p?.name}</TD>
+                    <TD bold color={C.emerald}>{fmt(p?.amount)}</TD><TD color={C.gray} max={300}>{p?.notes}</TD>
+                    <td style={{ padding: "16px" }}><div style={{ display: "flex", gap: 12 }}><Btn small onClick={() => { setModal({ type: "verify", data: p }); setVerifyAmt(String(p?.amount || "")); setVerifyTxn(""); }}>Verify</Btn><Btn small bg={C.redLight} color={C.red} onClick={() => rejectPay(p?.ref)}>Reject</Btn></div></td>
+                  </tr>
+                ))}</tbody>
+              </table></div>
+            )}
+          </div>
+        </div>)}
+
+        {tab === "applications" && (<div>
+          <div style={{ display: "flex", gap: 16, marginBottom: 32, alignItems: "center", background: "#fff", padding: "20px 32px", borderRadius: 20, border: "1px solid " + C.border }}>
+            {["Under Review", "Accepted", "Pending Payment", "Rejected", ""].map(f => (
+              <Pill key={f || "All"} label={f || "All"} active={appFilter === f} onClick={() => setAppFilter(f)} />
+            ))}
+            <div style={{ marginLeft: "auto" }}><SearchBox value={searchTerm} onChange={setSearchTerm} /></div>
+          </div>
+          <div style={{ background: C.card, borderRadius: 24, border: "1px solid " + C.border, overflow: "hidden", boxShadow: "0 8px 25px rgba(0,0,0,0.04)" }}>
+            <div style={{ overflowX: "auto", maxHeight: "72vh" }}><table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead><tr>
+                <TH sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Date & Time</TH>
+                <TH sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Ref</TH>
+                <TH sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</TH>
+                <TH sortKey="programme" currentSort={sortConfig} onSort={handleSort}>Programme</TH>
+                <TH sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</TH>
+                <TH>Operations</TH>
+              </tr></thead>
+              <tbody>{processData(apps).filter(a => !appFilter || a?.status === appFilter).map((a, i) => (
+                <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}>
+                  <TD bold color={C.gray}>{fmtTime(a)}</TD><TD mono bold>{a?.ref}</TD><TD bold>{a?.name}</TD>
+                  <TD max={400}>{a?.programme}</TD><td><Badge status={a?.status} /></td>
+                  <td style={{ padding: "16px" }}><div style={{ display: "flex", gap: 12 }}>
+                    {a?.status === "Under Review" && <><Btn small onClick={() => acceptApp(a.ref)}>Accept</Btn><Btn small bg={C.redLight} color={C.red} onClick={() => rejectApp(a.ref)}>Reject</Btn></>}
+                    {getFolderUrl(a) && <Btn small bg={C.blueLight} color={C.blue} onClick={() => window.open(getFolderUrl(a), "_blank")}>📁 Folder</Btn>}
+                  </div></td>
+                </tr>
+              ))}</tbody>
+            </table></div>
+          </div>
+        </div>)}
+
+        {tab === "students" && (<div>
+          <div style={{ display: "flex", gap: 16, marginBottom: 32, alignItems: "center", background: "#fff", padding: "20px 32px", borderRadius: 20, border: "1px solid " + C.border }}>
+            {["", "Enrolled", "Active", "Pending Payment", "On Hold"].map(f => (
+              <Pill key={f || "All"} label={f || "All"} active={studentFilter === f} onClick={() => setStudentFilter(f)} />
+            ))}
+            <div style={{ marginLeft: "auto" }}><SearchBox value={searchTerm} onChange={setSearchTerm} /></div>
+          </div>
+          <div style={{ background: C.card, borderRadius: 24, border: "1px solid " + C.border, overflow: "hidden", boxShadow: "0 8px 25px rgba(0,0,0,0.04)" }}>
+            <div style={{ overflowX: "auto", maxHeight: "72vh" }}><table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead><tr>
+                <TH sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Status Update</TH>
+                <TH sortKey="studentNumber" currentSort={sortConfig} onSort={handleSort}>Student #</TH>
+                <TH sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</TH>
+                <TH sortKey="programme" currentSort={sortConfig} onSort={handleSort}>Programme</TH>
+                <TH sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</TH>
+                <TH>Student Services</TH>
+              </tr></thead>
+              <tbody>{processData(students).filter(s => !studentFilter || s?.status === studentFilter).map((s, i) => (
+                <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}>
+                  <TD bold color={C.gray}>{fmtTime(s)}</TD><TD mono bold>{s?.studentNumber}</TD><TD bold>{s?.name}</TD>
+                  <TD max={400}>{s?.programme}</TD><td><Badge status={s?.status} /></td>
+                  <td style={{ padding: "16px" }}><div style={{ display: "flex", gap: 12 }}>
+                    <Btn small bg={C.navy} onClick={() => genRecord(s.studentNumber)} disabled={busy === s.studentNumber}>{busy === s.studentNumber ? "..." : "📄 Record"}</Btn>
+                    {getFolderUrl(s) && <Btn small bg={C.blueLight} color={C.blue} onClick={() => window.open(getFolderUrl(s), "_blank")}>📁 Folder</Btn>}
+                    {s?.status === "Pending Payment" && <Btn small onClick={() => enrollStu(s.ref)}>Force Enroll</Btn>}
+                  </div></td>
+                </tr>
+              ))}</tbody>
+            </table></div>
+          </div>
+        </div>)}
+
+        {tab === "payments" && (<div>
+          <div style={{ display: "flex", gap: 16, marginBottom: 32, alignItems: "center", background: "#fff", padding: "20px 32px", borderRadius: 20, border: "1px solid " + C.border }}>
+            {["Pending Verification", "Paid", ""].map(f => (
+              <Pill key={f || "All"} label={f || "All"} active={payFilter === f} onClick={() => setPayFilter(f)} />
+            ))}
+            <div style={{ marginLeft: "auto" }}><SearchBox value={searchTerm} onChange={setSearchTerm} /></div>
+          </div>
+          <div style={{ background: C.card, borderRadius: 24, border: "1px solid " + C.border, overflow: "hidden", boxShadow: "0 8px 25px rgba(0,0,0,0.04)" }}>
+            <div style={{ overflowX: "auto", maxHeight: "72vh" }}><table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead><tr>
+                <TH sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Submission Time</TH>
+                <TH sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Ref</TH>
+                <TH sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</TH>
+                <TH sortKey="amount" currentSort={sortConfig} onSort={handleSort}>Amount</TH>
+                <TH sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</TH>
+                <TH>Evidence</TH>
+                <TH>Actions</TH>
+              </tr></thead>
+              <tbody>{processData(payments).filter(p => !payFilter || p?.status === payFilter).map((p, i) => (
+                <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}>
+                  <TD bold color={C.gray}>{fmtTime(p)}</TD><TD mono bold>{p?.ref}</TD><TD bold>{p?.name}</TD>
+                  <TD bold color={C.emerald}>{fmt(p?.amount)}</TD><td><Badge status={p?.status} /></td>
+                  <TD>{p?.receipt && <a href={p.receipt} target="_blank" rel="noopener noreferrer" style={{ color: C.blue, fontWeight: 800, textDecoration: "underline" }}>View Bank Slip</a>}</TD>
+                  <td style={{ padding: "16px" }}>{p?.status === "Pending Verification" && <div style={{ display: "flex", gap: 10 }}><Btn small onClick={() => { setModal({ type: "verify", data: p }); setVerifyAmt(String(p.amount)); setVerifyTxn(""); }}>Verify</Btn><Btn small bg={C.redLight} color={C.red} onClick={() => rejectPay(p.ref)}>Reject</Btn></div>}</td>
+                </tr>
+              ))}</tbody>
+            </table></div>
+          </div>
+        </div>)}
+
+        {tab === "activity" && (<div>
+          <div style={{ background: C.card, borderRadius: 24, border: "1px solid " + C.border, overflow: "hidden", boxShadow: "0 8px 25px rgba(0,0,0,0.04)" }}>
+            <div style={{ padding: "24px 32px", borderBottom: "1px solid " + C.border, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <h2 style={{ fontFamily: C.heading, color: C.navy, fontSize: 24, margin: 0, fontWeight: 800 }}>Institutional Audit Log</h2>
+              <SearchBox value={searchTerm} onChange={setSearchTerm} />
+            </div>
+            <div style={{ overflowX: "auto", maxHeight: "72vh" }}><table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead><tr>
+                <TH sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Exact Time</TH>
+                <TH sortKey="action" currentSort={sortConfig} onSort={handleSort}>Protocol Action</TH>
+                <TH sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Entity Ref</TH>
+                <TH>Details</TH>
+                <TH sortKey="by" currentSort={sortConfig} onSort={handleSort}>Executed By</TH>
+              </tr></thead>
+              <tbody>{processData(auditLog).map((e, i) => (
+                <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}>
+                  <TD bold color={C.gray}>{fmtTime(e)}</TD>
+                  <TD><span style={{ padding: "6px 14px", borderRadius: 8, background: C.blueLight, color: C.blue, fontSize: 11, fontWeight: 800 }}>{e?.action}</span></TD>
+                  <TD mono bold>{e?.ref}</TD><TD color={C.gray} max={500}>{e?.details}</TD><TD bold color={C.navy}>{e?.by}</TD>
+                </tr>
+              ))}</tbody>
+            </table></div>
+          </div>
+        </div>)}
+
+      </div>
+
+      {modal && modal.type === "verify" && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(1,30,64,0.85)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, backdropFilter: "blur(10px)" }}>
+          <div style={{ background: "#fff", borderRadius: 32, width: "100%", maxWidth: 520, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,0.5)" }}>
+            <div style={{ padding: "32px", background: C.navy, color: "#fff" }}>
+              <div style={{ fontSize: 24, fontWeight: 800, fontFamily: C.heading }}>Verify Bank Transfer</div>
+              <div style={{ fontSize: 14, color: C.gold, marginTop: 8, fontWeight: 600 }}>ID: {modal.data.ref} | User: {modal.data.name}</div>
+            </div>
+            <div style={{ padding: "40px" }}>
+              <label style={{ display: "block", fontSize: 14, fontWeight: 800, color: C.navy, marginBottom: 12 }}>Confirmed Amount (JMD)</label>
+              <input type="number" value={verifyAmt} onChange={e => setVerifyAmt(e.target.value)} style={{ width: "100%", padding: "20px", borderRadius: 12, border: `2px solid ${C.border}`, fontSize: 20, fontWeight: 800, background: "#F8FAFC", marginBottom: 32 }} />
+              <label style={{ display: "block", fontSize: 14, fontWeight: 800, color: C.navy, marginBottom: 12 }}>Bank Receipt / TXN ID</label>
+              <input type="text" value={verifyTxn} onChange={e => setVerifyTxn(e.target.value)} placeholder="Enter ID..." style={{ width: "100%", padding: "20px", borderRadius: 12, border: `2px solid ${C.border}`, fontSize: 16, fontFamily: "monospace", background: "#F8FAFC", marginBottom: 40 }} />
+              <div style={{ display: "flex", gap: 16 }}><button onClick={() => verifyPay(modal.data.ref, verifyAmt, verifyTxn)} style={{ flex: 1, padding: "20px", borderRadius: 12, border: "none", background: C.emerald, color: "#fff", fontSize: 16, fontWeight: 900, cursor: "pointer" }}>Confirm Verification</button><button onClick={() => setModal(null)} style={{ padding: "20px 32px", borderRadius: 12, border: "none", background: C.bg, color: C.navy, fontWeight: 800, cursor: "pointer" }}>Cancel</button></div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default AdminDashboardPage;
