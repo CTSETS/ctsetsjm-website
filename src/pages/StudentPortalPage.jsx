@@ -192,8 +192,16 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
             <div style={{ fontSize: 12, opacity: 0.8, fontFamily: S.body, letterSpacing: 1.5, textTransform: "uppercase", fontWeight: 700 }}>Welcome back,</div>
             <h2 style={{ fontFamily: S.heading, fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 700, margin: "4px 0" }}>{toTitleCase(profile.name)}</h2>
             <div style={{ fontSize: 16, fontWeight: 800, color: S.gold, fontFamily: "monospace", letterSpacing: 1, marginBottom: 4 }}>{profile.studentNumber}</div>
-            <div style={{ fontSize: 14, opacity: 0.9, fontFamily: S.body }}>{profile.programme}</div>
-            <div style={{ fontSize: 13, color: S.gold, fontFamily: S.body, fontWeight: 700, marginTop: 4 }}>Valid Term: {validTermText}</div>
+            
+            {/* 🚀 FIXED: Programme & Level Header (matches the ID card exactly) */}
+            <div style={{ fontSize: 14, opacity: 0.9, fontFamily: S.body }}>
+              {profile.level ? `${profile.level} in ${profile.programme}` : profile.programme}
+            </div>
+            
+            {/* 🚀 FIXED: Just the period, "Valid Term:" text removed */}
+            <div style={{ fontSize: 13, color: S.gold, fontFamily: S.body, fontWeight: 700, marginTop: 4 }}>
+              {validTermText}
+            </div>
           </div>
         </div>
         <button onClick={onLogout} style={{ padding: "12px 32px", borderRadius: 8, border: "2px solid rgba(255,255,255,0.3)", background: "rgba(255,255,255,0.1)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body, transition: "0.2s" }}>Log Out</button>
