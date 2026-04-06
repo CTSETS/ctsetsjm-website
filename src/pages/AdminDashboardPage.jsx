@@ -134,6 +134,7 @@ function AdminDashboardPage() {
 
   // ═══ RESTORED BEAUTIFUL LOGIN UI ═══
   // ═══ ENTERPRISE LOGIN UI ═══
+  // ═══ ENTERPRISE LOGIN UI ═══
   if (!loggedIn) {
     return (
       <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: C.bg, fontFamily: C.body }}>
