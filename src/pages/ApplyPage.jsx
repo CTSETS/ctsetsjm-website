@@ -3,17 +3,14 @@ import { useState, useRef, useEffect } from "react";
 import S from "../constants/styles";
 import { PROGRAMMES } from "../constants/programmes";
 import { TESTIMONIALS, PRAYERS, genderPronouns } from "../constants/content";
-import { BOOKING_URLS, REG_FEE } from "../constants/config";
+import { BOOKING_URLS, REG_FEE, APPS_SCRIPT_URL } from "../constants/config";
 import { Container, PageWrapper, Btn, SectionHeader, SectionBlock, Reveal, PageScripture, SocialProofBar, TestimonialCard } from "../components/shared/CoreComponents";
 import { CaptchaChallenge, HoneypotField } from "../components/shared/DisplayComponents";
 import { validateEmail, validatePhone, validateTRN, suggestEmail, validateFileSize } from "../utils/validation";
-import { generateRef } from "../utils/submission";
+import { submitToAppsScript, generateRef } from "../utils/submission";
 import { fmt, fmtDate } from "../utils/formatting";
 import { registerDripSequence } from "../utils/email";
 import HeartFormBuilder from "../components/apply/HeartFormBuilder";
-
-// REQUIRED INSTITUTIONAL CONSTANT
-const VERCEL_URL = "https://ctsetsjm-website.vercel.app/api/proxy";
 
 // ── Constants ──
 const APPLICANT_TYPES = [
@@ -126,7 +123,7 @@ function StatusTracker({ setPage }) {
     if (!lookupVal.trim()) { setError("Please enter your Application Number or Student ID."); return; }
     setLoading(true); setError(""); setResult(null);
     try {
-      const res = await fetch(`${VERCEL_URL}?action=lookupstudent&ref=${encodeURIComponent(lookupVal.trim().toUpperCase())}`);
+      const res = await fetch(`${APPS_SCRIPT_URL}?action=lookupstudent&ref=${encodeURIComponent(lookupVal.trim().toUpperCase())}`);
       const data = await res.json();
       if (data.found) { setResult(data); }
       else { setError("No application found. Please check your details and try again."); }
@@ -301,13 +298,6 @@ export default function ApplyPage({ setPage }) {
     setAppQueue(appQueue.filter((_, i) => i !== idx));
   };
 
-  const toBase64 = (file) => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.split(',')[1]);
-    reader.onerror = error => reject(error);
-    reader.readAsDataURL(file);
-  });
-
   const handleSubmit = async () => {
     if (hp) return;
     if (Date.now() - startTime.current < 5000) return;
@@ -354,29 +344,16 @@ export default function ApplyPage({ setPage }) {
     var allRefs = [];
     var anyDuplicate = false;
 
-    const fileDataArray = [];
-    for (const slot in files) {
-      if (files[slot]) {
-        try {
-          const b64 = await toBase64(files[slot]);
-          fileDataArray.push({ slot: slot, name: files[slot].name, type: files[slot].type, data: b64 });
-        } catch (e) {
-          console.error("File conversion error:", e);
-        }
-      }
-    }
-
     for (var ai = 0; ai < allApps.length; ai++) {
       var app = allApps[ai];
       var ref = app.ref || generateRef();
       allRefs.push(ref);
 
-      const payload = {
-        action: "submitapplication",
+      const formData = {
         form_type: "Student Application",
-        ref: ref,
-        applicantType: applicantType,
-        fullName: fullName,
+        ref,
+        applicantType,
+        fullName,
         firstName: form.firstName.trim(),
         middleName: form.middleName.trim(),
         lastName: form.lastName.trim(),
@@ -418,16 +395,11 @@ export default function ApplyPage({ setPage }) {
         hearAbout: form.hearAbout || "",
         message: form.message || "",
         timestamp: new Date().toISOString(),
-        files: ai === 0 ? fileDataArray : []
       };
 
       try {
-        const response = await fetch(VERCEL_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        const result = await response.json();
+        // Restoring the original, tested submission utility to bypass CORS and Vercel timeouts
+        const result = await submitToAppsScript(formData, ai === 0 ? files : {});
 
         if (result.duplicate) {
           setErrors({ submit: app.programme + " — an application already exists with this TRN/email (Ref: " + (result.existingRef || "—") + "). Contact admin@ctsetsjm.com if unexpected." });
