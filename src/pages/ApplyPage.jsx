@@ -102,7 +102,7 @@ function PrayerModal({ prayer, onClose }) {
           <p style={{ fontFamily: "Georgia, serif", fontSize: 14, color: S.navy, fontStyle: "italic", lineHeight: 1.7, margin: "0 0 8px" }}>"{prayer.scripture}"</p>
           <p style={{ fontFamily: S.body, fontSize: 11, color: S.gold, letterSpacing: 2, margin: 0, textTransform: "uppercase" }}>— {prayer.ref}</p>
         </div>
-        <button onClick={onClose} style={{ padding: "14px 40px", borderRadius: 8, background: S.coral, color: "#fff", border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>Amen 🙏</button>
+        <button onClick={onClose} style={{ padding: "14px 40px", borderRadius: 8, background: S.coral, color: "#fff", border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>Click Amen 🙏</button>
       </div>
     </div>
   );
@@ -214,12 +214,20 @@ export default function ApplyPage({ setPage }) {
   const [submitted, setSubmitted] = useState(false);
   const [prayer, setPrayer] = useState(null);
   const [heartFormDone, setHeartFormDone] = useState(false);
-  const [appQueue, setAppQueue] = useState([]); 
+ const [appQueue, setAppQueue] = useState([]); 
   const [showQueuePrompt, setShowQueuePrompt] = useState(false);
   const [showTracker, setShowTracker] = useState(false);
   
   const appRef = useRef(generateRef());
   const startTime = useRef(Date.now());
+
+  // Listen for the tracking link from emails
+  useEffect(() => {
+    if (window.location.href.indexOf("track=true") !== -1) {
+      setShowTracker(true);
+    }
+  }, []);
+
 
   // ── Derived ──
   const isJamaican = applicantType === "jamaican";
