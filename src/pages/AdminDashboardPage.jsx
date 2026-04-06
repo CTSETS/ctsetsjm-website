@@ -195,11 +195,21 @@ function AdminDashboardPage() {
     }
   }
   
+  // ═══ UPGRADED RECORD GENERATOR ═══
   function genRecord(sn) { 
     setBusy(sn);
     api("generaterecord", { student: sn }).then(d => {
-      if (d && d.ok && d.url) { window.open(d.url, "_blank"); toast("Record opened in new tab.", true); }
-      else toast("Failed to generate record PDF.", false);
+      let success = d && (d.ok || d.success);
+      let link = d ? (d.url || d.fileUrl || d.link || d.pdfUrl) : null;
+
+      if (success && link) {
+        window.open(link, "_blank");
+        toast("Record opened in a new tab!", true);
+      } else if (success) {
+        toast("Record generated successfully! (Check your Google Drive folder)", true);
+      } else {
+        toast("Failed to generate record: " + (d?.error || d?.message || "Unknown Error"), false);
+      }
       setBusy("");
     }).catch(() => { toast("Network error.", false); setBusy(""); });
   }
