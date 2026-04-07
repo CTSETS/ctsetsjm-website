@@ -182,7 +182,7 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
   return (
     <div style={{ width: "100%", maxWidth: "1280px", margin: "0 auto", animation: "fadeIn 0.4s" }}>
       
-      {/* 💳 UPDATED PAYMENT MODAL WITH CORRECT BANK DETAILS */}
+      {/* 💳 PAYMENT MODAL */}
       {showPaymentModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(1, 30, 64, 0.85)", zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(6px)", padding: "20px" }}>
           <div style={{ background: "#fff", padding: "40px", borderRadius: 24, maxWidth: 600, width: "100%", boxShadow: "0 20px 60px rgba(0,0,0,0.5)", position: "relative", animation: "fadeIn 0.3s" }}>
@@ -242,7 +242,7 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
         </div>
       )}
 
-      {/* 🚀 UPGRADED HEADER */}
+      {/* 🚀 HEADER */}
       <div style={{ background: `linear-gradient(135deg, ${S.navy} 0%, ${S.teal} 100%)`, borderRadius: 16, padding: "32px", color: "#fff", marginBottom: 32, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20, boxShadow: "0 10px 30px rgba(1, 30, 64, 0.15)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
           {secureImgUrl && !imgError ? (
@@ -357,74 +357,4 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
                       </div>
                       <div style={{ marginLeft: "auto", fontSize: 8, textTransform: "uppercase", letterSpacing: 1, opacity: 0.8, textAlign: "right" }}>Student<br/>Identity Card</div>
                     </div>
-                    <div style={{ padding: "16px", display: "flex", gap: "16px", alignItems: "flex-start" }}>
-                      {secureImgUrl && !imgError ? (
-                        <img src={secureImgUrl} alt="Student" onError={() => setImgError(true)} style={{ width: 85, height: 110, objectFit: "cover", borderRadius: "6px", border: `2px solid ${S.gold}`, background: "#fff", zIndex: 2, position: "relative" }} referrerPolicy="no-referrer" />
-                      ) : (
-                        <div style={{ width: 85, height: 110, background: "rgba(255,255,255,0.1)", borderRadius: "6px", border: `2px solid ${S.gold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, fontWeight: 800, color: "#fff", zIndex: 2, position: "relative" }}>{(profile.name || "S").charAt(0).toUpperCase()}</div>
-                      )}
-                      <div style={{ flex: 1, zIndex: 2, position: "relative" }}>
-                        <div style={{ fontSize: 16, fontWeight: 800, lineHeight: 1.1, marginBottom: 2 }}>{toTitleCase(profile.name)}</div>
-                        <div style={{ fontSize: 10, color: S.gold, fontWeight: 700, marginBottom: 10, fontFamily: "monospace", letterSpacing: 1 }}>{profile.studentNumber}</div>
-                        <div style={{ fontSize: 8, opacity: 0.7, textTransform: "uppercase", marginBottom: 2, letterSpacing: 0.5 }}>Programme & Level</div>
-                        <div style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.2, marginBottom: 8 }}>{profile.level ? `${profile.level} in ${profile.programme}` : profile.programme}</div>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-                          <div>
-                            <div style={{ fontSize: 8, opacity: 0.7, textTransform: "uppercase", marginBottom: 2, letterSpacing: 0.5 }}>Valid Term</div>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>{validTermText}</div>
-                          </div>
-                          <div style={{ width: 24, height: 24, borderRadius: "50%", background: profile.status === "Enrolled" || profile.status === "Active" ? S.emerald : S.amber, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, border: "2px solid #fff", boxShadow: "0 2px 4px rgba(0,0,0,0.3)" }}>✓</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <Btn primary onClick={printIDCard} style={{ marginTop: 24, background: S.coral, color: "#fff", width: "100%", maxWidth: "380px", fontSize: 14 }}>📥 Download / Print ID</Btn>
-               </div>
-             </div>
-
-             <div style={{ background: "#fff", borderRadius: 16, padding: "32px", border: `1px solid ${S.border}`, boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
-                 <h3 style={{ fontFamily: S.heading, color: S.navy, marginBottom: 24, fontSize: 20 }}>Official Institutional Record</h3>
-                 
-                 <div style={{ padding: "8px 12px", background: S.navy, color: "#fff", borderRadius: 6, fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 }}>Personal Details</div>
-                 <DataRow label="Full Name" value={toTitleCase(profile.name)} />
-                 <DataRow label="Date of Birth" value={profile.dob} />
-                 <DataRow label="TRN" value={profile.trn} />
-                 <DataRow label="Phone Number" value={profile.phone} />
-                 <DataRow label="Home Address" value={toTitleCase(profile.address)} />
-                 <DataRow label="Email Address" value={profile.email} />
-                 
-                 <div style={{ padding: "8px 12px", background: S.teal, color: "#fff", borderRadius: 6, fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: 1, marginTop: 24, marginBottom: 12 }}>Academic & Financial</div>
-                 <DataRow label="Student Number" value={profile.studentNumber} />
-                 <DataRow label="Enrolled Programme" value={profile.programme} />
-                 <DataRow label="Qualification Level" value={profile.level} />
-                 <DataRow label="Academic Status" value={profile.status} />
-                 <DataRow label="Date Enrolled" value={profile.dateEnrolled ? new Date(profile.dateEnrolled).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "—"} />
-                 
-                 <div style={{ padding: "8px 12px", background: S.coral, color: "#fff", borderRadius: 6, fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: 1, marginTop: 24, marginBottom: 12 }}>Emergency Contact</div>
-                 <DataRow label="Contact Name" value={toTitleCase(profile.emergencyName)} />
-                 <DataRow label="Contact Phone" value={profile.emergencyPhone} />
-
-                 <div style={{ marginTop: 32, padding: "16px", background: S.amberLight, borderRadius: 8, fontSize: 13, color: S.amberDark, fontFamily: S.body, lineHeight: 1.6, border: `1px solid ${S.amber}40` }}>
-                     To request corrections to your official record, please contact <strong>admin@ctsetsjm.com</strong>.
-                 </div>
-             </div>
-         </div>
-      )}
-
-      {/* PORTFOLIO TAB */}
-      {activeTab === "portfolio" && (
-        <div style={{ background: "#fff", borderRadius: 16, padding: "48px", border: `1px solid ${S.border}` }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>📁</div>
-          <h3 style={{ fontFamily: S.heading, color: S.navy, marginBottom: 16, fontSize: 26 }}>Submit NCTVET Practical Evidence</h3>
-          <p style={{ fontFamily: S.body, color: S.gray, fontSize: 16, marginBottom: 32, lineHeight: 1.8, maxWidth: "800px" }}>Your programme requires practical competency evidence. Upload your large videos or documents to Google Drive or YouTube, ensure the permission is set to <strong>"Anyone with the link can view"</strong>, and paste it below.</p>
-          <input type="text" value={portfolioLink} onChange={(e) => setPortfolioLink(e.target.value)} placeholder="Paste your link here..." style={{ width: "100%", padding: "20px 24px", borderRadius: 10, border: `2px solid ${S.border}`, fontSize: 16, fontFamily: S.body, marginBottom: 24, outline: "none", background: S.lightBg }} />
-          <Btn primary onClick={() => { if(!portfolioLink) return alert("Please paste a link first."); alert(`Your evidence has been securely logged for Assessor review.`); setPortfolioLink(""); }} style={{ background: S.coral, color: "#fff", fontSize: 16, width: "100%", maxWidth: "340px", padding: "18px", borderRadius: 10 }}>Submit to Assessor</Btn>
-        </div>
-      )}
-
-      {/* FINANCE TAB WITH HISTORY */}
-      {activeTab === "finance" && (
-        <div style={{ animation: "fadeIn 0.3s" }}>
-            <div style={{ background: "#fff", borderRadius: 16, padding: "40px", border: `1px solid ${S.border}`, textAlign: "center", marginBottom: 24 }}>
-              <div style={{ fontSize: 14, color: S.coral, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 16 }}>Total Programme Cost</div>
-              <div style={{ fontSize: "clamp(32px, 6vw, 48px)", fontWeight
+                    <div style={{ padding: "16px
