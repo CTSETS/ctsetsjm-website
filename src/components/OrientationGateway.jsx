@@ -14,7 +14,7 @@ export default function OrientationGateway({ onComplete }) {
   const [showQuiz, setShowQuiz] = useState(false);
   const [direction, setDirection] = useState("next"); // Tracks which way the book flips
 
-  // ─── 15-POINT ORIENTATION DATA (FULL RICH TEXT) ───
+  // ─── 16-POINT ORIENTATION DATA (FULL RICH TEXT) ───
   const SLIDES = [
     { 
       icon: "🏛️", title: "Welcome to CTS Empowerment & Training Solutions", 
@@ -23,6 +23,23 @@ export default function OrientationGateway({ onComplete }) {
         <div>
           <h4 style={{ color: T.gold, textTransform: "uppercase", letterSpacing: "1px", marginBottom: "16px", lineHeight: "1.4" }}>"Called to Serve, Excellence through Service."</h4>
           <p>Your journey to professional certification starts right here on our fully digital campus. We are thrilled to have you!</p>
+        </div>
+      )
+    },
+    { 
+      icon: "🧭", title: "How This Orientation Works", 
+      image: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&q=80",
+      content: (
+        <div>
+          <p style={{ marginBottom: "16px" }}>Before you step into your digital classroom, we need to ensure you know how to navigate the campus.</p>
+          <ul style={{ paddingLeft: "20px", marginBottom: "24px" }}>
+            <li style={{ marginBottom: "12px" }}><strong>Step 1: Read the Guide</strong> — Flip through these short pages to learn our policies, rules, and digital tools.</li>
+            <li style={{ marginBottom: "12px" }}><strong>Step 2: The Knowledge Check</strong> — At the end of this guide, you will take a quick quiz. Score 70% or higher to prove you are ready.</li>
+            <li style={{ marginBottom: "12px" }}><strong>Step 3: Permanent Unlock</strong> — Once you pass, this Gateway will permanently dissolve, and you will be morphed directly into your main Student Dashboard!</li>
+          </ul>
+          <div style={{ padding: "16px", background: T.cream, borderLeft: `4px solid ${T.teal}`, borderRadius: "4px" }}>
+            <strong>The best part?</strong> You only have to complete this orientation once. The next time you log in, your classroom will be waiting for you instantly.
+          </div>
         </div>
       )
     },
