@@ -17,11 +17,11 @@ export default function OrientationGateway({ onComplete }) {
   // ─── 15-POINT ORIENTATION DATA (FULL RICH TEXT) ───
   const SLIDES = [
     { 
-      icon: "🏛️", title: "Welcome to CTS ETS", 
+      icon: "🏛️", title: "Welcome to CTS Empowerment & Training Solutions", 
       image: "/logo.jpg",
       content: (
         <div>
-          <h4 style={{ color: T.gold, textTransform: "uppercase", letterSpacing: "1px", marginBottom: "16px" }}>"Called to Serve, Committed to Excellence."</h4>
+          <h4 style={{ color: T.gold, textTransform: "uppercase", letterSpacing: "1px", marginBottom: "16px", lineHeight: "1.4" }}>"Called to Serve, Excellence through Service."</h4>
           <p>Your journey to professional certification starts right here on our fully digital campus. We are thrilled to have you!</p>
         </div>
       )
