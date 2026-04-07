@@ -134,6 +134,7 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
   const [quizLoading, setQuizLoading] = useState(false);
   const [portfolioLink, setPortfolioLink] = useState("");
   const [imgError, setImgError] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false); // 💳 NEW PAYMENT MODAL STATE
   
   const secureImgUrl = getDriveImageUrl(profile.photoUrl);
   const validTermText = getValidTerm(profile.programme, profile.level, profile.dateEnrolled);
@@ -180,6 +181,52 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
 
   return (
     <div style={{ width: "100%", maxWidth: "1280px", margin: "0 auto", animation: "fadeIn 0.4s" }}>
+      
+      {/* 💳 PAYMENT MODAL (POPUP) */}
+      {showPaymentModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(1, 30, 64, 0.85)", zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(6px)", padding: "20px" }}>
+          <div style={{ background: "#fff", padding: "40px", borderRadius: 24, maxWidth: 540, width: "100%", boxShadow: "0 20px 60px rgba(0,0,0,0.5)", position: "relative", animation: "fadeIn 0.3s" }}>
+            <button onClick={() => setShowPaymentModal(false)} style={{ position: "absolute", top: 20, right: 24, background: "none", border: "none", fontSize: 28, cursor: "pointer", color: S.grayLight }}>✕</button>
+            <h3 style={{ color: S.navy, fontFamily: S.heading, fontSize: 28, marginBottom: 16 }}>Clear Outstanding Balance</h3>
+            <p style={{ color: S.gray, fontFamily: S.body, fontSize: 16, marginBottom: 32, lineHeight: 1.5 }}>
+              Your current outstanding balance is <strong style={{color: S.coral}}>{fmt(profile.outstanding)}</strong>. Please select your preferred payment method below to restore or maintain your digital classroom access.
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {/* Online Payment Button (Placeholder for WiPay / Stripe) */}
+              <a href="#" onClick={(e) => { e.preventDefault(); alert("Redirecting to Secure Online Payment Gateway..."); }} style={{ textDecoration: "none", background: S.tealLight, border: `2px solid ${S.teal}`, borderRadius: 16, padding: "20px", display: "flex", alignItems: "center", gap: 20, color: S.navy, cursor: "pointer", transition: "transform 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-2px)"} onMouseLeave={(e) => e.currentTarget.style.transform = "none"}>
+                <span style={{ fontSize: 32 }}>💳</span>
+                <div>
+                  <div style={{ fontWeight: 800, fontFamily: S.body, fontSize: 18, marginBottom: 4 }}>Pay Online Now</div>
+                  <div style={{ fontSize: 14, color: S.teal }}>Credit/Debit Card via Secure Gateway</div>
+                </div>
+              </a>
+
+              {/* Local Bank Transfer Instructions */}
+              <div style={{ background: S.lightBg, border: `2px solid ${S.border}`, borderRadius: 16, padding: "20px", color: S.navy }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 16 }}>
+                  <span style={{ fontSize: 32 }}>🏦</span>
+                  <div>
+                    <div style={{ fontWeight: 800, fontFamily: S.body, fontSize: 18, marginBottom: 4 }}>Bank Transfer (Jamaica)</div>
+                    <div style={{ fontSize: 14, color: S.gray }}>Deposit directly to our institution account</div>
+                  </div>
+                </div>
+                <div style={{ background: "#fff", padding: "16px", borderRadius: 8, fontSize: 14, fontFamily: "monospace", border: `1px dashed ${S.grayLight}`, lineHeight: 1.8 }}>
+                  <strong>Bank:</strong> National Commercial Bank (NCB)<br/>
+                  <strong>Account Name:</strong> CTS Empowerment & Training Solutions<br/>
+                  <strong>Account No:</strong> [INSERT ACCOUNT #]<br/>
+                  <strong>Branch:</strong> [INSERT BRANCH]<br/>
+                  <strong>Account Type:</strong> Business Chequing<br/>
+                  <div style={{ marginTop: 12, padding: "10px", background: S.amberLight, color: S.amberDark, borderRadius: 6, fontSize: 12, fontFamily: S.body, border: `1px solid ${S.amber}40` }}>
+                    <strong>Important:</strong> Include your Student ID <strong>({profile.studentNumber})</strong> in the transaction memo. Email your receipt to <strong>finance@ctsetsjm.com</strong> so we can update your portal.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 🚀 UPGRADED HEADER */}
       <div style={{ background: `linear-gradient(135deg, ${S.navy} 0%, ${S.teal} 100%)`, borderRadius: 16, padding: "32px", color: "#fff", marginBottom: 32, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20, boxShadow: "0 10px 30px rgba(1, 30, 64, 0.15)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
@@ -366,10 +413,25 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
             <div style={{ background: "#fff", borderRadius: 16, padding: "40px", border: `1px solid ${S.border}`, textAlign: "center", marginBottom: 24 }}>
               <div style={{ fontSize: 14, color: S.coral, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 16 }}>Total Programme Cost</div>
               <div style={{ fontSize: "clamp(32px, 6vw, 48px)", fontWeight: 800, color: S.navy, fontFamily: S.heading, marginBottom: 24 }}>{fmt(profile.totalFees)}</div>
-              <div style={{ display: "flex", justifyContent: "center", gap: 32, fontSize: 16, fontFamily: S.body, borderTop: `1px solid ${S.border}`, paddingTop: 24 }}>
+              
+              <div style={{ display: "flex", justifyContent: "center", gap: 32, fontSize: 16, fontFamily: S.body, borderTop: `1px solid ${S.border}`, paddingTop: 24, marginBottom: profile.outstanding > 0 ? 24 : 0 }}>
                 <span style={{ color: S.emerald, fontWeight: 700 }}>Total Paid: {fmt(profile.totalPaid)}</span>
                 <span style={{ color: profile.outstanding > 0 ? S.coral : S.emerald, fontWeight: 700 }}>Outstanding: {fmt(profile.outstanding)}</span>
               </div>
+
+              {/* 💳 NEW MAKE A PAYMENT BUTTON */}
+              {profile.outstanding > 0 && (
+                <div style={{ textAlign: "center", marginTop: 24 }}>
+                  <button 
+                    onClick={() => setShowPaymentModal(true)} 
+                    style={{ padding: "16px 36px", background: S.teal, color: "#fff", borderRadius: 12, border: "none", fontSize: 18, fontWeight: 800, cursor: "pointer", fontFamily: S.body, boxShadow: `0 8px 20px ${S.teal}40`, transition: "transform 0.2s" }}
+                    onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-3px)"}
+                    onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
+                  >
+                    💳 Make a Payment
+                  </button>
+                </div>
+              )}
             </div>
 
             <div style={{ background: "#fff", borderRadius: 16, padding: "32px", border: `1px solid ${S.border}` }}>
@@ -416,7 +478,6 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
 }
 
 export default function StudentPortalPage({ setPage }) {
-
   const [orientationPassed, setOrientationPassed] = useState(false);
   const [studentData, setStudentData] = useState(null);
   
