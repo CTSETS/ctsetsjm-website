@@ -1,7 +1,7 @@
 {
   "name": "CTS Empowerment & Training Solutions",
   "short_name": "CTS ETS",
-  "description": "25 accredited programmes from Job Certificate to Bachelor's Equivalent. Aligned to NCTVET & City & Guilds.",
+  "description": "28 accredited programmes from Job Certificate to Bachelor's Equivalent. Aligned to NCTVET & City & Guilds.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#011E40",
@@ -9,14 +9,14 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/logo.jpg",
+      "src": "/logo-192.png",
       "sizes": "192x192",
-      "type": "image/jpeg"
+      "type": "image/png"
     },
     {
-      "src": "/logo.jpg",
+      "src": "/logo-512.png",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/png"
     }
   ],
   "categories": ["education", "business"],
