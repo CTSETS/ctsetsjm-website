@@ -2,31 +2,95 @@ import { useState } from "react";
 import S from "../constants/styles";
 import { PROGRAMMES, PROGRAMME_DETAILS, CAREER_OUTCOMES } from "../constants/programmes";
 import { REG_FEE, USD_RATE } from "../constants/config";
-import { Container, PageWrapper, Btn, SectionHeader, Reveal, PageScripture, SocialProofBar } from "../components/shared/CoreComponents";
+import {
+  Container,
+  PageWrapper,
+  Btn,
+  SectionHeader,
+  Reveal,
+  PageScripture,
+  SocialProofBar,
+} from "../components/shared/CoreComponents";
 import { fmt } from "../utils/formatting";
 import LevelQuiz from "../components/quiz/LevelQuiz";
 
+const LEVEL_COLORS = {
+  "Job / Professional Certificates": S.emerald,
+  "Level 2 — Vocational Certificates": S.teal,
+  "Level 3 — Diploma": S.violet,
+  "Level 4 — Associate Equivalent": S.coral,
+  "Level 5 — Bachelor's Equivalent": S.rose,
+};
+
+const LEVEL_SUMMARIES = {
+  "Job / Professional Certificates": {
+    label: "Entry pathways",
+    note: "Shorter options for learners building confidence, employability, and core workplace readiness.",
+  },
+  "Level 2 — Vocational Certificates": {
+    label: "Foundational vocational training",
+    note: "Structured training for practical workplace performance and recognised skill development.",
+  },
+  "Level 3 — Diploma": {
+    label: "Supervisory progression",
+    note: "For learners moving into advanced operational, supervisory, and decision-making roles.",
+  },
+  "Level 4 — Associate Equivalent": {
+    label: "Management development",
+    note: "Built for learners preparing for higher responsibility, coordination, and people leadership.",
+  },
+  "Level 5 — Bachelor's Equivalent": {
+    label: "Executive progression",
+    note: "Advanced options for senior leadership, strategy, and organisational growth.",
+  },
+};
+
 function CertDropdown() {
-  var [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   return (
-    <div style={{ marginBottom: 32 }}>
-      <button onClick={function() { setOpen(!open); }} style={{ width: "100%", padding: "18px 24px", borderRadius: open ? "14px 14px 0 0" : 14, border: "2px solid " + S.teal + "40", background: open ? S.teal : "#fff", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", transition: "all 0.2s" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ fontSize: 24 }}>{"\uD83C\uDF93"}</span>
-          <div style={{ textAlign: "left" }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: open ? "#fff" : S.navy, fontFamily: S.heading }}>About NCTVET Certification</div>
-            <div style={{ fontSize: 12, color: open ? "rgba(255,255,255,0.7)" : S.gray, fontFamily: S.body }}>What is NVQ-J and why does it matter?</div>
+    <div style={{ marginBottom: 28 }}>
+      <button
+        onClick={() => setOpen(!open)}
+        style={{
+          width: "100%",
+          padding: "20px 24px",
+          borderRadius: open ? "20px 20px 0 0" : 20,
+          border: "1px solid " + (open ? S.teal + "55" : S.border),
+          background: open ? S.teal : "#fff",
+          cursor: "pointer",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 16,
+          transition: "all 0.22s ease",
+          boxShadow: open ? "0 18px 44px rgba(14,143,139,0.14)" : "0 14px 34px rgba(15,23,42,0.05)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 14, textAlign: "left" }}>
+          <div style={{ width: 46, height: 46, borderRadius: 14, background: open ? "rgba(255,255,255,0.12)" : S.tealLight, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>🎓</div>
+          <div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: open ? "#fff" : S.navy, fontFamily: S.heading, marginBottom: 4 }}>About NCTVET Certification</div>
+            <div style={{ fontSize: 13, color: open ? "rgba(255,255,255,0.78)" : S.gray, fontFamily: S.body }}>Understand NVQ-J, how CTS ETS prepares learners, and what the qualification means.</div>
           </div>
         </div>
-        <span style={{ fontSize: 16, color: open ? "#fff" : S.gray, fontWeight: 700, transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>{"\u25BC"}</span>
+        <span style={{ fontSize: 14, color: open ? "#fff" : S.gray, fontWeight: 800, transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s ease" }}>▼</span>
       </button>
       {open && (
-        <div style={{ padding: "24px", background: "#fff", border: "2px solid " + S.teal + "40", borderTop: "none", borderRadius: "0 0 14px 14px", fontSize: 14, fontFamily: S.body, color: "#2D3748", lineHeight: 1.7 }}>
-          <p style={{ marginBottom: 12 }}><strong>NVQ-J (National Vocational Qualification of Jamaica)</strong> is the nationally recognised standard for vocational qualifications in Jamaica, administered by NCTVET under HEART/NSTA Trust.</p>
-          <p style={{ marginBottom: 12 }}>All CTS ETS programmes are aligned to NCTVET competency standards. When you complete your training, we arrange your NCTVET assessment through HEART/NSTA — at no additional cost, unless required. NCTVET registration and assessment fees are set by NCTVET where necessary.</p>
-          <p style={{ marginBottom: 12 }}>Your NVQ-J qualification is recognised by employers across Jamaica and meets international competency-based education standards.</p>
-          <div style={{ padding: "12px 16px", borderRadius: 8, background: S.lightBg, border: "1px solid " + S.border, fontSize: 12, color: S.gray }}>
-            <strong style={{ color: S.navy }}>Qualification Levels:</strong> Job Certificate (entry) → Level 2 (Vocational Certificates) → Level 3 (Diploma) → Level 4 (Associate Equivalent) → Level 5 (Bachelor's Equivalent)
+        <div style={{ padding: 24, background: "#fff", border: "1px solid " + S.teal + "55", borderTop: "none", borderRadius: "0 0 20px 20px", boxShadow: "0 18px 44px rgba(15,23,42,0.08)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, marginBottom: 18 }}>
+            {[
+              { title: "National recognition", text: "NVQ-J is Jamaica’s recognised vocational qualification standard administered through NCTVET under HEART/NSTA Trust." },
+              { title: "CTS ETS pathway", text: "CTS ETS programmes are aligned to competency standards and learners are prepared for assessment through the recognised process." },
+              { title: "Why it matters", text: "It strengthens employability, credibility, and confidence by linking learning to recognised occupational competence." },
+            ].map((item) => (
+              <div key={item.title} style={{ background: S.lightBg, border: "1px solid " + S.border, borderRadius: 16, padding: 18 }}>
+                <div style={{ fontFamily: S.heading, fontSize: 18, color: S.navy, fontWeight: 800, marginBottom: 8 }}>{item.title}</div>
+                <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.75, margin: 0 }}>{item.text}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{ padding: "14px 16px", borderRadius: 14, background: S.tealLight, border: "1px solid " + S.teal + "25", fontSize: 12, color: S.tealDark, fontFamily: S.body, lineHeight: 1.7 }}>
+            <strong style={{ color: S.navy }}>Qualification Levels:</strong> Job Certificate → Level 2 → Level 3 → Level 4 (Associate Equivalent) → Level 5 (Bachelor’s Equivalent)
           </div>
         </div>
       )}
@@ -34,94 +98,119 @@ function CertDropdown() {
   );
 }
 
+function LevelOverviewCard({ title, count, summary, color }) {
+  return (
+    <div style={{ background: "#fff", border: "1px solid " + S.border, borderRadius: 18, padding: 20, boxShadow: "0 14px 34px rgba(15,23,42,0.05)" }}>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "7px 11px", borderRadius: 999, background: color + "14", color: color, fontFamily: S.body, fontSize: 11, fontWeight: 800, letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 14 }}>
+        {summary.label}
+      </div>
+      <h3 style={{ fontFamily: S.heading, fontSize: 24, color: S.navy, margin: "0 0 8px", fontWeight: 800, lineHeight: 1.15 }}>{title}</h3>
+      <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.75, margin: "0 0 14px" }}>{summary.note}</p>
+      <div style={{ fontFamily: S.body, fontSize: 12, color: S.gray, fontWeight: 700, letterSpacing: 1.2, textTransform: "uppercase" }}>{count} programme{count === 1 ? "" : "s"}</div>
+    </div>
+  );
+}
+
+function FeePreview({ tuitionNum, totalNum, usd, levelColor }) {
+  return (
+    <div style={{ padding: "16px 18px", borderRadius: 16, background: S.lightBg, border: "1px solid " + S.border, marginBottom: 16 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, fontSize: 12, fontFamily: S.body, marginBottom: 6 }}><span style={{ color: S.gray }}>Registration Fee</span><span style={{ color: S.navy, fontWeight: 700 }}>{fmt(REG_FEE)}</span></div>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, fontSize: 12, fontFamily: S.body, marginBottom: 6 }}><span style={{ color: S.gray }}>Training Fee</span><span style={{ color: S.navy, fontWeight: 700 }}>{fmt(tuitionNum)}</span></div>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, paddingTop: 8, borderTop: "1px solid " + S.border }}>
+        <span style={{ fontFamily: S.heading, fontWeight: 800, fontSize: 14, color: S.navy }}>Estimated Total</span>
+        <span style={{ fontFamily: S.heading, fontWeight: 800, fontSize: 14, color: levelColor }}>{fmt(totalNum)} · US${usd}</span>
+      </div>
+      <div style={{ fontSize: 10, color: S.grayLight, fontFamily: S.body, marginTop: 8, lineHeight: 1.6 }}>NCTVET registration and assessment fees are not included and are set where applicable. USD amounts are approximate.</div>
+    </div>
+  );
+}
+
 function ProgrammeCard({ prog, level, levelColor, expanded, onToggle, setPage }) {
-  var d = PROGRAMME_DETAILS[prog.name];
-  var tuitionNum = parseInt(prog.tuition.replace(/[^0-9]/g, ""));
-  var totalNum = tuitionNum + REG_FEE;
-  var usd = Math.round(totalNum / USD_RATE);
-  var levelKey = level.indexOf("5") >= 0 ? "Level 5 (Bachelor's Equiv.)" : level.indexOf("4") >= 0 ? "Level 4 (Associate Equiv.)" : level.indexOf("3") >= 0 ? "Level 3" : level.indexOf("2") >= 0 ? "Level 2" : "Job Certificate";
-  var career = CAREER_OUTCOMES[levelKey];
+  const details = PROGRAMME_DETAILS[prog.name];
+  const tuitionNum = parseInt(String(prog.tuition).replace(/[^0-9]/g, ""));
+  const totalNum = tuitionNum + REG_FEE;
+  const usd = Math.round(totalNum / USD_RATE);
+  const levelKey = level.includes("5")
+    ? "Level 5 (Bachelor's Equiv.)"
+    : level.includes("4")
+    ? "Level 4 (Associate Equiv.)"
+    : level.includes("3")
+    ? "Level 3"
+    : level.includes("2")
+    ? "Level 2"
+    : "Job Certificate";
+  const career = CAREER_OUTCOMES[levelKey];
 
   return (
-    <div style={{ marginBottom: 10, borderRadius: expanded ? "14px" : 12, border: "1px solid " + (expanded ? levelColor + "40" : S.border), overflow: "hidden", transition: "all 0.2s" }}>
-      {/* Header — always visible */}
-      <button onClick={onToggle} style={{ width: "100%", padding: "16px 20px", background: expanded ? levelColor + "08" : "#fff", cursor: "pointer", border: "none", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, textAlign: "left" }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: S.navy, fontFamily: S.heading }}>{prog.name}</div>
-          <div style={{ fontSize: 12, color: S.gray, fontFamily: S.body, marginTop: 2 }}>{prog.duration} {prog.popular ? " · ⭐ Popular" : ""}</div>
+    <div style={{ marginBottom: 14, borderRadius: 20, border: "1px solid " + (expanded ? levelColor + "38" : S.border), overflow: "hidden", background: "#fff", boxShadow: expanded ? "0 18px 44px rgba(15,23,42,0.08)" : "0 10px 28px rgba(15,23,42,0.04)", transition: "all 0.22s ease" }}>
+      <button onClick={onToggle} style={{ width: "100%", padding: "18px 20px", background: expanded ? levelColor + "0C" : "#fff", cursor: "pointer", border: "none", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14, textAlign: "left" }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
+            <div style={{ fontSize: 18, fontWeight: 800, color: S.navy, fontFamily: S.heading, lineHeight: 1.2 }}>{prog.name}</div>
+            {prog.popular && <span style={{ padding: "4px 10px", borderRadius: 999, background: S.goldLight, color: S.goldDark, fontSize: 10, fontWeight: 800, fontFamily: S.body, letterSpacing: 1.2, textTransform: "uppercase" }}>Popular</span>}
+          </div>
+          <div style={{ fontSize: 12, color: S.gray, fontFamily: S.body }}>{prog.duration} · {prog.desc}</div>
         </div>
         <div style={{ textAlign: "right", flexShrink: 0 }}>
-          <div style={{ fontSize: 16, fontWeight: 800, color: levelColor, fontFamily: S.heading }}>{fmt(totalNum)}</div>
-          <div style={{ fontSize: 10, color: S.gray, fontFamily: S.body }}>{"US$" + usd}</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: levelColor, fontFamily: S.heading }}>{fmt(totalNum)}</div>
+          <div style={{ fontSize: 11, color: S.gray, fontFamily: S.body }}>US${usd}</div>
         </div>
-        <span style={{ fontSize: 14, color: S.gray, fontWeight: 700, transform: expanded ? "rotate(180deg)" : "none", transition: "transform 0.2s", flexShrink: 0, marginLeft: 8 }}>{"\u25BC"}</span>
+        <span style={{ fontSize: 14, color: S.gray, fontWeight: 800, transform: expanded ? "rotate(180deg)" : "none", transition: "transform 0.2s ease", flexShrink: 0 }}>▼</span>
       </button>
 
-      {/* Expanded content */}
       {expanded && (
         <div style={{ padding: "0 20px 20px", background: "#fff", borderTop: "1px solid " + S.border }}>
-          <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.6, margin: "16px 0" }}>{prog.desc}</p>
-
-          {/* Fee breakdown */}
-          <div style={{ padding: "14px 16px", borderRadius: 10, background: S.lightBg, border: "1px solid " + S.border, marginBottom: 16 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontFamily: S.body, marginBottom: 4 }}>
-              <span style={{ color: S.gray }}>Registration Fee (non-refundable)</span>
-              <span style={{ color: S.navy, fontWeight: 600 }}>{fmt(REG_FEE)}</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontFamily: S.body, marginBottom: 4 }}>
-              <span style={{ color: S.gray }}>Training Fee</span>
-              <span style={{ color: S.navy, fontWeight: 600 }}>{fmt(tuitionNum)}</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontFamily: S.heading, fontWeight: 700, paddingTop: 6, borderTop: "1px solid " + S.border }}>
-              <span style={{ color: S.navy }}>Total</span>
-              <span style={{ color: levelColor }}>{fmt(totalNum) + " (US$" + usd + ")"}</span>
-            </div>
-            <div style={{ fontSize: 10, color: S.grayLight, fontFamily: S.body, marginTop: 6, fontStyle: "italic" }}>NCTVET registration and assessment fees not included — set by NCTVET where necessary. Payment plans (Silver/Bronze) available for Levels 3–5.</div>
-          </div>
-
-          {/* Modules */}
-          {d && d.modules && (
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 11, color: S.violet, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 8 }}>Modules</div>
-              {d.modules.map(function(m, i) {
-                return <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", fontSize: 12, fontFamily: S.body, color: "#2D3748" }}><span style={{ width: 18, height: 18, borderRadius: 4, background: S.violet + "12", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: S.violet, flexShrink: 0 }}>{i + 1}</span>{m}</div>;
-              })}
-            </div>
-          )}
-
-          {/* Prerequisites */}
-          {d && d.prerequisites && (
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 11, color: S.coral, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 6 }}>Entry Requirements</div>
-              <p style={{ fontSize: 12, color: S.gray, fontFamily: S.body, lineHeight: 1.5, margin: 0 }}>{d.prerequisites}</p>
-            </div>
-          )}
-
-          {/* Career Opportunities */}
-          {d && d.careers && (
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 11, color: S.emerald, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 6 }}>Career Opportunities</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
-                {d.careers.map(function(c) { return <span key={c} style={{ fontSize: 11, padding: "4px 10px", borderRadius: 16, background: S.emeraldLight, color: S.emeraldDark, fontFamily: S.body, fontWeight: 600 }}>{c}</span>; })}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 18, marginTop: 18 }}>
+            <div>
+              <FeePreview tuitionNum={tuitionNum} totalNum={totalNum} usd={usd} levelColor={levelColor} />
+              {details?.prerequisites && (
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 11, color: S.coral, letterSpacing: 1.8, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 8 }}>Entry Requirements</div>
+                  <p style={{ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.75, margin: 0 }}>{details.prerequisites}</p>
+                </div>
+              )}
+              <div style={{ padding: "14px 16px", borderRadius: 14, background: S.tealLight, border: "1px solid " + S.teal + "28", fontSize: 12, fontFamily: S.body, color: S.tealDark, lineHeight: 1.7 }}>
+                <strong style={{ color: S.navy }}>Certification:</strong> CTS ETS institutional certificate plus the relevant NCTVET pathway where applicable through the recognised assessment process.
               </div>
-              {career && (
-                <div style={{ fontSize: 12, fontFamily: S.body, color: S.gray, fontStyle: "italic", lineHeight: 1.5 }}>
-                  {"Estimated salary range: " + career.salaryRange + ". "}
-                  <span style={{ fontSize: 10, color: S.grayLight }}>Estimated ranges based on Jamaican labour market data (2025). Actual salaries vary by employer, experience, and location.</span>
+            </div>
+
+            <div>
+              {details?.modules?.length > 0 && (
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 11, color: S.violet, letterSpacing: 1.8, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 8 }}>Modules</div>
+                  <div style={{ display: "grid", gap: 8 }}>
+                    {details.modules.map((module, index) => (
+                      <div key={index} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "8px 0", fontSize: 13, fontFamily: S.body, color: "#334155" }}>
+                        <span style={{ width: 22, height: 22, borderRadius: 6, background: S.violetLight, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: S.violetDark, flexShrink: 0, marginTop: 1 }}>{index + 1}</span>
+                        <span>{module}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {details?.careers?.length > 0 && (
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 11, color: S.emerald, letterSpacing: 1.8, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 8 }}>Career Opportunities</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
+                    {details.careers.map((careerItem) => (
+                      <span key={careerItem} style={{ fontSize: 11, padding: "5px 10px", borderRadius: 999, background: S.emeraldLight, color: S.emeraldDark, fontFamily: S.body, fontWeight: 700 }}>{careerItem}</span>
+                    ))}
+                  </div>
+                  {career && (
+                    <div style={{ fontSize: 12, fontFamily: S.body, color: S.gray, lineHeight: 1.7 }}>
+                      Estimated salary range: <strong style={{ color: S.navy }}>{career.salaryRange}</strong>
+                      <div style={{ fontSize: 10, color: S.grayLight, marginTop: 4 }}>Indicative labour-market estimate only. Actual salaries vary by employer, location, role, and experience.</div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
-          )}
-
-          {/* Certification */}
-          <div style={{ padding: "12px 14px", borderRadius: 8, background: S.teal + "08", border: "1px solid " + S.teal + "20", marginBottom: 16, fontSize: 12, fontFamily: S.body, color: S.navy }}>
-            <strong>Certification:</strong> CTS ETS Institutional Certificate + NCTVET NVQ-J qualification. Assessment arranged through HEART/NSTA at no additional cost, unless required.
           </div>
 
-          {/* Actions */}
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <Btn primary onClick={function() { setPage("Apply"); }} style={{ color: "#fff", background: S.coral, flex: 1, fontSize: 13 }}>Apply for This Programme</Btn>
-            <Btn onClick={function() { setPage("Fees & Calculator"); }} style={{ flex: 1, fontSize: 13, border: "2px solid " + S.teal, color: S.teal }}>Calculate Fees</Btn>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 6 }}>
+            <Btn primary onClick={() => setPage("Apply")} style={{ color: "#fff", background: S.coral, flex: 1, minWidth: 180, fontSize: 13, borderRadius: 12 }}>Apply for This Programme</Btn>
+            <Btn onClick={() => setPage("Fees & Calculator")} style={{ flex: 1, minWidth: 180, fontSize: 13, border: "2px solid " + S.teal, color: S.teal, borderRadius: 12 }}>Calculate Fees</Btn>
           </div>
         </div>
       )}
@@ -130,63 +219,97 @@ function ProgrammeCard({ prog, level, levelColor, expanded, onToggle, setPage })
 }
 
 export default function ProgrammesPage({ setPage }) {
-  var [expanded, setExpanded] = useState({});
-  var levelColors = { "Job / Professional Certificates": S.emerald, "Level 2 — Vocational Certificates": S.teal, "Level 3 — Diploma": S.violet, "Level 4 — Associate Equivalent": S.coral, "Level 5 — Bachelor's Equivalent": S.rose };
+  const [expanded, setExpanded] = useState({});
 
-  var toggle = function(key) {
-    setExpanded(function(prev) {
-      var next = Object.assign({}, prev);
-      if (next[key]) { delete next[key]; } else { next[key] = true; }
+  const toggle = (key) => {
+    setExpanded((prev) => {
+      const next = { ...prev };
+      if (next[key]) delete next[key];
+      else next[key] = true;
       return next;
     });
   };
 
   return (
-    <PageWrapper>
-      <SectionHeader tag="Our Programmes" title="Find Your Programme" desc="All programmes are 100% online and self-paced. Fees shown in JMD with USD equivalent. Click any programme to see full details." accentColor={S.violet} />
-      <Container>
-        <SocialProofBar />
+    <PageWrapper bg={S.lightBg}>
+      <div style={{ background: "linear-gradient(135deg, #0B1120 0%, #1E293B 58%, #0E8F8B 145%)", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 18% 22%, rgba(217,119,6,0.16), transparent 28%), radial-gradient(circle at 82% 18%, rgba(37,99,235,0.14), transparent 24%), radial-gradient(circle at 70% 80%, rgba(124,58,237,0.12), transparent 22%)" }} />
+        <Container style={{ position: "relative", paddingTop: 62, paddingBottom: 58 }}>
+          <Reveal>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 999, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", fontFamily: S.body, fontSize: 11, fontWeight: 800, letterSpacing: 1.8, textTransform: "uppercase", color: S.goldLight, marginBottom: 18 }}>Programmes Overview</div>
+            <h1 style={{ fontFamily: S.heading, fontSize: "clamp(36px, 6vw, 68px)", lineHeight: 1.04, color: "#fff", fontWeight: 900, margin: "0 0 18px", maxWidth: 860 }}>Find the programme that matches your next move</h1>
+            <p style={{ fontFamily: S.body, fontSize: "clamp(15px, 2vw, 19px)", lineHeight: 1.8, color: "rgba(255,255,255,0.82)", maxWidth: 780, margin: "0 0 26px" }}>Browse flexible online options by level, compare costs more clearly, explore modules and entry requirements, and move directly into the application or fee calculator when you are ready.</p>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <Btn primary onClick={() => setPage("Apply")} style={{ background: S.gold, color: S.navy, borderRadius: 14, padding: "15px 26px", boxShadow: "0 16px 38px rgba(217,119,6,0.24)" }}>Apply Now</Btn>
+              <Btn onClick={() => setPage("Fees & Calculator")} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.18)", color: "#fff", borderRadius: 14, padding: "15px 26px" }}>View Fees & Calculator</Btn>
+            </div>
+          </Reveal>
+        </Container>
+      </div>
 
-        {/* NCTVET Certification dropdown */}
+      <Container style={{ marginTop: -24, position: "relative", zIndex: 2 }}><Reveal><SocialProofBar /></Reveal></Container>
+
+      <Container style={{ paddingTop: 26 }}>
+        <SectionHeader tag="Our Programmes" title="Clearer options, same CTS ETS programme structure" desc="All programmes remain online and self-paced. This redesign improves the browsing experience while preserving the same programme logic, expand/collapse behaviour, level quiz, and route actions." accentColor={S.violet} />
         <CertDropdown />
-
-        {/* Level Quiz */}
         <Reveal><LevelQuiz setPage={setPage} /></Reveal>
 
-        {/* USD disclaimer */}
-        <div style={{ fontSize: 11, color: S.gray, fontFamily: S.body, textAlign: "center", marginBottom: 24, fontStyle: "italic" }}>
-          USD equivalents are approximate at J$155 = US$1 and may vary. Registration fee ($5,000) is non-refundable. Training fee varies by level.
+        <Reveal>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 16, marginBottom: 26 }}>
+            {Object.entries(PROGRAMMES).map(([level, progs]) => (
+              <LevelOverviewCard key={level} title={level} count={progs.length} summary={LEVEL_SUMMARIES[level]} color={LEVEL_COLORS[level] || S.navy} />
+            ))}
+          </div>
+        </Reveal>
+
+        <div style={{ fontSize: 11, color: S.gray, fontFamily: S.body, textAlign: "center", marginBottom: 28, fontStyle: "italic", lineHeight: 1.7 }}>
+          USD equivalents are approximate at J${USD_RATE} = US$1 and may vary. Registration fee ({fmt(REG_FEE)}) is non-refundable. Training fees vary by programme level.
         </div>
 
-        {/* Programmes by level */}
-        {Object.entries(PROGRAMMES).map(function(entry) {
-          var level = entry[0], progs = entry[1];
-          var color = levelColors[level] || S.navy;
-          var levelLabel = level;
+        {Object.entries(PROGRAMMES).map(([level, progs], groupIndex) => {
+          const color = LEVEL_COLORS[level] || S.navy;
+          const summary = LEVEL_SUMMARIES[level];
+          const firstTotal = progs[0] ? fmt(parseInt(String(progs[0].total).replace(/[^0-9]/g, ""))) : "";
+
           return (
-            <Reveal key={level}>
-              <div style={{ marginBottom: 32 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
-                  <div style={{ width: 4, height: 32, borderRadius: 2, background: color }} />
-                  <div>
-                    <h2 style={{ fontFamily: S.heading, fontSize: "clamp(18px,2.5vw,24px)", fontWeight: 700, color: S.navy, margin: 0 }}>{levelLabel}</h2>
-                    <div style={{ fontSize: 12, color: S.gray, fontFamily: S.body }}>{progs.length + " programme" + (progs.length > 1 ? "s" : "") + " · Total from " + fmt(parseInt(progs[0].total.replace(/[^0-9]/g, "")))}</div>
+            <Reveal key={level} delay={groupIndex * 0.03}>
+              <section style={{ marginBottom: 34 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 14, marginBottom: 16 }}>
+                  <div style={{ background: "#fff", border: "1px solid " + S.border, borderRadius: 22, padding: "20px 22px", boxShadow: "0 16px 38px rgba(15,23,42,0.04)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginBottom: 8 }}>
+                      <div style={{ width: 5, height: 34, borderRadius: 999, background: color }} />
+                      <h2 style={{ fontFamily: S.heading, fontSize: "clamp(22px,3vw,30px)", fontWeight: 800, color: S.navy, margin: 0, lineHeight: 1.15 }}>{level}</h2>
+                    </div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", marginBottom: 10 }}>
+                      <span style={{ padding: "5px 10px", borderRadius: 999, background: color + "14", color: color, fontSize: 11, fontWeight: 800, letterSpacing: 1.4, textTransform: "uppercase", fontFamily: S.body }}>{summary.label}</span>
+                      <span style={{ fontSize: 12, color: S.gray, fontFamily: S.body, fontWeight: 700 }}>{progs.length} programme{progs.length > 1 ? "s" : ""} · totals from {firstTotal}</span>
+                    </div>
+                    <p style={{ margin: 0, fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.75, maxWidth: 860 }}>{summary.note}</p>
                   </div>
                 </div>
-                {progs.map(function(prog) {
-                  var key = level + "-" + prog.name;
-                  return <ProgrammeCard key={key} prog={prog} level={level} levelColor={color} expanded={!!expanded[key]} onToggle={function() { toggle(key); }} setPage={setPage} />;
+
+                {progs.map((prog) => {
+                  const key = level + "-" + prog.name;
+                  return <ProgrammeCard key={key} prog={prog} level={level} levelColor={color} expanded={!!expanded[key]} onToggle={() => toggle(key)} setPage={setPage} />;
                 })}
-              </div>
+              </section>
             </Reveal>
           );
         })}
 
-        {/* Bottom CTA */}
         <Reveal>
-          <div style={{ textAlign: "center", marginTop: 24 }}>
-            <Btn primary onClick={function() { setPage("Apply"); }} style={{ background: S.coral, color: "#fff", fontSize: 15, padding: "16px 40px" }}>Apply Now — Join the Next Cohort</Btn>
-            <div style={{ marginTop: 12 }}><Btn onClick={function() { setPage("FAQ"); }} style={{ fontSize: 13, border: "2px solid " + S.teal, color: S.teal }}>Have Questions? View FAQ</Btn></div>
+          <div style={{ marginTop: 20, borderRadius: 24, padding: "30px clamp(20px,4vw,36px)", background: "linear-gradient(135deg, #0B1120 0%, #1E293B 100%)", boxShadow: "0 24px 56px rgba(15,23,42,0.14)" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 22, alignItems: "center" }}>
+              <div>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "7px 12px", borderRadius: 999, background: "rgba(255,255,255,0.06)", color: S.goldLight, fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: S.body, marginBottom: 14 }}>Need Help Choosing?</div>
+                <h2 style={{ fontFamily: S.heading, fontSize: "clamp(28px,4vw,46px)", color: "#fff", lineHeight: 1.08, margin: "0 0 12px", fontWeight: 900 }}>Move from browsing to action with less friction</h2>
+                <p style={{ fontFamily: S.body, fontSize: 15, lineHeight: 1.8, color: "rgba(255,255,255,0.74)", margin: 0, maxWidth: 680 }}>Once a learner understands the programme, they should be able to move directly into application, fee planning, or FAQs without hunting around the site.</p>
+              </div>
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                <Btn primary onClick={() => setPage("Apply")} style={{ background: S.gold, color: S.navy, fontSize: 14, padding: "16px 30px", borderRadius: 14 }}>Apply Now</Btn>
+                <Btn onClick={() => setPage("FAQ")} style={{ fontSize: 14, padding: "16px 30px", border: "1px solid rgba(255,255,255,0.18)", background: "rgba(255,255,255,0.06)", color: "#fff", borderRadius: 14 }}>View FAQ</Btn>
+              </div>
+            </div>
           </div>
         </Reveal>
 
