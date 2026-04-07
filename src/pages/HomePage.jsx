@@ -6,7 +6,6 @@ import {
   PageWrapper,
   Btn,
   Reveal,
-  SectionHeader,
   PageScripture,
   TestimonialCard,
   TalkToGraduate,
@@ -108,6 +107,67 @@ const STEPS = [
     desc: "Move into a digital training environment focused on structure, flexibility, and meaningful progress.",
   },
 ];
+
+function WideIntro({ tag, title, desc, accent = S.teal }) {
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "minmax(280px, 0.82fr) minmax(320px, 1.18fr)",
+        gap: 28,
+        alignItems: "end",
+        marginBottom: 28,
+      }}
+      className="resp-grid-2"
+    >
+      <div>
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "7px 12px",
+            borderRadius: 999,
+            background: `${accent}12`,
+            color: accent,
+            fontSize: 11,
+            fontWeight: 800,
+            letterSpacing: 1.5,
+            textTransform: "uppercase",
+            fontFamily: S.body,
+            marginBottom: 14,
+          }}
+        >
+          {tag}
+        </div>
+        <h2
+          style={{
+            fontFamily: S.heading,
+            fontSize: "clamp(30px,4vw,48px)",
+            lineHeight: 1.08,
+            color: S.navy,
+            margin: 0,
+            fontWeight: 900,
+          }}
+        >
+          {title}
+        </h2>
+      </div>
+      <p
+        style={{
+          fontFamily: S.body,
+          fontSize: 16,
+          lineHeight: 1.8,
+          color: S.gray,
+          margin: 0,
+          maxWidth: 760,
+        }}
+      >
+        {desc}
+      </p>
+    </div>
+  );
+}
 
 function StatCard({ value, label, accent = S.gold }) {
   return (
@@ -365,137 +425,105 @@ export default function HomePage({ setPage }) {
               "radial-gradient(circle at 15% 25%, rgba(217,119,6,0.18), transparent 32%), radial-gradient(circle at 85% 20%, rgba(37,99,235,0.16), transparent 28%), radial-gradient(circle at 60% 80%, rgba(14,143,139,0.14), transparent 26%)",
           }}
         />
-        <Container style={{ position: "relative", paddingTop: 72, paddingBottom: 72 }}>
+        <Container style={{ position: "relative", paddingTop: 72, paddingBottom: 72, maxWidth: 1320 }}>
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-              gap: 32,
-              alignItems: "center",
+              gridTemplateColumns: "minmax(0, 1.18fr) minmax(360px, 0.82fr)",
+              gap: 40,
+              alignItems: "stretch",
             }}
+            className="resp-grid-2"
           >
             <Reveal>
-              <div
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 10,
-                  padding: "10px 16px",
-                  borderRadius: 999,
-                  background: "rgba(255,255,255,0.06)",
-                  border: "1px solid rgba(255,255,255,0.14)",
-                  marginBottom: 26,
-                }}
-              >
-                <span
+              <div>
+                <h1
                   style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: "50%",
-                    background: S.emerald,
-                    boxShadow: "0 0 16px " + S.emerald,
+                    fontFamily: S.heading,
+                    fontSize: "clamp(40px, 7vw, 76px)",
+                    lineHeight: 1.03,
+                    color: "#fff",
+                    margin: "0 0 20px",
+                    fontWeight: 900,
                   }}
-                />
-                <span
+                >
+                  Flexible Online Training for
+                  <span style={{ display: "block", color: S.goldLight }}>
+                    Career Growth in Jamaica and Beyond
+                  </span>
+                </h1>
+
+                <p
                   style={{
                     fontFamily: S.body,
-                    fontSize: 11,
-                    fontWeight: 800,
-                    color: S.goldLight,
-                    letterSpacing: 1.8,
-                    textTransform: "uppercase",
+                    fontSize: "clamp(16px, 2vw, 20px)",
+                    lineHeight: 1.8,
+                    color: "rgba(255,255,255,0.82)",
+                    maxWidth: 760,
+                    margin: "0 0 30px",
                   }}
                 >
-                  Spring Cohort — Monday April 13, 2026
-                </span>
-              </div>
+                  CTS ETS is built for working adults, ambitious learners, and professionals who need a structured training experience without losing the flexibility of online study.
+                </p>
 
-              <h1
-                style={{
-                  fontFamily: S.heading,
-                  fontSize: "clamp(40px, 7vw, 76px)",
-                  lineHeight: 1.03,
-                  color: "#fff",
-                  margin: "0 0 20px",
-                  fontWeight: 900,
-                }}
-              >
-                Flexible Online Training for
-                <span style={{ display: "block", color: S.goldLight }}>
-                  Career Growth in Jamaica and Beyond
-                </span>
-              </h1>
-
-              <p
-                style={{
-                  fontFamily: S.body,
-                  fontSize: "clamp(16px, 2vw, 20px)",
-                  lineHeight: 1.8,
-                  color: "rgba(255,255,255,0.82)",
-                  maxWidth: 700,
-                  margin: "0 0 30px",
-                }}
-              >
-                CTS ETS is built for working adults, ambitious learners, and professionals who need a structured training experience without losing the flexibility of online study.
-              </p>
-
-              <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 26 }}>
-                <Btn
-                  primary
-                  onClick={() => setPage("Apply")}
-                  style={{
-                    background: S.gold,
-                    color: S.navy,
-                    borderRadius: 14,
-                    padding: "16px 28px",
-                    boxShadow: "0 16px 36px rgba(217,119,6,0.28)",
-                  }}
-                >
-                  Start Your Application
-                </Btn>
-                <Btn
-                  onClick={() => setPage("Programmes")}
-                  style={{
-                    background: "rgba(255,255,255,0.05)",
-                    border: "1px solid rgba(255,255,255,0.18)",
-                    color: "#fff",
-                    borderRadius: 14,
-                    padding: "16px 28px",
-                  }}
-                >
-                  Explore Programmes
-                </Btn>
-              </div>
-
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-                  gap: 12,
-                }}
-              >
-                {[
-                  "100% online delivery",
-                  "Flexible pathways",
-                  "Professional support",
-                  "Modern learner experience",
-                ].map((item) => (
-                  <div
-                    key={item}
+                <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 26 }}>
+                  <Btn
+                    primary
+                    onClick={() => setPage("Apply")}
                     style={{
-                      background: "rgba(255,255,255,0.06)",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                      borderRadius: 16,
-                      padding: "14px 16px",
-                      color: "#fff",
-                      fontFamily: S.body,
-                      fontSize: 13,
-                      fontWeight: 700,
+                      background: S.gold,
+                      color: S.navy,
+                      borderRadius: 14,
+                      padding: "16px 28px",
+                      boxShadow: "0 16px 36px rgba(217,119,6,0.28)",
                     }}
                   >
-                    {item}
-                  </div>
-                ))}
+                    Start Your Application
+                  </Btn>
+                  <Btn
+                    onClick={() => setPage("Programmes")}
+                    style={{
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.18)",
+                      color: "#fff",
+                      borderRadius: 14,
+                      padding: "16px 28px",
+                    }}
+                  >
+                    Explore Programmes
+                  </Btn>
+                </div>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+                    gap: 12,
+                  }}
+                >
+                  {[
+                    "100% online delivery",
+                    "Flexible pathways",
+                    "Professional support",
+                    "Modern learner experience",
+                  ].map((item) => (
+                    <div
+                      key={item}
+                      style={{
+                        background: "rgba(255,255,255,0.06)",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        borderRadius: 16,
+                        padding: "14px 16px",
+                        color: "#fff",
+                        fontFamily: S.body,
+                        fontSize: 13,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {item}
+                    </div>
+                  ))}
+                </div>
               </div>
             </Reveal>
 
@@ -503,14 +531,14 @@ export default function HomePage({ setPage }) {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: 16,
+                  gridTemplateColumns: "minmax(0, 1.08fr) minmax(0, 0.92fr)",
+                  gap: 18,
                 }}
               >
                 <div
                   style={{
                     gridRow: "1 / 3",
-                    minHeight: 420,
+                    minHeight: 460,
                     borderRadius: 28,
                     background:
                       "linear-gradient(180deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.06) 100%)",
@@ -631,7 +659,7 @@ export default function HomePage({ setPage }) {
                       margin: 0,
                     }}
                   >
-                    CTS ETS can look and feel more like a strong institution while preserving the same routes, page logic, and learner flows already built into the site.
+                    Study with a Jamaican training institution that presents a clear, modern, and professional online learning experience.
                   </p>
                 </div>
 
@@ -677,7 +705,7 @@ export default function HomePage({ setPage }) {
                       margin: 0,
                     }}
                   >
-                    Multiple learning pathways give visitors a clearer sense of where they fit and where they can grow next.
+                    Multiple learning pathways help learners identify where they fit and how they can progress.
                   </p>
                 </div>
               </div>
@@ -686,13 +714,14 @@ export default function HomePage({ setPage }) {
         </Container>
       </div>
 
-      <Container style={{ marginTop: -36, position: "relative", zIndex: 2 }}>
+      <Container style={{ marginTop: -36, position: "relative", zIndex: 2, maxWidth: 1320 }}>
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))",
+            gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
             gap: 14,
           }}
+          className="resp-grid-4"
         >
           <Reveal><StatCard value={SOCIAL_PROOF.enrolled} label="Facilitating Learning" accent={S.sky} /></Reveal>
           <Reveal delay={0.04}><StatCard value={SOCIAL_PROOF.programmes} label="Programmes" accent={S.goldDark} /></Reveal>
@@ -701,25 +730,27 @@ export default function HomePage({ setPage }) {
         </div>
       </Container>
 
-      <Container style={{ paddingTop: 54 }}>
+      <Container style={{ paddingTop: 54, maxWidth: 1320 }}>
         <Reveal>
           <PartnerLogos />
         </Reveal>
       </Container>
 
       <section style={{ paddingTop: 20 }}>
-        <Container>
-          <SectionHeader
+        <Container style={{ maxWidth: 1320 }}>
+          <WideIntro
             tag="Featured Study Areas"
             title="Professional options learners can quickly understand"
-            desc="This gives the homepage clearer structure by showing what kinds of training CTS ETS offers, rather than relying on branding alone."
+            desc="Explore the main areas of study available through CTS ETS, from office and business training to digital skills, people support, and leadership development."
+            accent={S.teal}
           />
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))",
-              gap: 18,
+              gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+              gap: 20,
             }}
+            className="resp-grid-4"
           >
             {PROGRAMME_BUCKETS.map((item, index) => (
               <Reveal key={item.title} delay={index * 0.05}>
@@ -727,7 +758,7 @@ export default function HomePage({ setPage }) {
               </Reveal>
             ))}
           </div>
-          <div style={{ textAlign: "center", marginTop: 28 }}>
+          <div style={{ marginTop: 28 }}>
             <Btn
               onClick={() => setPage("Programmes")}
               style={{ borderRadius: 12, padding: "14px 30px" }}
@@ -739,18 +770,20 @@ export default function HomePage({ setPage }) {
       </section>
 
       <section style={{ paddingTop: 40 }}>
-        <Container>
-          <SectionHeader
+        <Container style={{ maxWidth: 1320 }}>
+          <WideIntro
             tag="Study Pathways"
             title="Find the level that fits your next step"
-            desc="A stronger homepage helps visitors understand progression, from starting out to moving into higher professional responsibilities."
+            desc="Whether you are just starting, strengthening practical workplace skills, or preparing for leadership, CTS ETS offers levels that support clear progression."
+            accent={S.goldDark}
           />
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))",
-              gap: 18,
+              gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+              gap: 20,
             }}
+            className="resp-grid-4"
           >
             {PATHWAYS.map((item, index) => (
               <Reveal key={item.title} delay={index * 0.05}>
@@ -762,18 +795,20 @@ export default function HomePage({ setPage }) {
       </section>
 
       <section style={{ paddingTop: 44 }}>
-        <Container>
-          <SectionHeader
+        <Container style={{ maxWidth: 1320 }}>
+          <WideIntro
             tag="Why CTS ETS"
-            title="A more credible institutional message"
-            desc="The goal is not to change the site’s functions. The goal is to make the same experience feel clearer, stronger, and more professional."
+            title="A clearer reason to choose CTS ETS"
+            desc="Learn in a flexible online environment built for serious adults who want structure, support, and a more professional training experience."
+            accent={S.coral}
           />
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))",
-              gap: 18,
+              gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+              gap: 20,
             }}
+            className="resp-grid-4"
           >
             {REASONS.map((item, index) => (
               <Reveal key={item.title} delay={index * 0.05}>
@@ -800,14 +835,15 @@ export default function HomePage({ setPage }) {
               "radial-gradient(circle at 20% 20%, rgba(217,119,6,0.14), transparent 28%), radial-gradient(circle at 82% 70%, rgba(124,58,237,0.14), transparent 24%)",
           }}
         />
-        <Container style={{ position: "relative", paddingTop: 64, paddingBottom: 64 }}>
+        <Container style={{ position: "relative", paddingTop: 64, paddingBottom: 64, maxWidth: 1320 }}>
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-              gap: 28,
+              gridTemplateColumns: "minmax(0, 0.88fr) minmax(0, 1.12fr)",
+              gap: 34,
               alignItems: "start",
             }}
+            className="resp-grid-2"
           >
             <Reveal>
               <div>
@@ -846,7 +882,7 @@ export default function HomePage({ setPage }) {
                     maxWidth: 540,
                   }}
                 >
-                  This section helps visitors move from interest to action by making the process feel straightforward, supportive, and realistic.
+                  From exploring programmes to submitting an application and starting your training, the path is designed to feel clear, guided, and manageable.
                 </p>
                 <Btn
                   primary
@@ -866,9 +902,10 @@ export default function HomePage({ setPage }) {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
                 gap: 16,
               }}
+              className="resp-grid-2"
             >
               {STEPS.map((item, index) => (
                 <Reveal key={item.num} delay={index * 0.05}>
@@ -881,18 +918,20 @@ export default function HomePage({ setPage }) {
       </section>
 
       <section style={{ paddingTop: 50 }}>
-        <Container>
-          <SectionHeader
+        <Container style={{ maxWidth: 1320 }}>
+          <WideIntro
             tag="Learner Voices"
-            title="Social proof without changing your site logic"
-            desc="The current homepage can feel more trustworthy by surfacing real learner outcomes in a cleaner and more focused way."
+            title="See how learners describe the CTS ETS experience"
+            desc="Real learner feedback helps new visitors understand the value of the training, the flexibility of the model, and the quality of the support provided."
+            accent={S.violet}
           />
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-              gap: 16,
+              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+              gap: 18,
             }}
+            className="resp-grid-3"
           >
             {TESTIMONIALS.slice(0, 3).map((t, index) => (
               <Reveal key={t.name} delay={index * 0.05}>
@@ -906,7 +945,7 @@ export default function HomePage({ setPage }) {
       </section>
 
       <section style={{ paddingTop: 56 }}>
-        <Container>
+        <Container style={{ maxWidth: 1320 }}>
           <Reveal>
             <div
               style={{
@@ -919,10 +958,11 @@ export default function HomePage({ setPage }) {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-                  gap: 22,
+                  gridTemplateColumns: "minmax(0, 1.08fr) minmax(320px, 0.92fr)",
+                  gap: 28,
                   alignItems: "center",
                 }}
+                className="resp-grid-2"
               >
                 <div>
                   <div
@@ -954,7 +994,7 @@ export default function HomePage({ setPage }) {
                       fontWeight: 900,
                     }}
                   >
-                    Build a homepage that feels polished and ready for enquiries
+                    Start your next step with CTS ETS
                   </h2>
                   <p
                     style={{
@@ -966,7 +1006,7 @@ export default function HomePage({ setPage }) {
                       maxWidth: 650,
                     }}
                   >
-                    This replacement keeps the same routing approach, the same page role, and the same conversion goals — but gives the site a more cohesive and premium feel.
+                    Explore your options, apply online, and begin a flexible learning journey designed to support real personal and professional progress.
                   </p>
                 </div>
                 <div
