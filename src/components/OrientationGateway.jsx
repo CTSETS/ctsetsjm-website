@@ -12,6 +12,7 @@ const f = { display: "'Playfair Display', Georgia, serif", body: "'DM Sans', sys
 export default function OrientationGateway({ onComplete }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showQuiz, setShowQuiz] = useState(false);
+  const [direction, setDirection] = useState("next"); // Tracks which way the book flips
 
   // ─── 15-POINT ORIENTATION DATA (FULL RICH TEXT) ───
   const SLIDES = [
@@ -267,8 +268,19 @@ export default function OrientationGateway({ onComplete }) {
   const progressPercentage = ((currentSlide + 1) / SLIDES.length) * 100;
   const isLastSlide = currentSlide === SLIDES.length - 1;
 
-  const nextSlide = () => { if (currentSlide < SLIDES.length - 1) setCurrentSlide(currentSlide + 1); };
-  const prevSlide = () => { if (currentSlide > 0) setCurrentSlide(currentSlide - 1); };
+  // Set the direction of the flip before changing slides
+  const nextSlide = () => { 
+    if (currentSlide < SLIDES.length - 1) {
+      setDirection("next");
+      setCurrentSlide(currentSlide + 1); 
+    }
+  };
+  const prevSlide = () => { 
+    if (currentSlide > 0) {
+      setDirection("prev");
+      setCurrentSlide(currentSlide - 1); 
+    }
+  };
 
   // ─── GATEWAY QUIZ VIEW ───
   if (showQuiz) {
@@ -291,15 +303,45 @@ export default function OrientationGateway({ onComplete }) {
     );
   }
 
-  // ─── PRESENTATION VIEW ───
+  // ─── PRESENTATION VIEW (BOOK LAYOUT) ───
   return (
-    <div style={{ minHeight: "100vh", background: T.navyDeep, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 20px" }}>
+    <div style={{ minHeight: "100vh", background: T.navyDeep, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 20px", overflowX: "hidden" }}>
       
-      <div style={{ display: "flex", background: T.white, width: "100%", maxWidth: "1200px", height: "700px", borderRadius: "32px", overflow: "hidden", boxShadow: "0 30px 60px rgba(0,0,0,0.5)" }}>
+      {/* 🚀 CSS ANIMATIONS FOR THE 3D BOOK FLIP & CROSSFADE */}
+      <style>
+        {`
+          @keyframes fadeImage {
+            0% { opacity: 0.3; transform: scale(1.02); }
+            100% { opacity: 1; transform: scale(1); }
+          }
+          @keyframes pageTurnNext {
+            0% { transform: perspective(1500px) rotateY(90deg); opacity: 0; }
+            100% { transform: perspective(1500px) rotateY(0deg); opacity: 1; }
+          }
+          @keyframes pageTurnPrev {
+            0% { transform: perspective(1500px) rotateY(-90deg); opacity: 0; }
+            100% { transform: perspective(1500px) rotateY(0deg); opacity: 1; }
+          }
+          .image-fade {
+            animation: fadeImage 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+          }
+          .page-flip-next {
+            animation: pageTurnNext 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            transform-origin: left center;
+          }
+          .page-flip-prev {
+            animation: pageTurnPrev 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            transform-origin: left center;
+          }
+        `}
+      </style>
+
+      <div style={{ display: "flex", background: T.white, width: "100%", maxWidth: "1200px", minHeight: "820px", borderRadius: "32px", overflow: "hidden", boxShadow: "0 30px 60px rgba(0,0,0,0.5)", alignItems: "stretch" }}>
         
-        {/* LEFT: IMAGE SIDE */}
-        <div style={{ flex: "1 1 50%", position: "relative", backgroundColor: T.navyDeep }}>
+        {/* LEFT: IMAGE SIDE (Left page of the book) */}
+        <div style={{ flex: "1 1 50%", position: "relative", backgroundColor: T.navyDeep, display: "flex" }}>
           <img 
+            className="image-fade"
             src={SLIDES[currentSlide].image} 
             alt={SLIDES[currentSlide].title} 
             style={{ 
@@ -307,26 +349,29 @@ export default function OrientationGateway({ onComplete }) {
               height: "100%", 
               objectFit: currentSlide === 0 ? "contain" : "cover", 
               padding: currentSlide === 0 ? "60px" : "0",
-              transition: "opacity 0.4s ease-in-out" 
             }} 
-            key={SLIDES[currentSlide].image} 
+            key={"img-" + currentSlide} 
           />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, transparent, rgba(0,0,0,0.5))", pointerEvents: "none" }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, transparent, rgba(0,0,0,0.6))", pointerEvents: "none" }} />
           
           {/* Subtle Logo Overlay */}
           {currentSlide !== 0 && (
-            <div style={{ position: "absolute", top: "30px", left: "30px", background: "rgba(255,255,255,0.9)", backdropFilter: "blur(10px)", padding: "10px 16px", borderRadius: "12px", display: "flex", alignItems: "center", gap: "10px", boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}>
+            <div style={{ position: "absolute", top: "30px", left: "30px", background: "rgba(255,255,255,0.9)", backdropFilter: "blur(10px)", padding: "10px 16px", borderRadius: "12px", display: "flex", alignItems: "center", gap: "10px", boxShadow: "0 10px 30px rgba(0,0,0,0.2)", zIndex: 10 }}>
                <div style={{ width: "30px", height: "30px", background: T.navy, borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", color: T.gold, fontFamily: f.display, fontWeight: "900", fontSize: "16px" }}>C</div>
                <span style={{ fontFamily: f.body, fontSize: "12px", fontWeight: "800", color: T.navy, letterSpacing: "1px" }}>CTS ETS</span>
             </div>
           )}
         </div>
 
-        {/* RIGHT: CONTENT SIDE */}
-        <div style={{ flex: "1 1 50%", padding: "50px 60px", display: "flex", flexDirection: "column", position: "relative" }}>
+        {/* RIGHT: CONTENT SIDE (Right page of the book with 3D Flip) */}
+        <div 
+          key={"text-" + currentSlide} 
+          className={direction === "next" ? "page-flip-next" : "page-flip-prev"} 
+          style={{ flex: "1 1 50%", padding: "60px 70px", display: "flex", flexDirection: "column", position: "relative", backgroundColor: T.white }}
+        >
           
           {/* Progress Bar Header */}
-          <div style={{ marginBottom: "30px", flexShrink: 0 }}>
+          <div style={{ marginBottom: "40px", flexShrink: 0 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px" }}>
               <span style={{ fontFamily: f.mono, fontSize: "12px", color: T.grayLight, fontWeight: "700", textTransform: "uppercase", letterSpacing: "2px" }}>Orientation</span>
               <span style={{ fontFamily: f.mono, fontSize: "12px", color: T.teal, fontWeight: "800" }}>{currentSlide + 1} / {SLIDES.length}</span>
@@ -336,10 +381,10 @@ export default function OrientationGateway({ onComplete }) {
             </div>
           </div>
 
-          {/* Text Content Area (Scrollable if text gets too long) */}
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-start", overflowY: "auto", paddingRight: "10px" }}>
-            <span style={{ fontSize: "40px", display: "block", marginBottom: "16px" }}>{SLIDES[currentSlide].icon}</span>
-            <h2 style={{ fontFamily: f.display, fontSize: "36px", color: T.navy, fontWeight: "900", marginBottom: "20px", lineHeight: 1.1 }}>
+          {/* Text Content Area (No scrolling needed anymore due to taller height) */}
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <span style={{ fontSize: "48px", display: "block", marginBottom: "20px" }}>{SLIDES[currentSlide].icon}</span>
+            <h2 style={{ fontFamily: f.display, fontSize: "38px", color: T.navy, fontWeight: "900", marginBottom: "24px", lineHeight: 1.1 }}>
               {SLIDES[currentSlide].title}
             </h2>
             <div style={{ fontFamily: f.body, fontSize: "18px", color: T.gray, lineHeight: 1.6 }}>
@@ -348,7 +393,7 @@ export default function OrientationGateway({ onComplete }) {
           </div>
 
           {/* Controls Footer */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "30px", paddingTop: "20px", borderTop: `1px solid ${T.border}`, flexShrink: 0 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "40px", paddingTop: "24px", borderTop: `1px solid ${T.border}`, flexShrink: 0 }}>
             <button onClick={prevSlide} disabled={currentSlide === 0} style={{ padding: "12px 0", background: "transparent", border: "none", color: currentSlide === 0 ? "transparent" : T.grayLight, fontFamily: f.body, fontWeight: "700", cursor: currentSlide === 0 ? "default" : "pointer", fontSize: "16px", transition: "color 0.2s" }} onMouseEnter={(e) => {if(currentSlide !== 0) e.currentTarget.style.color = T.navy}} onMouseLeave={(e) => {if(currentSlide !== 0) e.currentTarget.style.color = T.grayLight}}>
               ← Previous
             </button>
