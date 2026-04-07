@@ -124,7 +124,7 @@ function DataRow({ label, value }) {
 function AIStudyAssistant({ profile }) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [history, setHistory] = useState([{ role: "ai", text: `Hi ${toTitleCase(profile.firstName || profile.name)}! I'm your CTS ETS Study Assistant. Ask me to explain a concept from your ${profile.programme} course.` }]);
+  const [history, setHistory] = useState([{ role: "ai", text: `Hi ${toTitleCase(profile.firstName || profile.name)}! I'm your CTS ETS Study Assistant. Ask me about a topic from your ${profile.programme} course, and I’ll help you review it.` }]);
   const [isTyping, setIsTyping] = useState(false);
 
   const askAI = async () => {
@@ -219,7 +219,7 @@ function PaymentModal({ profile, show, onClose }) {
           </div>
         ) : (
           <>
-            <SectionIntro tag="Portal Payment" title="Pay your balance without leaving the portal" desc="Choose online checkout or upload bank transfer evidence directly from your student dashboard." accent={S.coral} />
+            <SectionIntro tag="Portal Payment" title="Make a payment from inside your portal" desc="Pay online through the secure checkout or upload your bank transfer receipt directly from your dashboard." accent={S.coral} />
             <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.04fr) minmax(300px, 0.96fr)", gap: 20, alignItems: "start" }} className="resp-grid-2">
               <div>
                 <div style={{ background: S.lightBg, border: `1px solid ${S.border}`, borderRadius: 16, padding: 18, marginBottom: 20 }}>
@@ -242,8 +242,8 @@ function PaymentModal({ profile, show, onClose }) {
                 <div style={{ width: "100%", height: 240, borderRadius: 16, overflow: "hidden", marginBottom: 14 }}>
                   <img src={PEOPLE.payments} alt="Student reviewing secure payment options" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
-                <div style={{ fontFamily: S.heading, fontSize: 24, color: S.navy, fontWeight: 800, marginBottom: 8 }}>Clear payment action inside the dashboard</div>
-                <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.75, margin: 0 }}>Learners can stay inside the portal, choose a payment path, and complete the next step without confusion.</p>
+                <div style={{ fontFamily: S.heading, fontSize: 24, color: S.navy, fontWeight: 800, marginBottom: 8 }}>A simple payment step when you need it</div>
+                <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.75, margin: 0 }}>Choose your payment method, submit what is needed, and keep your finance records connected to your student account.</p>
               </div>
             </div>
           </>
@@ -341,8 +341,8 @@ function Dashboard({ studentData, onLogout }) {
                   <div style={{ width: "100%", height: 260, borderRadius: 18, overflow: "hidden", marginBottom: 14 }}>
                     <img src={PEOPLE.dashboard} alt="Learner using a digital student portal" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   </div>
-                  <div style={{ fontFamily: S.heading, fontSize: 24, color: S.navy, fontWeight: 800, marginBottom: 8 }}>A clearer portal helps learners stay engaged</div>
-                  <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.75, margin: 0 }}>From profile information to coursework, assessments, payments, and student identification, each area is easier to scan and use in a wider dashboard layout.</p>
+                  <div style={{ fontFamily: S.heading, fontSize: 24, color: S.navy, fontWeight: 800, marginBottom: 8 }}>Everything important is easier to find</div>
+                  <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.75, margin: 0 }}>From profile details to coursework, assessments, payments, and student identification, your key tools are organised in one place for easier access.</p>
                 </div>
               )}
             </div>
@@ -383,8 +383,8 @@ export default function StudentPortalPage() {
             <Reveal>
               <div>
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 999, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", fontFamily: S.body, fontSize: 11, fontWeight: 800, letterSpacing: 1.8, textTransform: "uppercase", color: S.goldLight, marginBottom: 18 }}>Student Portal</div>
-                <h1 style={{ fontFamily: S.heading, fontSize: "clamp(38px, 6vw, 68px)", lineHeight: 1.02, color: S.white, fontWeight: 900, margin: "0 0 18px", maxWidth: 940 }}>A cleaner portal experience for current learners</h1>
-                <p style={{ fontFamily: S.body, fontSize: "clamp(15px, 2vw, 19px)", lineHeight: 1.8, color: "rgba(255,255,255,0.82)", maxWidth: 860, margin: 0 }}>Access coursework, assessments, profile information, payment tools, your digital student ID, and the AI study assistant through a clearer dashboard environment.</p>
+                <h1 style={{ fontFamily: S.heading, fontSize: "clamp(38px, 6vw, 68px)", lineHeight: 1.02, color: S.white, fontWeight: 900, margin: "0 0 18px", maxWidth: 940 }}>Your CTS ETS student portal</h1>
+                <p style={{ fontFamily: S.body, fontSize: "clamp(15px, 2vw, 19px)", lineHeight: 1.8, color: "rgba(255,255,255,0.82)", maxWidth: 860, margin: 0 }}>Access your coursework, assessments, profile information, payment tools, digital student ID, and AI study support all in one place.</p>
               </div>
             </Reveal>
             <Reveal delay={0.12}>
@@ -414,7 +414,7 @@ export default function StudentPortalPage() {
 
       <section style={{ paddingTop: 30 }}>
         <WideWrap>
-          <SectionIntro tag="Portal Access" title="Sign in through the orientation gateway" desc="The same gateway logic remains in place before the dashboard loads, but the surrounding layout is wider and more supportive for learners entering the system." accent={S.teal} />
+          <SectionIntro tag="Portal Access" title="Sign in through the orientation gateway" desc="Sign in securely to access your student dashboard and continue your learning journey." accent={S.teal} />
           {!studentData ? (
             <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.04fr) minmax(320px, 0.96fr)", gap: 24, alignItems: "start" }} className="resp-grid-2">
               <Reveal>
@@ -427,11 +427,11 @@ export default function StudentPortalPage() {
                   <div style={{ width: "100%", height: 260, borderRadius: 18, overflow: "hidden", marginBottom: 16 }}>
                     <img src={PEOPLE.dashboard} alt="Student preparing to enter the learning portal" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   </div>
-                  <div style={{ fontFamily: S.heading, fontSize: 24, color: S.navy, fontWeight: 800, marginBottom: 8 }}>A stronger portal entry point reduces confusion</div>
-                  <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.75, margin: 0 }}>Learners can verify access, move into the dashboard, and understand what the portal is for before they begin interacting with their records.</p>
+                  <div style={{ fontFamily: S.heading, fontSize: 24, color: S.navy, fontWeight: 800, marginBottom: 8 }}>Start from one secure access point</div>
+                  <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.75, margin: 0 }}>Use the orientation gateway to confirm access, enter your dashboard, and move straight into the tools you need.</p>
                 </div>
                 <div style={{ background: S.white, border: `1px solid ${S.border}`, borderRadius: 22, padding: 22, boxShadow: "0 12px 30px rgba(15,23,42,0.04)" }}>
-                  <div style={{ fontFamily: S.heading, fontSize: 24, color: S.navy, fontWeight: 800, marginBottom: 10 }}>Inside the portal</div>
+                  <div style={{ fontFamily: S.heading, fontSize: 24, color: S.navy, fontWeight: 800, marginBottom: 10 }}>What you can do here</div>
                   <div style={{ display: "grid", gap: 10 }}>
                     {[
                       "View your current programme and profile",
