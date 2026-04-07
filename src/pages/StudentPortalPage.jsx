@@ -4,6 +4,8 @@ import { PROGRAMMES } from "../constants/programmes";
 import { Container, PageWrapper, Btn } from "../components/shared/CoreComponents";
 import { fmt } from "../utils/formatting";
 
+import OrientationGateway from "../components/OrientationGateway";
+
 // REQUIRED INSTITUTIONAL CONSTANT
 const VERCEL_URL = "https://ctsetsjm-website.vercel.app/api/proxy";
 
@@ -416,8 +418,13 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
 }
 
 export default function StudentPortalPage({ setPage }) {
+
+const [orientationPassed, setOrientationPassed] = useState(false);
   const [studentData, setStudentData] = useState(null);
   
+if (!orientationPassed) {
+    return <OrientationGateway onComplete={() => setOrientationPassed(true)} />;
+  }
   const [loginStep, setLoginStep] = useState(0); 
   const [identifier, setIdentifier] = useState("");
   const [otpCode, setOtpCode] = useState("");
