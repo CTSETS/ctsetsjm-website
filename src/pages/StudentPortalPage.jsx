@@ -183,7 +183,6 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
       {/* 🚀 UPGRADED HEADER */}
       <div style={{ background: `linear-gradient(135deg, ${S.navy} 0%, ${S.teal} 100%)`, borderRadius: 16, padding: "32px", color: "#fff", marginBottom: 32, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20, boxShadow: "0 10px 30px rgba(1, 30, 64, 0.15)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-          {/* 🚀 FIXED: REMOVED crossOrigin="anonymous" TO BYPASS CORS ERROR */}
           {secureImgUrl && !imgError ? (
             <img src={secureImgUrl} alt="Profile" onError={() => setImgError(true)} style={{ width: 90, height: 90, borderRadius: "50%", objectFit: "cover", border: "4px solid rgba(255,255,255,0.3)" }} referrerPolicy="no-referrer" />
           ) : (
@@ -297,7 +296,6 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
                       <div style={{ marginLeft: "auto", fontSize: 8, textTransform: "uppercase", letterSpacing: 1, opacity: 0.8, textAlign: "right" }}>Student<br/>Identity Card</div>
                     </div>
                     <div style={{ padding: "16px", display: "flex", gap: "16px", alignItems: "flex-start" }}>
-                      {/* 🚀 FIXED: REMOVED crossOrigin="anonymous" TO BYPASS CORS ERROR */}
                       {secureImgUrl && !imgError ? (
                         <img src={secureImgUrl} alt="Student" onError={() => setImgError(true)} style={{ width: 85, height: 110, objectFit: "cover", borderRadius: "6px", border: `2px solid ${S.gold}`, background: "#fff", zIndex: 2, position: "relative" }} referrerPolicy="no-referrer" />
                       ) : (
@@ -419,12 +417,9 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
 
 export default function StudentPortalPage({ setPage }) {
 
-const [orientationPassed, setOrientationPassed] = useState(false);
+  const [orientationPassed, setOrientationPassed] = useState(false);
   const [studentData, setStudentData] = useState(null);
   
-if (!orientationPassed) {
-    return <OrientationGateway onComplete={() => setOrientationPassed(true)} />;
-  }
   const [loginStep, setLoginStep] = useState(0); 
   const [identifier, setIdentifier] = useState("");
   const [otpCode, setOtpCode] = useState("");
@@ -548,6 +543,13 @@ if (!orientationPassed) {
   }
 
   // ═══ AUTHENTICATED VIEW ═══
+  
+  // 🚨 THE ORIENTATION GATEWAY LOCK
+  if (!orientationPassed) {
+    return <OrientationGateway onComplete={() => setOrientationPassed(true)} />;
+  }
+
+  // 🎓 THE MAIN DASHBOARD
   return (
     <PageWrapper>
         {showTimeoutModal && (
