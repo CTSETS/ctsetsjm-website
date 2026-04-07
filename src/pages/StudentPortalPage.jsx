@@ -1,10 +1,16 @@
 import { useState, useEffect } from "react";
 import S from "../constants/styles";
 import { APPS_SCRIPT_URL, WIPAY_CONFIG } from "../constants/config";
-import { Container, PageWrapper, Btn, Reveal, PageScripture } from "../components/shared/CoreComponents";
+import { PageWrapper, Btn, Reveal, PageScripture, SocialProofBar } from "../components/shared/CoreComponents";
 import OrientationGateway from "../components/OrientationGateway";
 
 const VERCEL_URL = "https://ctsetsjm-website.vercel.app/api/proxy";
+
+const PEOPLE = {
+  hero: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1400&q=80",
+  dashboard: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
+  payments: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1200&q=80",
+};
 
 const toTitleCase = (str) =>
   (str || "")
@@ -21,6 +27,83 @@ const getDriveImageUrl = (url) => {
   return url;
 };
 
+function WideWrap({ children, style }) {
+  return (
+    <div
+      style={{
+        width: "100%",
+        padding: "0 clamp(18px, 3vw, 40px)",
+        boxSizing: "border-box",
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function SectionIntro({ tag, title, desc, accent = S.teal }) {
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "minmax(260px, 0.82fr) minmax(320px, 1.18fr)",
+        gap: 28,
+        alignItems: "end",
+        marginBottom: 24,
+      }}
+      className="resp-grid-2"
+    >
+      <div>
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "7px 12px",
+            borderRadius: 999,
+            background: `${accent}12`,
+            color: accent,
+            fontSize: 11,
+            fontWeight: 800,
+            letterSpacing: 1.5,
+            textTransform: "uppercase",
+            fontFamily: S.body,
+            marginBottom: 12,
+          }}
+        >
+          {tag}
+        </div>
+        <h2
+          style={{
+            fontFamily: S.heading,
+            fontSize: "clamp(28px,4vw,44px)",
+            lineHeight: 1.06,
+            color: S.navy,
+            margin: 0,
+            fontWeight: 900,
+            maxWidth: 760,
+          }}
+        >
+          {title}
+        </h2>
+      </div>
+      <p
+        style={{
+          fontFamily: S.body,
+          fontSize: 15,
+          lineHeight: 1.82,
+          color: S.gray,
+          margin: 0,
+          maxWidth: 860,
+        }}
+      >
+        {desc}
+      </p>
+    </div>
+  );
+}
+
 function MetricCard({ label, value, accent = S.teal }) {
   return (
     <div style={{ background: S.white, border: `1px solid ${S.border}`, borderRadius: 18, padding: "22px 20px", boxShadow: "0 10px 24px rgba(15,23,42,0.04)" }}>
@@ -29,9 +112,11 @@ function MetricCard({ label, value, accent = S.teal }) {
     </div>
   );
 }
+
 function PortalTab({ label, active, onClick }) {
   return <button onClick={onClick} style={{ padding: "12px 18px", borderRadius: 12, border: `1px solid ${active ? S.teal : S.border}`, background: active ? S.tealLight : S.white, color: active ? S.tealDark : S.gray, fontFamily: S.body, fontSize: 13, fontWeight: 700, cursor: "pointer", transition: "all 0.2s ease" }}>{label}</button>;
 }
+
 function DataRow({ label, value }) {
   return <div style={{ display: "flex", justifyContent: "space-between", gap: 14, padding: "12px 0", borderBottom: `1px solid ${S.border}`, fontFamily: S.body, fontSize: 14 }}><span style={{ color: S.gray }}>{label}</span><span style={{ color: S.navy, fontWeight: 700, textAlign: "right", wordBreak: "break-word" }}>{value || "—"}</span></div>;
 }
@@ -39,7 +124,7 @@ function DataRow({ label, value }) {
 function AIStudyAssistant({ profile }) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [history, setHistory] = useState([{ role: "ai", text: `Hi ${toTitleCase(profile.firstName || profile.name)}! I'm your CTS ETS Study Assistant. Ask me to explain a concept from your ${profile.programme} course!` }]);
+  const [history, setHistory] = useState([{ role: "ai", text: `Hi ${toTitleCase(profile.firstName || profile.name)}! I'm your CTS ETS Study Assistant. Ask me to explain a concept from your ${profile.programme} course.` }]);
   const [isTyping, setIsTyping] = useState(false);
 
   const askAI = async () => {
@@ -123,7 +208,7 @@ function PaymentModal({ profile, show, onClose }) {
   if (!show) return null;
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(1, 30, 64, 0.85)", zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(6px)", padding: 20 }}>
-      <div style={{ background: S.white, padding: "36px", borderRadius: 24, maxWidth: 620, width: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.35)", position: "relative" }}>
+      <div style={{ background: S.white, padding: "36px", borderRadius: 24, maxWidth: 720, width: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.35)", position: "relative" }}>
         <button onClick={onClose} style={{ position: "absolute", top: 20, right: 24, background: "none", border: "none", fontSize: 28, cursor: "pointer", color: S.grayLight }}>✕</button>
         {paySuccess ? (
           <div style={{ textAlign: "center", padding: "16px 0" }}>
@@ -134,24 +219,33 @@ function PaymentModal({ profile, show, onClose }) {
           </div>
         ) : (
           <>
-            <div style={{ fontSize: 11, color: S.teal, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 12 }}>Portal Payment Centre</div>
-            <h3 style={{ color: S.navy, fontFamily: S.heading, fontSize: 28, marginBottom: 12, lineHeight: 1.15 }}>Pay your balance without leaving the portal</h3>
-            <p style={{ color: S.gray, fontFamily: S.body, fontSize: 14, lineHeight: 1.75, marginBottom: 20 }}>This keeps the same in-app payment modal idea from your current portal, but presents it more clearly and with calmer guidance.</p>
-            <div style={{ background: S.lightBg, border: `1px solid ${S.border}`, borderRadius: 16, padding: 18, marginBottom: 20 }}>
-              <DataRow label="Student ID" value={profile.studentNumber} />
-              <DataRow label="Programme" value={profile.programme} />
-              <DataRow label="Outstanding Balance" value={fmt(profile.outstanding || 0)} />
+            <SectionIntro tag="Portal Payment" title="Pay your balance without leaving the portal" desc="Choose online checkout or upload bank transfer evidence directly from your student dashboard." accent={S.coral} />
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.04fr) minmax(300px, 0.96fr)", gap: 20, alignItems: "start" }} className="resp-grid-2">
+              <div>
+                <div style={{ background: S.lightBg, border: `1px solid ${S.border}`, borderRadius: 16, padding: 18, marginBottom: 20 }}>
+                  <DataRow label="Student ID" value={profile.studentNumber} />
+                  <DataRow label="Programme" value={profile.programme} />
+                  <DataRow label="Outstanding Balance" value={fmt(profile.outstanding || 0)} />
+                </div>
+                <div style={{ marginBottom: 18 }}>
+                  <label style={{ display: "block", fontSize: 11, color: S.navy, letterSpacing: 1.3, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 8 }}>Amount to pay now</label>
+                  <input type="number" value={customAmount} onChange={(e) => setCustomAmount(Number(e.target.value))} style={{ width: "100%", padding: 16, borderRadius: 12, border: `1px solid ${S.border}`, fontSize: 24, fontWeight: 800, fontFamily: S.heading, color: S.navy, boxSizing: "border-box" }} />
+                </div>
+                <div style={{ display: "grid", gap: 14, marginBottom: 22 }}>
+                  <button onClick={() => setPayMethod("online")} style={{ padding: 18, borderRadius: 16, border: payMethod === "online" ? `2px solid ${S.navy}` : `1px solid ${S.border}`, background: payMethod === "online" ? S.lightBg : S.white, textAlign: "left", cursor: "pointer" }}><div style={{ fontWeight: 800, color: S.navy, fontFamily: S.heading, fontSize: 20, marginBottom: 6 }}>💳 Pay Online</div><div style={{ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.7 }}>Secure WiPay checkout using a card.</div></button>
+                  <button onClick={() => setPayMethod("upload")} style={{ padding: 18, borderRadius: 16, border: payMethod === "upload" ? `2px solid ${S.navy}` : `1px solid ${S.border}`, background: payMethod === "upload" ? S.lightBg : S.white, textAlign: "left", cursor: "pointer" }}><div style={{ fontWeight: 800, color: S.navy, fontFamily: S.heading, fontSize: 20, marginBottom: 6 }}>🏦 Bank Transfer</div><div style={{ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.7 }}>Transfer funds and upload your receipt for verification.</div></button>
+                </div>
+                {payMethod === "online" && <Btn primary onClick={handleWiPayCheckout} style={{ width: "100%", background: S.navy, color: S.white, borderRadius: 12 }}>{submitting ? "Connecting to WiPay..." : `Pay ${fmt(customAmount)} Online`}</Btn>}
+                {payMethod === "upload" && <div style={{ background: S.lightBg, border: `1px solid ${S.border}`, borderRadius: 16, padding: 18 }}><div style={{ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.7, marginBottom: 12 }}>Upload your transfer confirmation or bank receipt.</div><input type="file" onChange={(e) => setReceipt(e.target.files[0])} style={{ width: "100%", marginBottom: 14 }} /><Btn primary onClick={handleReceiptUpload} style={{ width: "100%", background: S.emerald, color: S.white, borderRadius: 12 }} disabled={submitting || !receipt || customAmount < 1000}>{submitting ? "Submitting..." : `Submit Evidence for ${fmt(customAmount)}`}</Btn></div>}
+              </div>
+              <div style={{ background: S.white, border: `1px solid ${S.border}`, borderRadius: 22, padding: 16, boxShadow: "0 10px 24px rgba(15,23,42,0.04)" }}>
+                <div style={{ width: "100%", height: 240, borderRadius: 16, overflow: "hidden", marginBottom: 14 }}>
+                  <img src={PEOPLE.payments} alt="Student reviewing secure payment options" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </div>
+                <div style={{ fontFamily: S.heading, fontSize: 24, color: S.navy, fontWeight: 800, marginBottom: 8 }}>Clear payment action inside the dashboard</div>
+                <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.75, margin: 0 }}>Learners can stay inside the portal, choose a payment path, and complete the next step without confusion.</p>
+              </div>
             </div>
-            <div style={{ marginBottom: 18 }}>
-              <label style={{ display: "block", fontSize: 11, color: S.navy, letterSpacing: 1.3, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 8 }}>Amount to pay now</label>
-              <input type="number" value={customAmount} onChange={(e) => setCustomAmount(Number(e.target.value))} style={{ width: "100%", padding: 16, borderRadius: 12, border: `1px solid ${S.border}`, fontSize: 24, fontWeight: 800, fontFamily: S.heading, color: S.navy, boxSizing: "border-box" }} />
-            </div>
-            <div style={{ display: "grid", gap: 14, marginBottom: 22 }}>
-              <button onClick={() => setPayMethod("online")} style={{ padding: 18, borderRadius: 16, border: payMethod === "online" ? `2px solid ${S.navy}` : `1px solid ${S.border}`, background: payMethod === "online" ? S.lightBg : S.white, textAlign: "left", cursor: "pointer" }}><div style={{ fontWeight: 800, color: S.navy, fontFamily: S.heading, fontSize: 20, marginBottom: 6 }}>💳 Pay Online</div><div style={{ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.7 }}>Secure WiPay checkout using a card.</div></button>
-              <button onClick={() => setPayMethod("upload")} style={{ padding: 18, borderRadius: 16, border: payMethod === "upload" ? `2px solid ${S.navy}` : `1px solid ${S.border}`, background: payMethod === "upload" ? S.lightBg : S.white, textAlign: "left", cursor: "pointer" }}><div style={{ fontWeight: 800, color: S.navy, fontFamily: S.heading, fontSize: 20, marginBottom: 6 }}>🏦 Bank Transfer</div><div style={{ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.7 }}>Transfer funds and upload your receipt for verification.</div></button>
-            </div>
-            {payMethod === "online" && <Btn primary onClick={handleWiPayCheckout} style={{ width: "100%", background: S.navy, color: S.white, borderRadius: 12 }}>{submitting ? "Connecting to WiPay..." : `Pay ${fmt(customAmount)} Online`}</Btn>}
-            {payMethod === "upload" && <div style={{ background: S.lightBg, border: `1px solid ${S.border}`, borderRadius: 16, padding: 18 }}><div style={{ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.7, marginBottom: 12 }}>Upload your transfer confirmation or bank receipt.</div><input type="file" onChange={(e) => setReceipt(e.target.files[0])} style={{ width: "100%", marginBottom: 14 }} /><Btn primary onClick={handleReceiptUpload} style={{ width: "100%", background: S.emerald, color: S.white, borderRadius: 12 }} disabled={submitting || !receipt || customAmount < 1000}>{submitting ? "Submitting..." : `Submit Evidence for ${fmt(customAmount)}`}</Btn></div>}
           </>
         )}
       </div>
@@ -159,7 +253,7 @@ function PaymentModal({ profile, show, onClose }) {
   );
 }
 
-function Dashboard({ studentData, onLogout, fetchDashboard }) {
+function Dashboard({ studentData, onLogout }) {
   const profile = studentData.profile;
   const curriculum = studentData.curriculum || [];
   const payments = studentData.payments || [];
@@ -171,10 +265,10 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
   const secureImgUrl = getDriveImageUrl(profile.photoUrl);
 
   return (
-    <div style={{ width: "100%", maxWidth: 1320, margin: "0 auto" }}>
+    <div style={{ width: "100%" }}>
       <PaymentModal profile={profile} show={showPaymentModal} onClose={() => setShowPaymentModal(false)} />
       <Reveal>
-        <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", gap: 24 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "320px minmax(0, 1fr)", gap: 24 }} className="resp-grid-2">
           <div>
             <div style={{ background: S.white, border: `1px solid ${S.border}`, borderRadius: 24, padding: 24, boxShadow: "0 12px 30px rgba(15,23,42,0.04)", marginBottom: 20 }}>
               <div style={{ textAlign: "center", marginBottom: 18 }}>
@@ -202,44 +296,55 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
           </div>
 
           <div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16, marginBottom: 20 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 16, marginBottom: 20 }} className="resp-grid-4">
               <MetricCard label="Progress" value={`${progress}%`} accent={S.teal} />
               <MetricCard label="Outstanding" value={fmt(profile.outstanding || 0)} accent={S.coral} />
               <MetricCard label="Student ID" value={profile.studentNumber || "—"} accent={S.goldDark} />
               <MetricCard label="Assessments" value={curriculum.length || 0} accent={S.violet} />
             </div>
-            <div style={{ background: S.white, border: `1px solid ${S.border}`, borderRadius: 24, padding: "26px", boxShadow: "0 12px 30px rgba(15,23,42,0.04)" }}>
-              {activeTab === "profile" && <>
-                <div style={{ fontFamily: S.heading, fontSize: 28, color: S.navy, fontWeight: 800, marginBottom: 16 }}>Student Profile</div>
-                <DataRow label="Full Name" value={toTitleCase(profile.name)} />
-                <DataRow label="Email" value={profile.email} />
-                <DataRow label="Programme" value={profile.programme} />
-                <DataRow label="Level" value={profile.level} />
-                <DataRow label="Student Number" value={profile.studentNumber} />
-              </>}
-              {activeTab === "coursework" && <>
-                <div style={{ fontFamily: S.heading, fontSize: 28, color: S.navy, fontWeight: 800, marginBottom: 14 }}>Coursework & Modules</div>
-                <div style={{ display: "grid", gap: 14 }}>{curriculum.length > 0 ? curriculum.map((item, idx) => <div key={idx} style={{ padding: 18, borderRadius: 16, background: S.lightBg, border: `1px solid ${S.border}` }}><div style={{ fontFamily: S.heading, fontSize: 18, color: S.navy, fontWeight: 800, marginBottom: 6 }}>{item.title || `Module ${idx + 1}`}</div><div style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.7 }}>{item.desc || "Learning materials and activities available in this module."}</div></div>) : <div style={{ color: S.gray, fontFamily: S.body }}>No curriculum loaded yet.</div>}</div>
-              </>}
-              {activeTab === "assessments" && <>
-                <div style={{ fontFamily: S.heading, fontSize: 28, color: S.navy, fontWeight: 800, marginBottom: 14 }}>Assessments & Quiz Centre</div>
-                <div style={{ display: "grid", gap: 14 }}>{curriculum.length > 0 ? curriculum.map((item, idx) => <div key={idx} style={{ padding: 18, borderRadius: 16, background: S.lightBg, border: `1px solid ${S.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14, flexWrap: "wrap" }}><div><div style={{ fontFamily: S.heading, fontSize: 18, color: S.navy, fontWeight: 800, marginBottom: 4 }}>{item.title || `Module ${idx + 1}`}</div><div style={{ fontFamily: S.body, fontSize: 13, color: S.gray }}>{item.quiz ? "Quiz available" : "Portfolio / practical work"}</div></div>{item.quiz ? <Btn primary style={{ background: S.teal, color: S.white, borderRadius: 12 }}>Open Quiz</Btn> : <div style={{ fontSize: 12, color: S.gray, fontFamily: S.body }}>No quiz loaded</div>}</div>) : <div style={{ color: S.gray, fontFamily: S.body }}>No assessments available yet.</div>}</div>
-              </>}
-              {activeTab === "payments" && <>
-                <div style={{ fontFamily: S.heading, fontSize: 28, color: S.navy, fontWeight: 800, marginBottom: 14 }}>Payments & Finance</div>
-                <DataRow label="Outstanding Balance" value={fmt(profile.outstanding || 0)} />
-                <DataRow label="Total Paid" value={fmt(profile.totalPaid || 0)} />
-                <DataRow label="Payment Plan" value={profile.paymentPlan || "—"} />
-                <div style={{ marginTop: 20, display: "grid", gap: 12 }}>{payments.length > 0 ? payments.map((p, i) => <div key={i} style={{ padding: 16, borderRadius: 14, background: S.lightBg, border: `1px solid ${S.border}` }}><div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 6 }}><div style={{ fontFamily: S.body, fontSize: 14, fontWeight: 700, color: S.navy }}>{p.label || `Payment ${i + 1}`}</div><div style={{ fontFamily: S.body, fontSize: 14, fontWeight: 800, color: S.emeraldDark }}>{fmt(p.amount || 0)}</div></div><div style={{ fontFamily: S.body, fontSize: 12, color: S.gray }}>{p.date || "Recorded"}</div></div>) : <div style={{ color: S.gray, fontFamily: S.body }}>No payment records displayed yet.</div>}</div>
-                <div style={{ marginTop: 18 }}><Btn primary onClick={() => setShowPaymentModal(true)} style={{ background: S.coral, color: S.white, borderRadius: 12 }}>Make a Payment</Btn></div>
-              </>}
-              {activeTab === "id" && <>
-                <div style={{ fontFamily: S.heading, fontSize: 28, color: S.navy, fontWeight: 800, marginBottom: 14 }}>Student ID Card</div>
-                <div style={{ maxWidth: 420, background: S.white, border: `2px solid ${S.navy}`, borderRadius: 22, overflow: "hidden", boxShadow: "0 12px 28px rgba(15,23,42,0.08)" }}>
-                  <div style={{ background: S.navy, padding: 18, color: S.white }}><div style={{ fontFamily: S.heading, fontSize: 24, fontWeight: 800 }}>CTS ETS</div><div style={{ fontFamily: S.body, fontSize: 11, color: S.goldLight, letterSpacing: 1.4, textTransform: "uppercase" }}>Student Identification Card</div></div>
-                  <div style={{ padding: 22 }}><div style={{ display: "flex", gap: 18, alignItems: "center" }}>{!imgError && secureImgUrl ? <img src={secureImgUrl} alt={profile.name} onError={() => setImgError(true)} style={{ width: 96, height: 96, borderRadius: 16, objectFit: "cover", border: `3px solid ${S.gold}` }} /> : <div style={{ width: 96, height: 96, borderRadius: 16, background: S.lightBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36 }}>👤</div>}<div><div style={{ fontFamily: S.heading, fontSize: 24, color: S.navy, fontWeight: 800, lineHeight: 1.15 }}>{toTitleCase(profile.name)}</div><div style={{ fontFamily: S.body, fontSize: 13, color: S.gray, marginTop: 4 }}>{profile.programme}</div><div style={{ fontFamily: S.body, fontSize: 12, color: S.teal, fontWeight: 800, marginTop: 10 }}>{profile.studentNumber}</div></div></div></div>
+            <div style={{ display: "grid", gridTemplateColumns: activeTab === "profile" ? "minmax(0, 1.05fr) minmax(320px, 0.95fr)" : "minmax(0, 1fr)", gap: 20 }} className="resp-grid-2">
+              <div style={{ background: S.white, border: `1px solid ${S.border}`, borderRadius: 24, padding: "26px", boxShadow: "0 12px 30px rgba(15,23,42,0.04)" }}>
+                {activeTab === "profile" && <>
+                  <div style={{ fontFamily: S.heading, fontSize: 28, color: S.navy, fontWeight: 800, marginBottom: 16 }}>Student Profile</div>
+                  <DataRow label="Full Name" value={toTitleCase(profile.name)} />
+                  <DataRow label="Email" value={profile.email} />
+                  <DataRow label="Programme" value={profile.programme} />
+                  <DataRow label="Level" value={profile.level} />
+                  <DataRow label="Student Number" value={profile.studentNumber} />
+                </>}
+                {activeTab === "coursework" && <>
+                  <div style={{ fontFamily: S.heading, fontSize: 28, color: S.navy, fontWeight: 800, marginBottom: 14 }}>Coursework & Modules</div>
+                  <div style={{ display: "grid", gap: 14 }}>{curriculum.length > 0 ? curriculum.map((item, idx) => <div key={idx} style={{ padding: 18, borderRadius: 16, background: S.lightBg, border: `1px solid ${S.border}` }}><div style={{ fontFamily: S.heading, fontSize: 18, color: S.navy, fontWeight: 800, marginBottom: 6 }}>{item.title || `Module ${idx + 1}`}</div><div style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.7 }}>{item.desc || "Learning materials and activities available in this module."}</div></div>) : <div style={{ color: S.gray, fontFamily: S.body }}>No curriculum loaded yet.</div>}</div>
+                </>}
+                {activeTab === "assessments" && <>
+                  <div style={{ fontFamily: S.heading, fontSize: 28, color: S.navy, fontWeight: 800, marginBottom: 14 }}>Assessments & Quiz Centre</div>
+                  <div style={{ display: "grid", gap: 14 }}>{curriculum.length > 0 ? curriculum.map((item, idx) => <div key={idx} style={{ padding: 18, borderRadius: 16, background: S.lightBg, border: `1px solid ${S.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14, flexWrap: "wrap" }}><div><div style={{ fontFamily: S.heading, fontSize: 18, color: S.navy, fontWeight: 800, marginBottom: 4 }}>{item.title || `Module ${idx + 1}`}</div><div style={{ fontFamily: S.body, fontSize: 13, color: S.gray }}>{item.quiz ? "Quiz available" : "Portfolio / practical work"}</div></div>{item.quiz ? <Btn primary style={{ background: S.teal, color: S.white, borderRadius: 12 }}>Open Quiz</Btn> : <div style={{ fontSize: 12, color: S.gray, fontFamily: S.body }}>No quiz loaded</div>}</div>) : <div style={{ color: S.gray, fontFamily: S.body }}>No assessments available yet.</div>}</div>
+                </>}
+                {activeTab === "payments" && <>
+                  <div style={{ fontFamily: S.heading, fontSize: 28, color: S.navy, fontWeight: 800, marginBottom: 14 }}>Payments & Finance</div>
+                  <DataRow label="Outstanding Balance" value={fmt(profile.outstanding || 0)} />
+                  <DataRow label="Total Paid" value={fmt(profile.totalPaid || 0)} />
+                  <DataRow label="Payment Plan" value={profile.paymentPlan || "—"} />
+                  <div style={{ marginTop: 20, display: "grid", gap: 12 }}>{payments.length > 0 ? payments.map((p, i) => <div key={i} style={{ padding: 16, borderRadius: 14, background: S.lightBg, border: `1px solid ${S.border}` }}><div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 6 }}><div style={{ fontFamily: S.body, fontSize: 14, fontWeight: 700, color: S.navy }}>{p.label || `Payment ${i + 1}`}</div><div style={{ fontFamily: S.body, fontSize: 14, fontWeight: 800, color: S.emeraldDark }}>{fmt(p.amount || 0)}</div></div><div style={{ fontFamily: S.body, fontSize: 12, color: S.gray }}>{p.date || "Recorded"}</div></div>) : <div style={{ color: S.gray, fontFamily: S.body }}>No payment records displayed yet.</div>}</div>
+                  <div style={{ marginTop: 18 }}><Btn primary onClick={() => setShowPaymentModal(true)} style={{ background: S.coral, color: S.white, borderRadius: 12 }}>Make a Payment</Btn></div>
+                </>}
+                {activeTab === "id" && <>
+                  <div style={{ fontFamily: S.heading, fontSize: 28, color: S.navy, fontWeight: 800, marginBottom: 14 }}>Student ID Card</div>
+                  <div style={{ maxWidth: 420, background: S.white, border: `2px solid ${S.navy}`, borderRadius: 22, overflow: "hidden", boxShadow: "0 12px 28px rgba(15,23,42,0.08)" }}>
+                    <div style={{ background: S.navy, padding: 18, color: S.white }}><div style={{ fontFamily: S.heading, fontSize: 24, fontWeight: 800 }}>CTS ETS</div><div style={{ fontFamily: S.body, fontSize: 11, color: S.goldLight, letterSpacing: 1.4, textTransform: "uppercase" }}>Student Identification Card</div></div>
+                    <div style={{ padding: 22 }}><div style={{ display: "flex", gap: 18, alignItems: "center" }}>{!imgError && secureImgUrl ? <img src={secureImgUrl} alt={profile.name} onError={() => setImgError(true)} style={{ width: 96, height: 96, borderRadius: 16, objectFit: "cover", border: `3px solid ${S.gold}` }} /> : <div style={{ width: 96, height: 96, borderRadius: 16, background: S.lightBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36 }}>👤</div>}<div><div style={{ fontFamily: S.heading, fontSize: 24, color: S.navy, fontWeight: 800, lineHeight: 1.15 }}>{toTitleCase(profile.name)}</div><div style={{ fontFamily: S.body, fontSize: 13, color: S.gray, marginTop: 4 }}>{profile.programme}</div><div style={{ fontFamily: S.body, fontSize: 12, color: S.teal, fontWeight: 800, marginTop: 10 }}>{profile.studentNumber}</div></div></div></div>
+                  </div>
+                </>}
+              </div>
+              {activeTab === "profile" && (
+                <div style={{ background: S.white, border: `1px solid ${S.border}`, borderRadius: 24, padding: 16, boxShadow: "0 12px 30px rgba(15,23,42,0.04)" }}>
+                  <div style={{ width: "100%", height: 260, borderRadius: 18, overflow: "hidden", marginBottom: 14 }}>
+                    <img src={PEOPLE.dashboard} alt="Learner using a digital student portal" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  </div>
+                  <div style={{ fontFamily: S.heading, fontSize: 24, color: S.navy, fontWeight: 800, marginBottom: 8 }}>A clearer portal helps learners stay engaged</div>
+                  <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.75, margin: 0 }}>From profile information to coursework, assessments, payments, and student identification, each area is easier to scan and use in a wider dashboard layout.</p>
                 </div>
-              </>}
+              )}
             </div>
           </div>
         </div>
@@ -273,21 +378,83 @@ export default function StudentPortalPage() {
     <PageWrapper bg={S.lightBg}>
       <div style={{ background: "linear-gradient(135deg, #0B1120 0%, #1E293B 58%, #0E8F8B 145%)", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 18% 22%, rgba(217,119,6,0.16), transparent 28%), radial-gradient(circle at 82% 18%, rgba(37,99,235,0.14), transparent 24%), radial-gradient(circle at 70% 80%, rgba(124,58,237,0.12), transparent 22%)" }} />
-        <Container style={{ position: "relative", paddingTop: 60, paddingBottom: 54 }}>
-          <Reveal>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 999, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", fontFamily: S.body, fontSize: 11, fontWeight: 800, letterSpacing: 1.8, textTransform: "uppercase", color: S.goldLight, marginBottom: 18 }}>Student Portal</div>
-            <h1 style={{ fontFamily: S.heading, fontSize: "clamp(36px, 6vw, 66px)", lineHeight: 1.04, color: S.white, fontWeight: 900, margin: "0 0 18px", maxWidth: 860 }}>A cleaner portal experience for current learners</h1>
-            <p style={{ fontFamily: S.body, fontSize: "clamp(15px, 2vw, 19px)", lineHeight: 1.8, color: "rgba(255,255,255,0.82)", maxWidth: 780, margin: 0 }}>This upgraded layout keeps the orientation gateway, profile view, coursework tabs, assessment handling, in-app payment modal, AI study assistant, and student ID flow — but wraps them in a more polished dashboard shell.</p>
-          </Reveal>
-        </Container>
+        <WideWrap style={{ position: "relative", paddingTop: 64, paddingBottom: 60 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.08fr) minmax(380px, 0.92fr)", gap: 34, alignItems: "center" }} className="resp-grid-2">
+            <Reveal>
+              <div>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 999, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", fontFamily: S.body, fontSize: 11, fontWeight: 800, letterSpacing: 1.8, textTransform: "uppercase", color: S.goldLight, marginBottom: 18 }}>Student Portal</div>
+                <h1 style={{ fontFamily: S.heading, fontSize: "clamp(38px, 6vw, 68px)", lineHeight: 1.02, color: S.white, fontWeight: 900, margin: "0 0 18px", maxWidth: 940 }}>A cleaner portal experience for current learners</h1>
+                <p style={{ fontFamily: S.body, fontSize: "clamp(15px, 2vw, 19px)", lineHeight: 1.8, color: "rgba(255,255,255,0.82)", maxWidth: 860, margin: 0 }}>Access coursework, assessments, profile information, payment tools, your digital student ID, and the AI study assistant through a clearer dashboard environment.</p>
+              </div>
+            </Reveal>
+            <Reveal delay={0.12}>
+              <div style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 26, padding: 18, backdropFilter: "blur(10px)", boxShadow: "0 20px 42px rgba(2,6,23,0.16)" }}>
+                <div style={{ width: "100%", height: 420, borderRadius: 20, overflow: "hidden", marginBottom: 16 }}>
+                  <img src={PEOPLE.hero} alt="Learners using a modern online student portal" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, padding: 14, color: "#fff" }}>
+                    <div style={{ fontSize: 22, marginBottom: 8 }}>📚</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, fontFamily: S.body }}>Coursework access</div>
+                  </div>
+                  <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, padding: 14, color: "#fff" }}>
+                    <div style={{ fontSize: 22, marginBottom: 8 }}>🤖</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, fontFamily: S.body }}>AI study help</div>
+                  </div>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </WideWrap>
       </div>
-      <Container style={{ marginTop: -24, position: "relative", zIndex: 2, maxWidth: 1320 }}>
-        <Reveal><div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16 }}><MetricCard label="Portal Access" value="24/7" accent={S.sky} /><MetricCard label="AI Study Help" value="Live" accent={S.goldDark} /><MetricCard label="Payments" value="In-App" accent={S.coral} /><MetricCard label="ID & Records" value="Digital" accent={S.violet} /></div></Reveal>
-      </Container>
-      <Container style={{ paddingTop: 28, maxWidth: 1320 }}>
-        {!studentData ? <Reveal><div style={{ background: S.white, border: `1px solid ${S.border}`, borderRadius: 24, padding: "34px clamp(22px,4vw,40px)", boxShadow: "0 12px 30px rgba(15,23,42,0.04)", maxWidth: 900, margin: "0 auto" }}><OrientationGateway onVerified={fetchDashboard} loading={loading} /></div></Reveal> : <Dashboard studentData={studentData} onLogout={handleLogout} fetchDashboard={fetchDashboard} />}
-        <PageScripture page="studentPortal" />
-      </Container>
+
+      <WideWrap style={{ marginTop: -24, position: "relative", zIndex: 2 }}>
+        <Reveal><SocialProofBar /></Reveal>
+      </WideWrap>
+
+      <section style={{ paddingTop: 30 }}>
+        <WideWrap>
+          <SectionIntro tag="Portal Access" title="Sign in through the orientation gateway" desc="The same gateway logic remains in place before the dashboard loads, but the surrounding layout is wider and more supportive for learners entering the system." accent={S.teal} />
+          {!studentData ? (
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.04fr) minmax(320px, 0.96fr)", gap: 24, alignItems: "start" }} className="resp-grid-2">
+              <Reveal>
+                <div style={{ background: S.white, border: `1px solid ${S.border}`, borderRadius: 24, padding: "34px clamp(22px,4vw,40px)", boxShadow: "0 12px 30px rgba(15,23,42,0.04)" }}>
+                  <OrientationGateway onVerified={fetchDashboard} loading={loading} />
+                </div>
+              </Reveal>
+              <div style={{ display: "grid", gap: 18 }}>
+                <div style={{ background: S.white, border: `1px solid ${S.border}`, borderRadius: 24, padding: 20, boxShadow: "0 12px 30px rgba(15,23,42,0.04)" }}>
+                  <div style={{ width: "100%", height: 260, borderRadius: 18, overflow: "hidden", marginBottom: 16 }}>
+                    <img src={PEOPLE.dashboard} alt="Student preparing to enter the learning portal" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  </div>
+                  <div style={{ fontFamily: S.heading, fontSize: 24, color: S.navy, fontWeight: 800, marginBottom: 8 }}>A stronger portal entry point reduces confusion</div>
+                  <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.75, margin: 0 }}>Learners can verify access, move into the dashboard, and understand what the portal is for before they begin interacting with their records.</p>
+                </div>
+                <div style={{ background: S.white, border: `1px solid ${S.border}`, borderRadius: 22, padding: 22, boxShadow: "0 12px 30px rgba(15,23,42,0.04)" }}>
+                  <div style={{ fontFamily: S.heading, fontSize: 24, color: S.navy, fontWeight: 800, marginBottom: 10 }}>Inside the portal</div>
+                  <div style={{ display: "grid", gap: 10 }}>
+                    {[
+                      "View your current programme and profile",
+                      "Track coursework and assessments",
+                      "Review payment records and pay balances",
+                      "Access your digital student ID",
+                      "Use the AI Study Assistant",
+                    ].map((item) => (
+                      <div key={item} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                        <span style={{ color: S.teal, fontWeight: 900 }}>✓</span>
+                        <span style={{ fontFamily: S.body, fontSize: 14, color: S.gray, lineHeight: 1.65 }}>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <Dashboard studentData={studentData} onLogout={handleLogout} />
+          )}
+          <PageScripture page="studentPortal" />
+        </WideWrap>
+      </section>
     </PageWrapper>
   );
 }
