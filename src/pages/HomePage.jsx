@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { TESTIMONIALS } from "../constants/content"; 
-import { PageScripture, TestimonialCard } from "../components/shared/CoreComponents";
+import { PageScripture, TestimonialCard, Btn } from "../components/shared/CoreComponents";
 import { PartnerLogos } from "../components/shared/DisplayComponents";
 
 // ─── PREMIUM LIGHT THEME DEFINITIONS ───
@@ -47,7 +47,6 @@ function Reveal({ children, delay = 0, style = {} }) {
   return <div ref={ref} style={{ opacity: v ? 1 : 0, transform: v ? "translateY(0)" : "translateY(50px)", transition: `opacity 0.8s cubic-bezier(0.16,1,0.3,1) ${delay}s, transform 0.8s cubic-bezier(0.16,1,0.3,1) ${delay}s`, ...style }}>{children}</div>;
 }
 
-// Lighter particles for the bright theme
 function Particles() {
   return (
     <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
@@ -92,22 +91,22 @@ export default function HomePage({ setPage }) {
       `}</style>
 
       {/* ━━━━━━ BRIGHT EXECUTIVE HERO ━━━━━━ */}
-      <div style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column", background: T.white, overflow: "hidden", width: "100%" }}>
+      <div style={{ position: "relative", minHeight: "90vh", display: "flex", flexDirection: "column", background: T.white, overflow: "hidden", width: "100%" }}>
         
         {/* Soft, bright background overlay */}
         <div style={{ position: "absolute", inset: 0, backgroundImage: "url(https://images.unsplash.com/photo-1497366216548-37526070297c?w=2000&q=80)", backgroundSize: "cover", backgroundPosition: "center", opacity: 0.08, transform: `translateY(${scrollY * 0.2}px)` }} />
         <div style={{ position: "absolute", inset: 0, background: `linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(243,244,246,0.95) 100%)` }} />
         <Particles />
         
-        {/* Soft Glowing Orbs (Lighter tones) */}
+        {/* Soft Glowing Orbs */}
         {[{ c: T.teal, s: "600px", t: "-15%", l: "55%" }, { c: T.gold, s: "450px", t: "60%", l: "-8%" }, { c: T.violet, s: "350px", t: "20%", l: "85%" }].map((o, i) => (
           <div key={i} style={{ position: "absolute", width: o.s, height: o.s, borderRadius: "50%", background: `radial-gradient(circle, ${o.c}15 0%, transparent 70%)`, top: o.t, left: o.l, filter: "blur(60px)", animation: `pulse 8s ease-in-out infinite ${i * 1.5}s`, pointerEvents: "none" }} />
         ))}
 
         {/* Hero Content */}
-        <div style={{ position: "relative", zIndex: 10, padding: "160px 4% 80px", width: "100%", maxWidth: "1800px", margin: "0 auto", display: "flex", flexWrap: "wrap", alignItems: "center", gap: "50px" }}>
+        <div style={{ position: "relative", zIndex: 10, padding: "140px 4% 60px", width: "100%", maxWidth: "1800px", margin: "0 auto", display: "flex", flexWrap: "wrap", alignItems: "center", gap: "50px" }}>
           
-          {/* LEFT TEXT (Dark text for readability) */}
+          {/* LEFT TEXT */}
           <div style={{ flex: "1 1 520px", maxWidth: "750px" }}>
             <div style={{ animation: "badgeIn 0.8s cubic-bezier(0.16,1,0.3,1) 0.2s both" }}>
               <div style={{ display: "inline-flex", alignItems: "center", gap: "10px", background: `linear-gradient(90deg, ${T.gold}20, transparent)`, border: `1px solid ${T.gold}40`, padding: "10px 22px", borderRadius: "40px", marginBottom: "32px", backdropFilter: "blur(10px)" }}>
@@ -134,7 +133,7 @@ export default function HomePage({ setPage }) {
             </div>
           </div>
 
-          {/* RIGHT MOSAIC (Bright, natural images) */}
+          {/* RIGHT MOSAIC */}
           <div style={{ flex: "1 1 500px", display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "200px 200px 160px", gap: "16px", animation: "heroIn 1s cubic-bezier(0.16,1,0.3,1) 0.5s both" }}>
             <div style={{ gridRow: "1 / 3", borderRadius: "24px", overflow: "hidden", position: "relative", boxShadow: "0 20px 40px rgba(1,30,64,0.15)" }}>
               <img src="https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?w=600&q=80" alt="Advanced Learning" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -162,8 +161,8 @@ export default function HomePage({ setPage }) {
           </div>
         </div>
 
-        {/* Floating Stats Bar (Light Mode) */}
-        <div style={{ position: "relative", zIndex: 10, padding: "0 4% 60px", width: "100%", maxWidth: "1800px", margin: "0 auto", display: "flex", flexWrap: "wrap", gap: "16px" }}>
+        {/* Floating Stats Bar */}
+        <div style={{ position: "relative", zIndex: 10, padding: "0 4% 40px", width: "100%", maxWidth: "1800px", margin: "0 auto", display: "flex", flexWrap: "wrap", gap: "16px" }}>
           {[
             { icon: "📅", value: "Since 2018", label: "Facilitating Learning" },
             { icon: "📊", value: <Counter end={94} suffix="%" />, label: "Completion Rate" },
@@ -187,64 +186,107 @@ export default function HomePage({ setPage }) {
         </div>
       </div>
 
-      {/* ━━━━━━ INFINITE MARQUEE ━━━━━━ */}
-      <div style={{ padding: "50px 0", overflow: "hidden", width: "100%", background: T.offWhite, borderBottom: `1px solid ${T.border}` }}>
+      {/* ━━━━━━ TOP CTA — BRIGHT & VIBRANT (MOVED TO TOP) ━━━━━━ */}
+      <div style={{ position: "relative", overflow: "hidden", width: "100%" }}>
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "url(https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=2000&q=80)", backgroundSize: "cover", backgroundPosition: "center" }} />
+        <div style={{ position: "absolute", inset: 0, background: `linear-gradient(135deg, rgba(1,30,64,0.9) 0%, rgba(8,145,178,0.9) 100%)` }} />
+        <Particles />
+        
+        <div style={{ position: "relative", zIndex: 1, padding: "80px 6%", width: "100%", maxWidth: "1600px", margin: "0 auto", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "60px" }}>
+          <div style={{ flex: "1 1 500px" }}>
+            <Reveal>
+              <div style={{ fontSize: "64px", marginBottom: "16px" }}>🎓</div>
+              <h2 style={{ fontFamily: f.display, fontSize: "clamp(38px, 4vw, 56px)", color: T.white, fontWeight: "900", lineHeight: 1.05, margin: "0 0 20px" }}>Classes Begin<br /><span style={{ color: T.goldLight }}>Monday April 13, 2026.</span></h2>
+              <p style={{ fontFamily: f.body, fontSize: "18px", color: "rgba(255,255,255,0.9)", lineHeight: 1.6, margin: "0 0 32px", maxWidth: "600px" }}>Join hundreds of students advancing their careers through our digital campus. Your application takes less than 10 minutes.</p>
+              <button onClick={() => setPage("Apply")} style={{ background: T.white, color: T.navy, border: "none", padding: "20px 48px", borderRadius: "20px", fontFamily: f.body, fontSize: "18px", fontWeight: "900", cursor: "pointer", boxShadow: `0 16px 40px rgba(0,0,0,0.2)` }}>Start Your Application</button>
+            </Reveal>
+          </div>
+          
+          <Reveal delay={0.2} style={{ flex: "1 1 400px", display: "flex", flexDirection: "column", gap: "12px" }}>
+            {[
+              { icon: "🌍", text: "Recognised in 53+ Commonwealth countries" },
+              { icon: "📱", text: "100% digital — study from any device" },
+              { icon: "🤖", text: "24/7 AI Study Assistant built in" },
+              { icon: "⚡", text: "Apply in under 10 minutes" },
+              { icon: "💰", text: "Flexible Gold, Silver & Bronze payment plans" },
+            ].map((item, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: "16px", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: "16px", padding: "16px 24px", backdropFilter: "blur(16px)", boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}>
+                <span style={{ fontSize: "22px" }}>{item.icon}</span>
+                <span style={{ fontFamily: f.body, fontSize: "15px", color: T.white, fontWeight: "700" }}>{item.text}</span>
+              </div>
+            ))}
+          </Reveal>
+        </div>
+      </div>
+
+      {/* ━━━━━━ INFINITE MARQUEE (MOVED TO TOP) ━━━━━━ */}
+      <div style={{ padding: "40px 0", overflow: "hidden", width: "100%", background: T.offWhite, borderBottom: `1px solid ${T.border}` }}>
         <div style={{ display: "flex", animation: "marquee 35s linear infinite", width: "max-content" }}>
           {[...DISCIPLINES, ...DISCIPLINES, ...DISCIPLINES, ...DISCIPLINES].map((d, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", gap: "35px", padding: "0 35px", whiteSpace: "nowrap" }}>
-              <span style={{ fontFamily: f.display, fontSize: "28px", fontWeight: "700", color: T.gray }}>{d}</span>
-              <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: T.goldLight }} />
+              <span style={{ fontFamily: f.display, fontSize: "24px", fontWeight: "700", color: T.gray }}>{d}</span>
+              <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: T.goldLight }} />
             </div>
           ))}
         </div>
       </div>
 
-      {/* ━━━━━━ ADVANTAGES — LIGHT ALTERNATING FULL BLEED ━━━━━━ */}
-      <div style={{ width: "100%" }}>
-        {[
-          { icon: "📱", img: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1000&q=80", title: "Study From Anywhere on Earth", desc: "Access all learner guides, audio sessions, and interactive quizzes directly from your smartphone's home screen. No app store needed — just open your browser and learn.", tag: "MOBILITY", color: T.teal },
-          { icon: "🤖", img: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1000&q=80", title: "Your 24/7 AI-Powered Tutor", desc: "Stuck at 2 AM? Our Intelligent Study Assistant is built right into your digital classroom — explaining complex topics, brainstorming ideas, and helping you prepare for assessments instantly.", tag: "INTELLIGENCE", color: T.violet },
-          { icon: "🏅", img: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1000&q=80", title: "NVQ-J: Credentials That Travel", desc: "We prepare you for the exact same NCTVET assessments as traditional institutions. Your NVQ-J is recognised in 53 Commonwealth countries, across CARICOM, and accepted in the USA.", tag: "CERTIFICATION", color: T.emerald },
-        ].map((item, i) => {
-          const reversed = i % 2 === 1;
-          const [hovered, setHovered] = useState(false);
-          return (
-            <Reveal key={i} delay={0.1}>
-              <div style={{ display: "flex", flexDirection: reversed ? "row-reverse" : "row", flexWrap: "wrap", width: "100%", minHeight: "550px", background: i % 2 === 0 ? T.white : T.offWhite }}>
-                {/* Image Side */}
-                <div style={{ flex: "1 1 50%", minHeight: "400px", position: "relative", overflow: "hidden" }}
-                  onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-                  <img src={item.img} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 1.2s cubic-bezier(0.16,1,0.3,1)", transform: hovered ? "scale(1.05)" : "scale(1)" }} />
-                  <div style={{ position: "absolute", top: "40px", [reversed ? "right" : "left"]: "40px", background: `rgba(255,255,255,0.95)`, backdropFilter: "blur(12px)", padding: "14px 24px", borderRadius: "16px", boxShadow: "0 10px 25px rgba(0,0,0,0.1)" }}>
-                    <div style={{ fontFamily: f.mono, fontSize: "12px", color: item.color, letterSpacing: "2.5px", fontWeight: "800" }}>{item.tag}</div>
+      {/* ━━━━━━ ADVANTAGES — SMALLER, REFINED CARDS ━━━━━━ */}
+      <div style={{ width: "100%", padding: "100px 4%", background: T.white }}>
+        <div style={{ textAlign: "center", marginBottom: "80px", maxWidth: "800px", margin: "0 auto 80px" }}>
+          <span style={{ display: "inline-block", padding: "8px 20px", background: `${T.teal}15`, color: T.teal, borderRadius: "30px", fontSize: "13px", letterSpacing: "2px", textTransform: "uppercase", fontFamily: f.body, fontWeight: "800", marginBottom: "16px" }}>The Digital Advantage</span>
+          <h2 style={{ fontFamily: f.display, fontSize: "clamp(36px, 4vw, 48px)", color: T.navy, fontWeight: "900", margin: "0" }}>Education Redesigned for You</h2>
+        </div>
+
+        <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
+          {[
+            { icon: "📱", img: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80", title: "Study From Anywhere on Earth", desc: "Access all learner guides, audio sessions, and interactive quizzes directly from your smartphone's home screen. No app store needed — just open your browser and learn.", tag: "MOBILITY", color: T.teal },
+            { icon: "🤖", img: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&q=80", title: "Your 24/7 AI-Powered Tutor", desc: "Stuck at 2 AM? Our Intelligent Study Assistant is built right into your digital classroom — explaining complex topics, brainstorming ideas, and helping you prepare for assessments instantly.", tag: "INTELLIGENCE", color: T.violet },
+            { icon: "🏅", img: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80", title: "NVQ-J: Credentials That Travel", desc: "We prepare you for the exact same NCTVET assessments as traditional institutions. Your NVQ-J is recognised in 53 Commonwealth countries, across CARICOM, and accepted in the USA.", tag: "CERTIFICATION", color: T.emerald },
+          ].map((item, i) => {
+            const reversed = i % 2 === 1;
+            const [hovered, setHovered] = useState(false);
+            return (
+              <Reveal key={i} delay={0.1}>
+                <div style={{ display: "flex", flexDirection: reversed ? "row-reverse" : "row", alignItems: "center", gap: "60px", marginBottom: "100px" }}>
+                  
+                  {/* Smaller Contained Image */}
+                  <div style={{ flex: "0 1 45%", height: "400px", position: "relative", borderRadius: "32px", overflow: "hidden", boxShadow: "0 20px 40px rgba(1,30,64,0.08)" }}
+                    onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+                    <img src={item.img} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 1.2s cubic-bezier(0.16,1,0.3,1)", transform: hovered ? "scale(1.05)" : "scale(1)" }} />
+                    <div style={{ position: "absolute", top: "24px", [reversed ? "right" : "left"]: "24px", background: `rgba(255,255,255,0.95)`, backdropFilter: "blur(12px)", padding: "10px 20px", borderRadius: "14px", boxShadow: "0 10px 25px rgba(0,0,0,0.1)" }}>
+                      <div style={{ fontFamily: f.mono, fontSize: "11px", color: item.color, letterSpacing: "2px", fontWeight: "800" }}>{item.tag}</div>
+                    </div>
                   </div>
-                </div>
-                {/* Text Side */}
-                <div style={{ flex: "1 1 45%", padding: "100px 6%", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                  <span style={{ fontSize: "56px", marginBottom: "24px", display: "block" }}>{item.icon}</span>
-                  <h3 style={{ fontFamily: f.display, fontSize: "clamp(34px, 3.5vw, 50px)", color: T.navy, fontWeight: "900", margin: "0 0 24px", lineHeight: 1.1 }}>{item.title}</h3>
-                  <p style={{ fontFamily: f.body, fontSize: "20px", color: T.gray, lineHeight: 1.7, margin: "0 0 40px", maxWidth: "600px" }}>{item.desc}</p>
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: "12px", color: item.color, fontFamily: f.body, fontSize: "17px", fontWeight: "800", cursor: "pointer" }}>
-                    Discover How <span style={{ fontSize: "22px" }}>→</span>
+
+                  {/* Text Side */}
+                  <div style={{ flex: "1 1 50%" }}>
+                    <span style={{ fontSize: "48px", marginBottom: "20px", display: "block" }}>{item.icon}</span>
+                    <h3 style={{ fontFamily: f.display, fontSize: "clamp(30px, 3.5vw, 42px)", color: T.navy, fontWeight: "900", margin: "0 0 20px", lineHeight: 1.1 }}>{item.title}</h3>
+                    <p style={{ fontFamily: f.body, fontSize: "18px", color: T.gray, lineHeight: 1.7, margin: "0 0 32px", maxWidth: "550px" }}>{item.desc}</p>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: "10px", color: item.color, fontFamily: f.body, fontSize: "16px", fontWeight: "800", cursor: "pointer" }}>
+                      Discover How <span style={{ fontSize: "20px" }}>→</span>
+                    </div>
                   </div>
+
                 </div>
-              </div>
-            </Reveal>
-          );
-        })}
+              </Reveal>
+            );
+          })}
+        </div>
       </div>
 
       {/* ━━━━━━ BRIGHT ACADEMIC PATHWAYS (CLEAN CARDS) ━━━━━━ */}
-      <div style={{ width: "100%", padding: "120px 4% 100px", background: T.cream, position: "relative" }}>
+      <div style={{ width: "100%", padding: "100px 4%", background: T.cream, position: "relative" }}>
         
-        <div style={{ maxWidth: "1800px", margin: "0 auto", marginBottom: "60px", position: "relative", zIndex: 2 }}>
+        <div style={{ maxWidth: "1600px", margin: "0 auto", marginBottom: "60px", position: "relative", zIndex: 2 }}>
           <Reveal>
             <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "flex-end", gap: "30px" }}>
               <div>
                 <div style={{ fontFamily: f.mono, fontSize: "14px", color: T.goldDark, letterSpacing: "3px", textTransform: "uppercase", fontWeight: "800", marginBottom: "16px" }}>Our Faculties</div>
-                <h2 style={{ fontFamily: f.display, fontSize: "clamp(40px, 4.5vw, 64px)", color: T.navy, fontWeight: "900", lineHeight: 1.05, margin: 0 }}>Five Levels. <span style={{ color: T.teal }}>One Vision.</span></h2>
+                <h2 style={{ fontFamily: f.display, fontSize: "clamp(38px, 4.5vw, 56px)", color: T.navy, fontWeight: "900", lineHeight: 1.05, margin: 0 }}>Five Levels. <span style={{ color: T.teal }}>One Vision.</span></h2>
               </div>
-              <p style={{ fontFamily: f.body, fontSize: "19px", color: T.gray, maxWidth: "550px", lineHeight: 1.6, textAlign: "right", margin: 0 }}>
+              <p style={{ fontFamily: f.body, fontSize: "18px", color: T.gray, maxWidth: "550px", lineHeight: 1.6, textAlign: "right", margin: 0 }}>
                 From foundational job certificates to executive qualifications — your NCTVET-aligned career framework maps directly to your ambition.
               </p>
             </div>
@@ -252,7 +294,7 @@ export default function HomePage({ setPage }) {
         </div>
 
         {/* Light Cards Layout */}
-        <div style={{ maxWidth: "1800px", margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "30px", position: "relative", zIndex: 2 }}>
+        <div style={{ maxWidth: "1600px", margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "30px", position: "relative", zIndex: 2 }}>
           {PATHWAYS.map((p, i) => {
             const [h, setH] = useState(false);
             return (
@@ -269,7 +311,7 @@ export default function HomePage({ setPage }) {
                   {/* Bottom Text Half */}
                   <div style={{ padding: "30px", flex: 1, display: "flex", flexDirection: "column" }}>
                     <div style={{ alignSelf: "flex-start", background: `${p.color}15`, color: p.color, padding: "6px 14px", borderRadius: "12px", fontSize: "11px", fontWeight: "800", textTransform: "uppercase", letterSpacing: "1.5px", fontFamily: f.body, marginBottom: "16px" }}>{p.tag}</div>
-                    <h3 style={{ fontFamily: f.display, fontSize: "28px", color: T.navy, fontWeight: "900", margin: "0 0 12px", lineHeight: 1.1 }}>{p.level}</h3>
+                    <h3 style={{ fontFamily: f.display, fontSize: "26px", color: T.navy, fontWeight: "900", margin: "0 0 12px", lineHeight: 1.1 }}>{p.level}</h3>
                     <p style={{ fontFamily: f.body, fontSize: "15px", color: T.gray, margin: "0 0 24px", lineHeight: 1.6, flex: 1 }}>{p.desc}</p>
                     <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", color: p.color, fontSize: "14px", fontWeight: "800", fontFamily: f.body }}>Explore Level <span style={{ fontSize: "18px", transition: "transform 0.3s", transform: h ? "translateX(6px)" : "none" }}>→</span></div>
                   </div>
@@ -286,10 +328,10 @@ export default function HomePage({ setPage }) {
 
       {/* ━━━━━━ TESTIMONIALS ━━━━━━ */}
       <div style={{ padding: "100px 4%", background: T.white }}>
-        <div style={{ maxWidth: "1800px", margin: "0 auto" }}>
+        <div style={{ maxWidth: "1600px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "80px" }}>
-            <span style={{ display: "inline-block", padding: "10px 24px", background: `${T.gold}20`, color: T.goldDark, borderRadius: "30px", fontSize: "14px", letterSpacing: "3px", textTransform: "uppercase", fontFamily: f.mono, fontWeight: "700", marginBottom: "20px" }}>Real Results</span>
-            <h2 style={{ fontFamily: f.display, fontSize: "clamp(40px, 4vw, 56px)", color: T.navy, fontWeight: "900" }}>Student Success Stories</h2>
+            <span style={{ display: "inline-block", padding: "10px 24px", background: `${T.gold}20`, color: T.goldDark, borderRadius: "30px", fontSize: "13px", letterSpacing: "3px", textTransform: "uppercase", fontFamily: f.mono, fontWeight: "700", marginBottom: "20px" }}>Real Results</span>
+            <h2 style={{ fontFamily: f.display, fontSize: "clamp(36px, 4vw, 48px)", color: T.navy, fontWeight: "900" }}>Student Success Stories</h2>
           </div>
           <Reveal>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))", gap: "40px" }}>
@@ -300,38 +342,12 @@ export default function HomePage({ setPage }) {
         </div>
       </div>
 
-      {/* ━━━━━━ FINAL CTA — BRIGHT & VIBRANT ━━━━━━ */}
-      <div style={{ position: "relative", overflow: "hidden", width: "100%" }}>
-        {/* Soft vibrant background instead of dark blue */}
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "url(https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=2000&q=80)", backgroundSize: "cover", backgroundPosition: "center" }} />
-        <div style={{ position: "absolute", inset: 0, background: `linear-gradient(135deg, rgba(1,30,64,0.85) 0%, rgba(8,145,178,0.85) 100%)` }} />
-        <Particles />
-        
-        <div style={{ position: "relative", zIndex: 1, padding: "120px 6%", width: "100%", maxWidth: "1800px", margin: "0 auto", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "60px" }}>
-          <div style={{ flex: "1 1 600px" }}>
-            <Reveal>
-              <div style={{ fontSize: "72px", marginBottom: "24px" }}>🎓</div>
-              <h2 style={{ fontFamily: f.display, fontSize: "clamp(44px, 5vw, 70px)", color: T.white, fontWeight: "900", lineHeight: 1.05, margin: "0 0 24px" }}>Classes Begin<br /><span style={{ color: T.goldLight }}>Monday April 13, 2026.</span></h2>
-              <p style={{ fontFamily: f.body, fontSize: "22px", color: "rgba(255,255,255,0.9)", lineHeight: 1.6, margin: "0 0 48px", maxWidth: "650px" }}>Join hundreds of students advancing their careers through our digital campus. Your application takes less than 10 minutes.</p>
-              <button onClick={() => setPage("Apply")} style={{ background: T.white, color: T.navy, border: "none", padding: "24px 60px", borderRadius: "24px", fontFamily: f.body, fontSize: "20px", fontWeight: "900", cursor: "pointer", boxShadow: `0 16px 50px rgba(0,0,0,0.2)` }}>Start Your Application</button>
-            </Reveal>
-          </div>
-          
-          <Reveal delay={0.2} style={{ flex: "1 1 450px", display: "flex", flexDirection: "column", gap: "16px" }}>
-            {[
-              { icon: "🌍", text: "Recognised in 53+ Commonwealth countries" },
-              { icon: "📱", text: "100% digital — study from any device" },
-              { icon: "🤖", text: "24/7 AI Study Assistant built in" },
-              { icon: "⚡", text: "Apply in under 10 minutes" },
-              { icon: "💰", text: "Flexible Gold, Silver & Bronze payment plans" },
-            ].map((item, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "20px", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: "20px", padding: "20px 28px", backdropFilter: "blur(16px)", boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}>
-                <span style={{ fontSize: "26px" }}>{item.icon}</span>
-                <span style={{ fontFamily: f.body, fontSize: "17px", color: T.white, fontWeight: "700" }}>{item.text}</span>
-              </div>
-            ))}
-          </Reveal>
-        </div>
+      {/* ━━━━━━ MINIMAL BOTTOM CTA ━━━━━━ */}
+      <div style={{ padding: "80px 4%", background: T.cream, textAlign: "center", borderTop: `1px solid ${T.border}` }}>
+         <Reveal>
+            <h2 style={{ fontFamily: f.display, fontSize: "36px", color: T.navy, fontWeight: "900", marginBottom: "20px" }}>Ready to Start Your Journey?</h2>
+            <button onClick={() => setPage("Apply")} style={{ background: T.coral, color: T.white, border: "none", padding: "16px 40px", borderRadius: "16px", fontFamily: f.body, fontSize: "16px", fontWeight: "800", cursor: "pointer", boxShadow: `0 10px 25px ${T.coral}40` }}>Apply for the Spring Cohort</button>
+         </Reveal>
       </div>
 
       <PageScripture page="home" /> 
