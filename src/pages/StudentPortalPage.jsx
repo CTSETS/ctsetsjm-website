@@ -181,8 +181,9 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
       {/* 🚀 UPGRADED HEADER */}
       <div style={{ background: `linear-gradient(135deg, ${S.navy} 0%, ${S.teal} 100%)`, borderRadius: 16, padding: "32px", color: "#fff", marginBottom: 32, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20, boxShadow: "0 10px 30px rgba(1, 30, 64, 0.15)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+          {/* 🚀 FIXED: REMOVED crossOrigin="anonymous" TO BYPASS CORS ERROR */}
           {secureImgUrl && !imgError ? (
-            <img src={secureImgUrl} alt="Profile" onError={() => setImgError(true)} style={{ width: 90, height: 90, borderRadius: "50%", objectFit: "cover", border: "4px solid rgba(255,255,255,0.3)" }} referrerPolicy="no-referrer" crossOrigin="anonymous" />
+            <img src={secureImgUrl} alt="Profile" onError={() => setImgError(true)} style={{ width: 90, height: 90, borderRadius: "50%", objectFit: "cover", border: "4px solid rgba(255,255,255,0.3)" }} referrerPolicy="no-referrer" />
           ) : (
             <div style={{ width: 90, height: 90, borderRadius: "50%", background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36, fontWeight: 800, color: "#fff", border: "4px solid rgba(255,255,255,0.3)" }}>
               {(profile.name || "S").charAt(0).toUpperCase()}
@@ -193,12 +194,10 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
             <h2 style={{ fontFamily: S.heading, fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 700, margin: "4px 0" }}>{toTitleCase(profile.name)}</h2>
             <div style={{ fontSize: 16, fontWeight: 800, color: S.gold, fontFamily: "monospace", letterSpacing: 1, marginBottom: 4 }}>{profile.studentNumber}</div>
             
-            {/* 🚀 FIXED: Programme & Level Header (matches the ID card exactly) */}
             <div style={{ fontSize: 14, opacity: 0.9, fontFamily: S.body }}>
               {profile.level ? `${profile.level} in ${profile.programme}` : profile.programme}
             </div>
             
-            {/* 🚀 FIXED: Just the period, "Valid Term:" text removed */}
             <div style={{ fontSize: 13, color: S.gold, fontFamily: S.body, fontWeight: 700, marginTop: 4 }}>
               {validTermText}
             </div>
@@ -296,8 +295,9 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
                       <div style={{ marginLeft: "auto", fontSize: 8, textTransform: "uppercase", letterSpacing: 1, opacity: 0.8, textAlign: "right" }}>Student<br/>Identity Card</div>
                     </div>
                     <div style={{ padding: "16px", display: "flex", gap: "16px", alignItems: "flex-start" }}>
+                      {/* 🚀 FIXED: REMOVED crossOrigin="anonymous" TO BYPASS CORS ERROR */}
                       {secureImgUrl && !imgError ? (
-                        <img src={secureImgUrl} alt="Student" onError={() => setImgError(true)} style={{ width: 85, height: 110, objectFit: "cover", borderRadius: "6px", border: `2px solid ${S.gold}`, background: "#fff", zIndex: 2, position: "relative" }} referrerPolicy="no-referrer" crossOrigin="anonymous" />
+                        <img src={secureImgUrl} alt="Student" onError={() => setImgError(true)} style={{ width: 85, height: 110, objectFit: "cover", borderRadius: "6px", border: `2px solid ${S.gold}`, background: "#fff", zIndex: 2, position: "relative" }} referrerPolicy="no-referrer" />
                       ) : (
                         <div style={{ width: 85, height: 110, background: "rgba(255,255,255,0.1)", borderRadius: "6px", border: `2px solid ${S.gold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, fontWeight: 800, color: "#fff", zIndex: 2, position: "relative" }}>{(profile.name || "S").charAt(0).toUpperCase()}</div>
                       )}
@@ -320,7 +320,6 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
                </div>
              </div>
 
-             {/* 🚀 UPGRADED INSTITUTIONAL RECORD */}
              <div style={{ background: "#fff", borderRadius: 16, padding: "32px", border: `1px solid ${S.border}`, boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
                  <h3 style={{ fontFamily: S.heading, color: S.navy, marginBottom: 24, fontSize: 20 }}>Official Institutional Record</h3>
                  
@@ -361,7 +360,7 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
         </div>
       )}
 
-      {/* 🚀 UPGRADED FINANCE TAB WITH HISTORY */}
+      {/* FINANCE TAB WITH HISTORY */}
       {activeTab === "finance" && (
         <div style={{ animation: "fadeIn 0.3s" }}>
             <div style={{ background: "#fff", borderRadius: 16, padding: "40px", border: `1px solid ${S.border}`, textAlign: "center", marginBottom: 24 }}>
@@ -419,18 +418,15 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
 export default function StudentPortalPage({ setPage }) {
   const [studentData, setStudentData] = useState(null);
   
-  // Custom Gateway Auth State
   const [loginStep, setLoginStep] = useState(0); 
   const [identifier, setIdentifier] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
   
-  // 🚀 60-SECOND AUTO-LOGOUT COUNTDOWN STATE
   const [showTimeoutModal, setShowTimeoutModal] = useState(false);
   const [countdown, setCountdown] = useState(60);
 
-  // 🚀 NEW 14 MINUTE IDLE TIMER LOGIC
   useEffect(() => {
     if (!studentData) return;
     let idleTimer;
@@ -455,7 +451,7 @@ export default function StudentPortalPage({ setPage }) {
             return prev - 1;
           });
         }, 1000);
-      }, 14 * 60 * 1000); // Triggers after 14 minutes
+      }, 14 * 60 * 1000);
     };
 
     const events = ["mousedown", "keydown", "scroll", "touchstart"];
@@ -547,7 +543,6 @@ export default function StudentPortalPage({ setPage }) {
   // ═══ AUTHENTICATED VIEW ═══
   return (
     <PageWrapper>
-        {/* 🚀 IDLE LOGOUT MODAL */}
         {showTimeoutModal && (
           <div style={{ position: "fixed", inset: 0, background: "rgba(1, 30, 64, 0.9)", zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(5px)" }}>
             <div style={{ background: "#fff", padding: "40px", borderRadius: 24, textAlign: "center", maxWidth: 420, width: "90%", boxShadow: "0 20px 50px rgba(0,0,0,0.5)" }}>
