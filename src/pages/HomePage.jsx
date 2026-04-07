@@ -8,7 +8,6 @@ import {
   PageScripture,
   TestimonialCard,
   TalkToGraduate,
-  SocialProofBar,
 } from "../components/shared/CoreComponents";
 import { PartnerLogos } from "../components/shared/DisplayComponents";
 
@@ -489,7 +488,7 @@ export default function HomePage({ setPage }) {
                   CTS ETS is built for working adults, ambitious learners, and professionals who need a structured training experience without losing the flexibility of online study.
                 </p>
 
-                <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 26 }}>
+                <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 22 }}>
                   <Btn
                     primary
                     onClick={() => setPage("Apply")}
@@ -515,6 +514,61 @@ export default function HomePage({ setPage }) {
                   >
                     Explore Programmes
                   </Btn>
+                </div>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "minmax(240px, 0.9fr) minmax(0, 1.1fr)",
+                    gap: 18,
+                    alignItems: "center",
+                    marginBottom: 24,
+                    padding: "18px 20px",
+                    borderRadius: 22,
+                    background: "rgba(255,255,255,0.08)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    boxShadow: "0 16px 36px rgba(2,6,23,0.18)",
+                  }}
+                  className="resp-grid-2"
+                >
+                  <div>
+                    <div
+                      style={{
+                        fontFamily: S.body,
+                        fontSize: 11,
+                        color: S.goldLight,
+                        letterSpacing: 1.8,
+                        textTransform: "uppercase",
+                        fontWeight: 800,
+                        marginBottom: 8,
+                      }}
+                    >
+                      Upcoming Classes
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: S.heading,
+                        fontSize: "clamp(24px, 3vw, 34px)",
+                        color: "#fff",
+                        lineHeight: 1.08,
+                        fontWeight: 800,
+                      }}
+                    >
+                      Classes begin Monday April 13, 2026
+                    </div>
+                  </div>
+                  <p
+                    style={{
+                      fontFamily: S.body,
+                      fontSize: 14,
+                      lineHeight: 1.75,
+                      color: "rgba(255,255,255,0.8)",
+                      margin: 0,
+                      maxWidth: 520,
+                    }}
+                  >
+                    Apply early, complete your documents, and get set up before the new class cycle starts.
+                  </p>
                 </div>
 
                 <div
@@ -563,7 +617,7 @@ export default function HomePage({ setPage }) {
                 <div
                   style={{
                     gridRow: "1 / 3",
-                    minHeight: 500,
+                    minHeight: 420,
                     borderRadius: 28,
                     background: "linear-gradient(180deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.06) 100%)",
                     border: "1px solid rgba(255,255,255,0.14)",
@@ -597,7 +651,7 @@ export default function HomePage({ setPage }) {
                     <div
                       style={{
                         width: "100%",
-                        height: 250,
+                        height: 210,
                         borderRadius: 22,
                         overflow: "hidden",
                         marginBottom: 18,
@@ -654,7 +708,7 @@ export default function HomePage({ setPage }) {
                 </div>
 
                 <div style={{ borderRadius: 24, background: "#fff", padding: 22, boxShadow: "0 18px 44px rgba(2,6,23,0.14)" }}>
-                  <div style={{ width: "100%", height: 150, borderRadius: 18, overflow: "hidden", marginBottom: 14 }}>
+                  <div style={{ width: "100%", height: 130, borderRadius: 18, overflow: "hidden", marginBottom: 14 }}>
                     <img src={PEOPLE.learner} alt="Professional learner studying online with a laptop" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   </div>
                   <div style={{ fontFamily: S.heading, fontSize: 24, color: S.navy, fontWeight: 800, marginBottom: 8 }}>Local heart. Professional presentation.</div>
@@ -681,12 +735,6 @@ export default function HomePage({ setPage }) {
         </div>
       </WideWrap>
 
-      <WideWrap style={{ paddingTop: 26 }}>
-        <Reveal>
-          <SocialProofBar />
-        </Reveal>
-      </WideWrap>
-
       <WideWrap style={{ paddingTop: 44 }}>
         <Reveal>
           <PartnerLogos />
@@ -704,7 +752,7 @@ export default function HomePage({ setPage }) {
           <div style={{ display: "grid", gridTemplateColumns: "minmax(320px, 0.9fr) minmax(0, 1.1fr)", gap: 24, alignItems: "stretch" }} className="resp-grid-2">
             <Reveal>
               <div style={{ background: "#fff", border: `1px solid ${S.border}`, borderRadius: 26, padding: 20, boxShadow: "0 14px 32px rgba(15,23,42,0.04)", minHeight: 100 }}>
-                <div style={{ width: "100%", height: "100%", minHeight: 360, borderRadius: 20, overflow: "hidden", marginBottom: 18 }}>
+                <div style={{ width: "100%", height: "100%", minHeight: 300, borderRadius: 20, overflow: "hidden", marginBottom: 18 }}>
                   <img src={PEOPLE.mentor} alt="Professional mentor guiding learners during a digital training session" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
                 <div style={{ fontFamily: S.heading, fontSize: 28, color: S.navy, fontWeight: 800, marginBottom: 10 }}>Training with structure, support, and real human connection</div>
@@ -761,7 +809,7 @@ export default function HomePage({ setPage }) {
             </div>
             <Reveal>
               <div style={{ background: "#fff", border: `1px solid ${S.border}`, borderRadius: 26, padding: 20, boxShadow: "0 14px 32px rgba(15,23,42,0.04)", minHeight: 100 }}>
-                <div style={{ width: "100%", minHeight: 430, borderRadius: 20, overflow: "hidden", marginBottom: 18 }}>
+                <div style={{ width: "100%", minHeight: 320, borderRadius: 20, overflow: "hidden", marginBottom: 18 }}>
                   <img src={PEOPLE.hero} alt="Professionals and learners collaborating in a modern training environment" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
                 <div style={{ fontFamily: S.heading, fontSize: 28, color: S.navy, fontWeight: 800, marginBottom: 10 }}>A modern institution for ambitious learners</div>
