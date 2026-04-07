@@ -134,7 +134,7 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
   const [quizLoading, setQuizLoading] = useState(false);
   const [portfolioLink, setPortfolioLink] = useState("");
   const [imgError, setImgError] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false); // 💳 NEW PAYMENT MODAL STATE
+  const [showPaymentModal, setShowPaymentModal] = useState(false); 
   
   const secureImgUrl = getDriveImageUrl(profile.photoUrl);
   const validTermText = getValidTerm(profile.programme, profile.level, profile.dateEnrolled);
@@ -182,19 +182,19 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
   return (
     <div style={{ width: "100%", maxWidth: "1280px", margin: "0 auto", animation: "fadeIn 0.4s" }}>
       
-      {/* 💳 PAYMENT MODAL (POPUP) */}
+      {/* 💳 UPDATED PAYMENT MODAL WITH CORRECT BANK DETAILS */}
       {showPaymentModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(1, 30, 64, 0.85)", zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(6px)", padding: "20px" }}>
-          <div style={{ background: "#fff", padding: "40px", borderRadius: 24, maxWidth: 540, width: "100%", boxShadow: "0 20px 60px rgba(0,0,0,0.5)", position: "relative", animation: "fadeIn 0.3s" }}>
+          <div style={{ background: "#fff", padding: "40px", borderRadius: 24, maxWidth: 600, width: "100%", boxShadow: "0 20px 60px rgba(0,0,0,0.5)", position: "relative", animation: "fadeIn 0.3s" }}>
             <button onClick={() => setShowPaymentModal(false)} style={{ position: "absolute", top: 20, right: 24, background: "none", border: "none", fontSize: 28, cursor: "pointer", color: S.grayLight }}>✕</button>
             <h3 style={{ color: S.navy, fontFamily: S.heading, fontSize: 28, marginBottom: 16 }}>Clear Outstanding Balance</h3>
             <p style={{ color: S.gray, fontFamily: S.body, fontSize: 16, marginBottom: 32, lineHeight: 1.5 }}>
-              Your current outstanding balance is <strong style={{color: S.coral}}>{fmt(profile.outstanding)}</strong>. Please select your preferred payment method below to restore or maintain your digital classroom access.
+              Your current outstanding balance is <strong style={{color: S.coral}}>{fmt(profile.outstanding)}</strong>. Please select your preferred payment method below.
             </p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              {/* Online Payment Button (Placeholder for WiPay / Stripe) */}
-              <a href="#" onClick={(e) => { e.preventDefault(); alert("Redirecting to Secure Online Payment Gateway..."); }} style={{ textDecoration: "none", background: S.tealLight, border: `2px solid ${S.teal}`, borderRadius: 16, padding: "20px", display: "flex", alignItems: "center", gap: 20, color: S.navy, cursor: "pointer", transition: "transform 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-2px)"} onMouseLeave={(e) => e.currentTarget.style.transform = "none"}>
+              {/* Online Payment Link */}
+              <a href="/#pay" onClick={(e) => { setShowPaymentModal(false); window.location.href=`/#pay?ref=${profile.studentNumber}`; }} style={{ textDecoration: "none", background: S.tealLight, border: `2px solid ${S.teal}`, borderRadius: 16, padding: "20px", display: "flex", alignItems: "center", gap: 20, color: S.navy, cursor: "pointer", transition: "transform 0.2s" }} onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-2px)"} onMouseLeave={(e) => e.currentTarget.style.transform = "none"}>
                 <span style={{ fontSize: 32 }}>💳</span>
                 <div>
                   <div style={{ fontWeight: 800, fontFamily: S.body, fontSize: 18, marginBottom: 4 }}>Pay Online Now</div>
@@ -211,14 +211,29 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
                     <div style={{ fontSize: 14, color: S.gray }}>Deposit directly to our institution account</div>
                   </div>
                 </div>
-                <div style={{ background: "#fff", padding: "16px", borderRadius: 8, fontSize: 14, fontFamily: "monospace", border: `1px dashed ${S.grayLight}`, lineHeight: 1.8 }}>
-                  <strong>Bank:</strong> National Commercial Bank (NCB)<br/>
-                  <strong>Account Name:</strong> CTS Empowerment & Training Solutions<br/>
-                  <strong>Account No:</strong> [INSERT ACCOUNT #]<br/>
-                  <strong>Branch:</strong> [INSERT BRANCH]<br/>
-                  <strong>Account Type:</strong> Business Chequing<br/>
-                  <div style={{ marginTop: 12, padding: "10px", background: S.amberLight, color: S.amberDark, borderRadius: 6, fontSize: 12, fontFamily: S.body, border: `1px solid ${S.amber}40` }}>
-                    <strong>Important:</strong> Include your Student ID <strong>({profile.studentNumber})</strong> in the transaction memo. Email your receipt to <strong>finance@ctsetsjm.com</strong> so we can update your portal.
+                <div style={{ background: "#fff", padding: "20px", borderRadius: 12, fontSize: 14, fontFamily: "monospace", border: `1px solid ${S.grayLight}`, lineHeight: 1.6 }}>
+                  
+                  {/* Option 1: Scotiabank */}
+                  <div style={{ marginBottom: 16, paddingBottom: 16, borderBottom: "1px dashed #CBD5E1" }}>
+                    <div style={{ fontWeight: 800, color: S.navy, fontSize: 15, marginBottom: 8, fontFamily: S.body }}>🏦 Option 1: Scotiabank</div>
+                    <strong>Bank Name:</strong> Bank of Nova Scotia (BNS)<br/>
+                    <strong>Account Name:</strong> Mark Lindo trading as CTS Empowerment & Training Solution<br/>
+                    <strong>Account Number:</strong> 001041411<br/>
+                    <strong>Account Type:</strong> Savings<br/>
+                    <strong>Branch / Transit:</strong> Scotia Center / 50765
+                  </div>
+
+                  {/* Option 2: NCB */}
+                  <div>
+                    <div style={{ fontWeight: 800, color: S.navy, fontSize: 15, marginBottom: 8, fontFamily: S.body }}>🏦 Option 2: National Commercial Bank (NCB)</div>
+                    <strong>Bank Name:</strong> National Commercial Bank (NCB)<br/>
+                    <strong>Account Name:</strong> Mark Lindo<br/>
+                    <strong>Account Number:</strong> 214121697<br/>
+                    <strong>Account Type:</strong> Personal
+                  </div>
+
+                  <div style={{ marginTop: 16, padding: "12px", background: S.amberLight, color: S.amberDark, borderRadius: 8, fontSize: 13, fontFamily: S.body, border: `1px solid ${S.amber}40` }}>
+                    <strong>Important:</strong> Include your Student ID <strong>({profile.studentNumber})</strong> in the transaction memo. Once transferred, email your receipt to <strong>finance@ctsetsjm.com</strong>. Or click "Pay Online Now" above to upload it via the payment portal.
                   </div>
                 </div>
               </div>
@@ -412,221 +427,4 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
         <div style={{ animation: "fadeIn 0.3s" }}>
             <div style={{ background: "#fff", borderRadius: 16, padding: "40px", border: `1px solid ${S.border}`, textAlign: "center", marginBottom: 24 }}>
               <div style={{ fontSize: 14, color: S.coral, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 16 }}>Total Programme Cost</div>
-              <div style={{ fontSize: "clamp(32px, 6vw, 48px)", fontWeight: 800, color: S.navy, fontFamily: S.heading, marginBottom: 24 }}>{fmt(profile.totalFees)}</div>
-              
-              <div style={{ display: "flex", justifyContent: "center", gap: 32, fontSize: 16, fontFamily: S.body, borderTop: `1px solid ${S.border}`, paddingTop: 24, marginBottom: profile.outstanding > 0 ? 24 : 0 }}>
-                <span style={{ color: S.emerald, fontWeight: 700 }}>Total Paid: {fmt(profile.totalPaid)}</span>
-                <span style={{ color: profile.outstanding > 0 ? S.coral : S.emerald, fontWeight: 700 }}>Outstanding: {fmt(profile.outstanding)}</span>
-              </div>
-
-              {/* 💳 NEW MAKE A PAYMENT BUTTON */}
-              {profile.outstanding > 0 && (
-                <div style={{ textAlign: "center", marginTop: 24 }}>
-                  <button 
-                    onClick={() => setShowPaymentModal(true)} 
-                    style={{ padding: "16px 36px", background: S.teal, color: "#fff", borderRadius: 12, border: "none", fontSize: 18, fontWeight: 800, cursor: "pointer", fontFamily: S.body, boxShadow: `0 8px 20px ${S.teal}40`, transition: "transform 0.2s" }}
-                    onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-3px)"}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
-                  >
-                    💳 Make a Payment
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div style={{ background: "#fff", borderRadius: 16, padding: "32px", border: `1px solid ${S.border}` }}>
-              <h3 style={{ fontFamily: S.heading, color: S.navy, marginBottom: 24, fontSize: 20 }}>Payment History</h3>
-              {(!payments || payments.length === 0) ? (
-                <div style={{ padding: 32, textAlign: "center", color: S.gray, background: S.lightBg, borderRadius: 12 }}>No payment records found.</div>
-              ) : (
-                <div style={{ overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
-                    <thead>
-                      <tr style={{ borderBottom: `2px solid ${S.navy}` }}>
-                        <th style={{ padding: 16, color: S.navy, fontFamily: S.body, fontSize: 13, textTransform: "uppercase" }}>Date</th>
-                        <th style={{ padding: 16, color: S.navy, fontFamily: S.body, fontSize: 13, textTransform: "uppercase" }}>Amount</th>
-                        <th style={{ padding: 16, color: S.navy, fontFamily: S.body, fontSize: 13, textTransform: "uppercase" }}>Method</th>
-                        <th style={{ padding: 16, color: S.navy, fontFamily: S.body, fontSize: 13, textTransform: "uppercase" }}>Status</th>
-                        <th style={{ padding: 16, color: S.navy, fontFamily: S.body, fontSize: 13, textTransform: "uppercase" }}>Receipt</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {payments.map((p, i) => (
-                        <tr key={i} style={{ borderBottom: `1px solid ${S.border}`, background: i % 2 === 0 ? "#fff" : S.lightBg }}>
-                          <td style={{ padding: 16, fontFamily: S.body, fontSize: 14, color: S.gray, fontWeight: 600 }}>{new Date(p.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-                          <td style={{ padding: 16, fontFamily: S.body, fontSize: 14, fontWeight: 800, color: S.emerald }}>{fmt(p.amount)}</td>
-                          <td style={{ padding: 16, fontFamily: S.body, fontSize: 14, color: S.gray }}>{p.method || "—"}</td>
-                          <td style={{ padding: 16, fontFamily: S.body }}>
-                            <span style={{ padding: "6px 12px", borderRadius: 12, fontSize: 11, fontWeight: 800, background: p.status.includes("Paid") ? S.emeraldLight : S.amberLight, color: p.status.includes("Paid") ? S.emeraldDark : S.amberDark }}>
-                              {p.status}
-                            </span>
-                          </td>
-                          <td style={{ padding: 16, fontFamily: S.body, fontSize: 14 }}>
-                            {p.receipt ? <a href={p.receipt} target="_blank" rel="noreferrer" style={{ color: S.blue, fontWeight: 700, textDecoration: "underline" }}>View</a> : "—"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-export default function StudentPortalPage({ setPage }) {
-  const [orientationPassed, setOrientationPassed] = useState(false);
-  const [studentData, setStudentData] = useState(null);
-  
-  const [loginStep, setLoginStep] = useState(0); 
-  const [identifier, setIdentifier] = useState("");
-  const [otpCode, setOtpCode] = useState("");
-  const [authLoading, setAuthLoading] = useState(false);
-  const [authError, setAuthError] = useState("");
-  
-  const [showTimeoutModal, setShowTimeoutModal] = useState(false);
-  const [countdown, setCountdown] = useState(60);
-
-  useEffect(() => {
-    if (!studentData) return;
-    let idleTimer;
-    let countdownInterval;
-
-    const startIdleTimer = () => {
-      clearTimeout(idleTimer);
-      clearInterval(countdownInterval);
-      setShowTimeoutModal(false);
-      setCountdown(60);
-
-      idleTimer = setTimeout(() => {
-        setShowTimeoutModal(true);
-        countdownInterval = setInterval(() => {
-          setCountdown(prev => {
-            if (prev <= 1) {
-              clearInterval(countdownInterval);
-              handleLogout();
-              alert("Signed out due to inactivity for security purposes.");
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
-      }, 14 * 60 * 1000);
-    };
-
-    const events = ["mousedown", "keydown", "scroll", "touchstart"];
-    const resetTimer = () => { if (!showTimeoutModal) startIdleTimer(); };
-    events.forEach(evt => document.addEventListener(evt, resetTimer));
-    
-    startIdleTimer();
-    return () => {
-      events.forEach(evt => document.removeEventListener(evt, resetTimer));
-      clearTimeout(idleTimer);
-      clearInterval(countdownInterval);
-    };
-  }, [studentData, showTimeoutModal]);
-
-  useEffect(() => {
-    try {
-      const saved = sessionStorage.getItem("cts_portal_session");
-      if (saved) setStudentData(JSON.parse(saved));
-    } catch(e) {}
-  }, []);
-
-  const fetchDashboard = async (verifiedId) => {
-    try {
-      const res = await fetch(`${VERCEL_URL}?action=getstudentdashboard_otp&ref=${encodeURIComponent(verifiedId)}`);
-      const data = await res.json();
-      if (data.ok) { setStudentData(data); sessionStorage.setItem("cts_portal_session", JSON.stringify(data)); } 
-      else { setAuthError(data.error || "Could not load student record."); setLoginStep(0); }
-    } catch (e) { setAuthError("Network error connecting to the learning portal."); setLoginStep(0); }
-  };
-
-  const handleSendCode = async () => {
-    if (!identifier.trim()) return;
-    setAuthLoading(true); setAuthError("");
-    try {
-      const res = await fetch(`${VERCEL_URL}?action=sendotp&identifier=${encodeURIComponent(identifier.trim())}&purpose=portal`);
-      const data = await res.json();
-      if (data.success) { setLoginStep(1); } 
-      else { setAuthError("We could not find a student record with that ID."); }
-    } catch (e) { setAuthError("Network error. Please check your connection."); }
-    setAuthLoading(false);
-  };
-
-  const handleVerifyCode = async () => {
-    if (otpCode.length !== 6) { setAuthError("Please enter the 6-digit code."); return; }
-    setAuthLoading(true); setAuthError("");
-    try {
-      const res = await fetch(`${VERCEL_URL}?action=verifyotp&identifier=${encodeURIComponent(identifier.trim())}&code=${otpCode}&purpose=portal`);
-      const data = await res.json();
-      if (data.success) { setAuthError(""); await fetchDashboard(identifier.trim()); } 
-      else { setAuthError(data.error === "wrong_code" ? "Invalid code." : "Code expired. Please try again."); }
-    } catch (e) { setAuthError("Network error. Please check your connection."); }
-    setAuthLoading(false);
-  };
-
-  const handleLogout = () => {
-    setStudentData(null); setLoginStep(0); setIdentifier(""); setOtpCode("");
-    sessionStorage.removeItem("cts_portal_session");
-  };
-
-  if (!studentData) {
-    const animStyles = `@keyframes pulseGateway { 0% { box-shadow: 0 0 0 0 rgba(232, 99, 74, 0.4); } 70% { box-shadow: 0 0 0 40px rgba(232, 99, 74, 0); } 100% { box-shadow: 0 0 0 0 rgba(232, 99, 74, 0); } } @keyframes floatCap { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-15px) scale(1.05); } } @keyframes blinkNode { 0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 12px ${S.teal}; } 50% { opacity: 0.3; transform: scale(0.8); box-shadow: 0 0 2px ${S.teal}; } }`;
-    const NodeBadge = ({ label, delay }) => ( <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(0,0,0,0.4)", padding: "14px 24px", borderRadius: 30, border: "1px solid rgba(14, 143, 139, 0.3)", backdropFilter: "blur(4px)" }}><div style={{ width: 12, height: 12, borderRadius: "50%", background: S.teal, animation: `blinkNode 2s infinite ${delay}` }} /><span style={{ color: S.teal, fontSize: 12, fontWeight: 800, fontFamily: S.body, letterSpacing: 2, textTransform: "uppercase" }}>{label}: ONLINE</span></div> );
-    return (
-      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: S.bg, fontFamily: S.body }}>
-        <style>{animStyles}</style>
-        <div style={{ background: S.navy, padding: "20px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.4)", position: "relative", zIndex: 10, borderBottom: `2px solid ${S.coral}` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 18 }}><img src="/logo.jpg" alt="CTS ETS" style={{ width: 56, height: 56, borderRadius: 12, border: `2px solid ${S.gold}` }} /><div><div style={{ color: "#fff", fontWeight: 900, fontSize: 24, fontFamily: S.heading }}>Student Portal</div><div style={{ color: S.coral, fontSize: 11, letterSpacing: 4, fontWeight: 800, marginTop: 4, textTransform: "uppercase" }}>SECURE LEARNING GATEWAY</div></div></div>
-          <a href="/#Home" style={{ color: "#fff", fontSize: 13, textDecoration: "none", fontWeight: 800, padding: "14px 28px", borderRadius: 8, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", transition: "all 0.2s", textTransform: "uppercase" }}>&larr; Back to Website</a>
-        </div>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 20, background: `radial-gradient(circle at center, #0a2d4d 0%, ${S.navy} 100%)`, position: "relative", overflow: "hidden" }}>
-          <div style={{ background: "#fff", borderRadius: 24, padding: "64px 48px", maxWidth: 480, width: "100%", textAlign: "center", position: "relative", zIndex: 2, animation: "pulseGateway 4s infinite", border: `2px solid ${S.coral}50` }}>
-            <div style={{ fontSize: 96, marginBottom: 24, animation: "floatCap 5s ease-in-out infinite" }}>🎓</div>
-            <h1 style={{ fontFamily: S.heading, color: S.navy, fontSize: 36, margin: "0 0 12px", fontWeight: 900 }}>{loginStep === 0 ? "Welcome Student" : "Verify Identity"}</h1>
-            <p style={{ fontFamily: S.body, color: S.gray, fontSize: 15, margin: "0 0 40px", lineHeight: 1.6 }}>{loginStep === 0 ? "Enter your Student Number to access your classroom." : "A secure 6-digit code has been sent to your registered email."}</p>
-            {loginStep === 0 ? ( <div style={{ marginBottom: 24 }}><input type="text" value={identifier} onChange={e => { setIdentifier(e.target.value.toUpperCase()); setAuthError(""); }} onKeyDown={e => { if (e.key === "Enter") handleSendCode(); }} autoFocus placeholder="Student ID" style={{ width: "100%", padding: "20px", borderRadius: 12, border: "2px solid " + (authError ? S.rose : S.border), fontSize: 18, fontFamily: S.body, color: S.navy, boxSizing: "border-box", outline: "none", textAlign: "center", letterSpacing: 2, background: S.lightBg, fontWeight: 800 }} /></div>
-            ) : ( <div style={{ marginBottom: 24 }}><input type="text" value={otpCode} onChange={e => { setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6)); setAuthError(""); }} onKeyDown={e => { if (e.key === "Enter") handleVerifyCode(); }} autoFocus placeholder="000000" style={{ width: "100%", padding: "20px", borderRadius: 12, border: "2px solid " + (authError ? S.rose : S.teal), fontSize: 32, fontFamily: "monospace", color: S.navy, boxSizing: "border-box", outline: "none", textAlign: "center", letterSpacing: 12, background: S.tealLight, fontWeight: 900 }} /></div> )}
-            {authError && <div style={{ padding: "14px", borderRadius: 10, background: S.roseLight, color: S.roseDark, fontSize: 14, marginBottom: 24, fontFamily: S.body, fontWeight: 800, border: `1px solid ${S.rose}50` }}>{authError}</div>}
-            {loginStep === 0 ? ( <button onClick={handleSendCode} disabled={authLoading || !identifier.trim()} style={{ width: "100%", padding: "20px", borderRadius: 12, border: "none", background: (!identifier.trim() || authLoading) ? S.border : S.navy, color: "#fff", fontSize: 16, fontWeight: 900, cursor: identifier.trim() && !authLoading ? "pointer" : "not-allowed", fontFamily: S.body, transition: "all 0.2s", textTransform: "uppercase", letterSpacing: 2 }}>{authLoading ? "Connecting..." : "Initialize Link"}</button>
-            ) : ( <button onClick={handleVerifyCode} disabled={authLoading || otpCode.length !== 6} style={{ width: "100%", padding: "20px", borderRadius: 12, border: "none", background: (otpCode.length !== 6 || authLoading) ? S.border : S.coral, color: "#fff", fontSize: 16, fontWeight: 900, cursor: otpCode.length === 6 && !authLoading ? "pointer" : "not-allowed", fontFamily: S.body, transition: "all 0.2s", textTransform: "uppercase", letterSpacing: 2, boxShadow: otpCode.length === 6 ? `0 10px 30px ${S.coral}50` : "none" }}>{authLoading ? "Decrypting..." : "Access Classroom"}</button> )}
-            {loginStep === 1 && ( <button onClick={() => { setLoginStep(0); setOtpCode(""); setAuthError(""); }} style={{ marginTop: 20, background: "none", border: "none", color: S.gray, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: S.body, textDecoration: "underline" }}>Cancel & Return</button> )}
-          </div>
-          <div style={{ display: "flex", gap: 20, marginTop: 60, flexWrap: "wrap", justifyContent: "center", position: "relative", zIndex: 2 }}><NodeBadge label="LMS Server" delay="0s" /><NodeBadge label="Data Sync" delay="0.6s" /><NodeBadge label="Identity Auth" delay="1.2s" /></div>
-        </div>
-        <div style={{ background: "#020b14", padding: "24px", textAlign: "center", borderTop: "1px solid rgba(232, 99, 74, 0.2)" }}><p style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, fontFamily: S.body, margin: 0, letterSpacing: 1, textTransform: "uppercase", fontWeight: 700 }}>&copy; 2026 CTS ETS. Enrolled Students Only. Unauthorized access is strictly prohibited.</p></div>
-      </div>
-    );
-  }
-
-  // ═══ AUTHENTICATED VIEW ═══
-  
-  // 🚨 THE ORIENTATION GATEWAY LOCK
-  if (!orientationPassed) {
-    return <OrientationGateway onComplete={() => setOrientationPassed(true)} />;
-  }
-
-  // 🎓 THE MAIN DASHBOARD
-  return (
-    <PageWrapper>
-        {showTimeoutModal && (
-          <div style={{ position: "fixed", inset: 0, background: "rgba(1, 30, 64, 0.9)", zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(5px)" }}>
-            <div style={{ background: "#fff", padding: "40px", borderRadius: 24, textAlign: "center", maxWidth: 420, width: "90%", boxShadow: "0 20px 50px rgba(0,0,0,0.5)" }}>
-              <div style={{ fontSize: 56, marginBottom: 16, animation: "pulseGateway 1.5s infinite" }}>⏱️</div>
-              <h3 style={{ color: S.navy, fontFamily: S.heading, fontSize: 26, margin: "0 0 12px", fontWeight: 800 }}>Are you still there?</h3>
-              <p style={{ color: S.gray, fontFamily: S.body, fontSize: 16, marginBottom: 32, lineHeight: 1.5 }}>For your security, you will be automatically logged out in <strong style={{ color: S.coral, fontSize: 20 }}>{countdown}</strong> seconds.</p>
-              <Btn primary onClick={() => setShowTimeoutModal(false)} style={{ background: S.emerald, color: "#fff", width: "100%", padding: "18px", fontSize: 16, fontWeight: 800, borderRadius: 12 }}>Stay Logged In</Btn>
-            </div>
-          </div>
-        )}
-        <div style={{ background: S.bg, minHeight: "85vh", padding: "48px 20px" }}>
-          <Dashboard studentData={studentData} onLogout={handleLogout} fetchDashboard={fetchDashboard} />
-          <AIStudyAssistant profile={studentData.profile} />
-        </div>
-    </PageWrapper>
-  );
-}
+              <div style={{ fontSize: "clamp(32px, 6vw, 48px)", fontWeight
