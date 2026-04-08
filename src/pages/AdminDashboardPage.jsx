@@ -71,7 +71,6 @@ function ToolbarPill({ label, active, onClick, badge }) {
     </button>
   );
 }
-
 function SearchBox({ value, onChange, placeholder = "Filter table by any keyword..." }) {
   return <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} style={{ padding: "12px 16px", borderRadius: 12, border: `1px solid ${C.border}`, fontSize: 14, width: 300, maxWidth: "100%", boxSizing: "border-box", fontFamily: C.body, outline: "none", background: "#fff" }} />;
 }
@@ -226,8 +225,7 @@ export default function AdminDashboardPage() {
     });
   }, [api, auth]);
 
-  // 🚀 FIXED: Step-Up Authentication on Session Resume
-  // If the browser remembers the password upon refresh, automatically trigger a new 2FA code.
+  // Step-Up Authentication on Session Resume
   useEffect(() => { 
     if (auth && !loggedIn) {
       setLoading(true);
@@ -235,7 +233,7 @@ export default function AdminDashboardPage() {
         .then(res => res.json())
         .then(data => {
           if (data && data.success) {
-            setLoginStep(1); // Jump to OTP entry
+            setLoginStep(1);
           } else {
             setAuth("");
             setPw("");
@@ -343,11 +341,12 @@ export default function AdminDashboardPage() {
     return safeList;
   }, [searchTerm, sortConfig]);
 
- const tabList = [
+  // 🚀 FIXED: Dynamic Tab Badges that sync exactly with the loaded data arrays
+  const tabList = [
     { id: "dashboard", label: "Dashboard", icon: "📊" },
-    { id: "applications", label: "Applications", icon: "📋", b: dashboard?.apps?.underReview || 0 },
-    { id: "students", label: "Students", icon: "🎓", b: dashboard?.students?.total || 0 },
-    { id: "payments", label: "Payments", icon: "💳", b: dashboard?.pendingPayments?.length || 0 },
+    { id: "applications", label: "Applications", icon: "📋", b: apps.length > 0 ? apps.filter(a => a.status === "Under Review").length : (dashboard?.apps?.underReview || 0) },
+    { id: "students", label: "Students", icon: "🎓", b: students.length > 0 ? students.length : (dashboard?.students?.total || 0) },
+    { id: "payments", label: "Payments", icon: "💳", b: payments.length > 0 ? payments.filter(p => p.status === "Pending Verification").length : (dashboard?.pendingPayments?.length || 0) },
     { id: "activity", label: "Activity Log", icon: "⚡" },
   ];
   
@@ -432,10 +431,12 @@ export default function AdminDashboardPage() {
             <div style={{ display: "grid", gridTemplateColumns: "1.25fr 0.75fr", gap: 20 }}>
               <TableShell title="Recent Applications Requiring Attention" tools={<ActionBtn onClick={() => setTab("applications")} bg={C.navy} color="#fff">Open Applications</ActionBtn>}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead><tr><SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Submitted</SortTh><SortTh sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Reference</SortTh><SortTh sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</SortTh><SortTh sortKey="programme" currentSort={sortConfig} onSort={handleSort}>Programme</SortTh><SortTh sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</SortTh></tr></thead>
-                  <tbody>{(dashboard?.recentApps || []).map((a, i) => <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}><Td bold color={C.gray}>{fmtTime(a)}</Td><Td mono bold>{a?.ref}</Td><Td bold>{a?.name}</Td><Td max={250}>{a?.programme}</Td><td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}><StatusBadge status={a?.status} /></td></tr>)}</tbody>
+                  {/* 🚀 ADDED INDEX '#' COLUMN HEADER */}
+                  <thead><tr><SortTh>#</SortTh><SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Submitted</SortTh><SortTh sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Reference</SortTh><SortTh sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</SortTh><SortTh sortKey="programme" currentSort={sortConfig} onSort={handleSort}>Programme</SortTh><SortTh sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</SortTh></tr></thead>
+                  {/* 🚀 ADDED INDEX '#' ROW NUMBER */}
+                  <tbody>{(dashboard?.recentApps || []).map((a, i) => <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}><Td bold color={C.grayLight}>{i + 1}</Td><Td bold color={C.gray}>{fmtTime(a)}</Td><Td mono bold>{a?.ref}</Td><Td bold>{a?.name}</Td><Td max={250}>{a?.programme}</Td><td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}><StatusBadge status={a?.status} /></td></tr>)}</tbody>
                   <Tfoot>
-                    <tr><TdFoot colSpan={5}>Total Recent Items: {(dashboard?.recentApps || []).length}</TdFoot></tr>
+                    <tr><TdFoot colSpan={6}>Total Recent Items: {(dashboard?.recentApps || []).length}</TdFoot></tr>
                   </Tfoot>
                 </table>
               </TableShell>
@@ -473,7 +474,9 @@ export default function AdminDashboardPage() {
             </div>
             <TableShell title="Applications Queue">
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                {/* 🚀 ADDED INDEX '#' COLUMN HEADER */}
                 <thead><tr>
+                  <SortTh>#</SortTh>
                   <SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Submitted</SortTh>
                   <SortTh sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Ref</SortTh>
                   <SortTh sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</SortTh>
@@ -484,9 +487,11 @@ export default function AdminDashboardPage() {
                   <SortTh sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</SortTh>
                   <SortTh>Actions</SortTh>
                 </tr></thead>
+                {/* 🚀 ADDED INDEX '#' ROW NUMBER */}
                 <tbody>
                   {appRows.map((a, i) => (
                     <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff", opacity: busy === a.ref ? 0.5 : 1 }}>
+                      <Td bold color={C.grayLight}>{i + 1}</Td>
                       <Td bold color={C.gray}>{fmtTime(a)}</Td>
                       <Td mono bold>{a?.ref}</Td>
                       <Td bold>{a?.name}</Td>
@@ -508,7 +513,7 @@ export default function AdminDashboardPage() {
                 </tbody>
                 <Tfoot>
                   <tr>
-                    <TdFoot colSpan={9}>Total Listed Applications: {appRows.length}</TdFoot>
+                    <TdFoot colSpan={10}>Total Listed Applications: {appRows.length}</TdFoot>
                   </tr>
                 </Tfoot>
               </table>
@@ -527,7 +532,9 @@ export default function AdminDashboardPage() {
             </div>
             <TableShell title="Student Registry">
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                {/* 🚀 ADDED INDEX '#' COLUMN HEADER */}
                 <thead><tr>
+                  <SortTh>#</SortTh>
                   <SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Status Update</SortTh>
                   <SortTh sortKey="studentNumber" currentSort={sortConfig} onSort={handleSort}>Student #</SortTh>
                   <SortTh sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</SortTh>
@@ -538,9 +545,11 @@ export default function AdminDashboardPage() {
                   <SortTh sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</SortTh>
                   <SortTh>Services</SortTh>
                 </tr></thead>
+                {/* 🚀 ADDED INDEX '#' ROW NUMBER */}
                 <tbody>
                   {studentRows.map((s, i) => (
                     <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff", opacity: busy === s.studentNumber ? 0.5 : 1 }}>
+                      <Td bold color={C.grayLight}>{i + 1}</Td>
                       <Td bold color={C.gray}>{fmtTime(s)}</Td>
                       <Td mono bold>{s?.studentNumber}</Td>
                       <Td bold>{s?.name}</Td>
@@ -562,7 +571,7 @@ export default function AdminDashboardPage() {
                 </tbody>
                 <Tfoot>
                   <tr>
-                    <TdFoot colSpan={9}>Total Listed Students: {studentRows.length}</TdFoot>
+                    <TdFoot colSpan={10}>Total Listed Students: {studentRows.length}</TdFoot>
                   </tr>
                 </Tfoot>
               </table>
@@ -581,7 +590,9 @@ export default function AdminDashboardPage() {
             </div>
             <TableShell title="Payments Queue">
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                {/* 🚀 ADDED INDEX '#' COLUMN HEADER */}
                 <thead><tr>
+                  <SortTh>#</SortTh>
                   <SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Submission Time</SortTh>
                   <SortTh sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Reference</SortTh>
                   <SortTh sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</SortTh>
@@ -590,9 +601,11 @@ export default function AdminDashboardPage() {
                   <SortTh>Evidence</SortTh>
                   <SortTh>Actions</SortTh>
                 </tr></thead>
+                {/* 🚀 ADDED INDEX '#' ROW NUMBER */}
                 <tbody>
                   {paymentRows.map((p, i) => (
                     <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}>
+                      <Td bold color={C.grayLight}>{i + 1}</Td>
                       <Td bold color={C.gray}>{fmtTime(p)}</Td>
                       <Td mono bold>{p?.ref}</Td>
                       <Td bold>{p?.name}</Td>
@@ -612,7 +625,7 @@ export default function AdminDashboardPage() {
                 </tbody>
                 <Tfoot>
                   <tr>
-                    <TdFoot colSpan={3}>Total Listed Transactions: {paymentRows.length}</TdFoot>
+                    <TdFoot colSpan={4}>Total Listed Transactions: {paymentRows.length}</TdFoot>
                     <TdFoot color={C.emerald}>{fmt(totalPaymentSum)}</TdFoot>
                     <TdFoot colSpan={3}></TdFoot>
                   </tr>
@@ -625,16 +638,20 @@ export default function AdminDashboardPage() {
         {tab === "activity" && (
           <TableShell title="Institutional Audit Log" tools={<SearchBox value={searchTerm} onChange={setSearchTerm} />}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              {/* 🚀 ADDED INDEX '#' COLUMN HEADER */}
               <thead><tr>
+                <SortTh>#</SortTh>
                 <SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Exact Time</SortTh>
                 <SortTh sortKey="action" currentSort={sortConfig} onSort={handleSort}>Protocol Action</SortTh>
                 <SortTh sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Entity Ref</SortTh>
                 <SortTh>Details</SortTh>
                 <SortTh sortKey="by" currentSort={sortConfig} onSort={handleSort}>Executed By</SortTh>
               </tr></thead>
+              {/* 🚀 ADDED INDEX '#' ROW NUMBER */}
               <tbody>
                 {activityRows.map((e, i) => (
                   <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}>
+                    <Td bold color={C.grayLight}>{i + 1}</Td>
                     <Td bold color={C.gray}>{fmtTime(e)}</Td>
                     <Td><span style={{ padding: "6px 12px", borderRadius: 8, background: C.blueLight, color: C.blue, fontSize: 11, fontWeight: 800 }}>{e?.action}</span></Td>
                     <Td mono bold>{e?.ref}</Td>
@@ -645,7 +662,7 @@ export default function AdminDashboardPage() {
               </tbody>
               <Tfoot>
                 <tr>
-                  <TdFoot colSpan={5}>Total Logged Events: {activityRows.length}</TdFoot>
+                  <TdFoot colSpan={6}>Total Logged Events: {activityRows.length}</TdFoot>
                 </tr>
               </Tfoot>
             </table>

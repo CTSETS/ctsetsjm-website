@@ -179,13 +179,17 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
   const handleWiPayCheckout = () => {
     if (submitting || customAmount < 1000) return;
     setSubmitting(true);
+    
     const orderId = profile.studentNumber + "-PORTAL"; 
-    const paymentDescription = `Ref: ${profile.studentNumber} | Name: ${profile.name} | Email: ${profile.email}`;
+    
+    // 🚀 FIXED: Extremely clean alphanumeric description string so WiPay doesn't throw a 404
+    const paymentDescription = `Fees-${profile.studentNumber}`; 
+
     try { fetch(APPS_SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "submitpayment", form_type: "WiPay Portal In-App Attempt", ref: profile.studentNumber, studentName: profile.name, email: profile.email, paymentPlan: "Dashboard Payment", amountPaid: customAmount, paymentMethod: "online", timestamp: new Date().toISOString() }) }); } catch (e) {}
 
     if (WIPAY_CONFIG && WIPAY_CONFIG.baseUrl.includes("/to_me/")) {
       let base = WIPAY_CONFIG.baseUrl; if (base.endsWith("/")) base = base.slice(0, -1); 
-      window.location.href = `${base}/${customAmount}/${encodeURIComponent(paymentDescription)}`;
+      window.location.href = `${base}/${customAmount}/${paymentDescription}`;
     } else if (WIPAY_CONFIG) {
       const returnUrl = encodeURIComponent(window.location.origin + "/#student-portal");
       window.location.href = `${WIPAY_CONFIG.baseUrl}?total=${encodeURIComponent(customAmount)}&currency=${encodeURIComponent(WIPAY_CONFIG.currency)}&order_id=${encodeURIComponent(orderId)}&return_url=${returnUrl}`;
@@ -295,7 +299,7 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
         <button onClick={onLogout} style={{ padding: "12px 32px", borderRadius: 8, border: "2px solid rgba(255,255,255,0.3)", background: "rgba(255,255,255,0.1)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body, transition: "0.2s" }}>Log Out</button>
       </div>
 
-      {/* 🚀 DYNAMIC TAB NAVIGATION WITH BADGES */}
+      {/* TABS NAVIGATION WITH BADGES */}
       <div style={{ display: "flex", gap: 12, marginBottom: 32, borderBottom: `2px solid ${S.border}`, overflowX: "auto", whiteSpace: "nowrap", paddingBottom: 4 }}>
         {[
           { id: "classroom", label: "📚 My Classroom", badge: curriculum.length > 0 ? curriculum.length : null }, 
@@ -517,7 +521,6 @@ export default function StudentPortalPage({ setPage }) {
   const [orientationPassed, setOrientationPassed] = useState(false);
   const [studentData, setStudentData] = useState(null);
   
-  // 🚀 NEW: Step-Up Authentication Tracker
   const [isVerifiedSession, setIsVerifiedSession] = useState(false);
 
   const [loginStep, setLoginStep] = useState(0); 
@@ -529,7 +532,6 @@ export default function StudentPortalPage({ setPage }) {
   const [showTimeoutModal, setShowTimeoutModal] = useState(false);
   const [countdown, setCountdown] = useState(60);
 
-  // 🚀 FIXED: STEP-UP AUTHENTICATION ON BROWSER REFRESH
   useEffect(() => {
     try {
       const saved = sessionStorage.getItem("cts_portal_session");
@@ -537,7 +539,6 @@ export default function StudentPortalPage({ setPage }) {
         const parsedData = JSON.parse(saved);
         setIdentifier(parsedData.profile.studentNumber);
         
-        // Instead of instantly letting them in, trigger an OTP code and jump to Step 1
         setLoginStep(1);
         setAuthLoading(true);
         fetch(`${VERCEL_URL}?action=sendotp&identifier=${encodeURIComponent(parsedData.profile.studentNumber)}&purpose=portal`)
@@ -558,7 +559,6 @@ export default function StudentPortalPage({ setPage }) {
     } catch(e) {}
   }, []);
 
-  // Sync Orientation status when data fully loads and is verified
   useEffect(() => {
     if (isVerifiedSession && studentData && studentData.profile && studentData.profile.studentNumber) {
       if (studentData.profile.OrientationPassed === true || studentData.profile.OrientationPassed === "TRUE") {
@@ -624,7 +624,7 @@ export default function StudentPortalPage({ setPage }) {
       if (data.success) { 
         setAuthError(""); 
         await fetchDashboard(identifier.trim()); 
-        setIsVerifiedSession(true); // 🚀 This explicitly unlocks the portal screen
+        setIsVerifiedSession(true); 
       } 
       else { setAuthError(data.error === "wrong_code" ? "Invalid code." : "Code expired. Please try again."); }
     } catch (e) { setAuthError("Network error. Please check your connection."); }
@@ -665,8 +665,6 @@ export default function StudentPortalPage({ setPage }) {
     );
   }
 
-  // ═══ AUTHENTICATED VIEW ═══
-  
   if (!orientationPassed) {
     return <OrientationGateway onComplete={async () => {
       setOrientationPassed(true);
