@@ -265,7 +265,28 @@ function StatusTracker({ setPage }) {
           {result.programme && <div><div style={{ fontSize: 10, color: S.gray, letterSpacing: 1, textTransform: "uppercase", fontFamily: S.body }}>Programme</div><div style={{ fontSize: 13, fontWeight: 600, color: S.navy, fontFamily: S.body }}>{(result.level ? result.level + " — " : "") + result.programme}</div></div>}
           {result.paymentPlan && <div><div style={{ fontSize: 10, color: S.gray, letterSpacing: 1, textTransform: "uppercase", fontFamily: S.body }}>Payment Plan</div><div style={{ fontSize: 13, fontWeight: 600, color: S.navy, fontFamily: S.body }}>{result.paymentPlan}</div></div>}
         </div>
-        {result.status === "Accepted" && <div style={{ marginTop: 16, padding: "14px 18px", borderRadius: 12, background: S.emeraldLight, border: `1px solid ${S.emerald}30`, fontSize: 13, fontFamily: S.body, color: S.navy, lineHeight: 1.7 }}><strong>Next step:</strong> Complete your payment to secure your place. <button onClick={() => setPage("Pay")} style={{ background: "none", border: "none", color: S.coral, fontWeight: 700, cursor: "pointer", fontFamily: S.body, fontSize: 13, padding: 0 }}>Go to Payment Centre →</button></div>}
+        
+        {/* 🚀 UPGRADED: Dynamic feedback states based on the backend data */}
+        {result.status === "Accepted" && !result.hasPendingPayment && (
+          <div style={{ marginTop: 16, padding: "14px 18px", borderRadius: 12, background: S.emeraldLight, border: `1px solid ${S.emerald}30`, fontSize: 13, fontFamily: S.body, color: S.navy, lineHeight: 1.7 }}>
+            <strong>Next step:</strong> Complete your payment to secure your place. 
+            <button onClick={() => setPage("Pay")} style={{ background: "none", border: "none", color: S.coral, fontWeight: 700, cursor: "pointer", fontFamily: S.body, fontSize: 13, padding: 0, marginLeft: 6 }}>Go to Payment Centre →</button>
+          </div>
+        )}
+        
+        {result.hasPendingPayment && (
+          <div style={{ marginTop: 16, padding: "14px 18px", borderRadius: 12, background: S.amberLight, border: `1px solid ${S.amber}40`, fontSize: 13, fontFamily: S.body, color: S.amberDark, lineHeight: 1.7 }}>
+            <strong>Payment Under Review:</strong> We have received your payment evidence. Our finance team is verifying it now. You will receive an email with your Student Portal access shortly.
+          </div>
+        )}
+        
+        {result.status === "Enrolled" && (
+           <div style={{ marginTop: 16, padding: "14px 18px", borderRadius: 12, background: S.blueLight, border: `1px solid ${S.blue}30`, fontSize: 13, fontFamily: S.body, color: S.navy, lineHeight: 1.7 }}>
+            <strong>You are enrolled!</strong> 
+            <button onClick={() => setPage("Portal")} style={{ background: "none", border: "none", color: S.blue, fontWeight: 700, cursor: "pointer", fontFamily: S.body, fontSize: 13, padding: 0, marginLeft: 6 }}>Log into the Student Portal →</button>
+          </div>
+        )}
+
       </div>}
     </div>
   );
