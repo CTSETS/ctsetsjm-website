@@ -1,781 +1,650 @@
-import { useState, useEffect } from "react";
-import S from "../constants/styles";
-import { PROGRAMMES } from "../constants/programmes"; 
-import { APPS_SCRIPT_URL, WIPAY_CONFIG } from "../constants/config"; 
-import { Container, PageWrapper, Btn } from "../components/shared/CoreComponents";
-import { fmt } from "../utils/formatting";
+import { useState, useEffect, useCallback, useMemo } from "react";
 
-import OrientationGateway from "../components/OrientationGateway";
-
-// REQUIRED INSTITUTIONAL CONSTANT
 const VERCEL_URL = "https://ctsetsjm-website.vercel.app/api/proxy";
+const PW_KEY = "ctsAdm";
 
-// 🚀 AUTO-CAPITALIZATION HELPER
-const toTitleCase = (str) => {
-  if (!str) return "";
-  return str.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+const C = {
+  navy: "#011E40", gold: "#C49112", teal: "#0E8F8B", coral: "#E8634A",
+  emerald: "#2E7D32", emeraldLight: "#E8F5E9", amber: "#F57F17", amberLight: "#FFF8E1",
+  bg: "#F8FAFC", card: "#FFFFFF", border: "#E2E8F0", gray: "#64748B", grayLight: "#94A3B8",
+  text: "#1E293B", red: "#EF4444", redLight: "#FEE2E2", blue: "#3B82F6", blueLight: "#DBEAFE",
+  purple: "#8B5CF6", purpleLight: "#EDE9FE",
+  heading: "'Playfair Display', Georgia, serif", body: "'DM Sans', -apple-system, sans-serif",
 };
 
-// 🚀 GOOGLE THUMBNAIL API
-const getDriveImageUrl = (url) => {
-  if (!url) return null;
-  if (url.match(/^[a-zA-Z0-9_-]{20,}$/)) return `https://drive.google.com/thumbnail?id=${url}&sz=w400`;
-  const match = url.match(/id=([a-zA-Z0-9_-]+)/) || url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-  if (match && match[1]) return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w400`;
-  return url;
-};
-
-// 🚀 SMART VALID TERM CALCULATOR
-const getValidTerm = (programmeName, level, dateEnrolled) => {
-  const start = dateEnrolled ? new Date(dateEnrolled) : new Date();
-  let durationInMonths = 3; 
-
-  let found = false;
-  if (programmeName) {
-    const searchName = programmeName.toLowerCase().trim();
-    for (const levelKey in PROGRAMMES) {
-      const coursesInLevel = PROGRAMMES[levelKey];
-      for (const course of coursesInLevel) {
-        if (course.name.toLowerCase().trim() === searchName) {
-          const match = course.duration.match(/\d+/);
-          if (match) { durationInMonths = parseInt(match[0], 10); found = true; }
-          break;
-        }
-      }
-      if (found) break;
-    }
+// ─── HELPER FUNCTIONS ───
+function fmt(n) { return "J$" + Number(n || 0).toLocaleString(); }
+function findDate(obj) {
+  if (!obj) return null;
+  const direct = [obj.timestamp, obj.Timestamp, obj.date, obj.Date, obj["Date Submitted"], obj["Timestamp"]].find(Boolean);
+  if (direct) return direct;
+  for (const key in obj) if ((key || "").toLowerCase().includes("date") || (key || "").toLowerCase().includes("time")) if (obj[key]) return obj[key];
+  return null;
+}
+function fmtTime(d) {
+  const raw = findDate(d);
+  if (!raw) return "—";
+  const date = new Date(raw);
+  if (isNaN(date.getTime())) return String(raw).split("T")[0];
+  return date.toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true });
+}
+function getFolderUrl(obj) {
+  if (!obj) return "";
+  const direct = obj.folder || obj.folderUrl || obj["Drive Folder Link"] || obj["Folder Link"] || obj.Link;
+  if (direct) return direct;
+  for (const key in obj) {
+    const val = String(obj[key] || "");
+    if (val.startsWith("http") && (val.includes("drive") || val.includes("folder") || val.includes("sharing"))) return val;
   }
+  return "";
+}
 
-  if (!found) {
-    const l = (level || "").toLowerCase();
-    if (l.includes("level 2") || l.includes("vocational")) durationInMonths = 6;
-    else if (l.includes("level 3") || l.includes("diploma")) durationInMonths = 12;
-    else if (l.includes("level 4") || l.includes("associate")) durationInMonths = 24;
-    else if (l.includes("level 5") || l.includes("bachelor")) durationInMonths = 24;
-  }
-
-  const end = new Date(start);
-  end.setMonth(start.getMonth() + (durationInMonths - 1));
-
-  const format = (d) => d.toLocaleString('en-US', { month: 'short', year: 'numeric' });
-  return `${format(start)} – ${format(end)}`; 
-};
-
-const loadConfetti = () => {
-  if (window.confetti) return;
-  const script = document.createElement("script");
-  script.src = "https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js";
-  script.async = true;
-  document.body.appendChild(script);
-};
-
-// ─── AI Study Assistant Component ───
-function AIStudyAssistant({ profile }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const [history, setHistory] = useState([{ role: "ai", text: `Hi ${toTitleCase(profile.firstName)}! I'm your CTS ETS Study Assistant. Ask me to explain a concept from your ${profile.programme} course!` }]);
-  const [isTyping, setIsTyping] = useState(false);
-
-  const askAI = async () => {
-    if (!query.trim()) return;
-    const userMsg = query.trim();
-    setHistory(prev => [...prev, { role: "user", text: userMsg }]);
-    setQuery("");
-    setIsTyping(true);
-
-    try {
-      const res = await fetch(`${VERCEL_URL}?action=aichat&query=${encodeURIComponent(userMsg)}&course=${encodeURIComponent(profile.programme)}`);
-      const data = await res.json();
-      setHistory(prev => [...prev, { role: "ai", text: data.response || "I'm having trouble connecting right now. Please try again later." }]);
-    } catch(e) {
-      setHistory(prev => [...prev, { role: "ai", text: "Network error. Please check your connection." }]);
-    }
-    setIsTyping(false);
+// ─── UI COMPONENTS ───
+function StatusBadge({ status }) {
+  const map = {
+    "Under Review": { bg: C.amberLight, c: C.amber }, Accepted: { bg: C.emeraldLight, c: C.emerald },
+    "Pending Payment": { bg: C.blueLight, c: C.blue }, Rejected: { bg: C.redLight, c: C.red },
+    Withdrawn: { bg: C.purpleLight, c: C.purple }, Deferred: { bg: "#F1F5F9", c: C.gray },
+    Enrolled: { bg: "#E0F7FA", c: "#00838F" }, Active: { bg: C.blueLight, c: C.blue },
+    "On Hold": { bg: "#FFF3E0", c: "#E65100" }, Completed: { bg: C.emeraldLight, c: C.emerald },
+    Graduated: { bg: C.amberLight, c: C.gold }, Paid: { bg: C.emeraldLight, c: C.emerald },
+    "Paid in Full": { bg: C.emeraldLight, c: C.emerald }, "Partial Payment": { bg: C.amberLight, c: C.amber },
+    Pending: { bg: C.amberLight, c: C.amber }, "Pending Verification": { bg: "#FFF3E0", c: "#E65100" },
+    "Paid (Online)": { bg: C.emeraldLight, c: C.emerald }, "Rejected — Not Found": { bg: C.redLight, c: C.red },
+    Yes: { bg: C.emeraldLight, c: C.emerald }, No: { bg: C.redLight, c: C.red }, "Evidence Submitted": { bg: C.amberLight, c: C.amber },
   };
+  const s = map[status] || { bg: "#F1F5F9", c: C.gray };
+  return <span style={{ display: "inline-block", padding: "6px 12px", borderRadius: 999, background: s.bg, color: s.c, fontSize: 11, fontWeight: 800, whiteSpace: "nowrap", fontFamily: C.body, letterSpacing: 0.5 }}>{status || "—"}</span>;
+}
+function MetricCard({ label, value, accent = C.teal, sub }) {
+  return <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 22, padding: "24px 22px", boxShadow: "0 12px 28px rgba(15,23,42,0.04)" }}><div style={{ fontFamily: C.heading, fontSize: "clamp(26px,3vw,38px)", fontWeight: 800, color: accent, lineHeight: 1, marginBottom: 10 }}>{value}</div><div style={{ fontFamily: C.body, fontSize: 11, color: C.gray, letterSpacing: 1.6, textTransform: "uppercase", fontWeight: 800, marginBottom: 6 }}>{label}</div>{sub && <div style={{ fontFamily: C.body, fontSize: 13, color: C.gray }}>{sub}</div>}</div>;
+}
+function ToolbarPill({ label, active, onClick, badge }) {
+  return <button onClick={onClick} style={{ padding: "10px 16px", borderRadius: 999, border: active ? `2px solid ${C.navy}` : `1px solid ${C.border}`, background: active ? C.navy : C.card, color: active ? "#fff" : C.gray, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: C.body, transition: "all 0.2s ease", display: "inline-flex", alignItems: "center", gap: 8 }}>{label}{badge > 0 && <span style={{ background: active ? "rgba(255,255,255,0.18)" : C.coral, color: "#fff", borderRadius: 999, padding: "2px 8px", fontSize: 11, fontWeight: 800 }}>{badge}</span>}</button>;
+}
+function SearchBox({ value, onChange, placeholder = "Filter table by any keyword..." }) {
+  return <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} style={{ padding: "12px 16px", borderRadius: 12, border: `1px solid ${C.border}`, fontSize: 14, width: 300, maxWidth: "100%", boxSizing: "border-box", fontFamily: C.body, outline: "none", background: "#fff" }} />;
+}
+function ActionBtn({ children, bg = C.emerald, color = "#fff", onClick, disabled, small }) {
+  return <button onClick={onClick} disabled={disabled} style={{ padding: small ? "8px 14px" : "10px 18px", borderRadius: 10, border: "none", background: disabled ? C.border : bg, color: disabled ? C.grayLight : color, fontSize: small ? 12 : 14, fontWeight: 700, cursor: disabled ? "not-allowed" : "pointer", fontFamily: C.body, whiteSpace: "nowrap" }}>{children}</button>;
+}
+function SortTh({ children, sortKey, currentSort, onSort }) {
+  const isActive = currentSort && currentSort.key === sortKey;
+  const isAsc = isActive && currentSort.dir === "asc";
+  const isDesc = isActive && currentSort.dir === "desc";
+  return <th onClick={sortKey ? () => onSort(sortKey) : undefined} style={{ padding: "16px", textAlign: "left", fontWeight: 800, color: isActive ? C.navy : C.gray, fontSize: 11, borderBottom: isActive ? `2px solid ${C.navy}` : `1px solid ${C.border}`, whiteSpace: "nowrap", position: "sticky", top: 0, background: isActive ? "#EEF2F7" : "#F8FAFC", zIndex: 1, textTransform: "uppercase", letterSpacing: 1, cursor: sortKey ? "pointer" : "default" }}><div style={{ display: "flex", alignItems: "center", gap: 8 }}>{children}{sortKey && <span style={{ display: "inline-flex", flexDirection: "column", gap: 2, opacity: isActive ? 1 : 0.25 }}><svg width="10" height="6" viewBox="0 0 10 6" fill={isAsc ? C.coral : "currentColor"}><path d="M5 0L10 6H0L5 0Z"/></svg><svg width="10" height="6" viewBox="0 0 10 6" fill={isDesc ? C.coral : "currentColor"}><path d="M5 6L0 0H10L5 6Z"/></svg></span>}</div></th>;
+}
+function Td({ children, mono, bold, color, max }) {
+  return <td style={{ padding: "16px", fontFamily: mono ? "monospace" : C.body, fontSize: mono ? 12 : 13, fontWeight: bold ? 700 : 500, color: color || C.text, maxWidth: max || "none", overflow: max ? "hidden" : "visible", textOverflow: max ? "ellipsis" : "clip", whiteSpace: max ? "nowrap" : "normal", borderBottom: `1px solid ${C.border}` }}>{children}</td>;
+}
+function Tfoot({ children }) {
+  return <tfoot style={{ position: "sticky", bottom: 0, zIndex: 2, background: "#EEF2F7", borderTop: `2px solid ${C.navy}` }}>{children}</tfoot>;
+}
+function TdFoot({ children, colSpan = 1, color = C.navy }) {
+  return <td colSpan={colSpan} style={{ padding: "16px", fontFamily: C.body, fontSize: 14, fontWeight: 900, color: color, whiteSpace: "nowrap" }}>{children}</td>;
+}
+function TableShell({ title, tools, children }) {
+  return <div style={{ background: C.card, borderRadius: 24, border: `1px solid ${C.border}`, overflow: "hidden", boxShadow: "0 10px 26px rgba(15,23,42,0.04)" }}>{(title || tools) && <div style={{ padding: "22px 26px", borderBottom: `1px solid ${C.border}`, display: "flex", gap: 16, justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>{title && <h2 style={{ fontFamily: C.heading, color: C.navy, fontSize: 24, margin: 0, fontWeight: 800 }}>{title}</h2>}{tools}</div>}<div style={{ overflowX: "auto", maxHeight: "72vh" }}>{children}</div></div>;
+}
 
+// ─── MODALS ───
+function VerifyModal({ modal, verifyAmt, setVerifyAmt, verifyTxn, setVerifyTxn, onConfirm, onClose, busy }) {
+  if (!modal) return null;
   return (
-    <>
-      <button onClick={() => setIsOpen(!isOpen)} style={{ position: "fixed", bottom: 24, right: 24, width: 64, height: 64, borderRadius: "50%", background: S.navy, color: "#fff", fontSize: 28, border: `3px solid ${S.gold}`, boxShadow: "0 8px 24px rgba(1,30,64,0.3)", cursor: "pointer", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", transition: "transform 0.2s" }}>{isOpen ? "✕" : "🤖"}</button>
-      {isOpen && (
-        <div style={{ position: "fixed", bottom: 100, right: 24, width: "calc(100% - 48px)", maxWidth: 380, height: 500, background: "#fff", borderRadius: 16, border: `1px solid ${S.border}`, boxShadow: "0 12px 40px rgba(0,0,0,0.15)", zIndex: 9998, display: "flex", flexDirection: "column", overflow: "hidden", animation: "fadeIn 0.2s" }}>
-          <div style={{ background: S.navy, padding: "16px 20px", display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ fontSize: 24 }}>🤖</div>
-            <div>
-              <div style={{ color: "#fff", fontFamily: S.heading, fontSize: 16, fontWeight: 700 }}>CTS Study Assistant</div>
-              <div style={{ color: S.gold, fontFamily: S.body, fontSize: 11 }}>24/7 AI Tutor</div>
-            </div>
-          </div>
-          <div style={{ flex: 1, padding: 16, overflowY: "auto", background: S.lightBg, display: "flex", flexDirection: "column", gap: 12 }}>
-            {history.map((msg, i) => (
-              <div key={i} style={{ alignSelf: msg.role === "user" ? "flex-end" : "flex-start", background: msg.role === "user" ? S.teal : "#fff", color: msg.role === "user" ? "#fff" : S.navy, padding: "12px 16px", borderRadius: msg.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px", maxWidth: "85%", fontSize: 14, fontFamily: S.body, border: msg.role === "ai" ? `1px solid ${S.border}` : "none", lineHeight: 1.5 }}>{msg.text}</div>
-            ))}
-            {isTyping && <div style={{ alignSelf: "flex-start", background: "#fff", padding: "12px 16px", borderRadius: "16px 16px 16px 4px", border: `1px solid ${S.border}`, fontSize: 12, color: S.gray }}>Assistant is typing...</div>}
-          </div>
-          <div style={{ padding: 16, background: "#fff", borderTop: `1px solid ${S.border}`, display: "flex", gap: 8 }}>
-            <input type="text" value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === "Enter" && askAI()} placeholder="Ask a question..." style={{ flex: 1, padding: "12px 16px", borderRadius: 20, border: `1px solid ${S.border}`, outline: "none", fontFamily: S.body, fontSize: 14 }} />
-            <button onClick={askAI} disabled={!query.trim() || isTyping} style={{ width: 44, height: 44, borderRadius: "50%", background: query.trim() ? S.coral : S.border, color: "#fff", border: "none", cursor: query.trim() ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>↑</button>
+    <div style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(1,30,64,0.85)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, backdropFilter: "blur(10px)" }}>
+      <div style={{ background: "#fff", borderRadius: 30, width: "100%", maxWidth: 560, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,0.45)" }}>
+        <div style={{ padding: 28, background: C.navy, color: "#fff" }}><div style={{ fontSize: 28, fontWeight: 800, fontFamily: C.heading, marginBottom: 8 }}>Verify Bank Transfer</div><div style={{ fontSize: 13, color: C.gold, fontWeight: 600 }}>Reference: {modal.data.ref} · {modal.data.name}</div></div>
+        <div style={{ padding: 30 }}>
+          <label style={{ display: "block", fontSize: 12, fontWeight: 800, color: C.navy, marginBottom: 8, textTransform: "uppercase", letterSpacing: 1.2, fontFamily: C.body }}>Confirmed Amount (JMD)</label>
+          <input type="number" value={verifyAmt} onChange={(e) => setVerifyAmt(e.target.value)} style={{ width: "100%", padding: 18, borderRadius: 12, border: `1px solid ${C.border}`, fontSize: 22, fontWeight: 800, background: "#F8FAFC", marginBottom: 22, boxSizing: "border-box" }} />
+          <label style={{ display: "block", fontSize: 12, fontWeight: 800, color: C.navy, marginBottom: 8, textTransform: "uppercase", letterSpacing: 1.2, fontFamily: C.body }}>Bank Receipt / TXN ID</label>
+          <input type="text" value={verifyTxn} onChange={(e) => setVerifyTxn(e.target.value)} placeholder="Enter transaction identifier..." style={{ width: "100%", padding: 18, borderRadius: 12, border: `1px solid ${C.border}`, fontSize: 15, fontFamily: "monospace", background: "#F8FAFC", marginBottom: 30, boxSizing: "border-box" }} />
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <ActionBtn onClick={onConfirm} disabled={!verifyAmt || !verifyTxn || busy === modal.data.ref} bg={C.emerald} color="#fff">Confirm Verification</ActionBtn>
+            <ActionBtn onClick={onClose} bg={C.bg} color={C.navy}>Cancel</ActionBtn>
           </div>
         </div>
-      )}
-    </>
+      </div>
+    </div>
   );
 }
 
-// ─── Main Dashboard Component ───
-function Dashboard({ studentData, onLogout, fetchDashboard }) {
-  const profile = studentData.profile;
-  const curriculum = studentData.curriculum || [];
-  const payments = studentData.payments || [];
+// 🚀 NEW: Universal Edit & Delete Modal
+function EditRecordModal({ editModal, onClose, onSave, busy }) {
+  if (!editModal) return null;
+  const { type, data } = editModal;
+  const refId = type === "student" ? data.studentNumber : data.ref;
   
-  const [progress, setProgress] = useState(studentData.progress || 1);
-  const [activeTab, setActiveTab] = useState("profile");
-  const [activeQuiz, setActiveQuiz] = useState(null);
-  const [quizAnswers, setQuizAnswers] = useState({});
-  const [quizFeedback, setQuizFeedback] = useState("");
-  const [quizLoading, setQuizLoading] = useState(false);
-  const [portfolioLink, setPortfolioLink] = useState("");
-  const [imgError, setImgError] = useState(false);
-  
-  // 💳 EMBEDDED SMART PAYMENT SYSTEM STATES
-  const [showPaymentModal, setShowPaymentModal] = useState(false); 
-  const [payMethod, setPayMethod] = useState(""); 
-  const [customAmount, setCustomAmount] = useState(profile.outstanding || 0);
-  const [receipt, setReceipt] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [paySuccess, setPaySuccess] = useState(false);
-  
-  const secureImgUrl = getDriveImageUrl(profile.photoUrl);
-  const validTermText = getValidTerm(profile.programme, profile.level, profile.dateEnrolled);
-
-  useEffect(() => { loadConfetti(); }, []);
-
-  const handleQuizSelect = (qIndex, aIndex) => { setQuizAnswers(prev => ({ ...prev, [qIndex]: aIndex })); };
-
-  // Helper to convert uploaded receipt to Base64 for Google Drive
-  const toBase64 = (file) => new Promise((resolve, reject) => { 
-    const reader = new FileReader(); 
-    reader.onload = () => resolve(reader.result.split(',')[1]); 
-    reader.onerror = error => reject(error); 
-    reader.readAsDataURL(file); 
+  // Local state for the form
+  const [form, setForm] = useState({
+    name: data.name || "",
+    email: data.email || "",
+    phone: data.phone || "",
+    level: data.level || "",
+    programme: data.programme || "",
+    status: data.status || ""
   });
 
-  // 🚀 EMBEDDED BANK TRANSFER ENGINE
-  const handleReceiptUpload = async () => {
-    if (!receipt || submitting || customAmount < 1000) return;
-    setSubmitting(true);
-    try {
-      const b64 = await toBase64(receipt);
-      const fileData = [{ slot: "paymentReceipt", name: receipt.name, type: receipt.type, data: b64 }];
-      
-      const res = await fetch(APPS_SCRIPT_URL, { 
-        method: "POST", 
-        headers: { "Content-Type": "text/plain;charset=utf-8" }, 
-        body: JSON.stringify({ 
-          action: "submitpayment", 
-          form_type: "Portal In-App Payment Evidence", 
-          ref: profile.studentNumber, 
-          studentName: profile.name, 
-          email: profile.email, 
-          paymentPlan: "Dashboard Payment", 
-          amountPaid: customAmount, 
-          paymentMethod: "bank_transfer", 
-          files: fileData, 
-          timestamp: new Date().toISOString() 
-        }) 
-      });
-
-      if (res.ok) {
-        setPaySuccess(true);
-        setReceipt(null);
-        if (window.confetti) window.confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-      } else {
-        alert("Upload failed. Please check your internet connection and try again.");
-      }
-    } catch (e) { 
-      console.error(e); 
-      alert("A network error occurred. Please try again.");
-    }
-    setSubmitting(false); 
-  };
-
-  // 🚀 EMBEDDED WIPAY REDIRECT ENGINE
-  const handleWiPayCheckout = () => {
-    if (submitting || customAmount < 1000) return;
-    setSubmitting(true);
-    
-    const orderId = profile.studentNumber + "-PORTAL"; 
-    const paymentDescription = `Ref: ${profile.studentNumber} | Name: ${profile.name} | Email: ${profile.email}`;
-
-    // Silently log the attempt
-    try {
-      fetch(APPS_SCRIPT_URL, { 
-        method: "POST", 
-        headers: { "Content-Type": "text/plain;charset=utf-8" }, 
-        body: JSON.stringify({ action: "submitpayment", form_type: "WiPay Portal In-App Attempt", ref: profile.studentNumber, studentName: profile.name, email: profile.email, paymentPlan: "Dashboard Payment", amountPaid: customAmount, paymentMethod: "online", timestamp: new Date().toISOString() }) 
-      });
-    } catch (e) {}
-
-    // Execute WiPay Redirect and bounce them back to the portal
-    if (WIPAY_CONFIG && WIPAY_CONFIG.baseUrl.includes("/to_me/")) {
-      let base = WIPAY_CONFIG.baseUrl;
-      if (base.endsWith("/")) base = base.slice(0, -1); 
-      window.location.href = `${base}/${customAmount}/${encodeURIComponent(paymentDescription)}`;
-    } else if (WIPAY_CONFIG) {
-      const returnUrl = encodeURIComponent(window.location.origin + "/#student-portal");
-      window.location.href = `${WIPAY_CONFIG.baseUrl}?total=${encodeURIComponent(customAmount)}&currency=${encodeURIComponent(WIPAY_CONFIG.currency)}&order_id=${encodeURIComponent(orderId)}&return_url=${returnUrl}`;
-    } else {
-      alert("WiPay is not configured correctly. Please use Bank Transfer.");
-      setSubmitting(false);
-    }
-  };
-
-  const submitQuiz = async () => {
-    let score = 0;
-    const quizArray = JSON.parse(activeQuiz.quiz || "[]");
-    if (Object.keys(quizAnswers).length < quizArray.length) return setQuizFeedback("Please answer all questions before submitting.");
-    quizArray.forEach((q, index) => { if (quizAnswers[index] === q.a) score++; });
-    const scorePct = Math.round((score / quizArray.length) * 100);
-    setQuizLoading(true); setQuizFeedback("Grading assessment...");
-
-    try {
-      const res = await fetch(`${VERCEL_URL}?action=submitquiz&ref=${encodeURIComponent(profile.studentNumber)}&course=${encodeURIComponent(profile.programme)}&module=${activeQuiz.moduleNum}&score=${scorePct}`);
-      const data = await res.json();
-      if (data.ok && data.passed) {
-        if (window.confetti) window.confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 }, colors: [S.gold, S.teal, S.coral, S.emerald] });
-        setQuizFeedback(`🏆 Excellent work! You scored ${scorePct}% and earned the Module ${activeQuiz.moduleNum} Competency Badge!`);
-        setProgress(Math.max(progress, activeQuiz.moduleNum + 1));
-        setTimeout(() => { setActiveQuiz(null); setQuizFeedback(""); setQuizAnswers({}); fetchDashboard(profile.studentNumber); }, 4000);
-      } else {
-        setQuizFeedback(data.message || `You scored ${scorePct}%. 70% is required to pass.`);
-      }
-    } catch(e) { setQuizFeedback("Error saving score. Please check your connection."); }
-    setQuizLoading(false);
-  };
-
-  const printIDCard = () => {
-    const idHtml = document.getElementById('student-id-card').outerHTML;
-    const win = window.open('', '', 'width=800,height=600');
-    win.document.write(`<html><head><title>CTS ETS Student ID</title><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"><style>body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; } @media print { @page { margin: 0; size: auto; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }</style></head><body>${idHtml}</body></html>`);
-    win.document.close(); win.focus(); setTimeout(() => { win.print(); win.close(); }, 500);
-  };
-
-  const DataRow = ({ label, value }) => (
-    <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: `1px solid ${S.border}`, fontSize: 14, fontFamily: S.body }}>
-      <span style={{ color: S.gray }}>{label}</span><span style={{ color: S.navy, fontWeight: 600, textAlign: "right", wordBreak: "break-word" }}>{value || "—"}</span>
-    </div>
-  );
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  
+  const inputStyle = { width: "100%", padding: "14px", borderRadius: "10px", border: `1px solid ${C.border}`, fontSize: 14, fontFamily: C.body, background: "#F8FAFC", marginBottom: "16px", boxSizing: "border-box" };
+  const labelStyle = { display: "block", fontSize: 11, fontWeight: 800, color: C.navy, marginBottom: 6, textTransform: "uppercase", letterSpacing: 1, fontFamily: C.body };
 
   return (
-    <div style={{ width: "100%", maxWidth: "1280px", margin: "0 auto", animation: "fadeIn 0.4s" }}>
-      
-      {/* 💳 SMART EMBEDDED PAYMENT MODAL */}
-      {showPaymentModal && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(1, 30, 64, 0.85)", zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(6px)", padding: "20px" }}>
-          <div style={{ background: "#fff", padding: "40px", borderRadius: 24, maxWidth: 600, width: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.5)", position: "relative", animation: "fadeIn 0.3s" }}>
-            
-            <button onClick={() => { setShowPaymentModal(false); setPaySuccess(false); setPayMethod(""); }} style={{ position: "absolute", top: 20, right: 24, background: "none", border: "none", fontSize: 28, cursor: "pointer", color: S.grayLight }}>✕</button>
-            
-            {paySuccess ? (
-               <div style={{ textAlign: "center", padding: "20px 0", animation: "fadeIn 0.4s" }}>
-                 <div style={{ fontSize: 64, marginBottom: 16 }}>🎉</div>
-                 <h3 style={{ color: S.navy, fontFamily: S.heading, fontSize: 28, marginBottom: 16 }}>Evidence Submitted!</h3>
-                 <p style={{ color: S.gray, fontFamily: S.body, fontSize: 16, marginBottom: 32, lineHeight: 1.5 }}>Your receipt has been securely uploaded to our Finance department. We will verify your payment of <strong>{fmt(customAmount)}</strong> and update your portal balance within 48-72 hours.</p>
-                 <button onClick={() => { setShowPaymentModal(false); setPaySuccess(false); setPayMethod(""); fetchDashboard(profile.studentNumber); }} style={{ padding: "16px 36px", background: S.emerald, color: "#fff", borderRadius: 12, border: "none", fontSize: 18, fontWeight: 800, cursor: "pointer", fontFamily: S.body, boxShadow: `0 8px 20px ${S.emerald}40` }}>Return to Dashboard</button>
-               </div>
-            ) : (
-              <>
-                <h3 style={{ color: S.navy, fontFamily: S.heading, fontSize: 28, marginBottom: 16 }}>Clear Outstanding Balance</h3>
-                
-                {/* Custom Amount Input */}
-                <div style={{ background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 16, padding: 24, marginBottom: 24 }}>
-                  <label style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", fontSize: 13, fontWeight: 700, color: S.navy, marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>
-                    <span>Amount To Pay Today (JMD)</span>
-                    <span style={{ color: S.coral, fontSize: 12 }}>Outstanding: {fmt(profile.outstanding)}</span>
-                  </label>
-                  <input 
-                    type="number" 
-                    min="1000" 
-                    max={profile.outstanding} 
-                    value={customAmount} 
-                    onChange={(e) => setCustomAmount(e.target.value)} 
-                    style={{ width: "100%", padding: 16, fontSize: 24, fontWeight: 900, borderRadius: 10, border: "2px solid " + S.emerald, background: "#fff", color: S.navy, outline: "none", boxSizing: "border-box" }} 
-                  />
-                </div>
-
-                <h4 style={{ fontFamily: S.heading, color: S.navy, fontSize: 18, marginBottom: 16 }}>Select Payment Method</h4>
-                
-                {/* Method Toggles */}
-                <div style={{ display: "flex", gap: 16, marginBottom: payMethod ? 24 : 0 }}>
-                  <button onClick={() => setPayMethod("online")} style={{ flex: 1, padding: "20px 16px", borderRadius: 12, border: payMethod === "online" ? `2px solid ${S.teal}` : "2px solid #E2E8F0", background: payMethod === "online" ? S.tealLight : "#fff", cursor: "pointer", transition: "all 0.2s", textAlign: "center" }}>
-                    <div style={{ fontSize: 28, marginBottom: 8 }}>💳</div>
-                    <div style={{ fontWeight: 800, color: S.navy, fontSize: 15 }}>Pay Online</div>
-                  </button>
-                  <button onClick={() => setPayMethod("upload")} style={{ flex: 1, padding: "20px 16px", borderRadius: 12, border: payMethod === "upload" ? `2px solid ${S.teal}` : "2px solid #E2E8F0", background: payMethod === "upload" ? S.tealLight : "#fff", cursor: "pointer", transition: "all 0.2s", textAlign: "center" }}>
-                    <div style={{ fontSize: 28, marginBottom: 8 }}>🏦</div>
-                    <div style={{ fontWeight: 800, color: S.navy, fontSize: 15 }}>Bank Transfer</div>
-                  </button>
-                </div>
-
-                {/* Online Gateway Logic */}
-                {payMethod === "online" && (
-                  <div style={{ animation: "fadeIn 0.3s" }}>
-                    <p style={{ fontSize: 14, color: S.gray, marginBottom: 20, lineHeight: 1.5 }}>You will be temporarily redirected to our secure WiPay checkout. Once completed, you will be brought right back to your digital classroom.</p>
-                    <button onClick={handleWiPayCheckout} disabled={submitting || customAmount < 1000} style={{ padding: 18, background: S.navy, color: "#fff", border: "none", borderRadius: 12, width: "100%", fontWeight: 800, fontSize: 16, cursor: (submitting || customAmount < 1000) ? "not-allowed" : "pointer", boxShadow: "0 6px 16px rgba(1,30,64,0.2)" }}>
-                      {submitting ? "Connecting to WiPay..." : `Pay ${fmt(customAmount)} Securely`}
-                    </button>
-                  </div>
-                )}
-
-                {/* Bank Transfer Logic */}
-                {payMethod === "upload" && (
-                  <div style={{ animation: "fadeIn 0.3s" }}>
-                    <div style={{ background: "#fff", padding: "16px", borderRadius: 12, fontSize: 13, fontFamily: "monospace", border: `1px solid ${S.grayLight}`, lineHeight: 1.6, marginBottom: 20 }}>
-                      <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: "1px dashed #CBD5E1" }}>
-                        <div style={{ fontWeight: 800, color: S.navy, fontSize: 14, marginBottom: 6, fontFamily: S.body }}>🏦 Scotiabank (BNS)</div>
-                        <strong>Account Name:</strong> Mark Lindo trading as CTS Empowerment & Training Solution<br/>
-                        <strong>Account Number:</strong> 001041411 (Savings)<br/>
-                        <strong>Branch:</strong> Scotia Center / 50765
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 800, color: S.navy, fontSize: 14, marginBottom: 6, fontFamily: S.body }}>🏦 National Commercial Bank (NCB)</div>
-                        <strong>Account Name:</strong> Mark Lindo<br/>
-                        <strong>Account Number:</strong> 214121697 (Personal)
-                      </div>
-                    </div>
-                    
-                    <p style={{ fontSize: 14, color: S.navy, fontWeight: 700, marginBottom: 12 }}>Upload Transfer Receipt</p>
-                    <input type="file" onChange={e => setReceipt(e.target.files[0])} style={{ marginBottom: 20, width: "100%", padding: 12, borderRadius: 8, border: "1px dashed #CBD5E1", background: "#F8FAFC", boxSizing: "border-box" }} />
-                    
-                    <button onClick={handleReceiptUpload} disabled={submitting || !receipt || customAmount < 1000} style={{ padding: 18, background: S.emerald, color: "#fff", border: "none", borderRadius: 10, width: "100%", fontWeight: 800, fontSize: 16, cursor: (submitting || !receipt || customAmount < 1000) ? "not-allowed" : "pointer", boxShadow: "0 4px 12px rgba(16,185,129,0.2)" }}>
-                      {submitting ? "Uploading Evidence..." : `Submit Receipt for ${fmt(customAmount)}`}
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* 🚀 HEADER */}
-      <div style={{ background: `linear-gradient(135deg, ${S.navy} 0%, ${S.teal} 100%)`, borderRadius: 16, padding: "32px", color: "#fff", marginBottom: 32, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20, boxShadow: "0 10px 30px rgba(1, 30, 64, 0.15)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-          {secureImgUrl && !imgError ? (
-            <img src={secureImgUrl} alt="Profile" onError={() => setImgError(true)} style={{ width: 90, height: 90, borderRadius: "50%", objectFit: "cover", border: "4px solid rgba(255,255,255,0.3)" }} referrerPolicy="no-referrer" />
-          ) : (
-            <div style={{ width: 90, height: 90, borderRadius: "50%", background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36, fontWeight: 800, color: "#fff", border: "4px solid rgba(255,255,255,0.3)" }}>
-              {(profile.name || "S").charAt(0).toUpperCase()}
-            </div>
-          )}
+    <div style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(1,30,64,0.85)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, backdropFilter: "blur(10px)" }}>
+      <div style={{ background: "#fff", borderRadius: 24, width: "100%", maxWidth: 600, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,0.45)", maxHeight: "90vh", display: "flex", flexDirection: "column" }}>
+        
+        <div style={{ padding: "24px 30px", background: C.navy, color: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <div style={{ fontSize: 12, opacity: 0.8, fontFamily: S.body, letterSpacing: 1.5, textTransform: "uppercase", fontWeight: 700 }}>Welcome back,</div>
-            <h2 style={{ fontFamily: S.heading, fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 700, margin: "4px 0" }}>{toTitleCase(profile.name)}</h2>
-            <div style={{ fontSize: 16, fontWeight: 800, color: S.gold, fontFamily: "monospace", letterSpacing: 1, marginBottom: 4 }}>{profile.studentNumber}</div>
-            
-            <div style={{ fontSize: 14, opacity: 0.9, fontFamily: S.body }}>
-              {profile.level ? `${profile.level} in ${profile.programme}` : profile.programme}
+            <div style={{ fontSize: 24, fontWeight: 800, fontFamily: C.heading, marginBottom: 4 }}>Edit Record</div>
+            <div style={{ fontSize: 13, color: C.gold, fontWeight: 600, fontFamily: "monospace" }}>{refId}</div>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "#fff", fontSize: 24, cursor: "pointer" }}>✕</button>
+        </div>
+
+        <div style={{ padding: 30, overflowY: "auto", flex: 1 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
+            <div style={{ gridColumn: "1 / -1" }}>
+              <label style={labelStyle}>Full Name</label>
+              <input name="name" value={form.name} onChange={handleChange} style={inputStyle} />
             </div>
             
-            <div style={{ fontSize: 13, color: S.gold, fontFamily: S.body, fontWeight: 700, marginTop: 4 }}>
-              {validTermText}
+            <div>
+              <label style={labelStyle}>Email Address</label>
+              <input name="email" value={form.email} onChange={handleChange} style={inputStyle} />
+            </div>
+            
+            <div>
+              <label style={labelStyle}>Phone Number</label>
+              <input name="phone" value={form.phone} onChange={handleChange} style={inputStyle} />
+            </div>
+
+            <div>
+              <label style={labelStyle}>Programme</label>
+              <input name="programme" value={form.programme} onChange={handleChange} style={inputStyle} />
+            </div>
+
+            <div>
+              <label style={labelStyle}>Level</label>
+              <input name="level" value={form.level} onChange={handleChange} style={inputStyle} />
+            </div>
+            
+            <div style={{ gridColumn: "1 / -1" }}>
+              <label style={labelStyle}>Override Status</label>
+              <select name="status" value={form.status} onChange={handleChange} style={{...inputStyle, background: "#fff", border: `2px solid ${C.teal}`}}>
+                <option value="Under Review">Under Review</option>
+                <option value="Accepted">Accepted</option>
+                <option value="Pending Payment">Pending Payment</option>
+                <option value="Enrolled">Enrolled</option>
+                <option value="Active">Active</option>
+                <option value="On Hold">On Hold</option>
+                <option value="Completed">Completed</option>
+                <option value="Graduated">Graduated</option>
+                <option value="Withdrawn">Withdrawn</option>
+                <option value="Rejected">Rejected</option>
+              </select>
             </div>
           </div>
         </div>
-        <button onClick={onLogout} style={{ padding: "12px 32px", borderRadius: 8, border: "2px solid rgba(255,255,255,0.3)", background: "rgba(255,255,255,0.1)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body, transition: "0.2s" }}>Log Out</button>
+
+        <div style={{ padding: "20px 30px", background: "#F8FAFC", borderTop: `1px solid ${C.border}`, display: "flex", gap: 12, justifyContent: "flex-end" }}>
+          <ActionBtn onClick={onClose} bg={C.border} color={C.gray}>Cancel</ActionBtn>
+          <ActionBtn onClick={() => onSave(refId, type, form)} disabled={busy === refId} bg={C.emerald} color="#fff">{busy === refId ? "Saving..." : "Save Changes"}</ActionBtn>
+        </div>
+
       </div>
-
-      {/* Tabs */}
-      <div style={{ display: "flex", gap: 12, marginBottom: 32, borderBottom: `2px solid ${S.border}`, overflowX: "auto", whiteSpace: "nowrap", paddingBottom: 4 }}>
-        {[{ id: "classroom", label: "📚 My Classroom" }, { id: "profile", label: "👤 My Profile & ID" }, { id: "portfolio", label: "📁 NCTVET Portfolio" }, { id: "finance", label: "💳 My Finances" }].map(t => (
-          <button key={t.id} onClick={() => { setActiveTab(t.id); setActiveQuiz(null); }} style={{ padding: "16px 24px", background: "none", border: "none", borderBottom: activeTab === t.id ? `3px solid ${S.coral}` : "3px solid transparent", color: activeTab === t.id ? S.coral : S.gray, fontWeight: activeTab === t.id ? 800 : 600, fontSize: 15, fontFamily: S.body, cursor: "pointer", transition: "0.2s" }}>{t.label}</button>
-        ))}
-      </div>
-
-      {/* CLASSROOM TAB */}
-      {activeTab === "classroom" && (
-        <div>
-          {!profile.lmsAccess ? (
-            <div style={{ background: S.amberLight, borderRadius: 16, padding: "48px", border: `2px solid ${S.amber}40`, textAlign: "center" }}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
-              <h3 style={{ fontFamily: S.heading, color: S.navy, fontSize: 26, marginBottom: 12 }}>Portal Access Restricted</h3>
-              <p style={{ fontFamily: S.body, color: S.gray, fontSize: 16, maxWidth: "600px", margin: "0 auto" }}>Your learning portal is currently locked. If you have an outstanding balance, please navigate to the <b>My Finances</b> tab to clear it.</p>
-            </div>
-          ) : activeQuiz ? (
-            <div style={{ background: "#fff", borderRadius: 16, padding: "40px", border: `1px solid ${S.border}` }}>
-              <button onClick={() => { setActiveQuiz(null); setQuizFeedback(""); setQuizAnswers({}); }} style={{ background: "none", border: "none", color: S.teal, fontWeight: 700, cursor: "pointer", marginBottom: 24, fontSize: 15, fontFamily: S.body, display: "flex", alignItems: "center", gap: 8 }}><span>←</span> Return to Modules</button>
-              {JSON.parse(activeQuiz.quiz || "[]").length === 0 ? (
-                <div><h3 style={{ fontFamily: S.heading, color: S.navy, marginBottom: 20, fontSize: 24 }}>Module {activeQuiz.moduleNum}: {activeQuiz.title}</h3><p style={{ fontFamily: S.body, color: S.gray, fontSize: 15 }}>There is no interactive assessment for this module. Please complete the reading materials.</p></div>
-              ) : (
-                <div>
-                  <div style={{ fontSize: 12, color: S.violet, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 10 }}>Knowledge Check</div>
-                  <h3 style={{ fontFamily: S.heading, color: S.navy, fontSize: 28, marginBottom: 32 }}>Module {activeQuiz.moduleNum}: {activeQuiz.title}</h3>
-                  {JSON.parse(activeQuiz.quiz || "[]").map((q, i) => (
-                    <div key={i} style={{ marginBottom: 32 }}><p style={{ fontFamily: S.body, fontWeight: 700, color: S.navy, marginBottom: 16, fontSize: 16 }}>{i + 1}. {q.q}</p>
-                      {q.options.map((opt, optIndex) => {
-                        const isSelected = quizAnswers[i] === optIndex;
-                        return (<label key={optIndex} style={{ display: "block", padding: "16px 20px", border: `2px solid ${isSelected ? S.teal : S.border}`, background: isSelected ? `${S.teal}10` : "#fff", borderRadius: 10, marginBottom: 12, cursor: "pointer", fontFamily: S.body, fontSize: 15, fontWeight: isSelected ? 600 : 400 }}><input type="radio" name={`q_${i}`} value={optIndex} checked={isSelected} onChange={() => handleQuizSelect(i, optIndex)} style={{ marginRight: 14, transform: "scale(1.2)" }} />{opt}</label>);
-                      })}
-                    </div>
-                  ))}
-                  {quizFeedback && <div style={{ padding: "20px", borderRadius: 12, background: quizFeedback.includes("Success") ? S.emeraldLight : S.amberLight, color: quizFeedback.includes("Success") ? S.emeraldDark : S.amberDark, fontFamily: S.body, fontSize: 16, fontWeight: 600, marginBottom: 24, textAlign: "center" }}>{quizFeedback}</div>}
-                  <Btn primary onClick={submitQuiz} disabled={quizLoading} style={{ background: S.coral, color: "#fff", width: "100%", maxWidth: "340px", fontSize: 16, padding: "18px", borderRadius: 10 }}>{quizLoading ? "Grading..." : "Submit Assessment"}</Btn>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div>
-              <div style={{ marginBottom: 32 }}><h3 style={{ fontFamily: S.heading, fontSize: 24, color: S.navy, margin: "0 0 10px 0" }}>Your Learning Path</h3><p style={{ fontFamily: S.body, fontSize: 15, color: S.gray }}>Pass the module assessment with 70% or higher to earn your badge.</p></div>
-              {curriculum.length === 0 ? (
-                <div style={{ padding: 40, textAlign: "center", background: "#fff", border: `1px solid ${S.border}`, borderRadius: 16, color: S.gray, fontFamily: S.body, fontSize: 16 }}>Your curriculum is being populated by your instructor. Check back soon.</div>
-              ) : (
-                <div style={{ display: "grid", gap: 16 }}>
-                  {curriculum.map((mod) => {
-                    const isUnlocked = mod.moduleNum <= progress; const isCompleted = mod.moduleNum < progress;
-                    return (
-                      <div key={mod.moduleNum} style={{ background: isUnlocked ? "#fff" : S.lightBg, borderRadius: 16, border: `2px solid ${isCompleted ? S.emerald + "50" : S.border}`, padding: "28px", display: "flex", flexWrap: "wrap", gap: "24px", justifyContent: "space-between", alignItems: "center", opacity: isUnlocked ? 1 : 0.5 }}>
-                        <div style={{ flex: 1, minWidth: "280px" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-                            {isCompleted ? <span style={{ padding: "6px 14px", borderRadius: 20, background: S.emerald, color: "#fff", fontSize: 11, fontWeight: 800, fontFamily: S.body, textTransform: "uppercase", letterSpacing: 1 }}>🏆 Badge Earned</span> : isUnlocked ? <span style={{ padding: "6px 14px", borderRadius: 20, background: S.tealLight, color: S.teal, fontSize: 11, fontWeight: 800, fontFamily: S.body, textTransform: "uppercase", letterSpacing: 1, border: `1px solid ${S.teal}30` }}>📍 Current Module</span> : <span style={{ padding: "6px 14px", borderRadius: 20, background: S.border, color: S.gray, fontSize: 11, fontWeight: 800, fontFamily: S.body, textTransform: "uppercase", letterSpacing: 1 }}>🔒 Locked</span>}
-                          </div>
-                          <h4 style={{ fontFamily: S.heading, fontSize: "clamp(18px, 3vw, 22px)", color: S.navy, margin: 0 }}>Module {mod.moduleNum}: {mod.title}</h4>
-                        </div>
-                        {isUnlocked ? (
-                          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", width: "100%", maxWidth: "380px" }}>
-                            {mod.link && <a href={mod.link} target="_blank" rel="noopener noreferrer" style={{ flex: 1, textAlign: "center", padding: "14px 20px", borderRadius: 8, border: `2px solid ${S.navy}`, color: S.navy, textDecoration: "none", fontSize: 14, fontWeight: 700, fontFamily: S.body }}>Read Material</a>}
-                            <button onClick={() => setActiveQuiz(mod)} style={{ flex: 1, padding: "14px 20px", borderRadius: 8, border: "none", background: isCompleted ? S.emerald : S.coral, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body }}>{isCompleted ? "Review Assessment" : "Take Assessment"}</button>
-                          </div>
-                        ) : <span style={{ fontSize: 14, color: S.gray, fontFamily: S.body, fontWeight: 600 }}>Pass Module {mod.moduleNum - 1} to unlock</span>}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* PROFILE & DIGITAL ID TAB */}
-      {activeTab === "profile" && (
-         <div style={{ animation: "fadeIn 0.3s", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))", gap: "24px" }}>
-             <div>
-               <div style={{ background: "#fff", borderRadius: 16, padding: "32px", border: `1px solid ${S.border}`, display: "flex", flexDirection: "column", alignItems: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
-                  <div style={{ fontSize: 11, color: S.navy, letterSpacing: 1.5, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 24 }}>Digital Student ID</div>
-                  <div id="student-id-card" style={{ width: "380px", height: "230px", borderRadius: "14px", background: `linear-gradient(135deg, ${S.navy} 0%, #0a2d4d 100%)`, color: "#fff", position: "relative", overflow: "hidden", fontFamily: "'DM Sans', sans-serif", boxShadow: "0 10px 25px rgba(1, 30, 64, 0.25)", border: `1px solid ${S.gold}50` }}>
-                    <div style={{ position: "absolute", top: -40, right: -40, width: 120, height: 120, borderRadius: "50%", background: "rgba(196, 145, 18, 0.15)" }} />
-                    <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,0.1)", display: "flex", gap: "10px", alignItems: "center", background: "rgba(0,0,0,0.2)" }}>
-                      <img src="/logo.jpg" alt="Logo" style={{ width: 36, height: 36, borderRadius: "6px", border: `1px solid ${S.gold}` }} />
-                      <div>
-                        <div style={{ fontSize: 12, fontWeight: 900, color: S.gold, letterSpacing: 0.5, lineHeight: 1.1 }}>CTS Empowerment &</div>
-                        <div style={{ fontSize: 12, fontWeight: 900, color: S.gold, letterSpacing: 0.5, lineHeight: 1.1 }}>Training Solutions</div>
-                        <div style={{ fontSize: 7, color: "#fff", letterSpacing: 0.5, marginTop: 3, textTransform: "uppercase", opacity: 0.9 }}>Committed to Service | Excellence Through Service</div>
-                      </div>
-                      <div style={{ marginLeft: "auto", fontSize: 8, textTransform: "uppercase", letterSpacing: 1, opacity: 0.8, textAlign: "right" }}>Student<br/>Identity Card</div>
-                    </div>
-                    <div style={{ padding: "16px", display: "flex", gap: "16px", alignItems: "flex-start" }}>
-                      {secureImgUrl && !imgError ? (
-                        <img src={secureImgUrl} alt="Student" onError={() => setImgError(true)} style={{ width: 85, height: 110, objectFit: "cover", borderRadius: "6px", border: `2px solid ${S.gold}`, background: "#fff", zIndex: 2, position: "relative" }} referrerPolicy="no-referrer" />
-                      ) : (
-                        <div style={{ width: 85, height: 110, background: "rgba(255,255,255,0.1)", borderRadius: "6px", border: `2px solid ${S.gold}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, fontWeight: 800, color: "#fff", zIndex: 2, position: "relative" }}>{(profile.name || "S").charAt(0).toUpperCase()}</div>
-                      )}
-                      <div style={{ flex: 1, zIndex: 2, position: "relative" }}>
-                        <div style={{ fontSize: 16, fontWeight: 800, lineHeight: 1.1, marginBottom: 2 }}>{toTitleCase(profile.name)}</div>
-                        <div style={{ fontSize: 10, color: S.gold, fontWeight: 700, marginBottom: 10, fontFamily: "monospace", letterSpacing: 1 }}>{profile.studentNumber}</div>
-                        <div style={{ fontSize: 8, opacity: 0.7, textTransform: "uppercase", marginBottom: 2, letterSpacing: 0.5 }}>Programme & Level</div>
-                        <div style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.2, marginBottom: 8 }}>{profile.level ? `${profile.level} in ${profile.programme}` : profile.programme}</div>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-                          <div>
-                            <div style={{ fontSize: 8, opacity: 0.7, textTransform: "uppercase", marginBottom: 2, letterSpacing: 0.5 }}>Valid Term</div>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>{validTermText}</div>
-                          </div>
-                          <div style={{ width: 24, height: 24, borderRadius: "50%", background: profile.status === "Enrolled" || profile.status === "Active" ? S.emerald : S.amber, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, border: "2px solid #fff", boxShadow: "0 2px 4px rgba(0,0,0,0.3)" }}>✓</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <Btn primary onClick={printIDCard} style={{ marginTop: 24, background: S.coral, color: "#fff", width: "100%", maxWidth: "380px", fontSize: 14 }}>📥 Download / Print ID</Btn>
-               </div>
-             </div>
-
-             <div style={{ background: "#fff", borderRadius: 16, padding: "32px", border: `1px solid ${S.border}`, boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}>
-                 <h3 style={{ fontFamily: S.heading, color: S.navy, marginBottom: 24, fontSize: 20 }}>Official Institutional Record</h3>
-                 
-                 <div style={{ padding: "8px 12px", background: S.navy, color: "#fff", borderRadius: 6, fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 }}>Personal Details</div>
-                 <DataRow label="Full Name" value={toTitleCase(profile.name)} />
-                 <DataRow label="Date of Birth" value={profile.dob} />
-                 <DataRow label="TRN" value={profile.trn} />
-                 <DataRow label="Phone Number" value={profile.phone} />
-                 <DataRow label="Home Address" value={toTitleCase(profile.address)} />
-                 <DataRow label="Email Address" value={profile.email} />
-                 
-                 <div style={{ padding: "8px 12px", background: S.teal, color: "#fff", borderRadius: 6, fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: 1, marginTop: 24, marginBottom: 12 }}>Academic & Financial</div>
-                 <DataRow label="Student Number" value={profile.studentNumber} />
-                 <DataRow label="Enrolled Programme" value={profile.programme} />
-                 <DataRow label="Qualification Level" value={profile.level} />
-                 <DataRow label="Academic Status" value={profile.status} />
-                 <DataRow label="Date Enrolled" value={profile.dateEnrolled ? new Date(profile.dateEnrolled).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "—"} />
-                 
-                 <div style={{ padding: "8px 12px", background: S.coral, color: "#fff", borderRadius: 6, fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: 1, marginTop: 24, marginBottom: 12 }}>Emergency Contact</div>
-                 <DataRow label="Contact Name" value={toTitleCase(profile.emergencyName)} />
-                 <DataRow label="Contact Phone" value={profile.emergencyPhone} />
-
-                 <div style={{ marginTop: 32, padding: "16px", background: S.amberLight, borderRadius: 8, fontSize: 13, color: S.amberDark, fontFamily: S.body, lineHeight: 1.6, border: `1px solid ${S.amber}40` }}>
-                     To request corrections to your official record, please contact <strong>admin@ctsetsjm.com</strong>.
-                 </div>
-             </div>
-         </div>
-      )}
-
-      {/* PORTFOLIO TAB */}
-      {activeTab === "portfolio" && (
-        <div style={{ background: "#fff", borderRadius: 16, padding: "48px", border: `1px solid ${S.border}` }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>📁</div>
-          <h3 style={{ fontFamily: S.heading, color: S.navy, marginBottom: 16, fontSize: 26 }}>Submit NCTVET Practical Evidence</h3>
-          <p style={{ fontFamily: S.body, color: S.gray, fontSize: 16, marginBottom: 32, lineHeight: 1.8, maxWidth: "800px" }}>Your programme requires practical competency evidence. Upload your large videos or documents to Google Drive or YouTube, ensure the permission is set to <strong>"Anyone with the link can view"</strong>, and paste it below.</p>
-          <input type="text" value={portfolioLink} onChange={(e) => setPortfolioLink(e.target.value)} placeholder="Paste your link here..." style={{ width: "100%", padding: "20px 24px", borderRadius: 10, border: `2px solid ${S.border}`, fontSize: 16, fontFamily: S.body, marginBottom: 24, outline: "none", background: S.lightBg }} />
-          <Btn primary onClick={() => { if(!portfolioLink) return alert("Please paste a link first."); alert(`Your evidence has been securely logged for Assessor review.`); setPortfolioLink(""); }} style={{ background: S.coral, color: "#fff", fontSize: 16, width: "100%", maxWidth: "340px", padding: "18px", borderRadius: 10 }}>Submit to Assessor</Btn>
-        </div>
-      )}
-
-      {/* FINANCE TAB WITH HISTORY */}
-      {activeTab === "finance" && (
-        <div style={{ animation: "fadeIn 0.3s" }}>
-            <div style={{ background: "#fff", borderRadius: 16, padding: "40px", border: `1px solid ${S.border}`, textAlign: "center", marginBottom: 24 }}>
-              <div style={{ fontSize: 14, color: S.coral, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 16 }}>Total Programme Cost</div>
-              <div style={{ fontSize: "clamp(32px, 6vw, 48px)", fontWeight: 800, color: S.navy, fontFamily: S.heading, marginBottom: 24 }}>{fmt(profile.totalFees)}</div>
-              
-              <div style={{ display: "flex", justifyContent: "center", gap: 32, fontSize: 16, fontFamily: S.body, borderTop: `1px solid ${S.border}`, paddingTop: 24, marginBottom: profile.outstanding > 0 ? 24 : 0 }}>
-                <span style={{ color: S.emerald, fontWeight: 700 }}>Total Paid: {fmt(profile.totalPaid)}</span>
-                <span style={{ color: profile.outstanding > 0 ? S.coral : S.emerald, fontWeight: 700 }}>Outstanding: {fmt(profile.outstanding)}</span>
-              </div>
-
-              {/* 💳 EMBEDDED MAKE A PAYMENT BUTTON */}
-              {profile.outstanding > 0 && (
-                <div style={{ textAlign: "center", marginTop: 24 }}>
-                  <button 
-                    onClick={() => setShowPaymentModal(true)} 
-                    style={{ padding: "16px 36px", background: S.teal, color: "#fff", borderRadius: 12, border: "none", fontSize: 18, fontWeight: 800, cursor: "pointer", fontFamily: S.body, boxShadow: `0 8px 20px ${S.teal}40`, transition: "transform 0.2s" }}
-                    onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-3px)"}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
-                  >
-                    💳 Make a Payment
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div style={{ background: "#fff", borderRadius: 16, padding: "32px", border: `1px solid ${S.border}` }}>
-              <h3 style={{ fontFamily: S.heading, color: S.navy, marginBottom: 24, fontSize: 20 }}>Payment History</h3>
-              {(!payments || payments.length === 0) ? (
-                <div style={{ padding: 32, textAlign: "center", color: S.gray, background: S.lightBg, borderRadius: 12 }}>No payment records found.</div>
-              ) : (
-                <div style={{ overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
-                    <thead>
-                      <tr style={{ borderBottom: `2px solid ${S.navy}` }}>
-                        <th style={{ padding: 16, color: S.navy, fontFamily: S.body, fontSize: 13, textTransform: "uppercase" }}>Date</th>
-                        <th style={{ padding: 16, color: S.navy, fontFamily: S.body, fontSize: 13, textTransform: "uppercase" }}>Amount</th>
-                        <th style={{ padding: 16, color: S.navy, fontFamily: S.body, fontSize: 13, textTransform: "uppercase" }}>Method</th>
-                        <th style={{ padding: 16, color: S.navy, fontFamily: S.body, fontSize: 13, textTransform: "uppercase" }}>Status</th>
-                        <th style={{ padding: 16, color: S.navy, fontFamily: S.body, fontSize: 13, textTransform: "uppercase" }}>Receipt</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {payments.map((p, i) => (
-                        <tr key={i} style={{ borderBottom: `1px solid ${S.border}`, background: i % 2 === 0 ? "#fff" : S.lightBg }}>
-                          <td style={{ padding: 16, fontFamily: S.body, fontSize: 14, color: S.gray, fontWeight: 600 }}>{new Date(p.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-                          <td style={{ padding: 16, fontFamily: S.body, fontSize: 14, fontWeight: 800, color: S.emerald }}>{fmt(p.amount)}</td>
-                          <td style={{ padding: 16, fontFamily: S.body, fontSize: 14, color: S.gray }}>{p.method || "—"}</td>
-                          <td style={{ padding: 16, fontFamily: S.body }}>
-                            <span style={{ padding: "6px 12px", borderRadius: 12, fontSize: 11, fontWeight: 800, background: p.status.includes("Paid") ? S.emeraldLight : S.amberLight, color: p.status.includes("Paid") ? S.emeraldDark : S.amberDark }}>
-                              {p.status}
-                            </span>
-                          </td>
-                          <td style={{ padding: 16, fontFamily: S.body, fontSize: 14 }}>
-                            {p.receipt ? <a href={p.receipt} target="_blank" rel="noreferrer" style={{ color: S.blue, fontWeight: 700, textDecoration: "underline" }}>View</a> : "—"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-        </div>
-      )}
     </div>
   );
 }
 
-export default function StudentPortalPage({ setPage }) {
-  const [orientationPassed, setOrientationPassed] = useState(false);
-  const [studentData, setStudentData] = useState(null);
-  
-  useEffect(() => {
-    if (studentData && studentData.profile && studentData.profile.studentNumber) {
-      if (studentData.profile.OrientationPassed === true || studentData.profile.OrientationPassed === "TRUE") {
-        setOrientationPassed(true);
-      } else {
-        const passed = localStorage.getItem(`cts_orientation_${studentData.profile.studentNumber}`);
-        if (passed === "true") {
-          setOrientationPassed(true);
-        }
-      }
-    }
-  }, [studentData]);
-
-  const [loginStep, setLoginStep] = useState(0); 
-  const [identifier, setIdentifier] = useState("");
+// ─── MAIN DASHBOARD COMPONENT ───
+export default function AdminDashboardPage() {
+  const [auth, setAuth] = useState(() => { try { return sessionStorage.getItem(PW_KEY) || ""; } catch { return ""; } });
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [pw, setPw] = useState("");
+  const [loginStep, setLoginStep] = useState(0);
   const [otpCode, setOtpCode] = useState("");
-  const [authLoading, setAuthLoading] = useState(false);
-  const [authError, setAuthError] = useState("");
+  const [loginErr, setLoginErr] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [tab, setTab] = useState("dashboard");
+
+  const [dashboard, setDashboard] = useState(null);
+  const [apps, setApps] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [auditLog, setAuditLog] = useState([]);
+
+  const [appFilter, setAppFilter] = useState("Under Review");
+  const [studentFilter, setStudentFilter] = useState("");
+  const [payFilter, setPayFilter] = useState("Pending Verification");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [actionMsg, setActionMsg] = useState(null);
+  const [busy, setBusy] = useState("");
   
-  const [showTimeoutModal, setShowTimeoutModal] = useState(false);
-  const [countdown, setCountdown] = useState(60);
+  const [modal, setModal] = useState(null); // For Payment Verification
+  const [editModal, setEditModal] = useState(null); // 🚀 NEW: For editing/deleting rows
+  
+  const [verifyAmt, setVerifyAmt] = useState("");
+  const [verifyTxn, setVerifyTxn] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [sortConfig, setSortConfig] = useState({ key: "timestamp", dir: "desc" });
 
+  const api = useCallback(async (action, params) => {
+    let url = `${VERCEL_URL}?action=${action}&pw=${encodeURIComponent(auth)}`;
+    if (params) for (const k in params) if (params[k] !== undefined && params[k] !== "") url += `&${k}=${encodeURIComponent(params[k])}`;
+    try { return await (await fetch(url)).json(); } catch { return { ok: false, error: "Network Error" }; }
+  }, [auth]);
+
+  const toast = (text, ok = true) => { setActionMsg({ text, ok }); setTimeout(() => setActionMsg(null), 6000); };
+  const refresh = () => setRefreshKey((k) => k + 1);
+
+  const loadDash = useCallback(() => {
+    setLoading(true);
+    api("admindashboard").then((d) => {
+      if (d && d.ok) {
+        setDashboard(d);
+        setLoggedIn(true);
+        try { sessionStorage.setItem(PW_KEY, auth); } catch {}
+      } else {
+        setLoginErr("Session expired. Please log in again.");
+        setLoggedIn(false);
+        setLoginStep(0);
+      }
+      setLoading(false);
+    }).catch(() => { setLoginErr("Connection error"); setLoading(false); });
+  }, [api, auth]);
+
+  useEffect(() => { if (auth) loadDash(); }, []);
   useEffect(() => {
-    if (!studentData) return;
-    let idleTimer;
-    let countdownInterval;
+    if (!loggedIn) return;
+    if (tab === "dashboard") loadDash();
+    else if (tab === "applications") { setLoading(true); api("adminlistapps", { status: appFilter }).then((d) => { if (d && d.ok) setApps(d.applications || []); setLoading(false); }).catch(() => setLoading(false)); }
+    else if (tab === "students") { setLoading(true); api("adminliststudents").then((d) => { if (d && d.ok) setStudents(d.students || []); setLoading(false); }).catch(() => setLoading(false)); }
+    else if (tab === "payments") { setLoading(true); api("adminlistpayments").then((d) => { if (d && d.ok) setPayments(d.payments || []); setLoading(false); }).catch(() => setLoading(false)); }
+    else if (tab === "activity") { setLoading(true); api("adminauditlog").then((d) => { if (d && d.ok) setAuditLog(d.entries || []); setLoading(false); }).catch(() => setLoading(false)); }
+  }, [loggedIn, tab, appFilter, refreshKey]);
 
-    const startIdleTimer = () => {
-      clearTimeout(idleTimer);
-      clearInterval(countdownInterval);
-      setShowTimeoutModal(false);
-      setCountdown(60);
-
-      idleTimer = setTimeout(() => {
-        setShowTimeoutModal(true);
-        countdownInterval = setInterval(() => {
-          setCountdown(prev => {
-            if (prev <= 1) {
-              clearInterval(countdownInterval);
-              handleLogout();
-              alert("Signed out due to inactivity for security purposes.");
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
-      }, 14 * 60 * 1000);
-    };
-
-    const events = ["mousedown", "keydown", "scroll", "touchstart"];
-    const resetTimer = () => { if (!showTimeoutModal) startIdleTimer(); };
-    events.forEach(evt => document.addEventListener(evt, resetTimer));
-    
-    startIdleTimer();
-    return () => {
-      events.forEach(evt => document.removeEventListener(evt, resetTimer));
-      clearTimeout(idleTimer);
-      clearInterval(countdownInterval);
-    };
-  }, [studentData, showTimeoutModal]);
-
-  useEffect(() => {
-    try {
-      const saved = sessionStorage.getItem("cts_portal_session");
-      if (saved) setStudentData(JSON.parse(saved));
-    } catch(e) {}
-  }, []);
-
-  const fetchDashboard = async (verifiedId) => {
-    try {
-      const res = await fetch(`${VERCEL_URL}?action=getstudentdashboard_otp&ref=${encodeURIComponent(verifiedId)}`);
-      const data = await res.json();
-      if (data.ok) { setStudentData(data); sessionStorage.setItem("cts_portal_session", JSON.stringify(data)); } 
-      else { setAuthError(data.error || "Could not load student record."); setLoginStep(0); }
-    } catch (e) { setAuthError("Network error connecting to the learning portal."); setLoginStep(0); }
+  const doAction = (name, action, params) => {
+    setBusy(name);
+    api(action, params).then((d) => { 
+      toast(d && d.ok ? (d.message || "Done") : ("Error: " + ((d && d.error) || "Failed")), !!(d && d.ok)); 
+      setBusy(""); 
+      setEditModal(null);
+      refresh(); 
+    }).catch(() => { toast("Network error", false); setBusy(""); });
   };
 
-  const handleSendCode = async () => {
-    if (!identifier.trim()) return;
-    setAuthLoading(true); setAuthError("");
+  // Legacy Actions
+  const acceptApp = (ref) => { if (window.confirm("Accept " + ref + "?")) { setApps((prev) => prev.map((a) => a.ref === ref ? { ...a, status: "Accepted" } : a)); doAction(ref, "adminacceptapp", { ref }); } };
+  const rejectApp = (ref) => { if (window.confirm("Reject " + ref + "?")) { setApps((prev) => prev.map((a) => a.ref === ref ? { ...a, status: "Rejected" } : a)); doAction(ref, "adminrejectapp", { ref }); } };
+  const enrollStu = (ref) => { if (window.confirm("Enroll " + ref + "? Credentials will be sent.")) { setStudents((prev) => prev.map((s) => s.ref === ref ? { ...s, status: "Enrolled", lmsAccess: "Yes" } : s)); doAction(ref, "adminenrollstudent", { ref }); } };
+  const genRecord = (sn) => { setBusy(sn); api("generaterecord", { student: sn }).then((d) => { const success = d && (d.ok || d.success); const link = d ? (d.url || d.fileUrl || d.link || d.pdfUrl) : null; if (success && link) { window.open(link, "_blank"); toast("Record saved to Student Folder and opened!", true); } else toast("Failed to generate record: " + (d?.error || d?.message || "Unknown Error"), false); setBusy(""); }).catch(() => { toast("Network error.", false); setBusy(""); }); };
+  const rejectPay = (ref) => { if (window.confirm("Reject payment for " + ref + "?")) { setPayments((prev) => prev.map((p) => p.ref === ref ? { ...p, status: "Rejected — Not Found" } : p)); if (dashboard) setDashboard((prev) => ({ ...prev, pendingPayments: prev.pendingPayments.filter((p) => p.ref !== ref) })); doAction(ref, "rejectpayment", { ref, txn: "admin-dashboard" }); } };
+  const verifyPay = (ref, amt, txn) => { setPayments((prev) => prev.map((p) => p.ref === ref ? { ...p, status: "Paid", amount: amt } : p)); if (dashboard) setDashboard((prev) => ({ ...prev, pendingPayments: prev.pendingPayments.filter((p) => p.ref !== ref) })); doAction(ref, "verifypayment", { ref, amount: amt, txn }); setModal(null); };
+
+  // 🚀 NEW FULL CRUD ACTIONS
+  const handleEditSave = (ref, type, formData) => {
+    doAction(ref, "admineditrecord", { ref, type, ...formData });
+    // Optimistic UI update
+    if (type === "student") setStudents(prev => prev.map(s => s.studentNumber === ref ? { ...s, ...formData } : s));
+    if (type === "app") setApps(prev => prev.map(a => a.ref === ref ? { ...a, ...formData } : a));
+  };
+
+  const handleDeleteRecord = (ref, type) => {
+    if (window.confirm(`🚨 DANGER: Are you absolutely sure you want to completely DELETE ${ref}? This cannot be undone.`)) {
+      doAction(ref, "admindeleterecord", { ref, type });
+      // Optimistic UI update
+      if (type === "student") setStudents(prev => prev.filter(s => s.studentNumber !== ref));
+      if (type === "app") setApps(prev => prev.filter(a => a.ref !== ref));
+    }
+  };
+
+  async function handlePasswordSubmit() {
+    if (!pw.trim()) return;
+    setLoginErr(""); setLoading(true);
     try {
-      const res = await fetch(`${VERCEL_URL}?action=sendotp&identifier=${encodeURIComponent(identifier.trim())}&purpose=portal`);
-      const data = await res.json();
-      if (data.success) { setLoginStep(1); } 
-      else { setAuthError("We could not find a student record with that ID."); }
-    } catch (e) { setAuthError("Network error. Please check your connection."); }
-    setAuthLoading(false);
-  };
-
-  const handleVerifyCode = async () => {
-    if (otpCode.length !== 6) { setAuthError("Please enter the 6-digit code."); return; }
-    setAuthLoading(true); setAuthError("");
+      const data1 = await (await fetch(`${VERCEL_URL}?action=verifyadminpw&pw=${encodeURIComponent(pw.trim())}`)).json();
+      if (data1 && data1.ok) {
+        setAuth(pw.trim());
+        const data2 = await (await fetch(`${VERCEL_URL}?action=sendotp&identifier=ADMIN&purpose=admin_login`)).json();
+        if (data2 && data2.success) setLoginStep(1); else setLoginErr("Failed to trigger 2FA sequence.");
+      } else setLoginErr("Invalid master password. Intrusion logged.");
+    } catch { setLoginErr("Connection error. Gateway offline."); }
+    setLoading(false);
+  }
+  async function handleOtpSubmit() {
+    if (!otpCode.trim() || otpCode.length !== 6) { setLoginErr("Enter the 6-digit code."); return; }
+    setLoginErr(""); setLoading(true);
     try {
-      const res = await fetch(`${VERCEL_URL}?action=verifyotp&identifier=${encodeURIComponent(identifier.trim())}&code=${otpCode}&purpose=portal`);
-      const data = await res.json();
-      if (data.success) { setAuthError(""); await fetchDashboard(identifier.trim()); } 
-      else { setAuthError(data.error === "wrong_code" ? "Invalid code." : "Code expired. Please try again."); }
-    } catch (e) { setAuthError("Network error. Please check your connection."); }
-    setAuthLoading(false);
-  };
+      const data = await (await fetch(`${VERCEL_URL}?action=verifyotp&identifier=ADMIN&code=${otpCode.trim()}&purpose=admin_login`)).json();
+      if (data && data.success) loadDash();
+      else { setLoginErr(data?.error === "wrong_code" ? "Invalid 2FA code." : "Code expired. Refresh to try again."); setLoading(false); }
+    } catch { setLoginErr("Connection error."); setLoading(false); }
+  }
 
-  const handleLogout = () => {
-    setStudentData(null); setLoginStep(0); setIdentifier(""); setOtpCode("");
-    sessionStorage.removeItem("cts_portal_session");
-  };
+  const handleSort = (key) => { let direction = "asc"; if (sortConfig.key === key && sortConfig.dir === "asc") direction = "desc"; setSortConfig({ key, dir: direction }); };
+  const processData = useCallback((list) => {
+    if (!Array.isArray(list)) return [];
+    let safeList = list.filter((item) => item != null && typeof item === "object");
+    if (searchTerm) {
+      const s = String(searchTerm).toLowerCase();
+      safeList = safeList.filter((item) => Object.values(item).some((v) => String(v || "").toLowerCase().includes(s)));
+    }
+    if (sortConfig.key) {
+      safeList.sort((a, b) => {
+        let valA = a[sortConfig.key] || findDate(a);
+        let valB = b[sortConfig.key] || findDate(b);
+        const sk = sortConfig.key.toLowerCase();
+        if (sk.includes("date") || sk.includes("time") || sk.includes("timestamp")) { valA = new Date(valA).getTime() || 0; valB = new Date(valB).getTime() || 0; }
+        else if (sortConfig.key === "amount") { valA = Number(String(valA).replace(/[^0-9.-]+/g, "")) || 0; valB = Number(String(valB).replace(/[^0-9.-]+/g, "")) || 0; }
+        else { valA = String(valA || "").toLowerCase(); valB = String(valB || "").toLowerCase(); }
+        if (valA < valB) return sortConfig.dir === "asc" ? -1 : 1;
+        if (valA > valB) return sortConfig.dir === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return safeList;
+  }, [searchTerm, sortConfig]);
 
-  if (!studentData) {
-    const animStyles = `@keyframes pulseGateway { 0% { box-shadow: 0 0 0 0 rgba(232, 99, 74, 0.4); } 70% { box-shadow: 0 0 0 40px rgba(232, 99, 74, 0); } 100% { box-shadow: 0 0 0 0 rgba(232, 99, 74, 0); } } @keyframes floatCap { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-15px) scale(1.05); } } @keyframes blinkNode { 0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 12px ${S.teal}; } 50% { opacity: 0.3; transform: scale(0.8); box-shadow: 0 0 2px ${S.teal}; } }`;
-    const NodeBadge = ({ label, delay }) => ( <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(0,0,0,0.4)", padding: "14px 24px", borderRadius: 30, border: "1px solid rgba(14, 143, 139, 0.3)", backdropFilter: "blur(4px)" }}><div style={{ width: 12, height: 12, borderRadius: "50%", background: S.teal, animation: `blinkNode 2s infinite ${delay}` }} /><span style={{ color: S.teal, fontSize: 12, fontWeight: 800, fontFamily: S.body, letterSpacing: 2, textTransform: "uppercase" }}>{label}: ONLINE</span></div> );
+  const tabList = [
+    { id: "dashboard", label: "Dashboard", icon: "📊" },
+    { id: "applications", label: "Applications", icon: "📋", b: dashboard?.apps?.underReview },
+    { id: "students", label: "Students", icon: "🎓" },
+    { id: "payments", label: "Payments", icon: "💳", b: dashboard?.pendingPayments?.length },
+    { id: "activity", label: "Activity Log", icon: "⚡" },
+  ];
+  
+  const appRows = useMemo(() => processData(apps).filter((a) => !appFilter || a?.status === appFilter), [apps, appFilter, processData]);
+  const studentRows = useMemo(() => processData(students).filter((s) => !studentFilter || s?.status === studentFilter), [students, studentFilter, processData]);
+  const paymentRows = useMemo(() => processData(payments).filter((p) => !payFilter || p?.status === payFilter), [payments, payFilter, processData]);
+  const activityRows = useMemo(() => processData(auditLog), [auditLog, processData]);
+
+  // Total Payment Sum Calculation
+  const totalPaymentSum = paymentRows.reduce((sum, p) => sum + (Number(String(p.amount).replace(/[^0-9.-]+/g, "")) || 0), 0);
+
+  if (!loggedIn) {
     return (
-      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: S.bg, fontFamily: S.body }}>
-        <style>{animStyles}</style>
-        <div style={{ background: S.navy, padding: "20px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.4)", position: "relative", zIndex: 10, borderBottom: `2px solid ${S.coral}` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 18 }}><img src="/logo.jpg" alt="CTS ETS" style={{ width: 56, height: 56, borderRadius: 12, border: `2px solid ${S.gold}` }} /><div><div style={{ color: "#fff", fontWeight: 900, fontSize: 24, fontFamily: S.heading }}>Student Portal</div><div style={{ color: S.coral, fontSize: 11, letterSpacing: 4, fontWeight: 800, marginTop: 4, textTransform: "uppercase" }}>SECURE LEARNING GATEWAY</div></div></div>
-          <a href="/#Home" style={{ color: "#fff", fontSize: 13, textDecoration: "none", fontWeight: 800, padding: "14px 28px", borderRadius: 8, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", transition: "all 0.2s", textTransform: "uppercase" }}>&larr; Back to Website</a>
-        </div>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 20, background: `radial-gradient(circle at center, #0a2d4d 0%, ${S.navy} 100%)`, position: "relative", overflow: "hidden" }}>
-          <div style={{ background: "#fff", borderRadius: 24, padding: "64px 48px", maxWidth: 480, width: "100%", textAlign: "center", position: "relative", zIndex: 2, animation: "pulseGateway 4s infinite", border: `2px solid ${S.coral}50` }}>
-            <div style={{ fontSize: 96, marginBottom: 24, animation: "floatCap 5s ease-in-out infinite" }}>🎓</div>
-            <h1 style={{ fontFamily: S.heading, color: S.navy, fontSize: 36, margin: "0 0 12px", fontWeight: 900 }}>{loginStep === 0 ? "Welcome Student" : "Verify Identity"}</h1>
-            <p style={{ fontFamily: S.body, color: S.gray, fontSize: 15, margin: "0 0 40px", lineHeight: 1.6 }}>{loginStep === 0 ? "Enter your Student Number to access your classroom." : "A secure 6-digit code has been sent to your registered email."}</p>
-            {loginStep === 0 ? ( <div style={{ marginBottom: 24 }}><input type="text" value={identifier} onChange={e => { setIdentifier(e.target.value.toUpperCase()); setAuthError(""); }} onKeyDown={e => { if (e.key === "Enter") handleSendCode(); }} autoFocus placeholder="Student ID" style={{ width: "100%", padding: "20px", borderRadius: 12, border: "2px solid " + (authError ? S.rose : S.border), fontSize: 18, fontFamily: S.body, color: S.navy, boxSizing: "border-box", outline: "none", textAlign: "center", letterSpacing: 2, background: S.lightBg, fontWeight: 800 }} /></div>
-            ) : ( <div style={{ marginBottom: 24 }}><input type="text" value={otpCode} onChange={e => { setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6)); setAuthError(""); }} onKeyDown={e => { if (e.key === "Enter") handleVerifyCode(); }} autoFocus placeholder="000000" style={{ width: "100%", padding: "20px", borderRadius: 12, border: "2px solid " + (authError ? S.rose : S.teal), fontSize: 32, fontFamily: "monospace", color: S.navy, boxSizing: "border-box", outline: "none", textAlign: "center", letterSpacing: 12, background: S.tealLight, fontWeight: 900 }} /></div> )}
-            {authError && <div style={{ padding: "14px", borderRadius: 10, background: S.roseLight, color: S.roseDark, fontSize: 14, marginBottom: 24, fontFamily: S.body, fontWeight: 800, border: `1px solid ${S.rose}50` }}>{authError}</div>}
-            {loginStep === 0 ? ( <button onClick={handleSendCode} disabled={authLoading || !identifier.trim()} style={{ width: "100%", padding: "20px", borderRadius: 12, border: "none", background: (!identifier.trim() || authLoading) ? S.border : S.navy, color: "#fff", fontSize: 16, fontWeight: 900, cursor: identifier.trim() && !authLoading ? "pointer" : "not-allowed", fontFamily: S.body, transition: "all 0.2s", textTransform: "uppercase", letterSpacing: 2 }}>{authLoading ? "Connecting..." : "Initialize Link"}</button>
-            ) : ( <button onClick={handleVerifyCode} disabled={authLoading || otpCode.length !== 6} style={{ width: "100%", padding: "20px", borderRadius: 12, border: "none", background: (otpCode.length !== 6 || authLoading) ? S.border : S.coral, color: "#fff", fontSize: 16, fontWeight: 900, cursor: otpCode.length === 6 && !authLoading ? "pointer" : "not-allowed", fontFamily: S.body, transition: "all 0.2s", textTransform: "uppercase", letterSpacing: 2, boxShadow: otpCode.length === 6 ? `0 10px 30px ${S.coral}50` : "none" }}>{authLoading ? "Decrypting..." : "Access Classroom"}</button> )}
-            {loginStep === 1 && ( <button onClick={() => { setLoginStep(0); setOtpCode(""); setAuthError(""); }} style={{ marginTop: 20, background: "none", border: "none", color: S.gray, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: S.body, textDecoration: "underline" }}>Cancel & Return</button> )}
+      <div style={{ minHeight: "100vh", background: `radial-gradient(circle at center, #0a2d4d 0%, ${C.navy} 100%)`, display: "flex", flexDirection: "column", fontFamily: C.body }}>
+        <div style={{ background: C.navy, padding: "18px 34px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `2px solid ${C.gold}` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <img src="/logo.jpg" alt="CTS ETS" style={{ width: 52, height: 52, borderRadius: 12, border: `2px solid ${C.gold}` }} />
+            <div><div style={{ color: C.gold, fontWeight: 900, fontSize: 24, fontFamily: C.heading }}>CTS ETS Admin</div><div style={{ color: "rgba(255,255,255,0.7)", fontSize: 11, letterSpacing: 3, fontWeight: 800 }}>SECURE OPERATIONS GATEWAY</div></div>
           </div>
-          <div style={{ display: "flex", gap: 20, marginTop: 60, flexWrap: "wrap", justifyContent: "center", position: "relative", zIndex: 2 }}><NodeBadge label="LMS Server" delay="0s" /><NodeBadge label="Data Sync" delay="0.6s" /><NodeBadge label="Identity Auth" delay="1.2s" /></div>
+          <a href="/#Home" style={{ color: "#fff", fontSize: 13, textDecoration: "none", fontWeight: 800, padding: "12px 22px", borderRadius: 10, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }}>← Return to Site</a>
         </div>
-        <div style={{ background: "#020b14", padding: "24px", textAlign: "center", borderTop: "1px solid rgba(232, 99, 74, 0.2)" }}><p style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, fontFamily: S.body, margin: 0, letterSpacing: 1, textTransform: "uppercase", fontWeight: 700 }}>&copy; 2026 CTS ETS. Enrolled Students Only. Unauthorized access is strictly prohibited.</p></div>
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div style={{ background: C.card, borderRadius: 28, padding: "56px 42px", maxWidth: 500, width: "100%", textAlign: "center", border: `1px solid ${C.teal}40`, boxShadow: "0 24px 60px rgba(0,0,0,0.25)" }}>
+            <div style={{ fontSize: 82, marginBottom: 20 }}>🛡️</div>
+            <div style={{ fontSize: 11, color: C.teal, letterSpacing: 2, textTransform: "uppercase", fontWeight: 800, fontFamily: C.body, marginBottom: 12 }}>{loginStep === 0 ? "Step 1 of 2" : "Step 2 of 2"}</div>
+            <h1 style={{ fontFamily: C.heading, color: C.navy, fontSize: 36, fontWeight: 900, marginBottom: 12 }}>{loginStep === 0 ? "Admin Password" : "Two-Factor Code"}</h1>
+            <p style={{ color: C.gray, fontSize: 14, lineHeight: 1.75, marginBottom: 24, fontFamily: C.body }}>{loginStep === 0 ? "Enter the master password to initiate the secure login sequence." : "Enter the 6-digit verification code sent for admin access."}</p>
+            {loginStep === 0 ? <input type="password" value={pw} onChange={(e) => { setPw(e.target.value); setLoginErr(""); }} onKeyDown={(e) => e.key === "Enter" && handlePasswordSubmit()} autoFocus placeholder="Master Password" style={{ width: "100%", padding: "18px 20px", borderRadius: 14, border: `2px solid ${loginErr ? C.red : C.border}`, fontSize: 18, textAlign: "center", letterSpacing: 3, background: "#F8FAFC", fontWeight: 800, boxSizing: "border-box", marginBottom: 18 }} /> : <input type="text" value={otpCode} onChange={(e) => { setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6)); setLoginErr(""); }} onKeyDown={(e) => e.key === "Enter" && handleOtpSubmit()} autoFocus placeholder="000000" style={{ width: "100%", padding: "18px 20px", borderRadius: 14, border: `2px solid ${loginErr ? C.red : C.teal}`, fontSize: 30, fontFamily: "monospace", textAlign: "center", letterSpacing: 10, background: C.emeraldLight, fontWeight: 900, boxSizing: "border-box", marginBottom: 18 }} />}
+            {loginErr && <div style={{ color: C.red, fontWeight: 800, marginBottom: 16, fontFamily: C.body }}>{loginErr}</div>}
+            <button onClick={loginStep === 0 ? handlePasswordSubmit : handleOtpSubmit} disabled={loading} style={{ width: "100%", padding: "18px", borderRadius: 14, border: "none", background: C.navy, color: "#fff", fontSize: 16, fontWeight: 900, cursor: "pointer", fontFamily: C.body }}>{loading ? "Authenticating..." : "Access Console"}</button>
+          </div>
+        </div>
       </div>
     );
   }
 
-  // ═══ AUTHENTICATED VIEW ═══
-  
-  if (!orientationPassed) {
-    return <OrientationGateway onComplete={async () => {
-      setOrientationPassed(true);
-      if (studentData && studentData.profile && studentData.profile.studentNumber) {
-        localStorage.setItem(`cts_orientation_${studentData.profile.studentNumber}`, "true");
-        try {
-          await fetch(`${VERCEL_URL}?action=passorientation&ref=${encodeURIComponent(studentData.profile.studentNumber)}`);
-        } catch(e) { console.log("Cloud sync error, but local unlock succeeded.", e); }
-      }
-    }} />;
-  }
-
   return (
-    <PageWrapper>
-        {showTimeoutModal && (
-          <div style={{ position: "fixed", inset: 0, background: "rgba(1, 30, 64, 0.9)", zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(5px)" }}>
-            <div style={{ background: "#fff", padding: "40px", borderRadius: 24, textAlign: "center", maxWidth: 420, width: "90%", boxShadow: "0 20px 50px rgba(0,0,0,0.5)" }}>
-              <div style={{ fontSize: 56, marginBottom: 16, animation: "pulseGateway 1.5s infinite" }}>⏱️</div>
-              <h3 style={{ color: S.navy, fontFamily: S.heading, fontSize: 26, margin: "0 0 12px", fontWeight: 800 }}>Are you still there?</h3>
-              <p style={{ color: S.gray, fontFamily: S.body, fontSize: 16, marginBottom: 32, lineHeight: 1.5 }}>For your security, you will be automatically logged out in <strong style={{ color: S.coral, fontSize: 20 }}>{countdown}</strong> seconds.</p>
-              <Btn primary onClick={() => setShowTimeoutModal(false)} style={{ background: S.emerald, color: "#fff", width: "100%", padding: "18px", fontSize: 16, fontWeight: 800, borderRadius: 12 }}>Stay Logged In</Btn>
+    <div style={{ minHeight: "100vh", background: C.bg, fontFamily: C.body, width: "100%", overflowX: "hidden" }}>
+      
+      {/* GLOBAL MODALS */}
+      <VerifyModal modal={modal} verifyAmt={verifyAmt} setVerifyAmt={setVerifyAmt} verifyTxn={verifyTxn} setVerifyTxn={setVerifyTxn} onConfirm={() => verifyPay(modal.data.ref, verifyAmt, verifyTxn)} onClose={() => setModal(null)} busy={busy} />
+      <EditRecordModal editModal={editModal} onClose={() => setEditModal(null)} onSave={handleEditSave} busy={busy} />
+
+      <div style={{ background: C.navy, padding: "14px 34px", display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 200, boxShadow: "0 2px 10px rgba(0,0,0,0.08)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <img src="/logo.jpg" alt="" style={{ width: 36, height: 36, borderRadius: 8 }} />
+          <div><div style={{ color: C.gold, fontWeight: 700, fontSize: 15, fontFamily: C.heading }}>CTS ETS Admin</div><div style={{ color: "rgba(255,255,255,0.54)", fontSize: 10, letterSpacing: 1.3 }}>OPERATIONS COMMAND</div></div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <ActionBtn onClick={refresh} bg="transparent" color="#fff">↻ Refresh</ActionBtn>
+          <ActionBtn onClick={() => { setLoggedIn(false); setAuth(""); setPw(""); sessionStorage.removeItem(PW_KEY); }} bg={C.coral} color="#fff">Lock Vault</ActionBtn>
+        </div>
+      </div>
+
+      <div style={{ background: C.card, borderBottom: `1px solid ${C.border}`, padding: "0 34px", display: "flex", overflowX: "auto" }}>
+        {tabList.map((t) => <button key={t.id} onClick={() => { setTab(t.id); setSearchTerm(""); setSortConfig({ key: "timestamp", dir: "desc" }); }} style={{ padding: "18px 24px", border: "none", background: "none", cursor: "pointer", fontSize: 14, fontWeight: tab === t.id ? 800 : 600, color: tab === t.id ? C.navy : C.gray, borderBottom: tab === t.id ? `3px solid ${C.navy}` : "3px solid transparent", display: "flex", alignItems: "center", gap: 10, whiteSpace: "nowrap" }}><span style={{ fontSize: 18 }}>{t.icon}</span> {t.label}{t.b > 0 && <span style={{ background: C.coral, color: "#fff", borderRadius: 999, padding: "2px 8px", fontSize: 11, fontWeight: 800 }}>{t.b}</span>}</button>)}
+      </div>
+
+      {actionMsg && <div style={{ margin: "18px 34px 0", padding: "14px 18px", borderRadius: 12, background: actionMsg.ok ? C.emeraldLight : C.redLight, color: actionMsg.ok ? C.emerald : C.red, fontSize: 14, fontWeight: 700, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, border: `1px solid ${actionMsg.ok ? C.emerald : C.red}40` }}><span>{actionMsg.text}</span><button onClick={() => setActionMsg(null)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: "inherit" }}>✕</button></div>}
+      {loading && <div style={{ height: 4, background: `linear-gradient(90deg, ${C.coral}, ${C.gold}, ${C.teal})` }} />}
+
+      <div style={{ padding: 34, width: "100%", boxSizing: "border-box" }}>
+        {tab === "dashboard" && dashboard && (
+          <div>
+            <div style={{ marginBottom: 26 }}>
+              <div style={{ fontSize: 11, color: C.teal, letterSpacing: 2, textTransform: "uppercase", fontWeight: 800, marginBottom: 10 }}>Control Centre</div>
+              <h1 style={{ fontFamily: C.heading, fontSize: "clamp(30px,4vw,48px)", color: C.navy, margin: 0, lineHeight: 1.08, fontWeight: 900 }}>A clearer operational dashboard for CTS ETS</h1>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 18, marginBottom: 30 }}>
+              <MetricCard label="Under Review" value={dashboard?.apps?.underReview || 0} accent={C.amber} sub="Pending application decisions" />
+              <MetricCard label="Accepted" value={dashboard?.apps?.accepted || 0} accent={C.emerald} sub="Ready for enrolment/payment" />
+              <MetricCard label="Students" value={dashboard?.students?.total || 0} accent={C.teal} sub="Tracked in the student registry" />
+              <MetricCard label="Pending Payments" value={dashboard?.pendingPayments?.length || 0} accent={C.coral} sub="Awaiting verification" />
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1.25fr 0.75fr", gap: 20 }}>
+              <TableShell title="Recent Applications Requiring Attention" tools={<ActionBtn onClick={() => setTab("applications")} bg={C.navy} color="#fff">Open Applications</ActionBtn>}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead><tr><SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Submitted</SortTh><SortTh sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Reference</SortTh><SortTh sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</SortTh><SortTh sortKey="programme" currentSort={sortConfig} onSort={handleSort}>Programme</SortTh><SortTh sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</SortTh></tr></thead>
+                  <tbody>{(dashboard?.recentApps || []).map((a, i) => <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}><Td bold color={C.gray}>{fmtTime(a)}</Td><Td mono bold>{a?.ref}</Td><Td bold>{a?.name}</Td><Td max={250}>{a?.programme}</Td><td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}><StatusBadge status={a?.status} /></td></tr>)}</tbody>
+                  <Tfoot>
+                    <tr><TdFoot colSpan={5}>Total Recent Items: {(dashboard?.recentApps || []).length}</TdFoot></tr>
+                  </Tfoot>
+                </table>
+              </TableShell>
+              <div style={{ display: "grid", gap: 20 }}>
+                <div style={{ background: C.card, borderRadius: 24, border: `1px solid ${C.border}`, padding: 24, boxShadow: "0 10px 26px rgba(15,23,42,0.04)" }}>
+                  <div style={{ fontFamily: C.heading, fontSize: 24, color: C.navy, fontWeight: 800, marginBottom: 16 }}>Finance Snapshot</div>
+                  <div style={{ display: "grid", gap: 12 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}><span style={{ color: C.gray }}>Pending Verification</span><strong style={{ color: C.coral }}>{dashboard?.pendingPayments?.length || 0}</strong></div>
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}><span style={{ color: C.gray }}>Registered Students</span><strong style={{ color: C.navy }}>{dashboard?.students?.total || 0}</strong></div>
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}><span style={{ color: C.gray }}>Active Learners</span><strong style={{ color: C.teal }}>{dashboard?.students?.active || 0}</strong></div>
+                  </div>
+                </div>
+                <div style={{ background: C.card, borderRadius: 24, border: `1px solid ${C.border}`, padding: 24, boxShadow: "0 10px 26px rgba(15,23,42,0.04)" }}>
+                  <div style={{ fontFamily: C.heading, fontSize: 24, color: C.navy, fontWeight: 800, marginBottom: 16 }}>Priority Actions</div>
+                  <div style={{ display: "grid", gap: 12 }}>
+                    <ActionBtn onClick={() => setTab("applications")} bg={C.gold} color={C.navy}>Review Applications</ActionBtn>
+                    <ActionBtn onClick={() => setTab("payments")} bg={C.coral} color="#fff">Verify Payments</ActionBtn>
+                    <ActionBtn onClick={() => setTab("students")} bg={C.teal} color="#fff">Open Student Registry</ActionBtn>
+                    <ActionBtn onClick={() => setTab("activity")} bg={C.blue} color="#fff">View Audit Log</ActionBtn>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
-        <div style={{ background: S.bg, minHeight: "85vh", padding: "48px 20px" }}>
-          <Dashboard studentData={studentData} onLogout={handleLogout} fetchDashboard={fetchDashboard} />
-          <AIStudyAssistant profile={studentData.profile} />
-        </div>
-    </PageWrapper>
+
+        {/* 🚀 UPGRADED APPLICATIONS TABLE WITH EDIT/DELETE */}
+        {tab === "applications" && (
+          <div>
+            <div style={{ display: "flex", gap: 14, marginBottom: 24, alignItems: "center", background: "#fff", padding: "18px 22px", borderRadius: 18, border: `1px solid ${C.border}`, flexWrap: "wrap" }}>
+              {["Under Review", "Accepted", "Rejected", ""].map((f) => <ToolbarPill key={f || "All"} label={f || "All"} active={appFilter === f} onClick={() => setAppFilter(f)} />)}
+              <div style={{ marginLeft: "auto" }}><SearchBox value={searchTerm} onChange={setSearchTerm} /></div>
+            </div>
+            <TableShell title="Applications Queue">
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead><tr>
+                  <SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Submitted</SortTh>
+                  <SortTh sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Ref</SortTh>
+                  <SortTh sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</SortTh>
+                  <SortTh sortKey="email" currentSort={sortConfig} onSort={handleSort}>Email</SortTh>
+                  <SortTh sortKey="phone" currentSort={sortConfig} onSort={handleSort}>Phone</SortTh>
+                  <SortTh sortKey="level" currentSort={sortConfig} onSort={handleSort}>Level</SortTh>
+                  <SortTh sortKey="programme" currentSort={sortConfig} onSort={handleSort}>Programme</SortTh>
+                  <SortTh sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</SortTh>
+                  <SortTh>Actions</SortTh>
+                </tr></thead>
+                <tbody>
+                  {appRows.map((a, i) => (
+                    <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff", opacity: busy === a.ref ? 0.5 : 1 }}>
+                      <Td bold color={C.gray}>{fmtTime(a)}</Td>
+                      <Td mono bold>{a?.ref}</Td>
+                      <Td bold>{a?.name}</Td>
+                      <Td max={180}>{a?.email || "—"}</Td>
+                      <Td mono>{a?.phone || "—"}</Td>
+                      <Td max={150}>{a?.level || "—"}</Td>
+                      <Td max={200}>{a?.programme}</Td>
+                      <td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}><StatusBadge status={a?.status} /></td>
+                      <td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}>
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                          {a?.status === "Under Review" && <ActionBtn small onClick={() => acceptApp(a.ref)} disabled={busy === a.ref} bg={C.emerald}>Accept</ActionBtn>}
+                          {getFolderUrl(a) && <ActionBtn small onClick={() => window.open(getFolderUrl(a), "_blank")} bg={C.blueLight} color={C.blue}>📁</ActionBtn>}
+                          {/* 🚀 QUICK EDIT AND DELETE BUTTONS */}
+                          <ActionBtn small onClick={() => setEditModal({ type: "app", data: a })} disabled={busy === a.ref} bg={C.amberLight} color={C.amberDark}>✏️ Edit</ActionBtn>
+                          <ActionBtn small onClick={() => handleDeleteRecord(a.ref, "app")} disabled={busy === a.ref} bg={C.redLight} color={C.red}>🗑️</ActionBtn>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <Tfoot>
+                  <tr>
+                    <TdFoot colSpan={9}>Total Listed Applications: {appRows.length}</TdFoot>
+                  </tr>
+                </Tfoot>
+              </table>
+            </TableShell>
+          </div>
+        )}
+
+        {/* 🚀 UPGRADED STUDENTS TABLE WITH EDIT/DELETE */}
+        {tab === "students" && (
+          <div>
+            <div style={{ display: "flex", gap: 14, marginBottom: 24, alignItems: "center", background: "#fff", padding: "18px 22px", borderRadius: 18, border: `1px solid ${C.border}`, flexWrap: "wrap" }}>
+              {["", "Enrolled", "Active", "Pending Payment", "On Hold"].map((f) => <ToolbarPill key={f || "All"} label={f || "All"} active={studentFilter === f} onClick={() => setStudentFilter(f)} />)}
+              <div style={{ marginLeft: "auto" }}><SearchBox value={searchTerm} onChange={setSearchTerm} /></div>
+            </div>
+            <TableShell title="Student Registry">
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead><tr>
+                  <SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Status Update</SortTh>
+                  <SortTh sortKey="studentNumber" currentSort={sortConfig} onSort={handleSort}>Student #</SortTh>
+                  <SortTh sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</SortTh>
+                  <SortTh sortKey="email" currentSort={sortConfig} onSort={handleSort}>Email</SortTh>
+                  <SortTh sortKey="phone" currentSort={sortConfig} onSort={handleSort}>Phone</SortTh>
+                  <SortTh sortKey="level" currentSort={sortConfig} onSort={handleSort}>Level</SortTh>
+                  <SortTh sortKey="programme" currentSort={sortConfig} onSort={handleSort}>Programme</SortTh>
+                  <SortTh sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</SortTh>
+                  <SortTh>Services</SortTh>
+                </tr></thead>
+                <tbody>
+                  {studentRows.map((s, i) => (
+                    <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff", opacity: busy === s.studentNumber ? 0.5 : 1 }}>
+                      <Td bold color={C.gray}>{fmtTime(s)}</Td>
+                      <Td mono bold>{s?.studentNumber}</Td>
+                      <Td bold>{s?.name}</Td>
+                      <Td max={180}>{s?.email || "—"}</Td>
+                      <Td mono>{s?.phone || "—"}</Td>
+                      <Td max={150}>{s?.level || "—"}</Td>
+                      <Td max={200}>{s?.programme}</Td>
+                      <td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}><StatusBadge status={s?.status} /></td>
+                      <td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}>
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                          <ActionBtn small onClick={() => genRecord(s.studentNumber)} disabled={busy === s.studentNumber} bg={C.navy}>📄</ActionBtn>
+                          {getFolderUrl(s) && <ActionBtn small onClick={() => window.open(getFolderUrl(s), "_blank")} bg={C.blueLight} color={C.blue}>📁</ActionBtn>}
+                          {/* 🚀 QUICK EDIT AND DELETE BUTTONS */}
+                          <ActionBtn small onClick={() => setEditModal({ type: "student", data: s })} disabled={busy === s.studentNumber} bg={C.amberLight} color={C.amberDark}>✏️ Edit</ActionBtn>
+                          <ActionBtn small onClick={() => handleDeleteRecord(s.studentNumber, "student")} disabled={busy === s.studentNumber} bg={C.redLight} color={C.red}>🗑️</ActionBtn>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <Tfoot>
+                  <tr>
+                    <TdFoot colSpan={9}>Total Listed Students: {studentRows.length}</TdFoot>
+                  </tr>
+                </Tfoot>
+              </table>
+            </TableShell>
+          </div>
+        )}
+
+        {/* PAYMENTS & ACTIVITY TABLES */}
+        {tab === "payments" && (
+          <div>
+            <div style={{ display: "flex", gap: 14, marginBottom: 24, alignItems: "center", background: "#fff", padding: "18px 22px", borderRadius: 18, border: `1px solid ${C.border}`, flexWrap: "wrap" }}>
+              {["Pending Verification", "Paid", ""].map((f) => <ToolbarPill key={f || "All"} label={f || "All"} active={payFilter === f} onClick={() => setPayFilter(f)} />)}
+              <div style={{ marginLeft: "auto" }}><SearchBox value={searchTerm} onChange={setSearchTerm} /></div>
+            </div>
+            <TableShell title="Payments Queue">
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead><tr>
+                  <SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Submission Time</SortTh>
+                  <SortTh sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Reference</SortTh>
+                  <SortTh sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</SortTh>
+                  <SortTh sortKey="amount" currentSort={sortConfig} onSort={handleSort}>Amount</SortTh>
+                  <SortTh sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</SortTh>
+                  <SortTh>Evidence</SortTh>
+                  <SortTh>Actions</SortTh>
+                </tr></thead>
+                <tbody>
+                  {paymentRows.map((p, i) => (
+                    <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}>
+                      <Td bold color={C.gray}>{fmtTime(p)}</Td>
+                      <Td mono bold>{p?.ref}</Td>
+                      <Td bold>{p?.name}</Td>
+                      <Td bold color={C.emerald}>{fmt(p?.amount)}</Td>
+                      <td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}><StatusBadge status={p?.status} /></td>
+                      <Td>{p?.receipt ? <a href={p.receipt} target="_blank" rel="noopener noreferrer" style={{ color: C.blue, fontWeight: 800, textDecoration: "underline" }}>View Bank Slip</a> : <span style={{ color: C.grayLight, fontSize: 12 }}>No Slip</span>}</Td>
+                      <td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}>
+                        {p?.status === "Pending Verification" && (
+                          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                            <ActionBtn small onClick={() => { setModal({ type: "verify", data: p }); setVerifyAmt(String(p.amount)); setVerifyTxn(""); }} disabled={busy === p.ref} bg={C.emerald}>Verify</ActionBtn>
+                            <ActionBtn small onClick={() => rejectPay(p.ref)} disabled={busy === p.ref} bg={C.redLight} color={C.red}>Reject</ActionBtn>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <Tfoot>
+                  <tr>
+                    <TdFoot colSpan={3}>Total Listed Transactions: {paymentRows.length}</TdFoot>
+                    <TdFoot color={C.emerald}>{fmt(totalPaymentSum)}</TdFoot>
+                    <TdFoot colSpan={3}></TdFoot>
+                  </tr>
+                </Tfoot>
+              </table>
+            </TableShell>
+          </div>
+        )}
+
+        {tab === "activity" && (
+          <TableShell title="Institutional Audit Log" tools={<SearchBox value={searchTerm} onChange={setSearchTerm} />}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead><tr>
+                <SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Exact Time</SortTh>
+                <SortTh sortKey="action" currentSort={sortConfig} onSort={handleSort}>Protocol Action</SortTh>
+                <SortTh sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Entity Ref</SortTh>
+                <SortTh>Details</SortTh>
+                <SortTh sortKey="by" currentSort={sortConfig} onSort={handleSort}>Executed By</SortTh>
+              </tr></thead>
+              <tbody>
+                {activityRows.map((e, i) => (
+                  <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}>
+                    <Td bold color={C.gray}>{fmtTime(e)}</Td>
+                    <Td><span style={{ padding: "6px 12px", borderRadius: 8, background: C.blueLight, color: C.blue, fontSize: 11, fontWeight: 800 }}>{e?.action}</span></Td>
+                    <Td mono bold>{e?.ref}</Td>
+                    <Td color={C.gray} max={500}>{e?.details}</Td>
+                    <Td bold color={C.navy}>{e?.by}</Td>
+                  </tr>
+                ))}
+              </tbody>
+              <Tfoot>
+                <tr>
+                  <TdFoot colSpan={5}>Total Logged Events: {activityRows.length}</TdFoot>
+                </tr>
+              </Tfoot>
+            </table>
+          </TableShell>
+        )}
+      </div>
+
+    </div>
   );
 }
