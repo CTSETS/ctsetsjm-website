@@ -176,7 +176,6 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
     setSubmitting(false); 
   };
 
-  // 🚀 FIXED: Removed the description string entirely from the /to_me URL to prevent WiPay 404s
   const handleWiPayCheckout = () => {
     if (submitting || customAmount < 1000) return;
     setSubmitting(true);
@@ -184,10 +183,9 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
     // Silently log the intent to the Google Sheet backend
     try { fetch(APPS_SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "submitpayment", form_type: "WiPay Portal In-App Attempt", ref: profile.studentNumber, studentName: profile.name, email: profile.email, paymentPlan: "Dashboard Payment", amountPaid: customAmount, paymentMethod: "online", timestamp: new Date().toISOString() }) }); } catch (e) {}
 
+    // 🚀 FIXED: If it's a personal link, DO NOT append anything. Just open the link.
     if (WIPAY_CONFIG && WIPAY_CONFIG.baseUrl.includes("/to_me/")) {
-      let base = WIPAY_CONFIG.baseUrl; if (base.endsWith("/")) base = base.slice(0, -1); 
-      // Sends ONLY the amount to prevent routing 404s
-      window.location.href = `${base}/${customAmount}`;
+      window.location.href = WIPAY_CONFIG.baseUrl;
     } else if (WIPAY_CONFIG) {
       const orderId = profile.studentNumber + "-PORTAL"; 
       const returnUrl = encodeURIComponent(window.location.origin + "/#student-portal");
