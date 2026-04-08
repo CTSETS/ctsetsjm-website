@@ -4,30 +4,15 @@ const VERCEL_URL = "https://ctsetsjm-website.vercel.app/api/proxy";
 const PW_KEY = "ctsAdm";
 
 const C = {
-  navy: "#011E40",
-  gold: "#C49112",
-  teal: "#0E8F8B",
-  coral: "#E8634A",
-  emerald: "#2E7D32",
-  emeraldLight: "#E8F5E9",
-  amber: "#F57F17",
-  amberLight: "#FFF8E1",
-  bg: "#F8FAFC",
-  card: "#FFFFFF",
-  border: "#E2E8F0",
-  gray: "#64748B",
-  grayLight: "#94A3B8",
-  text: "#1E293B",
-  red: "#EF4444",
-  redLight: "#FEE2E2",
-  blue: "#3B82F6",
-  blueLight: "#DBEAFE",
-  purple: "#8B5CF6",
-  purpleLight: "#EDE9FE",
-  heading: "'Playfair Display', Georgia, serif",
-  body: "'DM Sans', -apple-system, sans-serif",
+  navy: "#011E40", gold: "#C49112", teal: "#0E8F8B", coral: "#E8634A",
+  emerald: "#2E7D32", emeraldLight: "#E8F5E9", amber: "#F57F17", amberLight: "#FFF8E1",
+  bg: "#F8FAFC", card: "#FFFFFF", border: "#E2E8F0", gray: "#64748B", grayLight: "#94A3B8",
+  text: "#1E293B", red: "#EF4444", redLight: "#FEE2E2", blue: "#3B82F6", blueLight: "#DBEAFE",
+  purple: "#8B5CF6", purpleLight: "#EDE9FE",
+  heading: "'Playfair Display', Georgia, serif", body: "'DM Sans', -apple-system, sans-serif",
 };
 
+// ─── HELPER FUNCTIONS ───
 function fmt(n) { return "J$" + Number(n || 0).toLocaleString(); }
 function findDate(obj) {
   if (!obj) return null;
@@ -53,29 +38,20 @@ function getFolderUrl(obj) {
   }
   return "";
 }
+
+// ─── UI COMPONENTS ───
 function StatusBadge({ status }) {
   const map = {
-    "Under Review": { bg: C.amberLight, c: C.amber },
-    Accepted: { bg: C.emeraldLight, c: C.emerald },
-    "Pending Payment": { bg: C.blueLight, c: C.blue },
-    Rejected: { bg: C.redLight, c: C.red },
-    Withdrawn: { bg: C.purpleLight, c: C.purple },
-    Deferred: { bg: "#F1F5F9", c: C.gray },
-    Enrolled: { bg: "#E0F7FA", c: "#00838F" },
-    Active: { bg: C.blueLight, c: C.blue },
-    "On Hold": { bg: "#FFF3E0", c: "#E65100" },
-    Completed: { bg: C.emeraldLight, c: C.emerald },
-    Graduated: { bg: C.amberLight, c: C.gold },
-    Paid: { bg: C.emeraldLight, c: C.emerald },
-    "Paid in Full": { bg: C.emeraldLight, c: C.emerald },
-    "Partial Payment": { bg: C.amberLight, c: C.amber },
-    Pending: { bg: C.amberLight, c: C.amber },
-    "Pending Verification": { bg: "#FFF3E0", c: "#E65100" },
-    "Paid (Online)": { bg: C.emeraldLight, c: C.emerald },
-    "Rejected — Not Found": { bg: C.redLight, c: C.red },
-    Yes: { bg: C.emeraldLight, c: C.emerald },
-    No: { bg: C.redLight, c: C.red },
-    "Evidence Submitted": { bg: C.amberLight, c: C.amber },
+    "Under Review": { bg: C.amberLight, c: C.amber }, Accepted: { bg: C.emeraldLight, c: C.emerald },
+    "Pending Payment": { bg: C.blueLight, c: C.blue }, Rejected: { bg: C.redLight, c: C.red },
+    Withdrawn: { bg: C.purpleLight, c: C.purple }, Deferred: { bg: "#F1F5F9", c: C.gray },
+    Enrolled: { bg: "#E0F7FA", c: "#00838F" }, Active: { bg: C.blueLight, c: C.blue },
+    "On Hold": { bg: "#FFF3E0", c: "#E65100" }, Completed: { bg: C.emeraldLight, c: C.emerald },
+    Graduated: { bg: C.amberLight, c: C.gold }, Paid: { bg: C.emeraldLight, c: C.emerald },
+    "Paid in Full": { bg: C.emeraldLight, c: C.emerald }, "Partial Payment": { bg: C.amberLight, c: C.amber },
+    Pending: { bg: C.amberLight, c: C.amber }, "Pending Verification": { bg: "#FFF3E0", c: "#E65100" },
+    "Paid (Online)": { bg: C.emeraldLight, c: C.emerald }, "Rejected — Not Found": { bg: C.redLight, c: C.red },
+    Yes: { bg: C.emeraldLight, c: C.emerald }, No: { bg: C.redLight, c: C.red }, "Evidence Submitted": { bg: C.amberLight, c: C.amber },
   };
   const s = map[status] || { bg: "#F1F5F9", c: C.gray };
   return <span style={{ display: "inline-block", padding: "6px 12px", borderRadius: 999, background: s.bg, color: s.c, fontSize: 11, fontWeight: 800, whiteSpace: "nowrap", fontFamily: C.body, letterSpacing: 0.5 }}>{status || "—"}</span>;
@@ -101,9 +77,17 @@ function SortTh({ children, sortKey, currentSort, onSort }) {
 function Td({ children, mono, bold, color, max }) {
   return <td style={{ padding: "16px", fontFamily: mono ? "monospace" : C.body, fontSize: mono ? 12 : 13, fontWeight: bold ? 700 : 500, color: color || C.text, maxWidth: max || "none", overflow: max ? "hidden" : "visible", textOverflow: max ? "ellipsis" : "clip", whiteSpace: max ? "nowrap" : "normal", borderBottom: `1px solid ${C.border}` }}>{children}</td>;
 }
+function Tfoot({ children }) {
+  return <tfoot style={{ position: "sticky", bottom: 0, zIndex: 2, background: "#EEF2F7", borderTop: `2px solid ${C.navy}` }}>{children}</tfoot>;
+}
+function TdFoot({ children, colSpan = 1, color = C.navy }) {
+  return <td colSpan={colSpan} style={{ padding: "16px", fontFamily: C.body, fontSize: 14, fontWeight: 900, color: color, whiteSpace: "nowrap" }}>{children}</td>;
+}
 function TableShell({ title, tools, children }) {
   return <div style={{ background: C.card, borderRadius: 24, border: `1px solid ${C.border}`, overflow: "hidden", boxShadow: "0 10px 26px rgba(15,23,42,0.04)" }}>{(title || tools) && <div style={{ padding: "22px 26px", borderBottom: `1px solid ${C.border}`, display: "flex", gap: 16, justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>{title && <h2 style={{ fontFamily: C.heading, color: C.navy, fontSize: 24, margin: 0, fontWeight: 800 }}>{title}</h2>}{tools}</div>}<div style={{ overflowX: "auto", maxHeight: "72vh" }}>{children}</div></div>;
 }
+
+// ─── MODALS ───
 function VerifyModal({ modal, verifyAmt, setVerifyAmt, verifyTxn, setVerifyTxn, onConfirm, onClose, busy }) {
   if (!modal) return null;
   return (
@@ -125,6 +109,48 @@ function VerifyModal({ modal, verifyAmt, setVerifyAmt, verifyTxn, setVerifyTxn, 
   );
 }
 
+function EditRecordModal({ editModal, onClose, onSave, busy }) {
+  if (!editModal) return null;
+  const { type, data } = editModal;
+  const refId = type === "student" ? data.studentNumber : data.ref;
+  
+  const [form, setForm] = useState({
+    name: data.name || "", email: data.email || "", phone: data.phone || "",
+    level: data.level || "", programme: data.programme || "", status: data.status || ""
+  });
+
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  
+  const inputStyle = { width: "100%", padding: "14px", borderRadius: "10px", border: `1px solid ${C.border}`, fontSize: 14, fontFamily: C.body, background: "#F8FAFC", marginBottom: "16px", boxSizing: "border-box" };
+  const labelStyle = { display: "block", fontSize: 11, fontWeight: 800, color: C.navy, marginBottom: 6, textTransform: "uppercase", letterSpacing: 1, fontFamily: C.body };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(1,30,64,0.85)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, backdropFilter: "blur(10px)" }}>
+      <div style={{ background: "#fff", borderRadius: 24, width: "100%", maxWidth: 600, overflow: "hidden", boxShadow: "0 32px 80px rgba(0,0,0,0.45)", maxHeight: "90vh", display: "flex", flexDirection: "column" }}>
+        <div style={{ padding: "24px 30px", background: C.navy, color: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div><div style={{ fontSize: 24, fontWeight: 800, fontFamily: C.heading, marginBottom: 4 }}>Edit Record</div><div style={{ fontSize: 13, color: C.gold, fontWeight: 600, fontFamily: "monospace" }}>{refId}</div></div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "#fff", fontSize: 24, cursor: "pointer" }}>✕</button>
+        </div>
+        <div style={{ padding: 30, overflowY: "auto", flex: 1 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
+            <div style={{ gridColumn: "1 / -1" }}><label style={labelStyle}>Full Name</label><input name="name" value={form.name} onChange={handleChange} style={inputStyle} /></div>
+            <div><label style={labelStyle}>Email Address</label><input name="email" value={form.email} onChange={handleChange} style={inputStyle} /></div>
+            <div><label style={labelStyle}>Phone Number</label><input name="phone" value={form.phone} onChange={handleChange} style={inputStyle} /></div>
+            <div><label style={labelStyle}>Programme</label><input name="programme" value={form.programme} onChange={handleChange} style={inputStyle} /></div>
+            <div><label style={labelStyle}>Level</label><input name="level" value={form.level} onChange={handleChange} style={inputStyle} /></div>
+            <div style={{ gridColumn: "1 / -1" }}><label style={labelStyle}>Override Status</label><select name="status" value={form.status} onChange={handleChange} style={{...inputStyle, background: "#fff", border: `2px solid ${C.teal}`}}><option value="Under Review">Under Review</option><option value="Accepted">Accepted</option><option value="Pending Payment">Pending Payment</option><option value="Enrolled">Enrolled</option><option value="Active">Active</option><option value="On Hold">On Hold</option><option value="Completed">Completed</option><option value="Graduated">Graduated</option><option value="Withdrawn">Withdrawn</option><option value="Rejected">Rejected</option></select></div>
+          </div>
+        </div>
+        <div style={{ padding: "20px 30px", background: "#F8FAFC", borderTop: `1px solid ${C.border}`, display: "flex", gap: 12, justifyContent: "flex-end" }}>
+          <ActionBtn onClick={onClose} bg={C.border} color={C.gray}>Cancel</ActionBtn>
+          <ActionBtn onClick={() => onSave(refId, type, form)} disabled={busy === refId} bg={C.emerald} color="#fff">{busy === refId ? "Saving..." : "Save Changes"}</ActionBtn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── MAIN DASHBOARD COMPONENT ───
 export default function AdminDashboardPage() {
   const [auth, setAuth] = useState(() => { try { return sessionStorage.getItem(PW_KEY) || ""; } catch { return ""; } });
   const [loggedIn, setLoggedIn] = useState(false);
@@ -147,7 +173,10 @@ export default function AdminDashboardPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [actionMsg, setActionMsg] = useState(null);
   const [busy, setBusy] = useState("");
-  const [modal, setModal] = useState(null);
+  
+  const [modal, setModal] = useState(null); 
+  const [editModal, setEditModal] = useState(null); 
+  
   const [verifyAmt, setVerifyAmt] = useState("");
   const [verifyTxn, setVerifyTxn] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
@@ -156,41 +185,58 @@ export default function AdminDashboardPage() {
   const api = useCallback(async (action, params) => {
     let url = `${VERCEL_URL}?action=${action}&pw=${encodeURIComponent(auth)}`;
     if (params) for (const k in params) if (params[k] !== undefined && params[k] !== "") url += `&${k}=${encodeURIComponent(params[k])}`;
-    try { return await (await fetch(url)).json(); } catch { return { ok: false, error: "Network Error" }; }
+    // 🚀 DIAGNOSTIC FIX: If Vercel times out, it throws a network error. We catch it and report it.
+    try { 
+      const response = await fetch(url);
+      const data = await response.json();
+      return data;
+    } catch(e) { 
+      return { ok: false, error: "Network Error: Google Backend Failed to Respond. " + e.message }; 
+    }
   }, [auth]);
 
   const toast = (text, ok = true) => { setActionMsg({ text, ok }); setTimeout(() => setActionMsg(null), 6000); };
   const refresh = () => setRefreshKey((k) => k + 1);
 
+  // 🚀 DIAGNOSTIC FIX: Surfacing the exact backend error to the screen instead of "Session Expired"
   const loadDash = useCallback(() => {
     setLoading(true);
     api("admindashboard").then((d) => {
-      if (d && d.ok) {
+      if (d && (d.ok || d.success)) {
         setDashboard(d);
         setLoggedIn(true);
         try { sessionStorage.setItem(PW_KEY, auth); } catch {}
       } else {
-        setLoginErr("Session expired. Please log in again.");
+        const backendError = d?.error || "Google Backend Error: No data returned.";
+        setLoginErr(`SERVER ERROR: ${backendError}`);
         setLoggedIn(false);
         setLoginStep(0);
       }
       setLoading(false);
-    }).catch(() => { setLoginErr("Connection error"); setLoading(false); });
+    }).catch((err) => { 
+      setLoginErr("CONNECTION FATAL ERROR: " + err.message); 
+      setLoading(false); 
+    });
   }, [api, auth]);
 
   useEffect(() => { if (auth) loadDash(); }, []);
   useEffect(() => {
     if (!loggedIn) return;
     if (tab === "dashboard") loadDash();
-    else if (tab === "applications") { setLoading(true); api("adminlistapps", { status: appFilter }).then((d) => { if (d && d.ok) setApps(d.applications || []); setLoading(false); }).catch(() => setLoading(false)); }
-    else if (tab === "students") { setLoading(true); api("adminliststudents").then((d) => { if (d && d.ok) setStudents(d.students || []); setLoading(false); }).catch(() => setLoading(false)); }
-    else if (tab === "payments") { setLoading(true); api("adminlistpayments").then((d) => { if (d && d.ok) setPayments(d.payments || []); setLoading(false); }).catch(() => setLoading(false)); }
-    else if (tab === "activity") { setLoading(true); api("adminauditlog").then((d) => { if (d && d.ok) setAuditLog(d.entries || []); setLoading(false); }).catch(() => setLoading(false)); }
+    else if (tab === "applications") { setLoading(true); api("adminlistapps", { status: appFilter }).then((d) => { if (d && (d.ok || d.success)) setApps(d.applications || []); setLoading(false); }).catch(() => setLoading(false)); }
+    else if (tab === "students") { setLoading(true); api("adminliststudents").then((d) => { if (d && (d.ok || d.success)) setStudents(d.students || []); setLoading(false); }).catch(() => setLoading(false)); }
+    else if (tab === "payments") { setLoading(true); api("adminlistpayments").then((d) => { if (d && (d.ok || d.success)) setPayments(d.payments || []); setLoading(false); }).catch(() => setLoading(false)); }
+    else if (tab === "activity") { setLoading(true); api("adminauditlog").then((d) => { if (d && (d.ok || d.success)) setAuditLog(d.entries || []); setLoading(false); }).catch(() => setLoading(false)); }
   }, [loggedIn, tab, appFilter, refreshKey]);
 
   const doAction = (name, action, params) => {
     setBusy(name);
-    api(action, params).then((d) => { toast(d && d.ok ? (d.message || "Done") : ("Error: " + ((d && d.error) || "Failed")), !!(d && d.ok)); setBusy(""); refresh(); }).catch(() => { toast("Network error", false); setBusy(""); });
+    api(action, params).then((d) => { 
+      toast(d && (d.ok || d.success) ? (d.message || "Done") : ("Error: " + ((d && d.error) || "Failed")), !!(d && (d.ok || d.success))); 
+      setBusy(""); 
+      setEditModal(null);
+      refresh(); 
+    }).catch(() => { toast("Network error", false); setBusy(""); });
   };
 
   const acceptApp = (ref) => { if (window.confirm("Accept " + ref + "?")) { setApps((prev) => prev.map((a) => a.ref === ref ? { ...a, status: "Accepted" } : a)); doAction(ref, "adminacceptapp", { ref }); } };
@@ -200,12 +246,26 @@ export default function AdminDashboardPage() {
   const rejectPay = (ref) => { if (window.confirm("Reject payment for " + ref + "?")) { setPayments((prev) => prev.map((p) => p.ref === ref ? { ...p, status: "Rejected — Not Found" } : p)); if (dashboard) setDashboard((prev) => ({ ...prev, pendingPayments: prev.pendingPayments.filter((p) => p.ref !== ref) })); doAction(ref, "rejectpayment", { ref, txn: "admin-dashboard" }); } };
   const verifyPay = (ref, amt, txn) => { setPayments((prev) => prev.map((p) => p.ref === ref ? { ...p, status: "Paid", amount: amt } : p)); if (dashboard) setDashboard((prev) => ({ ...prev, pendingPayments: prev.pendingPayments.filter((p) => p.ref !== ref) })); doAction(ref, "verifypayment", { ref, amount: amt, txn }); setModal(null); };
 
+  const handleEditSave = (ref, type, formData) => {
+    doAction(ref, "admineditrecord", { ref, type, ...formData });
+    if (type === "student") setStudents(prev => prev.map(s => s.studentNumber === ref ? { ...s, ...formData } : s));
+    if (type === "app") setApps(prev => prev.map(a => a.ref === ref ? { ...a, ...formData } : a));
+  };
+
+  const handleDeleteRecord = (ref, type) => {
+    if (window.confirm(`🚨 DANGER: Are you absolutely sure you want to completely DELETE ${ref}? This cannot be undone.`)) {
+      doAction(ref, "admindeleterecord", { ref, type });
+      if (type === "student") setStudents(prev => prev.filter(s => s.studentNumber !== ref));
+      if (type === "app") setApps(prev => prev.filter(a => a.ref !== ref));
+    }
+  };
+
   async function handlePasswordSubmit() {
     if (!pw.trim()) return;
     setLoginErr(""); setLoading(true);
     try {
       const data1 = await (await fetch(`${VERCEL_URL}?action=verifyadminpw&pw=${encodeURIComponent(pw.trim())}`)).json();
-      if (data1 && data1.ok) {
+      if (data1 && (data1.ok || data1.success)) {
         setAuth(pw.trim());
         const data2 = await (await fetch(`${VERCEL_URL}?action=sendotp&identifier=ADMIN&purpose=admin_login`)).json();
         if (data2 && data2.success) setLoginStep(1); else setLoginErr("Failed to trigger 2FA sequence.");
@@ -213,6 +273,7 @@ export default function AdminDashboardPage() {
     } catch { setLoginErr("Connection error. Gateway offline."); }
     setLoading(false);
   }
+
   async function handleOtpSubmit() {
     if (!otpCode.trim() || otpCode.length !== 6) { setLoginErr("Enter the 6-digit code."); return; }
     setLoginErr(""); setLoading(true);
@@ -254,10 +315,13 @@ export default function AdminDashboardPage() {
     { id: "payments", label: "Payments", icon: "💳", b: dashboard?.pendingPayments?.length },
     { id: "activity", label: "Activity Log", icon: "⚡" },
   ];
+  
   const appRows = useMemo(() => processData(apps).filter((a) => !appFilter || a?.status === appFilter), [apps, appFilter, processData]);
   const studentRows = useMemo(() => processData(students).filter((s) => !studentFilter || s?.status === studentFilter), [students, studentFilter, processData]);
   const paymentRows = useMemo(() => processData(payments).filter((p) => !payFilter || p?.status === payFilter), [payments, payFilter, processData]);
   const activityRows = useMemo(() => processData(auditLog), [auditLog, processData]);
+
+  const totalPaymentSum = paymentRows.reduce((sum, p) => sum + (Number(String(p.amount).replace(/[^0-9.-]+/g, "")) || 0), 0);
 
   if (!loggedIn) {
     return (
@@ -276,7 +340,7 @@ export default function AdminDashboardPage() {
             <h1 style={{ fontFamily: C.heading, color: C.navy, fontSize: 36, fontWeight: 900, marginBottom: 12 }}>{loginStep === 0 ? "Admin Password" : "Two-Factor Code"}</h1>
             <p style={{ color: C.gray, fontSize: 14, lineHeight: 1.75, marginBottom: 24, fontFamily: C.body }}>{loginStep === 0 ? "Enter the master password to initiate the secure login sequence." : "Enter the 6-digit verification code sent for admin access."}</p>
             {loginStep === 0 ? <input type="password" value={pw} onChange={(e) => { setPw(e.target.value); setLoginErr(""); }} onKeyDown={(e) => e.key === "Enter" && handlePasswordSubmit()} autoFocus placeholder="Master Password" style={{ width: "100%", padding: "18px 20px", borderRadius: 14, border: `2px solid ${loginErr ? C.red : C.border}`, fontSize: 18, textAlign: "center", letterSpacing: 3, background: "#F8FAFC", fontWeight: 800, boxSizing: "border-box", marginBottom: 18 }} /> : <input type="text" value={otpCode} onChange={(e) => { setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6)); setLoginErr(""); }} onKeyDown={(e) => e.key === "Enter" && handleOtpSubmit()} autoFocus placeholder="000000" style={{ width: "100%", padding: "18px 20px", borderRadius: 14, border: `2px solid ${loginErr ? C.red : C.teal}`, fontSize: 30, fontFamily: "monospace", textAlign: "center", letterSpacing: 10, background: C.emeraldLight, fontWeight: 900, boxSizing: "border-box", marginBottom: 18 }} />}
-            {loginErr && <div style={{ color: C.red, fontWeight: 800, marginBottom: 16, fontFamily: C.body }}>{loginErr}</div>}
+            {loginErr && <div style={{ color: C.red, fontWeight: 800, marginBottom: 16, fontFamily: C.body, whiteSpace: "pre-wrap", textAlign: "left", padding: 12, background: C.redLight, borderRadius: 8 }}>{loginErr}</div>}
             <button onClick={loginStep === 0 ? handlePasswordSubmit : handleOtpSubmit} disabled={loading} style={{ width: "100%", padding: "18px", borderRadius: 14, border: "none", background: C.navy, color: "#fff", fontSize: 16, fontWeight: 900, cursor: "pointer", fontFamily: C.body }}>{loading ? "Authenticating..." : "Access Console"}</button>
           </div>
         </div>
@@ -286,6 +350,9 @@ export default function AdminDashboardPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: C.bg, fontFamily: C.body, width: "100%", overflowX: "hidden" }}>
+      <VerifyModal modal={modal} verifyAmt={verifyAmt} setVerifyAmt={setVerifyAmt} verifyTxn={verifyTxn} setVerifyTxn={setVerifyTxn} onConfirm={() => verifyPay(modal.data.ref, verifyAmt, verifyTxn)} onClose={() => setModal(null)} busy={busy} />
+      <EditRecordModal editModal={editModal} onClose={() => setEditModal(null)} onSave={handleEditSave} busy={busy} />
+
       <div style={{ background: C.navy, padding: "14px 34px", display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 200, boxShadow: "0 2px 10px rgba(0,0,0,0.08)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <img src="/logo.jpg" alt="" style={{ width: 36, height: 36, borderRadius: 8 }} />
@@ -321,7 +388,10 @@ export default function AdminDashboardPage() {
               <TableShell title="Recent Applications Requiring Attention" tools={<ActionBtn onClick={() => setTab("applications")} bg={C.navy} color="#fff">Open Applications</ActionBtn>}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead><tr><SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Submitted</SortTh><SortTh sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Reference</SortTh><SortTh sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</SortTh><SortTh sortKey="programme" currentSort={sortConfig} onSort={handleSort}>Programme</SortTh><SortTh sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</SortTh></tr></thead>
-                  <tbody>{(dashboard?.recentApps || []).map((a, i) => <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}><Td bold color={C.gray}>{fmtTime(a)}</Td><Td mono bold>{a?.ref}</Td><Td bold>{a?.name}</Td><Td max={320}>{a?.programme}</Td><td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}><StatusBadge status={a?.status} /></td></tr>)}</tbody>
+                  <tbody>{(dashboard?.recentApps || []).map((a, i) => <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}><Td bold color={C.gray}>{fmtTime(a)}</Td><Td mono bold>{a?.ref}</Td><Td bold>{a?.name}</Td><Td max={250}>{a?.programme}</Td><td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}><StatusBadge status={a?.status} /></td></tr>)}</tbody>
+                  <Tfoot>
+                    <tr><TdFoot colSpan={5}>Total Recent Items: {(dashboard?.recentApps || []).length}</TdFoot></tr>
+                  </Tfoot>
                 </table>
               </TableShell>
               <div style={{ display: "grid", gap: 20 }}>
@@ -355,8 +425,44 @@ export default function AdminDashboardPage() {
             </div>
             <TableShell title="Applications Queue">
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead><tr><SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Submitted</SortTh><SortTh sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Reference</SortTh><SortTh sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</SortTh><SortTh sortKey="programme" currentSort={sortConfig} onSort={handleSort}>Programme</SortTh><SortTh sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</SortTh><SortTh sortKey="email" currentSort={sortConfig} onSort={handleSort}>Email</SortTh><SortTh>Actions</SortTh></tr></thead>
-                <tbody>{appRows.map((a, i) => <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}><Td bold color={C.gray}>{fmtTime(a)}</Td><Td mono bold>{a?.ref}</Td><Td bold>{a?.name}</Td><Td max={320}>{a?.programme}</Td><td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}><StatusBadge status={a?.status} /></td><Td max={220}>{a?.email}</Td><td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}><div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>{a?.status === "Under Review" && <ActionBtn small onClick={() => acceptApp(a.ref)} disabled={busy === a.ref} bg={C.emerald}>Accept</ActionBtn>}{a?.status === "Under Review" && <ActionBtn small onClick={() => rejectApp(a.ref)} disabled={busy === a.ref} bg={C.redLight} color={C.red}>Reject</ActionBtn>}{getFolderUrl(a) ? <ActionBtn small onClick={() => window.open(getFolderUrl(a), "_blank")} bg={C.blueLight} color={C.blue}>📁 Folder</ActionBtn> : <ActionBtn small disabled bg="#E2E8F0" color={C.grayLight}>📁 No Link</ActionBtn>}</div></td></tr>)}</tbody>
+                <thead><tr>
+                  <SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Submitted</SortTh>
+                  <SortTh sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Ref</SortTh>
+                  <SortTh sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</SortTh>
+                  <SortTh sortKey="email" currentSort={sortConfig} onSort={handleSort}>Email</SortTh>
+                  <SortTh sortKey="phone" currentSort={sortConfig} onSort={handleSort}>Phone</SortTh>
+                  <SortTh sortKey="level" currentSort={sortConfig} onSort={handleSort}>Level</SortTh>
+                  <SortTh sortKey="programme" currentSort={sortConfig} onSort={handleSort}>Programme</SortTh>
+                  <SortTh sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</SortTh>
+                  <SortTh>Actions</SortTh>
+                </tr></thead>
+                <tbody>
+                  {appRows.map((a, i) => (
+                    <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff", opacity: busy === a.ref ? 0.5 : 1 }}>
+                      <Td bold color={C.gray}>{fmtTime(a)}</Td>
+                      <Td mono bold>{a?.ref}</Td>
+                      <Td bold>{a?.name}</Td>
+                      <Td max={180}>{a?.email || "—"}</Td>
+                      <Td mono>{a?.phone || "—"}</Td>
+                      <Td max={150}>{a?.level || "—"}</Td>
+                      <Td max={200}>{a?.programme}</Td>
+                      <td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}><StatusBadge status={a?.status} /></td>
+                      <td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}>
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                          {a?.status === "Under Review" && <ActionBtn small onClick={() => acceptApp(a.ref)} disabled={busy === a.ref} bg={C.emerald}>Accept</ActionBtn>}
+                          {getFolderUrl(a) && <ActionBtn small onClick={() => window.open(getFolderUrl(a), "_blank")} bg={C.blueLight} color={C.blue}>📁</ActionBtn>}
+                          <ActionBtn small onClick={() => setEditModal({ type: "app", data: a })} disabled={busy === a.ref} bg={C.amberLight} color={C.amberDark}>✏️ Edit</ActionBtn>
+                          <ActionBtn small onClick={() => handleDeleteRecord(a.ref, "app")} disabled={busy === a.ref} bg={C.redLight} color={C.red}>🗑️</ActionBtn>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <Tfoot>
+                  <tr>
+                    <TdFoot colSpan={9}>Total Listed Applications: {appRows.length}</TdFoot>
+                  </tr>
+                </Tfoot>
               </table>
             </TableShell>
           </div>
@@ -370,8 +476,44 @@ export default function AdminDashboardPage() {
             </div>
             <TableShell title="Student Registry">
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead><tr><SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Status Update</SortTh><SortTh sortKey="studentNumber" currentSort={sortConfig} onSort={handleSort}>Student #</SortTh><SortTh sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</SortTh><SortTh sortKey="programme" currentSort={sortConfig} onSort={handleSort}>Programme</SortTh><SortTh sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</SortTh><SortTh>Student Services</SortTh></tr></thead>
-                <tbody>{studentRows.map((s, i) => <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}><Td bold color={C.gray}>{fmtTime(s)}</Td><Td mono bold>{s?.studentNumber}</Td><Td bold>{s?.name}</Td><Td max={360}>{s?.programme}</Td><td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}><StatusBadge status={s?.status} /></td><td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}><div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><ActionBtn small onClick={() => genRecord(s.studentNumber)} disabled={busy === s.studentNumber} bg={C.navy}>{busy === s.studentNumber ? "Generating..." : "📄 Record"}</ActionBtn>{getFolderUrl(s) ? <ActionBtn small onClick={() => window.open(getFolderUrl(s), "_blank")} bg={C.blueLight} color={C.blue}>📁 Folder</ActionBtn> : <ActionBtn small disabled bg="#E2E8F0" color={C.grayLight}>📁 No Link</ActionBtn>}{s?.status === "Pending Payment" && <ActionBtn small onClick={() => enrollStu(s.ref)} disabled={busy === s.ref} bg={C.emerald}>{busy === s.ref ? "Processing..." : "Force Enroll"}</ActionBtn>}</div></td></tr>)}</tbody>
+                <thead><tr>
+                  <SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Status Update</SortTh>
+                  <SortTh sortKey="studentNumber" currentSort={sortConfig} onSort={handleSort}>Student #</SortTh>
+                  <SortTh sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</SortTh>
+                  <SortTh sortKey="email" currentSort={sortConfig} onSort={handleSort}>Email</SortTh>
+                  <SortTh sortKey="phone" currentSort={sortConfig} onSort={handleSort}>Phone</SortTh>
+                  <SortTh sortKey="level" currentSort={sortConfig} onSort={handleSort}>Level</SortTh>
+                  <SortTh sortKey="programme" currentSort={sortConfig} onSort={handleSort}>Programme</SortTh>
+                  <SortTh sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</SortTh>
+                  <SortTh>Services</SortTh>
+                </tr></thead>
+                <tbody>
+                  {studentRows.map((s, i) => (
+                    <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff", opacity: busy === s.studentNumber ? 0.5 : 1 }}>
+                      <Td bold color={C.gray}>{fmtTime(s)}</Td>
+                      <Td mono bold>{s?.studentNumber}</Td>
+                      <Td bold>{s?.name}</Td>
+                      <Td max={180}>{s?.email || "—"}</Td>
+                      <Td mono>{s?.phone || "—"}</Td>
+                      <Td max={150}>{s?.level || "—"}</Td>
+                      <Td max={200}>{s?.programme}</Td>
+                      <td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}><StatusBadge status={s?.status} /></td>
+                      <td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}>
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                          <ActionBtn small onClick={() => genRecord(s.studentNumber)} disabled={busy === s.studentNumber} bg={C.navy}>📄</ActionBtn>
+                          {getFolderUrl(s) && <ActionBtn small onClick={() => window.open(getFolderUrl(s), "_blank")} bg={C.blueLight} color={C.blue}>📁</ActionBtn>}
+                          <ActionBtn small onClick={() => setEditModal({ type: "student", data: s })} disabled={busy === s.studentNumber} bg={C.amberLight} color={C.amberDark}>✏️ Edit</ActionBtn>
+                          <ActionBtn small onClick={() => handleDeleteRecord(s.studentNumber, "student")} disabled={busy === s.studentNumber} bg={C.redLight} color={C.red}>🗑️</ActionBtn>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <Tfoot>
+                  <tr>
+                    <TdFoot colSpan={9}>Total Listed Students: {studentRows.length}</TdFoot>
+                  </tr>
+                </Tfoot>
               </table>
             </TableShell>
           </div>
@@ -385,8 +527,42 @@ export default function AdminDashboardPage() {
             </div>
             <TableShell title="Payments Queue">
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead><tr><SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Submission Time</SortTh><SortTh sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Reference</SortTh><SortTh sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</SortTh><SortTh sortKey="amount" currentSort={sortConfig} onSort={handleSort}>Amount</SortTh><SortTh sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</SortTh><SortTh>Evidence</SortTh><SortTh>Actions</SortTh></tr></thead>
-                <tbody>{paymentRows.map((p, i) => <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}><Td bold color={C.gray}>{fmtTime(p)}</Td><Td mono bold>{p?.ref}</Td><Td bold>{p?.name}</Td><Td bold color={C.emerald}>{fmt(p?.amount)}</Td><td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}><StatusBadge status={p?.status} /></td><Td>{p?.receipt ? <a href={p.receipt} target="_blank" rel="noopener noreferrer" style={{ color: C.blue, fontWeight: 800, textDecoration: "underline" }}>View Bank Slip</a> : <span style={{ color: C.grayLight, fontSize: 12 }}>No Slip</span>}</Td><td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}>{p?.status === "Pending Verification" && <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><ActionBtn small onClick={() => { setModal({ type: "verify", data: p }); setVerifyAmt(String(p.amount)); setVerifyTxn(""); }} disabled={busy === p.ref} bg={C.emerald}>Verify</ActionBtn><ActionBtn small onClick={() => rejectPay(p.ref)} disabled={busy === p.ref} bg={C.redLight} color={C.red}>Reject</ActionBtn></div>}</td></tr>)}</tbody>
+                <thead><tr>
+                  <SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Submission Time</SortTh>
+                  <SortTh sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Reference</SortTh>
+                  <SortTh sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</SortTh>
+                  <SortTh sortKey="amount" currentSort={sortConfig} onSort={handleSort}>Amount</SortTh>
+                  <SortTh sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</SortTh>
+                  <SortTh>Evidence</SortTh>
+                  <SortTh>Actions</SortTh>
+                </tr></thead>
+                <tbody>
+                  {paymentRows.map((p, i) => (
+                    <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}>
+                      <Td bold color={C.gray}>{fmtTime(p)}</Td>
+                      <Td mono bold>{p?.ref}</Td>
+                      <Td bold>{p?.name}</Td>
+                      <Td bold color={C.emerald}>{fmt(p?.amount)}</Td>
+                      <td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}><StatusBadge status={p?.status} /></td>
+                      <Td>{p?.receipt ? <a href={p.receipt} target="_blank" rel="noopener noreferrer" style={{ color: C.blue, fontWeight: 800, textDecoration: "underline" }}>View Bank Slip</a> : <span style={{ color: C.grayLight, fontSize: 12 }}>No Slip</span>}</Td>
+                      <td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}>
+                        {p?.status === "Pending Verification" && (
+                          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                            <ActionBtn small onClick={() => { setModal({ type: "verify", data: p }); setVerifyAmt(String(p.amount)); setVerifyTxn(""); }} disabled={busy === p.ref} bg={C.emerald}>Verify</ActionBtn>
+                            <ActionBtn small onClick={() => rejectPay(p.ref)} disabled={busy === p.ref} bg={C.redLight} color={C.red}>Reject</ActionBtn>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <Tfoot>
+                  <tr>
+                    <TdFoot colSpan={3}>Total Listed Transactions: {paymentRows.length}</TdFoot>
+                    <TdFoot color={C.emerald}>{fmt(totalPaymentSum)}</TdFoot>
+                    <TdFoot colSpan={3}></TdFoot>
+                  </tr>
+                </Tfoot>
               </table>
             </TableShell>
           </div>
@@ -395,14 +571,34 @@ export default function AdminDashboardPage() {
         {tab === "activity" && (
           <TableShell title="Institutional Audit Log" tools={<SearchBox value={searchTerm} onChange={setSearchTerm} />}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead><tr><SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Exact Time</SortTh><SortTh sortKey="action" currentSort={sortConfig} onSort={handleSort}>Protocol Action</SortTh><SortTh sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Entity Ref</SortTh><SortTh>Details</SortTh><SortTh sortKey="by" currentSort={sortConfig} onSort={handleSort}>Executed By</SortTh></tr></thead>
-              <tbody>{activityRows.map((e, i) => <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}><Td bold color={C.gray}>{fmtTime(e)}</Td><Td><span style={{ padding: "6px 12px", borderRadius: 8, background: C.blueLight, color: C.blue, fontSize: 11, fontWeight: 800 }}>{e?.action}</span></Td><Td mono bold>{e?.ref}</Td><Td color={C.gray} max={500}>{e?.details}</Td><Td bold color={C.navy}>{e?.by}</Td></tr>)}</tbody>
+              <thead><tr>
+                <SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Exact Time</SortTh>
+                <SortTh sortKey="action" currentSort={sortConfig} onSort={handleSort}>Protocol Action</SortTh>
+                <SortTh sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Entity Ref</SortTh>
+                <SortTh>Details</SortTh>
+                <SortTh sortKey="by" currentSort={sortConfig} onSort={handleSort}>Executed By</SortTh>
+              </tr></thead>
+              <tbody>
+                {activityRows.map((e, i) => (
+                  <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}>
+                    <Td bold color={C.gray}>{fmtTime(e)}</Td>
+                    <Td><span style={{ padding: "6px 12px", borderRadius: 8, background: C.blueLight, color: C.blue, fontSize: 11, fontWeight: 800 }}>{e?.action}</span></Td>
+                    <Td mono bold>{e?.ref}</Td>
+                    <Td color={C.gray} max={500}>{e?.details}</Td>
+                    <Td bold color={C.navy}>{e?.by}</Td>
+                  </tr>
+                ))}
+              </tbody>
+              <Tfoot>
+                <tr>
+                  <TdFoot colSpan={5}>Total Logged Events: {activityRows.length}</TdFoot>
+                </tr>
+              </Tfoot>
             </table>
           </TableShell>
         )}
       </div>
 
-      <VerifyModal modal={modal} verifyAmt={verifyAmt} setVerifyAmt={setVerifyAmt} verifyTxn={verifyTxn} setVerifyTxn={setVerifyTxn} onConfirm={() => verifyPay(modal.data.ref, verifyAmt, verifyTxn)} onClose={() => setModal(null)} busy={busy} />
     </div>
   );
 }
