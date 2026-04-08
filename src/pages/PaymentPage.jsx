@@ -276,22 +276,16 @@ export default function PaymentPage({ setPage }) {
   const [customAmount, setCustomAmount] = useState("");
   const [fetchErr, setFetchErr] = useState("");
 
-  // Check URL Hash for ?ref=CTSETSA-...
   useEffect(() => {
     const hash = window.location.hash;
     if (hash.includes("?")) {
       const queryString = hash.split("?")[1];
       const urlParams = new URLSearchParams(queryString);
       const passedRef = urlParams.get("ref");
-      if (passedRef && passedRef.toUpperCase().startsWith("CTSETSA-")) {
-        // Only set verifiedId if we want to instantly bypass OTP (not recommended without email check, but keeping logic)
-        // Usually, the link just pre-fills the box now.
-      }
       window.history.replaceState(null, "", "/#pay");
     }
   }, []);
 
-  // When ID is verified via OTPGate, fetch the profile
   useEffect(() => {
     if (verifiedId) {
       const loadProfile = async () => {
@@ -393,7 +387,6 @@ export default function PaymentPage({ setPage }) {
       });
     } catch {}
 
-    // 🚀 FIXED: Absolutely NO extra parameters for /to_me/ Personal Links!
     if (WIPAY_CONFIG.baseUrl.includes("/to_me/")) {
       window.location.href = WIPAY_CONFIG.baseUrl;
     } else {
@@ -539,23 +532,18 @@ export default function PaymentPage({ setPage }) {
                       <img src={PEOPLE.bank} alt="Bank transfer and receipt preparation" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     </div>
                     <h4 style={{ margin: "0 0 20px 0", fontFamily: S.heading, color: S.navy, fontSize: 22, fontWeight: 800 }}>Bank Transfer Instructions</h4>
+                    
+                    {/* 🚀 FIXED: SCOTIA BANK REMOVED AND NCB RENAMED TO CTS ETS */}
                     <div style={{ background: S.lightBg, border: `1px solid ${S.border}`, borderRadius: 14, padding: 18, color: S.navy, fontSize: 14, lineHeight: 1.7, fontFamily: S.body, marginBottom: 18 }}>
-                      <div style={{ marginBottom: 14, paddingBottom: 14, borderBottom: `1px dashed ${S.border}` }}>
-                        <div style={{ fontWeight: 800, color: S.navy, fontSize: 15, marginBottom: 8 }}>🏦 Option 1: Scotiabank</div>
-                        <strong>Bank Name:</strong> Bank of Nova Scotia (BNS)<br />
-                        <strong>Account Name:</strong> Mark Lindo trading as CTS Empowerment & Training Solution<br />
-                        <strong>Account Number:</strong> 001041411<br />
-                        <strong>Account Type:</strong> Savings<br />
-                        <strong>Branch / Transit:</strong> Scotia Center / 50765
-                      </div>
                       <div>
-                        <div style={{ fontWeight: 800, color: S.navy, fontSize: 15, marginBottom: 8 }}>🏦 Option 2: National Commercial Bank (NCB)</div>
+                        <div style={{ fontWeight: 800, color: S.navy, fontSize: 15, marginBottom: 8 }}>🏦 National Commercial Bank (NCB)</div>
                         <strong>Bank Name:</strong> National Commercial Bank (NCB)<br />
-                        <strong>Account Name:</strong> Mark Lindo<br />
+                        <strong>Account Name:</strong> CTS ETS<br />
                         <strong>Account Number:</strong> 214121697<br />
                         <strong>Account Type:</strong> Personal
                       </div>
                     </div>
+
                     <div style={{ marginTop: 12, background: S.amberLight, padding: "10px 12px", borderRadius: 12, border: `1px solid ${S.amber}35`, fontSize: 12, color: S.amberDark, fontFamily: S.body, lineHeight: 1.7, marginBottom: 18 }}>
                       <strong>Important:</strong> include your reference number <strong>({student?.ref})</strong> in the payment memo or notes so we can match it to your profile.
                     </div>

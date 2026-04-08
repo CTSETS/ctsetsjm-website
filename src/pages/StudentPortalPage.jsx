@@ -66,7 +66,6 @@ const loadConfetti = () => {
   document.body.appendChild(script);
 };
 
-// ─── AI Study Assistant ───
 function AIStudyAssistant({ profile }) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -183,8 +182,7 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
     try { fetch(APPS_SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "submitpayment", form_type: "WiPay Portal In-App Attempt", ref: profile.studentNumber, studentName: profile.name, email: profile.email, paymentPlan: "Dashboard Payment", amountPaid: customAmount, paymentMethod: "online", timestamp: new Date().toISOString() }) }); } catch (e) {}
 
     if (WIPAY_CONFIG && WIPAY_CONFIG.baseUrl.includes("/to_me/")) {
-      let base = WIPAY_CONFIG.baseUrl; if (base.endsWith("/")) base = base.slice(0, -1); 
-      window.location.href = `${base}/${customAmount}`;
+      window.location.href = WIPAY_CONFIG.baseUrl;
     } else if (WIPAY_CONFIG) {
       const orderId = profile.studentNumber + "-PORTAL"; 
       const returnUrl = encodeURIComponent(window.location.origin + "/#student-portal");
@@ -260,9 +258,9 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
                 )}
                 {payMethod === "upload" && (
                   <div style={{ animation: "fadeIn 0.3s" }}>
+                    {/* 🚀 FIXED: SCOTIA BANK REMOVED AND NCB RENAMED TO CTS ETS */}
                     <div style={{ background: "#fff", padding: "16px", borderRadius: 12, fontSize: 13, fontFamily: "monospace", border: `1px solid ${S.grayLight}`, lineHeight: 1.6, marginBottom: 20 }}>
-                      <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: "1px dashed #CBD5E1" }}><div style={{ fontWeight: 800, color: S.navy, fontSize: 14, marginBottom: 6, fontFamily: S.body }}>🏦 Scotiabank (BNS)</div><strong>Account Name:</strong> Mark Lindo trading as CTS Empowerment & Training Solution<br/><strong>Account Number:</strong> 001041411 (Savings)<br/><strong>Branch:</strong> Scotia Center / 50765</div>
-                      <div><div style={{ fontWeight: 800, color: S.navy, fontSize: 14, marginBottom: 6, fontFamily: S.body }}>🏦 National Commercial Bank (NCB)</div><strong>Account Name:</strong> Mark Lindo<br/><strong>Account Number:</strong> 214121697 (Personal)</div>
+                      <div><div style={{ fontWeight: 800, color: S.navy, fontSize: 14, marginBottom: 6, fontFamily: S.body }}>🏦 National Commercial Bank (NCB)</div><strong>Account Name:</strong> CTS ETS<br/><strong>Account Number:</strong> 214121697 (Personal)</div>
                     </div>
                     <p style={{ fontSize: 14, color: S.navy, fontWeight: 700, marginBottom: 12 }}>Upload Transfer Receipt</p>
                     <input type="file" onChange={e => setReceipt(e.target.files[0])} style={{ marginBottom: 20, width: "100%", padding: 12, borderRadius: 8, border: "1px dashed #CBD5E1", background: "#F8FAFC", boxSizing: "border-box" }} />
@@ -275,7 +273,6 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
         </div>
       )}
 
-      {/* HEADER */}
       <div style={{ background: `linear-gradient(135deg, ${S.navy} 0%, ${S.teal} 100%)`, borderRadius: 16, padding: "32px", color: "#fff", marginBottom: 32, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20, boxShadow: "0 10px 30px rgba(1, 30, 64, 0.15)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
           {secureImgUrl && !imgError ? (
@@ -606,6 +603,16 @@ function PortalAuthenticated({ verifiedId, setPage, onLogout }) {
 export default function StudentPortalPage({ setPage }) {
   const [verifiedId, setVerifiedId] = useState(null);
 
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem("cts_portal_session");
+      if (saved) {
+        const parsedData = JSON.parse(saved);
+        setVerifiedId(parsedData.profile.studentNumber);
+      }
+    } catch(e) {}
+  }, []);
+
   if (!verifiedId) {
     const animStyles = `@keyframes pulseGateway { 0% { box-shadow: 0 0 0 0 rgba(232, 99, 74, 0.4); } 70% { box-shadow: 0 0 0 40px rgba(232, 99, 74, 0); } 100% { box-shadow: 0 0 0 0 rgba(232, 99, 74, 0); } } @keyframes floatCap { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-15px) scale(1.05); } } @keyframes blinkNode { 0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 12px ${S.teal}; } 50% { opacity: 0.3; transform: scale(0.8); box-shadow: 0 0 2px ${S.teal}; } }`;
     const NodeBadge = ({ label, delay }) => ( <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(0,0,0,0.4)", padding: "14px 24px", borderRadius: 30, border: "1px solid rgba(14, 143, 139, 0.3)", backdropFilter: "blur(4px)" }}><div style={{ width: 12, height: 12, borderRadius: "50%", background: S.teal, animation: `blinkNode 2s infinite ${delay}` }} /><span style={{ color: S.teal, fontSize: 12, fontWeight: 800, fontFamily: S.body, letterSpacing: 2, textTransform: "uppercase" }}>{label}: ONLINE</span></div> );
@@ -621,8 +628,7 @@ export default function StudentPortalPage({ setPage }) {
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 20, background: `radial-gradient(circle at center, #0a2d4d 0%, ${S.navy} 100%)`, position: "relative", overflow: "hidden" }}>
           
           <div style={{ background: "#fff", borderRadius: 24, padding: "40px", maxWidth: 480, width: "100%", position: "relative", zIndex: 2, animation: "pulseGateway 4s infinite", border: `2px solid ${S.coral}50`, boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}>
-             {/* 🚀 UPGRADED: Using original OTPGate for flawless automatic entry */}
-             <OTPGate purpose="portal" title="Welcome Student" text="Enter your Student ID (CTSETSS-...) to access your classroom.">
+             <OTPGate purpose="portal" title="Welcome Student">
                 {(id) => {
                    setVerifiedId(id);
                    return <div style={{ padding: 14, background: S.emeraldLight, color: S.emeraldDark, borderRadius: 10, fontWeight: 800, textAlign: "center" }}>✓ Identity Verified. Booting up portal...</div>;
@@ -637,5 +643,5 @@ export default function StudentPortalPage({ setPage }) {
     );
   }
 
-  return <PortalAuthenticated verifiedId={verifiedId} setPage={setPage} onLogout={() => setVerifiedId(null)} />;
+  return <PortalAuthenticated verifiedId={verifiedId} setPage={setPage} onLogout={() => { setVerifiedId(null); sessionStorage.removeItem("cts_portal_session"); }} />;
 }
