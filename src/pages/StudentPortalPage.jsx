@@ -176,21 +176,20 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
     setSubmitting(false); 
   };
 
+  // 🚀 FIXED: Removed the description string entirely from the /to_me URL to prevent WiPay 404s
   const handleWiPayCheckout = () => {
     if (submitting || customAmount < 1000) return;
     setSubmitting(true);
     
-    const orderId = profile.studentNumber + "-PORTAL"; 
-    
-    // 🚀 FIXED: Extremely clean alphanumeric description string so WiPay doesn't throw a 404
-    const paymentDescription = `Fees-${profile.studentNumber}`; 
-
+    // Silently log the intent to the Google Sheet backend
     try { fetch(APPS_SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "submitpayment", form_type: "WiPay Portal In-App Attempt", ref: profile.studentNumber, studentName: profile.name, email: profile.email, paymentPlan: "Dashboard Payment", amountPaid: customAmount, paymentMethod: "online", timestamp: new Date().toISOString() }) }); } catch (e) {}
 
     if (WIPAY_CONFIG && WIPAY_CONFIG.baseUrl.includes("/to_me/")) {
       let base = WIPAY_CONFIG.baseUrl; if (base.endsWith("/")) base = base.slice(0, -1); 
-      window.location.href = `${base}/${customAmount}/${paymentDescription}`;
+      // Sends ONLY the amount to prevent routing 404s
+      window.location.href = `${base}/${customAmount}`;
     } else if (WIPAY_CONFIG) {
+      const orderId = profile.studentNumber + "-PORTAL"; 
       const returnUrl = encodeURIComponent(window.location.origin + "/#student-portal");
       window.location.href = `${WIPAY_CONFIG.baseUrl}?total=${encodeURIComponent(customAmount)}&currency=${encodeURIComponent(WIPAY_CONFIG.currency)}&order_id=${encodeURIComponent(orderId)}&return_url=${returnUrl}`;
     } else {
