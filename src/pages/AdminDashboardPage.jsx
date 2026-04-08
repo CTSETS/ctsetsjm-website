@@ -94,6 +94,64 @@ function TableShell({ title, tools, children }) {
   return <div style={{ background: C.card, borderRadius: 24, border: `1px solid ${C.border}`, overflow: "hidden", boxShadow: "0 10px 26px rgba(15,23,42,0.04)" }}>{(title || tools) && <div style={{ padding: "22px 26px", borderBottom: `1px solid ${C.border}`, display: "flex", gap: 16, justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>{title && <h2 style={{ fontFamily: C.heading, color: C.navy, fontSize: 24, margin: 0, fontWeight: 800 }}>{title}</h2>}{tools}</div>}<div style={{ overflowX: "auto", maxHeight: "72vh" }}>{children}</div></div>;
 }
 
+// 🚀 THE UNIFIED 6-BOX OTP COMPONENT (ADMIN VERSION)
+function OtpBoxes({ value, onChange, onEnter, disabled }) {
+  const inputRefs = useRef([]);
+  const [focused, setFocused] = useState(-1);
+
+  const handleChange = (e, idx) => {
+    const val = e.target.value.replace(/\D/g, "");
+    if (val.length > 1) { 
+      const paste = val.slice(0, 6);
+      onChange(paste);
+      inputRefs.current[Math.min(paste.length, 5)]?.focus();
+      return;
+    }
+    
+    const currentOtp = (value || "").padEnd(6, " ").split("");
+    currentOtp[idx] = val || " ";
+    const newOtp = currentOtp.join("").trim();
+    
+    onChange(newOtp);
+    if (val && idx < 5) inputRefs.current[idx + 1]?.focus();
+  };
+
+  const handleKeyDown = (e, idx) => {
+    if (e.key === "Backspace" && (!value[idx] || value[idx] === " ") && idx > 0) {
+      inputRefs.current[idx - 1]?.focus();
+    }
+    if (e.key === "Enter" && value.replace(/\s/g, "").length === 6) {
+      onEnter();
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", gap: "8px", justifyContent: "center", margin: "20px 0" }}>
+      {[0, 1, 2, 3, 4, 5].map((i) => {
+        const isActive = focused === i;
+        const val = value[i] || "";
+        const hasVal = val !== "" && val !== " ";
+        const borderCol = isActive ? C.teal : hasVal ? C.gold : C.border; 
+        return (
+          <input
+            key={i}
+            ref={el => inputRefs.current[i] = el}
+            type="text"
+            inputMode="numeric"
+            value={val.trim()}
+            onChange={(e) => handleChange(e, i)}
+            onKeyDown={(e) => handleKeyDown(e, i)}
+            onFocus={() => setFocused(i)}
+            onBlur={() => setFocused(-1)}
+            disabled={disabled}
+            style={{ width: "clamp(40px, 10vw, 50px)", height: "clamp(50px, 12vw, 60px)", fontSize: 24, fontFamily: "monospace", fontWeight: 800, textAlign: "center", borderRadius: 10, border: `2px solid ${borderCol}`, outline: "none", color: C.navy, background: "#fff", transition: "0.2s", boxShadow: isActive ? `0 0 0 3px ${C.teal}20` : "none", boxSizing: "border-box" }}
+          />
+        )
+      })}
+    </div>
+  );
+}
+
 function VerifyModal({ modal, verifyAmt, setVerifyAmt, verifyTxn, setVerifyTxn, onConfirm, onClose, busy }) {
   if (!modal) return null;
   return (
@@ -295,428 +353,4 @@ export default function AdminDashboardPage() {
     }
   };
 
-  async function handlePasswordSubmit() {
-    if (!pw.trim()) return;
-    setLoginErr(""); setLoading(true);
-    try {
-      const data1 = await (await fetch(`${VERCEL_URL}?action=verifyadminpw&pw=${encodeURIComponent(pw.trim())}`)).json();
-      if (data1 && !data1.error && data1.ok) {
-        setAuth(pw.trim());
-        try { sessionStorage.setItem(PW_KEY, pw.trim()); } catch {}
-        const data2 = await (await fetch(`${VERCEL_URL}?action=sendotp&identifier=ADMIN&purpose=admin_login`)).json();
-        if (data2 && data2.success) {
-          setMaskedEmail(data2.maskedEmail || "your email");
-          setLoginStep(1); 
-          setTimeLeft(300); // Reset timer
-        } else {
-          setLoginErr("Failed to trigger 2FA sequence.");
-        }
-      } else setLoginErr("Invalid master password. Intrusion logged.");
-    } catch { setLoginErr("Connection error. Gateway offline."); }
-    setLoading(false);
-  }
-
-  // 🚀 Auto-submit logic when 6 digits are typed!
-  const handleOtpChange = async (e) => {
-    const val = e.target.value.replace(/\D/g, "").slice(0, 6);
-    setOtpCode(val);
-    setLoginErr("");
-    
-    if (val.length === 6) {
-      setLoading(true);
-      try {
-        const data = await (await fetch(`${VERCEL_URL}?action=verifyotp&identifier=ADMIN&code=${val}&purpose=admin_login`)).json();
-        if (data && data.success) loadDash();
-        else { setLoginErr(data?.error === "wrong_code" ? "Invalid 2FA code." : "Code expired. Refresh to try again."); setLoading(false); }
-      } catch { setLoginErr("Connection error."); setLoading(false); }
-    }
-  };
-
-  const formatTime = (seconds) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}:${s < 10 ? "0" : ""}${s}`;
-  };
-
-  const handleSort = (key) => { let direction = "asc"; if (sortConfig.key === key && sortConfig.dir === "asc") direction = "desc"; setSortConfig({ key, dir: direction }); };
-  const processData = useCallback((list) => {
-    if (!Array.isArray(list)) return [];
-    let safeList = list.filter((item) => item != null && typeof item === "object");
-    if (searchTerm) {
-      const s = String(searchTerm).toLowerCase();
-      safeList = safeList.filter((item) => Object.values(item).some((v) => String(v || "").toLowerCase().includes(s)));
-    }
-    if (sortConfig.key) {
-      safeList.sort((a, b) => {
-        let valA = a[sortConfig.key] || findDate(a);
-        let valB = b[sortConfig.key] || findDate(b);
-        const sk = sortConfig.key.toLowerCase();
-        if (sk.includes("date") || sk.includes("time") || sk.includes("timestamp")) { valA = new Date(valA).getTime() || 0; valB = new Date(valB).getTime() || 0; }
-        else if (sortConfig.key === "amount") { valA = Number(String(valA).replace(/[^0-9.-]+/g, "")) || 0; valB = Number(String(valB).replace(/[^0-9.-]+/g, "")) || 0; }
-        else { valA = String(valA || "").toLowerCase(); valB = String(valB || "").toLowerCase(); }
-        if (valA < valB) return sortConfig.dir === "asc" ? -1 : 1;
-        if (valA > valB) return sortConfig.dir === "asc" ? 1 : -1;
-        return 0;
-      });
-    }
-    return safeList;
-  }, [searchTerm, sortConfig]);
-
-  const tabList = [
-    { id: "dashboard", label: "Dashboard", icon: "📊" },
-    { id: "applications", label: "Applications", icon: "📋", b: apps.length > 0 ? apps.filter(a => a.status === "Under Review").length : (dashboard?.apps?.underReview || 0) },
-    { id: "students", label: "Students", icon: "🎓", b: students.length > 0 ? students.length : (dashboard?.students?.total || 0) },
-    { id: "payments", label: "Payments", icon: "💳", b: payments.length > 0 ? payments.filter(p => p.status === "Pending Verification").length : (dashboard?.pendingPayments?.length || 0) },
-    { id: "activity", label: "Activity Log", icon: "⚡" },
-  ];
-  
-  const appRows = useMemo(() => processData(apps).filter((a) => !appFilter || a?.status === appFilter), [apps, appFilter, processData]);
-  const studentRows = useMemo(() => processData(students).filter((s) => !studentFilter || s?.status === studentFilter), [students, studentFilter, processData]);
-  const paymentRows = useMemo(() => processData(payments).filter((p) => !payFilter || p?.status === payFilter), [payments, payFilter, processData]);
-  const activityRows = useMemo(() => processData(auditLog), [auditLog, processData]);
-  const totalPaymentSum = paymentRows.reduce((sum, p) => sum + (Number(String(p.amount).replace(/[^0-9.-]+/g, "")) || 0), 0);
-
-  if (!loggedIn) {
-    return (
-      <div style={{ minHeight: "100vh", background: `radial-gradient(circle at center, #0a2d4d 0%, ${C.navy} 100%)`, display: "flex", flexDirection: "column", fontFamily: C.body }}>
-        <div style={{ background: C.navy, padding: "18px 34px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: `2px solid ${C.gold}` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <img src="/logo.jpg" alt="CTS ETS" style={{ width: 52, height: 52, borderRadius: 12, border: `2px solid ${C.gold}` }} />
-            <div><div style={{ color: C.gold, fontWeight: 900, fontSize: 24, fontFamily: C.heading }}>CTS ETS Admin</div><div style={{ color: "rgba(255,255,255,0.7)", fontSize: 11, letterSpacing: 3, fontWeight: 800 }}>SECURE OPERATIONS GATEWAY</div></div>
-          </div>
-          <a href="/#Home" style={{ color: "#fff", fontSize: 13, textDecoration: "none", fontWeight: 800, padding: "12px 22px", borderRadius: 10, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }}>← Return to Site</a>
-        </div>
-        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-          <div style={{ background: C.card, borderRadius: 28, padding: "56px 42px", maxWidth: 500, width: "100%", textAlign: "center", border: `1px solid ${C.teal}40`, boxShadow: "0 24px 60px rgba(0,0,0,0.25)" }}>
-            
-            {loginStep === 0 && (
-              <div style={{ animation: "fadeIn 0.3s" }}>
-                <div style={{ fontSize: 82, marginBottom: 20 }}>🛡️</div>
-                <div style={{ fontSize: 11, color: C.teal, letterSpacing: 2, textTransform: "uppercase", fontWeight: 800, fontFamily: C.body, marginBottom: 12 }}>Step 1 of 2</div>
-                <h1 style={{ fontFamily: C.heading, color: C.navy, fontSize: 36, fontWeight: 900, marginBottom: 12 }}>Admin Password</h1>
-                <p style={{ color: C.gray, fontSize: 14, lineHeight: 1.75, marginBottom: 24, fontFamily: C.body }}>Enter the master password to initiate the secure login sequence.</p>
-                <input type="password" value={pw} onChange={(e) => { setPw(e.target.value); setLoginErr(""); }} onKeyDown={(e) => e.key === "Enter" && handlePasswordSubmit()} autoFocus placeholder="Master Password" style={{ width: "100%", padding: "18px 20px", borderRadius: 14, border: `2px solid ${loginErr ? C.red : C.border}`, fontSize: 18, textAlign: "center", letterSpacing: 3, background: "#F8FAFC", fontWeight: 800, boxSizing: "border-box", marginBottom: 18 }} />
-                {loginErr && <div style={{ color: C.red, fontWeight: 800, marginBottom: 16, fontFamily: C.body, whiteSpace: "pre-wrap", textAlign: "left", padding: 12, background: C.redLight, borderRadius: 8 }}>{loginErr}</div>}
-                <button onClick={handlePasswordSubmit} disabled={loading} style={{ width: "100%", padding: "18px", borderRadius: 14, border: "none", background: C.navy, color: "#fff", fontSize: 16, fontWeight: 900, cursor: "pointer", fontFamily: C.body }}>{loading ? "Authenticating..." : "Access Console"}</button>
-              </div>
-            )}
-
-            {/* 🚀 UPGRADED ADMIN OTP: Auto-submit and Countdown! */}
-            {loginStep === 1 && (
-              <div style={{ animation: "fadeIn 0.3s" }}>
-                <div style={{ width: 64, height: 64, borderRadius: "50%", background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, margin: "0 auto 16px" }}>✉️</div>
-                <h1 style={{ fontFamily: C.heading, color: C.navy, fontSize: 32, margin: "0 0 12px", fontWeight: 900 }}>Check Your Email</h1>
-                <p style={{ fontFamily: C.body, color: C.gray, fontSize: 15, margin: "0 0 24px", lineHeight: 1.6 }}>We've sent a 6-digit code to <strong style={{ color: C.navy }}>{maskedEmail}</strong></p>
-                
-                <div style={{ background: "#F8FAFC", borderRadius: 12, padding: "14px", marginBottom: 24, fontSize: 14, fontFamily: C.body, color: C.navy, fontWeight: 800 }}>
-                  <span style={{ color: C.gray, fontWeight: 500, marginRight: 8 }}>Verifying:</span> ADMIN
-                </div>
-
-                <input 
-                  type="text" 
-                  value={otpCode} 
-                  onChange={handleOtpChange} 
-                  placeholder="000000" 
-                  autoFocus
-                  disabled={loading}
-                  style={{ width: "100%", padding: "18px", borderRadius: 12, border: `2px solid ${S.teal}`, fontSize: 32, fontFamily: "monospace", textAlign: "center", letterSpacing: 12, background: S.emeraldLight, fontWeight: 900, outline: "none", boxSizing: "border-box" }}
-                />
-                <div style={{ textAlign: "center", fontSize: 13, color: S.gray, fontWeight: 700, marginTop: 12, marginBottom: 24, fontFamily: C.body }}>
-                  Code expires in <span style={{ color: S.coral }}>{formatTime(timeLeft)}</span>
-                </div>
-                
-                {loginErr && <div style={{ padding: "14px", borderRadius: 10, background: C.redLight, color: C.red, fontSize: 14, marginBottom: 24, fontFamily: C.body, fontWeight: 800 }}>{loginErr}</div>}
-                
-                <button disabled={true} style={{ width: "100%", padding: "18px", borderRadius: 12, border: "none", background: loading ? "#529864" : C.border, color: "#fff", fontSize: 16, fontWeight: 900, cursor: "not-allowed", fontFamily: C.body, transition: "all 0.2s" }}>
-                  {loading ? "Verifying..." : "Awaiting 6 digits..."}
-                </button>
-                
-                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 24 }}>
-                  <button onClick={() => { setLoginStep(0); setOtpCode(""); setAuth(""); sessionStorage.removeItem(PW_KEY); }} style={{ background: "none", border: "none", color: C.gray, fontSize: 13, fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}>&larr; Cancel & Return</button>
-                  <button onClick={handlePasswordSubmit} disabled={loading} style={{ background: "none", border: "none", color: C.navy, fontSize: 13, fontWeight: 800, cursor: "pointer" }}>Resend Code</button>
-                </div>
-              </div>
-            )}
-
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ minHeight: "100vh", background: C.bg, fontFamily: C.body, width: "100%", overflowX: "hidden" }}>
-      <VerifyModal modal={modal} verifyAmt={verifyAmt} setVerifyAmt={setVerifyAmt} verifyTxn={verifyTxn} setVerifyTxn={setVerifyTxn} onConfirm={() => verifyPay(modal.data.ref, verifyAmt, verifyTxn)} onClose={() => setModal(null)} busy={busy} />
-      <EditRecordModal editModal={editModal} onClose={() => setEditModal(null)} onSave={handleEditSave} busy={busy} />
-
-      <div style={{ background: C.navy, padding: "14px 34px", display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 200, boxShadow: "0 2px 10px rgba(0,0,0,0.08)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <img src="/logo.jpg" alt="" style={{ width: 36, height: 36, borderRadius: 8 }} />
-          <div><div style={{ color: C.gold, fontWeight: 700, fontSize: 15, fontFamily: C.heading }}>CTS ETS Admin</div><div style={{ color: "rgba(255,255,255,0.54)", fontSize: 10, letterSpacing: 1.3 }}>OPERATIONS COMMAND</div></div>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-          <ActionBtn onClick={refresh} bg="transparent" color="#fff">↻ Refresh</ActionBtn>
-          <ActionBtn onClick={() => { setLoggedIn(false); setAuth(""); setPw(""); sessionStorage.removeItem(PW_KEY); }} bg={C.coral} color="#fff">Lock Vault</ActionBtn>
-        </div>
-      </div>
-
-      <div style={{ background: C.card, borderBottom: `1px solid ${C.border}`, padding: "0 34px", display: "flex", overflowX: "auto" }}>
-        {tabList.map((t) => (
-          <button key={t.id} onClick={() => { setTab(t.id); setSearchTerm(""); setSortConfig({ key: "timestamp", dir: "desc" }); }} style={{ padding: "18px 24px", border: "none", background: "none", cursor: "pointer", fontSize: 14, fontWeight: tab === t.id ? 800 : 600, color: tab === t.id ? C.navy : C.gray, borderBottom: tab === t.id ? `3px solid ${C.navy}` : "3px solid transparent", display: "flex", alignItems: "center", gap: 10, whiteSpace: "nowrap" }}>
-            <span style={{ fontSize: 18 }}>{t.icon}</span> {t.label}
-            {t.b !== undefined && <span style={{ background: tab === t.id ? "rgba(14, 143, 139, 0.15)" : C.coral, color: tab === t.id ? C.teal : "#fff", borderRadius: 999, padding: "2px 8px", fontSize: 11, fontWeight: 800 }}>{t.b}</span>}
-          </button>
-        ))}
-      </div>
-
-      {actionMsg && <div style={{ margin: "18px 34px 0", padding: "14px 18px", borderRadius: 12, background: actionMsg.ok ? C.emeraldLight : C.redLight, color: actionMsg.ok ? C.emerald : C.red, fontSize: 14, fontWeight: 700, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, border: `1px solid ${actionMsg.ok ? C.emerald : C.red}40` }}><span>{actionMsg.text}</span><button onClick={() => setActionMsg(null)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: "inherit" }}>✕</button></div>}
-      {loading && <div style={{ height: 4, background: `linear-gradient(90deg, ${C.coral}, ${C.gold}, ${C.teal})` }} />}
-
-      <div style={{ padding: 34, width: "100%", boxSizing: "border-box" }}>
-        {tab === "dashboard" && dashboard && (
-          <div>
-            <div style={{ marginBottom: 26 }}>
-              <div style={{ fontSize: 11, color: C.teal, letterSpacing: 2, textTransform: "uppercase", fontWeight: 800, marginBottom: 10 }}>Control Centre</div>
-              <h1 style={{ fontFamily: C.heading, fontSize: "clamp(30px,4vw,48px)", color: C.navy, margin: 0, lineHeight: 1.08, fontWeight: 900 }}>A clearer operational dashboard for CTS ETS</h1>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 18, marginBottom: 30 }}>
-              <MetricCard label="Under Review" value={dashboard?.apps?.underReview || 0} accent={C.amber} sub="Pending application decisions" />
-              <MetricCard label="Accepted" value={dashboard?.apps?.accepted || 0} accent={C.emerald} sub="Ready for enrolment/payment" />
-              <MetricCard label="Students" value={dashboard?.students?.total || 0} accent={C.teal} sub="Tracked in the student registry" />
-              <MetricCard label="Pending Payments" value={dashboard?.pendingPayments?.length || 0} accent={C.coral} sub="Awaiting verification" />
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1.25fr 0.75fr", gap: 20 }}>
-              <TableShell title="Recent Applications Requiring Attention" tools={<ActionBtn onClick={() => setTab("applications")} bg={C.navy} color="#fff">Open Applications</ActionBtn>}>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead><tr><SortTh>#</SortTh><SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Submitted</SortTh><SortTh sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Reference</SortTh><SortTh sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</SortTh><SortTh sortKey="programme" currentSort={sortConfig} onSort={handleSort}>Programme</SortTh><SortTh sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</SortTh></tr></thead>
-                  <tbody>{(dashboard?.recentApps || []).map((a, i) => <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}><Td bold color={C.grayLight}>{i + 1}</Td><Td bold color={C.gray}>{fmtTime(a)}</Td><Td mono bold>{a?.ref}</Td><Td bold>{a?.name}</Td><Td max={250}>{a?.programme}</Td><td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}><StatusBadge status={a?.status} /></td></tr>)}</tbody>
-                  <Tfoot>
-                    <tr><TdFoot colSpan={6}>Total Recent Items: {(dashboard?.recentApps || []).length}</TdFoot></tr>
-                  </Tfoot>
-                </table>
-              </TableShell>
-              <div style={{ display: "grid", gap: 20 }}>
-                <div style={{ background: C.card, borderRadius: 24, border: `1px solid ${C.border}`, padding: 24, boxShadow: "0 10px 26px rgba(15,23,42,0.04)" }}>
-                  <div style={{ fontFamily: C.heading, fontSize: 24, color: C.navy, fontWeight: 800, marginBottom: 16 }}>Finance Snapshot</div>
-                  <div style={{ display: "grid", gap: 12 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}><span style={{ color: C.gray }}>Pending Verification</span><strong style={{ color: C.coral }}>{dashboard?.pendingPayments?.length || 0}</strong></div>
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}><span style={{ color: C.gray }}>Registered Students</span><strong style={{ color: C.navy }}>{dashboard?.students?.total || 0}</strong></div>
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}><span style={{ color: C.gray }}>Active Learners</span><strong style={{ color: C.teal }}>{dashboard?.students?.active || 0}</strong></div>
-                  </div>
-                </div>
-                <div style={{ background: C.card, borderRadius: 24, border: `1px solid ${C.border}`, padding: 24, boxShadow: "0 10px 26px rgba(15,23,42,0.04)" }}>
-                  <div style={{ fontFamily: C.heading, fontSize: 24, color: C.navy, fontWeight: 800, marginBottom: 16 }}>Priority Actions</div>
-                  <div style={{ display: "grid", gap: 12 }}>
-                    <ActionBtn onClick={() => setTab("applications")} bg={C.gold} color={C.navy}>Review Applications</ActionBtn>
-                    <ActionBtn onClick={() => setTab("payments")} bg={C.coral} color="#fff">Verify Payments</ActionBtn>
-                    <ActionBtn onClick={() => setTab("students")} bg={C.teal} color="#fff">Open Student Registry</ActionBtn>
-                    <ActionBtn onClick={() => setTab("activity")} bg={C.blue} color="#fff">View Audit Log</ActionBtn>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {tab === "applications" && (
-          <div>
-            <div style={{ display: "flex", gap: 14, marginBottom: 24, alignItems: "center", background: "#fff", padding: "18px 22px", borderRadius: 18, border: `1px solid ${C.border}`, flexWrap: "wrap" }}>
-              {["Under Review", "Accepted", "Rejected", ""].map((f) => {
-                const count = f === "" ? apps.length : apps.filter(a => a.status === f).length;
-                return <ToolbarPill key={f || "All"} label={f || "All"} active={appFilter === f} onClick={() => setAppFilter(f)} badge={count} />;
-              })}
-              <div style={{ marginLeft: "auto" }}><SearchBox value={searchTerm} onChange={setSearchTerm} /></div>
-            </div>
-            <TableShell title="Applications Queue">
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead><tr>
-                  <SortTh>#</SortTh>
-                  <SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Submitted</SortTh>
-                  <SortTh sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Ref</SortTh>
-                  <SortTh sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</SortTh>
-                  <SortTh sortKey="email" currentSort={sortConfig} onSort={handleSort}>Email</SortTh>
-                  <SortTh sortKey="phone" currentSort={sortConfig} onSort={handleSort}>Phone</SortTh>
-                  <SortTh sortKey="level" currentSort={sortConfig} onSort={handleSort}>Level</SortTh>
-                  <SortTh sortKey="programme" currentSort={sortConfig} onSort={handleSort}>Programme</SortTh>
-                  <SortTh sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</SortTh>
-                  <SortTh>Actions</SortTh>
-                </tr></thead>
-                <tbody>
-                  {appRows.map((a, i) => (
-                    <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff", opacity: busy === a.ref ? 0.5 : 1 }}>
-                      <Td bold color={C.grayLight}>{i + 1}</Td>
-                      <Td bold color={C.gray}>{fmtTime(a)}</Td>
-                      <Td mono bold>{a?.ref}</Td>
-                      <Td bold>{a?.name}</Td>
-                      <Td max={180}>{a?.email || "—"}</Td>
-                      <Td mono>{a?.phone || "—"}</Td>
-                      <Td max={150}>{a?.level || "—"}</Td>
-                      <Td max={200}>{a?.programme}</Td>
-                      <td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}><StatusBadge status={a?.status} /></td>
-                      <td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}>
-                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                          {a?.status === "Under Review" && <ActionBtn small onClick={() => acceptApp(a.ref)} disabled={busy === a.ref} bg={C.emerald}>Accept</ActionBtn>}
-                          {getFolderUrl(a) && <ActionBtn small onClick={() => window.open(getFolderUrl(a), "_blank")} bg={C.blueLight} color={C.blue}>📁</ActionBtn>}
-                          <ActionBtn small onClick={() => setEditModal({ type: "app", data: a })} disabled={busy === a.ref} bg={C.amberLight} color={C.amberDark}>✏️ Edit</ActionBtn>
-                          <ActionBtn small onClick={() => handleDeleteRecord(a.ref, "app")} disabled={busy === a.ref} bg={C.redLight} color={C.red}>🗑️</ActionBtn>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-                <Tfoot>
-                  <tr>
-                    <TdFoot colSpan={10}>Total Listed Applications: {appRows.length}</TdFoot>
-                  </tr>
-                </Tfoot>
-              </table>
-            </TableShell>
-          </div>
-        )}
-
-        {tab === "students" && (
-          <div>
-            <div style={{ display: "flex", gap: 14, marginBottom: 24, alignItems: "center", background: "#fff", padding: "18px 22px", borderRadius: 18, border: `1px solid ${C.border}`, flexWrap: "wrap" }}>
-              {["", "Enrolled", "Active", "Pending Payment", "On Hold"].map((f) => {
-                const count = f === "" ? students.length : students.filter(s => s.status === f).length;
-                return <ToolbarPill key={f || "All"} label={f || "All"} active={studentFilter === f} onClick={() => setStudentFilter(f)} badge={count} />;
-              })}
-              <div style={{ marginLeft: "auto" }}><SearchBox value={searchTerm} onChange={setSearchTerm} /></div>
-            </div>
-            <TableShell title="Student Registry">
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead><tr>
-                  <SortTh>#</SortTh>
-                  <SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Status Update</SortTh>
-                  <SortTh sortKey="studentNumber" currentSort={sortConfig} onSort={handleSort}>Student #</SortTh>
-                  <SortTh sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</SortTh>
-                  <SortTh sortKey="email" currentSort={sortConfig} onSort={handleSort}>Email</SortTh>
-                  <SortTh sortKey="phone" currentSort={sortConfig} onSort={handleSort}>Phone</SortTh>
-                  <SortTh sortKey="level" currentSort={sortConfig} onSort={handleSort}>Level</SortTh>
-                  <SortTh sortKey="programme" currentSort={sortConfig} onSort={handleSort}>Programme</SortTh>
-                  <SortTh sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</SortTh>
-                  <SortTh>Services</SortTh>
-                </tr></thead>
-                <tbody>
-                  {studentRows.map((s, i) => (
-                    <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff", opacity: busy === s.studentNumber ? 0.5 : 1 }}>
-                      <Td bold color={C.grayLight}>{i + 1}</Td>
-                      <Td bold color={C.gray}>{fmtTime(s)}</Td>
-                      <Td mono bold>{s?.studentNumber}</Td>
-                      <Td bold>{s?.name}</Td>
-                      <Td max={180}>{s?.email || "—"}</Td>
-                      <Td mono>{s?.phone || "—"}</Td>
-                      <Td max={150}>{s?.level || "—"}</Td>
-                      <Td max={200}>{s?.programme}</Td>
-                      <td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}><StatusBadge status={s?.status} /></td>
-                      <td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}>
-                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                          <ActionBtn small onClick={() => genRecord(s.studentNumber)} disabled={busy === s.studentNumber} bg={C.navy}>📄</ActionBtn>
-                          {getFolderUrl(s) && <ActionBtn small onClick={() => window.open(getFolderUrl(s), "_blank")} bg={C.blueLight} color={C.blue}>📁</ActionBtn>}
-                          <ActionBtn small onClick={() => setEditModal({ type: "student", data: s })} disabled={busy === s.studentNumber} bg={C.amberLight} color={C.amberDark}>✏️ Edit</ActionBtn>
-                          <ActionBtn small onClick={() => handleDeleteRecord(s.studentNumber, "student")} disabled={busy === s.studentNumber} bg={C.redLight} color={C.red}>🗑️</ActionBtn>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-                <Tfoot>
-                  <tr>
-                    <TdFoot colSpan={10}>Total Listed Students: {studentRows.length}</TdFoot>
-                  </tr>
-                </Tfoot>
-              </table>
-            </TableShell>
-          </div>
-        )}
-
-        {tab === "payments" && (
-          <div>
-            <div style={{ display: "flex", gap: 14, marginBottom: 24, alignItems: "center", background: "#fff", padding: "18px 22px", borderRadius: 18, border: `1px solid ${C.border}`, flexWrap: "wrap" }}>
-              {["Pending Verification", "Paid", ""].map((f) => {
-                const count = f === "" ? payments.length : payments.filter(p => p.status === f).length;
-                return <ToolbarPill key={f || "All"} label={f || "All"} active={payFilter === f} onClick={() => setPayFilter(f)} badge={count} />;
-              })}
-              <div style={{ marginLeft: "auto" }}><SearchBox value={searchTerm} onChange={setSearchTerm} /></div>
-            </div>
-            <TableShell title="Payments Queue">
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead><tr>
-                  <SortTh>#</SortTh>
-                  <SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Submission Time</SortTh>
-                  <SortTh sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Reference</SortTh>
-                  <SortTh sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</SortTh>
-                  <SortTh sortKey="amount" currentSort={sortConfig} onSort={handleSort}>Amount</SortTh>
-                  <SortTh sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</SortTh>
-                  <SortTh>Evidence</SortTh>
-                  <SortTh>Actions</SortTh>
-                </tr></thead>
-                <tbody>
-                  {paymentRows.map((p, i) => (
-                    <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}>
-                      <Td bold color={C.grayLight}>{i + 1}</Td>
-                      <Td bold color={C.gray}>{fmtTime(p)}</Td>
-                      <Td mono bold>{p?.ref}</Td>
-                      <Td bold>{p?.name}</Td>
-                      <Td bold color={C.emerald}>{fmt(p?.amount)}</Td>
-                      <td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}><StatusBadge status={p?.status} /></td>
-                      <Td>{p?.receipt ? <a href={p.receipt} target="_blank" rel="noopener noreferrer" style={{ color: C.blue, fontWeight: 800, textDecoration: "underline" }}>View Bank Slip</a> : <span style={{ color: C.grayLight, fontSize: 12 }}>No Slip</span>}</Td>
-                      <td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}>
-                        {p?.status === "Pending Verification" && (
-                          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                            <ActionBtn small onClick={() => { setModal({ type: "verify", data: p }); setVerifyAmt(String(p.amount)); setVerifyTxn(""); }} disabled={busy === p.ref} bg={C.emerald}>Verify</ActionBtn>
-                            <ActionBtn small onClick={() => rejectPay(p.ref)} disabled={busy === p.ref} bg={C.redLight} color={C.red}>Reject</ActionBtn>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-                <Tfoot>
-                  <tr>
-                    <TdFoot colSpan={4}>Total Listed Transactions: {paymentRows.length}</TdFoot>
-                    <TdFoot color={C.emerald}>{fmt(totalPaymentSum)}</TdFoot>
-                    <TdFoot colSpan={3}></TdFoot>
-                  </tr>
-                </Tfoot>
-              </table>
-            </TableShell>
-          </div>
-        )}
-
-        {tab === "activity" && (
-          <TableShell title="Institutional Audit Log" tools={<SearchBox value={searchTerm} onChange={setSearchTerm} />}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead><tr>
-                <SortTh>#</SortTh>
-                <SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Exact Time</SortTh>
-                <SortTh sortKey="action" currentSort={sortConfig} onSort={handleSort}>Protocol Action</SortTh>
-                <SortTh sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Entity Ref</SortTh>
-                <SortTh>Details</SortTh>
-                <SortTh sortKey="by" currentSort={sortConfig} onSort={handleSort}>Executed By</SortTh>
-              </tr></thead>
-              <tbody>
-                {activityRows.map((e, i) => (
-                  <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}>
-                    <Td bold color={C.grayLight}>{i + 1}</Td>
-                    <Td bold color={C.gray}>{fmtTime(e)}</Td>
-                    <Td><span style={{ padding: "6px 12px", borderRadius: 8, background: C.blueLight, color: C.blue, fontSize: 11, fontWeight: 800 }}>{e?.action}</span></Td>
-                    <Td mono bold>{e?.ref}</Td>
-                    <Td color={C.gray} max={500}>{e?.details}</Td>
-                    <Td bold color={C.navy}>{e?.by}</Td>
-                  </tr>
-                ))}
-              </tbody>
-              <Tfoot>
-                <tr>
-                  <TdFoot colSpan={6}>Total Logged Events: {activityRows.length}</TdFoot>
-                </tr>
-              </Tfoot>
-            </table>
-          </TableShell>
-        )}
-      </div>
-
-    </div>
-  );
-}
+  async function handlePassword
