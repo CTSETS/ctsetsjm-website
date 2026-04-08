@@ -12,7 +12,6 @@ const C = {
   heading: "'Playfair Display', Georgia, serif", body: "'DM Sans', -apple-system, sans-serif",
 };
 
-// ─── HELPER FUNCTIONS ───
 function fmt(n) { return "J$" + Number(n || 0).toLocaleString(); }
 function findDate(obj) {
   if (!obj) return null;
@@ -39,7 +38,6 @@ function getFolderUrl(obj) {
   return "";
 }
 
-// ─── UI COMPONENTS ───
 function StatusBadge({ status }) {
   const map = {
     "Under Review": { bg: C.amberLight, c: C.amber }, Accepted: { bg: C.emeraldLight, c: C.emerald },
@@ -96,61 +94,6 @@ function TableShell({ title, tools, children }) {
   return <div style={{ background: C.card, borderRadius: 24, border: `1px solid ${C.border}`, overflow: "hidden", boxShadow: "0 10px 26px rgba(15,23,42,0.04)" }}>{(title || tools) && <div style={{ padding: "22px 26px", borderBottom: `1px solid ${C.border}`, display: "flex", gap: 16, justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>{title && <h2 style={{ fontFamily: C.heading, color: C.navy, fontSize: 24, margin: 0, fontWeight: 800 }}>{title}</h2>}{tools}</div>}<div style={{ overflowX: "auto", maxHeight: "72vh" }}>{children}</div></div>;
 }
 
-// 🚀 6-Box OTP Input Component
-function OtpBoxes({ value, onChange, onEnter, disabled }) {
-  const inputRefs = useRef([]);
-  const [focused, setFocused] = useState(-1);
-
-  const handleChange = (e, idx) => {
-    const val = e.target.value.replace(/\D/g, "");
-    if (val.length > 1) { 
-      const paste = val.slice(0, 6);
-      onChange(paste);
-      inputRefs.current[Math.min(paste.length, 5)]?.focus();
-      return;
-    }
-    const newOtp = value.split("");
-    newOtp[idx] = val.slice(-1);
-    onChange(newOtp.join(""));
-    if (val && idx < 5) inputRefs.current[idx + 1]?.focus();
-  };
-
-  const handleKeyDown = (e, idx) => {
-    if (e.key === "Backspace" && !value[idx] && idx > 0) {
-      inputRefs.current[idx - 1]?.focus();
-    }
-    if (e.key === "Enter" && value.length === 6) {
-      onEnter();
-    }
-  };
-
-  return (
-    <div style={{ display: "flex", gap: "8px", justifyContent: "center", margin: "20px 0" }}>
-      {[0, 1, 2, 3, 4, 5].map((i) => {
-        const isActive = focused === i;
-        const hasVal = !!value[i];
-        const borderCol = isActive ? "#3B82F6" : hasVal ? "#D97706" : "#E2E8F0"; 
-        return (
-          <input
-            key={i}
-            ref={el => inputRefs.current[i] = el}
-            type="text"
-            inputMode="numeric"
-            value={value[i] || ""}
-            onChange={(e) => handleChange(e, i)}
-            onKeyDown={(e) => handleKeyDown(e, i)}
-            onFocus={() => setFocused(i)}
-            onBlur={() => setFocused(-1)}
-            disabled={disabled}
-            style={{ width: "clamp(40px, 11vw, 54px)", height: "clamp(50px, 13vw, 64px)", fontSize: 24, fontFamily: "monospace", fontWeight: 800, textAlign: "center", borderRadius: 10, border: `2px solid ${borderCol}`, outline: "none", color: "#011E40", background: "#fff", transition: "0.2s", boxShadow: isActive ? "0 0 0 3px rgba(59,130,246,0.15)" : "none", boxSizing: "border-box" }}
-          />
-        )
-      })}
-    </div>
-  );
-}
-
-// ─── MODALS ───
 function VerifyModal({ modal, verifyAmt, setVerifyAmt, verifyTxn, setVerifyTxn, onConfirm, onClose, busy }) {
   if (!modal) return null;
   return (
@@ -183,7 +126,6 @@ function EditRecordModal({ editModal, onClose, onSave, busy }) {
   });
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-  
   const inputStyle = { width: "100%", padding: "14px", borderRadius: "10px", border: `1px solid ${C.border}`, fontSize: 14, fontFamily: C.body, background: "#F8FAFC", marginBottom: "16px", boxSizing: "border-box" };
   const labelStyle = { display: "block", fontSize: 11, fontWeight: 800, color: C.navy, marginBottom: 6, textTransform: "uppercase", letterSpacing: 1, fontFamily: C.body };
 
@@ -213,7 +155,6 @@ function EditRecordModal({ editModal, onClose, onSave, busy }) {
   );
 }
 
-// ─── MAIN DASHBOARD COMPONENT ───
 export default function AdminDashboardPage() {
   const [auth, setAuth] = useState(() => { try { return sessionStorage.getItem(PW_KEY) || ""; } catch { return ""; } });
   const [loggedIn, setLoggedIn] = useState(false);
@@ -222,7 +163,8 @@ export default function AdminDashboardPage() {
   const [otpCode, setOtpCode] = useState("");
   const [loginErr, setLoginErr] = useState("");
   const [loading, setLoading] = useState(false);
-  const [maskedEmail, setMaskedEmail] = useState(""); // 🚀 Captures the masked email for the UI
+  const [maskedEmail, setMaskedEmail] = useState("");
+  const [timeLeft, setTimeLeft] = useState(300); // 🚀 5-minute countdown!
   const [tab, setTab] = useState("dashboard");
 
   const [dashboard, setDashboard] = useState(null);
@@ -240,7 +182,6 @@ export default function AdminDashboardPage() {
   
   const [modal, setModal] = useState(null); 
   const [editModal, setEditModal] = useState(null); 
-  
   const [verifyAmt, setVerifyAmt] = useState("");
   const [verifyTxn, setVerifyTxn] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
@@ -280,6 +221,14 @@ export default function AdminDashboardPage() {
     });
   }, [api, auth]);
 
+  // Countdown timer logic
+  useEffect(() => {
+    if (loginStep === 1 && timeLeft > 0) {
+      const timerId = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+      return () => clearTimeout(timerId);
+    }
+  }, [loginStep, timeLeft]);
+
   useEffect(() => { 
     if (auth && !loggedIn) {
       setLoading(true);
@@ -289,6 +238,7 @@ export default function AdminDashboardPage() {
           if (data && data.success) {
             setMaskedEmail(data.maskedEmail || "your email");
             setLoginStep(1);
+            setTimeLeft(300); // Reset timer
           } else {
             setAuth("");
             setPw("");
@@ -328,7 +278,6 @@ export default function AdminDashboardPage() {
 
   const acceptApp = (ref) => { if (window.confirm("Accept " + ref + "?")) { setApps((prev) => prev.map((a) => a.ref === ref ? { ...a, status: "Accepted" } : a)); doAction(ref, "adminacceptapp", { ref }); } };
   const rejectApp = (ref) => { if (window.confirm("Reject " + ref + "?")) { setApps((prev) => prev.map((a) => a.ref === ref ? { ...a, status: "Rejected" } : a)); doAction(ref, "adminrejectapp", { ref }); } };
-  const enrollStu = (ref) => { if (window.confirm("Enroll " + ref + "? Credentials will be sent.")) { setStudents((prev) => prev.map((s) => s.ref === ref ? { ...s, status: "Enrolled", lmsAccess: "Yes" } : s)); doAction(ref, "adminenrollstudent", { ref }); } };
   const genRecord = (sn) => { setBusy(sn); api("generaterecord", { student: sn }).then((d) => { const success = d && !d.error; const link = d ? (d.url || d.fileUrl || d.link || d.pdfUrl) : null; if (success && link) { window.open(link, "_blank"); toast("Record saved to Student Folder and opened!", true); } else toast("Failed to generate record: " + (d?.error || d?.message || "Unknown Error"), false); setBusy(""); }).catch(() => { toast("Network error.", false); setBusy(""); }); };
   const rejectPay = (ref) => { if (window.confirm("Reject payment for " + ref + "?")) { setPayments((prev) => prev.map((p) => p.ref === ref ? { ...p, status: "Rejected — Not Found" } : p)); if (dashboard) setDashboard((prev) => ({ ...prev, pendingPayments: prev.pendingPayments.filter((p) => p.ref !== ref) })); doAction(ref, "rejectpayment", { ref, txn: "admin-dashboard" }); } };
   const verifyPay = (ref, amt, txn) => { setPayments((prev) => prev.map((p) => p.ref === ref ? { ...p, status: "Paid", amount: amt } : p)); if (dashboard) setDashboard((prev) => ({ ...prev, pendingPayments: prev.pendingPayments.filter((p) => p.ref !== ref) })); doAction(ref, "verifypayment", { ref, amount: amt, txn }); setModal(null); };
@@ -338,7 +287,6 @@ export default function AdminDashboardPage() {
     if (type === "student") setStudents(prev => prev.map(s => s.studentNumber === ref ? { ...s, ...formData } : s));
     if (type === "app") setApps(prev => prev.map(a => a.ref === ref ? { ...a, ...formData } : a));
   };
-
   const handleDeleteRecord = (ref, type) => {
     if (window.confirm(`🚨 DANGER: Are you absolutely sure you want to completely DELETE ${ref}? This cannot be undone.`)) {
       doAction(ref, "admindeleterecord", { ref, type });
@@ -359,6 +307,7 @@ export default function AdminDashboardPage() {
         if (data2 && data2.success) {
           setMaskedEmail(data2.maskedEmail || "your email");
           setLoginStep(1); 
+          setTimeLeft(300); // Reset timer
         } else {
           setLoginErr("Failed to trigger 2FA sequence.");
         }
@@ -367,15 +316,27 @@ export default function AdminDashboardPage() {
     setLoading(false);
   }
 
-  async function handleOtpSubmit() {
-    if (!otpCode.trim() || otpCode.length !== 6) { setLoginErr("Enter the 6-digit code."); return; }
-    setLoginErr(""); setLoading(true);
-    try {
-      const data = await (await fetch(`${VERCEL_URL}?action=verifyotp&identifier=ADMIN&code=${otpCode.trim()}&purpose=admin_login`)).json();
-      if (data && data.success) loadDash();
-      else { setLoginErr(data?.error === "wrong_code" ? "Invalid 2FA code." : "Code expired. Refresh to try again."); setLoading(false); }
-    } catch { setLoginErr("Connection error."); setLoading(false); }
-  }
+  // 🚀 Auto-submit logic when 6 digits are typed!
+  const handleOtpChange = async (e) => {
+    const val = e.target.value.replace(/\D/g, "").slice(0, 6);
+    setOtpCode(val);
+    setLoginErr("");
+    
+    if (val.length === 6) {
+      setLoading(true);
+      try {
+        const data = await (await fetch(`${VERCEL_URL}?action=verifyotp&identifier=ADMIN&code=${val}&purpose=admin_login`)).json();
+        if (data && data.success) loadDash();
+        else { setLoginErr(data?.error === "wrong_code" ? "Invalid 2FA code." : "Code expired. Refresh to try again."); setLoading(false); }
+      } catch { setLoginErr("Connection error."); setLoading(false); }
+    }
+  };
+
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s < 10 ? "0" : ""}${s}`;
+  };
 
   const handleSort = (key) => { let direction = "asc"; if (sortConfig.key === key && sortConfig.dir === "asc") direction = "desc"; setSortConfig({ key, dir: direction }); };
   const processData = useCallback((list) => {
@@ -413,7 +374,6 @@ export default function AdminDashboardPage() {
   const studentRows = useMemo(() => processData(students).filter((s) => !studentFilter || s?.status === studentFilter), [students, studentFilter, processData]);
   const paymentRows = useMemo(() => processData(payments).filter((p) => !payFilter || p?.status === payFilter), [payments, payFilter, processData]);
   const activityRows = useMemo(() => processData(auditLog), [auditLog, processData]);
-
   const totalPaymentSum = paymentRows.reduce((sum, p) => sum + (Number(String(p.amount).replace(/[^0-9.-]+/g, "")) || 0), 0);
 
   if (!loggedIn) {
@@ -441,7 +401,7 @@ export default function AdminDashboardPage() {
               </div>
             )}
 
-            {/* 🚀 UPGRADED 6-BOX OTP SCREEN FOR ADMIN */}
+            {/* 🚀 UPGRADED ADMIN OTP: Auto-submit and Countdown! */}
             {loginStep === 1 && (
               <div style={{ animation: "fadeIn 0.3s" }}>
                 <div style={{ width: 64, height: 64, borderRadius: "50%", background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, margin: "0 auto 16px" }}>✉️</div>
@@ -452,12 +412,23 @@ export default function AdminDashboardPage() {
                   <span style={{ color: C.gray, fontWeight: 500, marginRight: 8 }}>Verifying:</span> ADMIN
                 </div>
 
-                <OtpBoxes value={otpCode} onChange={(v) => { setOtpCode(v); setLoginErr(""); }} onEnter={handleOtpSubmit} disabled={loading} />
+                <input 
+                  type="text" 
+                  value={otpCode} 
+                  onChange={handleOtpChange} 
+                  placeholder="000000" 
+                  autoFocus
+                  disabled={loading}
+                  style={{ width: "100%", padding: "18px", borderRadius: 12, border: `2px solid ${S.teal}`, fontSize: 32, fontFamily: "monospace", textAlign: "center", letterSpacing: 12, background: S.emeraldLight, fontWeight: 900, outline: "none", boxSizing: "border-box" }}
+                />
+                <div style={{ textAlign: "center", fontSize: 13, color: S.gray, fontWeight: 700, marginTop: 12, marginBottom: 24, fontFamily: C.body }}>
+                  Code expires in <span style={{ color: S.coral }}>{formatTime(timeLeft)}</span>
+                </div>
                 
                 {loginErr && <div style={{ padding: "14px", borderRadius: 10, background: C.redLight, color: C.red, fontSize: 14, marginBottom: 24, fontFamily: C.body, fontWeight: 800 }}>{loginErr}</div>}
                 
-                <button onClick={handleOtpSubmit} disabled={loading || otpCode.length !== 6} style={{ width: "100%", padding: "18px", borderRadius: 12, border: "none", background: loading ? "#529864" : (otpCode.length !== 6 ? C.border : C.emerald), color: "#fff", fontSize: 16, fontWeight: 900, cursor: otpCode.length === 6 && !loading ? "pointer" : "not-allowed", fontFamily: C.body, transition: "all 0.2s" }}>
-                  {loading ? "Verifying..." : "Verify Code"}
+                <button disabled={true} style={{ width: "100%", padding: "18px", borderRadius: 12, border: "none", background: loading ? "#529864" : C.border, color: "#fff", fontSize: 16, fontWeight: 900, cursor: "not-allowed", fontFamily: C.body, transition: "all 0.2s" }}>
+                  {loading ? "Verifying..." : "Awaiting 6 digits..."}
                 </button>
                 
                 <div style={{ display: "flex", justifyContent: "space-between", marginTop: 24 }}>
