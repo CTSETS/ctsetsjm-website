@@ -18,6 +18,7 @@ import { submitToAppsScript, generateRef } from "../utils/submission";
 import { fmt, fmtDate } from "../utils/formatting";
 import { registerDripSequence } from "../utils/email";
 import HeartFormBuilder from "../components/apply/HeartFormBuilder";
+import OTPGate from "../components/common/OTPGate";
 
 const VERCEL_URL = "https://ctsetsjm-website.vercel.app/api/proxy";
 
@@ -215,79 +216,104 @@ function PrayerModal({ prayer, onClose }) {
 }
 
 function StatusTracker({ setPage }) {
-  const [lookupVal, setLookupVal] = useState("");
+  const [verifiedId, setVerifiedId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
 
-  const lookup = async () => {
-    if (!lookupVal.trim()) { setError("Please enter your Application Number or Student ID."); return; }
-    setLoading(true); setError(""); setResult(null);
-    try {
-      const res = await fetch(`${VERCEL_URL}?action=lookupstudent&ref=${encodeURIComponent(lookupVal.trim().toUpperCase())}`);
-      const text = await res.text();
-      
-      let data;
-      try {
-         data = JSON.parse(text);
-      } catch(e) {
-         throw new Error("Server took too long to respond. Please try again.");
-      }
-      
-      if (data.found) {
-        setResult(data); 
-      } else { 
-        setError("No application found with this reference number. Please check for typos and try again.");
-      }
-    } catch (e) { 
-      setError(`Secure Connection Failed: ${e.message}`); 
+  useEffect(() => {
+    if (verifiedId) {
+      const fetchStatus = async () => {
+        setLoading(true);
+        try {
+          const res = await fetch(`${VERCEL_URL}?action=lookupstudent&ref=${encodeURIComponent(verifiedId.toUpperCase())}`);
+          const text = await res.text();
+          try {
+             const data = JSON.parse(text);
+             if (data.found) setResult(data);
+             else setError("No application found with this reference number. Please check for typos and try again.");
+          } catch(e) {
+             setError("Server took too long to respond. Please try again.");
+          }
+        } catch (e) {
+          setError(`Secure Connection Failed: ${e.message}`);
+        }
+        setLoading(false);
+      };
+      fetchStatus();
     }
-    setLoading(false);
-  };
+  }, [verifiedId]);
+
+  if (!verifiedId) {
+    return (
+      <div style={{ background: S.white, borderRadius: 22, padding: "32px 28px", border: `1px solid ${S.border}`, boxShadow: "0 16px 36px rgba(15,23,42,0.05)" }}>
+        {/* 🚀 UPGRADED: Using original OTPGate for flawless automatic entry */}
+        <OTPGate purpose="status_check" title="Track My Application" text="Enter your Application Number or Student ID to securely check your current status.">
+          {(id) => {
+             setVerifiedId(id);
+             return <div style={{ padding: 14, background: S.emeraldLight, color: S.emeraldDark, borderRadius: 10, fontWeight: 800, textAlign: "center" }}>✓ Access Granted. Loading Status...</div>;
+          }}
+        </OTPGate>
+      </div>
+    );
+  }
 
   return (
     <div style={{ background: S.white, borderRadius: 22, padding: "32px 28px", border: `1px solid ${S.border}`, boxShadow: "0 16px 36px rgba(15,23,42,0.05)" }}>
-      <div style={{ textAlign: "center", marginBottom: 24 }}>
-        <div style={{ fontSize: 42, marginBottom: 12 }}>🔍</div>
-        <h2 style={{ fontFamily: S.heading, fontSize: 28, color: S.navy, fontWeight: 800, marginBottom: 8 }}>Track My Application</h2>
-        <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, lineHeight: 1.7 }}>Enter your Application Number or Student ID to check your current status.</p>
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center" }}>
-        <input value={lookupVal} onChange={(e) => { setLookupVal(e.target.value.toUpperCase()); setError(""); }} onKeyDown={(e) => { if (e.key === "Enter") lookup(); }} placeholder="e.g. CTSETSA-2026-04-12345" style={{ ...inputStyle, border: `2px solid ${error ? S.error + "60" : S.border}` }} />
-        <button onClick={lookup} disabled={loading} style={{ padding: "14px 24px", borderRadius: 12, background: loading ? S.gray : S.navy, color: S.white, border: "none", fontSize: 14, fontWeight: 700, cursor: loading ? "wait" : "pointer", fontFamily: S.body }}>{loading ? "Searching..." : "Check Status →"}</button>
-      </div>
-      {error && <div style={{ padding: "12px 14px", borderRadius: 10, background: S.roseLight, fontSize: 13, color: S.error, fontFamily: S.body, marginTop: 14 }}>{error}</div>}
-      {result && <div style={{ marginTop: 24, background: S.lightBg, borderRadius: 16, padding: 20, border: `1px solid ${S.border}` }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px,1fr))", gap: 16 }}>
-          {result.name && <div><div style={{ fontSize: 10, color: S.gray, letterSpacing: 1, textTransform: "uppercase", fontFamily: S.body }}>Name</div><div style={{ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.body }}>{result.name}</div></div>}
-          {result.ref && <div><div style={{ fontSize: 10, color: S.gray, letterSpacing: 1, textTransform: "uppercase", fontFamily: S.body }}>Application Reference</div><div style={{ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.heading }}>{result.ref}</div></div>}
-          {result.studentNumber && <div><div style={{ fontSize: 10, color: S.gray, letterSpacing: 1, textTransform: "uppercase", fontFamily: S.body }}>Student ID</div><div style={{ fontSize: 16, fontWeight: 800, color: S.coral, fontFamily: S.heading }}>{result.studentNumber}</div></div>}
-          {result.programme && <div><div style={{ fontSize: 10, color: S.gray, letterSpacing: 1, textTransform: "uppercase", fontFamily: S.body }}>Programme</div><div style={{ fontSize: 13, fontWeight: 600, color: S.navy, fontFamily: S.body }}>{(result.level ? result.level + " — " : "") + result.programme}</div></div>}
-          {result.paymentPlan && <div><div style={{ fontSize: 10, color: S.gray, letterSpacing: 1, textTransform: "uppercase", fontFamily: S.body }}>Payment Plan</div><div style={{ fontSize: 13, fontWeight: 600, color: S.navy, fontFamily: S.body }}>{result.paymentPlan}</div></div>}
+      {loading ? (
+        <div style={{ textAlign: "center", padding: 40, color: S.gray, fontWeight: 700 }}>Decrypting and loading your secure record...</div>
+      ) : error ? (
+        <div style={{ textAlign: "center", padding: 20 }}>
+          <div style={{ color: S.rose, fontWeight: 700, marginBottom: 16 }}>{error}</div>
+          <button onClick={() => { setVerifiedId(null); setError(""); setResult(null); }} style={{ padding: "10px 20px", borderRadius: 8, background: S.navy, color: "#fff", border: "none", cursor: "pointer", fontWeight: 700 }}>Try Again</button>
         </div>
-        
-        {/* 🚀 UPGRADED: Dynamic feedback states based on the backend data */}
-        {result.status === "Accepted" && !result.hasPendingPayment && (
-          <div style={{ marginTop: 16, padding: "14px 18px", borderRadius: 12, background: S.emeraldLight, border: `1px solid ${S.emerald}30`, fontSize: 13, fontFamily: S.body, color: S.navy, lineHeight: 1.7 }}>
-            <strong>Next step:</strong> Complete your payment to secure your place. 
-            <button onClick={() => setPage("Pay")} style={{ background: "none", border: "none", color: S.coral, fontWeight: 700, cursor: "pointer", fontFamily: S.body, fontSize: 13, padding: 0, marginLeft: 6 }}>Go to Payment Centre →</button>
+      ) : result ? (
+        <div style={{ animation: "fadeIn 0.3s" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+            <div>
+              <div style={{ fontSize: 11, color: S.teal, letterSpacing: 1.8, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 6 }}>Application Status</div>
+              <div style={{ fontFamily: S.heading, fontSize: 26, color: S.navy, fontWeight: 800 }}>{result.name}</div>
+            </div>
+            <button onClick={() => { setVerifiedId(null); setResult(null); }} style={{ padding: "6px 12px", background: S.lightBg, border: `1px solid ${S.border}`, borderRadius: 8, fontSize: 12, fontWeight: 700, color: S.gray, cursor: "pointer" }}>Close ✕</button>
           </div>
-        )}
-        
-        {result.hasPendingPayment && (
-          <div style={{ marginTop: 16, padding: "14px 18px", borderRadius: 12, background: S.amberLight, border: `1px solid ${S.amber}40`, fontSize: 13, fontFamily: S.body, color: S.amberDark, lineHeight: 1.7 }}>
-            <strong>Payment Under Review:</strong> We have received your payment evidence. Our finance team is verifying it now. You will receive an email with your Student Portal access shortly.
-          </div>
-        )}
-        
-        {result.status === "Enrolled" && (
-           <div style={{ marginTop: 16, padding: "14px 18px", borderRadius: 12, background: S.blueLight, border: `1px solid ${S.blue}30`, fontSize: 13, fontFamily: S.body, color: S.navy, lineHeight: 1.7 }}>
-            <strong>You are enrolled!</strong> 
-            <button onClick={() => setPage("Portal")} style={{ background: "none", border: "none", color: S.blue, fontWeight: 700, cursor: "pointer", fontFamily: S.body, fontSize: 13, padding: 0, marginLeft: 6 }}>Log into the Student Portal →</button>
-          </div>
-        )}
+          
+          <div style={{ background: S.lightBg, borderRadius: 16, padding: 20, border: `1px solid ${S.border}` }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px,1fr))", gap: 16 }}>
+              {result.ref && <div><div style={{ fontSize: 10, color: S.gray, letterSpacing: 1, textTransform: "uppercase", fontFamily: S.body }}>Application Reference</div><div style={{ fontSize: 14, fontWeight: 700, color: S.navy, fontFamily: S.heading }}>{result.ref}</div></div>}
+              {result.studentNumber && <div><div style={{ fontSize: 10, color: S.gray, letterSpacing: 1, textTransform: "uppercase", fontFamily: S.body }}>Student ID</div><div style={{ fontSize: 16, fontWeight: 800, color: S.coral, fontFamily: S.heading }}>{result.studentNumber}</div></div>}
+              {result.programme && <div><div style={{ fontSize: 10, color: S.gray, letterSpacing: 1, textTransform: "uppercase", fontFamily: S.body }}>Programme</div><div style={{ fontSize: 13, fontWeight: 600, color: S.navy, fontFamily: S.body }}>{(result.level ? result.level + " — " : "") + result.programme}</div></div>}
+              {result.paymentPlan && <div><div style={{ fontSize: 10, color: S.gray, letterSpacing: 1, textTransform: "uppercase", fontFamily: S.body }}>Payment Plan</div><div style={{ fontSize: 13, fontWeight: 600, color: S.navy, fontFamily: S.body }}>{result.paymentPlan}</div></div>}
+            </div>
 
-      </div>}
+            <div style={{ marginTop: 20 }}>
+              <div style={{ fontSize: 10, color: S.gray, letterSpacing: 1, textTransform: "uppercase", fontFamily: S.body, marginBottom: 6 }}>Current Status</div>
+              <div style={{ display: "inline-block", padding: "6px 14px", borderRadius: 999, background: result.status === "Accepted" ? S.emeraldLight : S.amberLight, color: result.status === "Accepted" ? S.emeraldDark : S.amberDark, fontSize: 13, fontWeight: 800, fontFamily: S.body, border: `1px solid ${result.status === "Accepted" ? S.emerald + "40" : S.amber + "40"}` }}>
+                {result.status}
+              </div>
+            </div>
+
+            {result.status === "Accepted" && !result.hasPendingPayment && (
+              <div style={{ marginTop: 20, padding: "14px 18px", borderRadius: 12, background: S.emeraldLight, border: `1px solid ${S.emerald}30`, fontSize: 13, fontFamily: S.body, color: S.navy, lineHeight: 1.7 }}>
+                <strong>Next step:</strong> Complete your payment to secure your place. 
+                <button onClick={() => setPage("Pay")} style={{ background: "none", border: "none", color: S.coral, fontWeight: 700, cursor: "pointer", fontFamily: S.body, fontSize: 13, padding: 0, marginLeft: 6 }}>Go to Payment Centre →</button>
+              </div>
+            )}
+            
+            {result.hasPendingPayment && (
+              <div style={{ marginTop: 20, padding: "14px 18px", borderRadius: 12, background: S.amberLight, border: `1px solid ${S.amber}40`, fontSize: 13, fontFamily: S.body, color: S.amberDark, lineHeight: 1.7 }}>
+                <strong>Payment Under Review:</strong> We have received your payment evidence. Our finance team is verifying it now. You will receive an email with your Student Portal access shortly.
+              </div>
+            )}
+            
+            {result.status === "Enrolled" && (
+               <div style={{ marginTop: 20, padding: "14px 18px", borderRadius: 12, background: S.blueLight, border: `1px solid ${S.blue}30`, fontSize: 13, fontFamily: S.body, color: S.navy, lineHeight: 1.7 }}>
+                <strong>You are enrolled!</strong> 
+                <button onClick={() => setPage("Portal")} style={{ background: "none", border: "none", color: S.blue, fontWeight: 700, cursor: "pointer", fontFamily: S.body, fontSize: 13, padding: 0, marginLeft: 6 }}>Log into the Student Portal →</button>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
