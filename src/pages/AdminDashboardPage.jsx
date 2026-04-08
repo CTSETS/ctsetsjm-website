@@ -197,12 +197,11 @@ export default function AdminDashboardPage() {
   const toast = (text, ok = true) => { setActionMsg({ text, ok }); setTimeout(() => setActionMsg(null), 6000); };
   const refresh = () => setRefreshKey((k) => k + 1);
 
-  // 🚀 FIXED: Extremely permissive data loader. As long as it doesn't throw an explicit error, we load it!
+  // 🚀 FIXED: Extremely permissive data loader. Does NOT rely on "ok: true".
   const loadDash = useCallback(() => {
     setLoading(true);
     api("admindashboard").then((d) => {
-      if (!d || d.error || d.ok === false) {
-        // Only reject if the server explicitly tells us there is an error
+      if (!d || d.error) {
         setLoginErr(`SERVER ERROR: ${d?.error || "Invalid response format"}`);
         setLoggedIn(false);
         setLoginStep(0);
