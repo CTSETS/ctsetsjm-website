@@ -365,7 +365,7 @@ export default function PaymentPage({ setPage }) {
   const handleSendCode = async () => {
     let ref = identifier.trim().toUpperCase();
     
-    // 🚀 STRICT APPLICANT ENFORCEMENT
+    // STRICT APPLICANT ENFORCEMENT
     if (ref.startsWith("CTSETSS-")) {
       setAuthError("Student payments are processed inside the Student Portal. Please log into your portal.");
       return;
@@ -398,8 +398,8 @@ export default function PaymentPage({ setPage }) {
       if (data.success) { 
         setAuthError(""); 
         
-        // Immediately fetch the student's actual pricing profile!
-        const stuRes = await fetch(`${APPS_SCRIPT_URL}?action=lookupstudent&ref=${encodeURIComponent(identifier.trim())}`);
+        // 🚀 FIXED: Routed this fetch through VERCEL_URL to completely prevent browser CORS blocking
+        const stuRes = await fetch(`${VERCEL_URL}?action=lookupstudent&ref=${encodeURIComponent(identifier.trim())}`);
         const stuData = await stuRes.json();
         
         if (stuData.found) {
@@ -410,7 +410,7 @@ export default function PaymentPage({ setPage }) {
         }
       } 
       else { setAuthError(data.error === "wrong_code" ? "Invalid code." : "Code expired. Please try again."); }
-    } catch (e) { setAuthError("Network error. Please check your connection."); }
+    } catch (e) { setAuthError("Network error: " + e.message); }
     setAuthLoading(false);
   };
 
@@ -482,7 +482,7 @@ export default function PaymentPage({ setPage }) {
       });
     } catch {}
 
-    // 🚀 FIXED: Extremely clean URL routing to prevent WiPay 404
+    // Prevent 404s by stripping descriptions and extra params from /to_me links
     if (WIPAY_CONFIG.baseUrl.includes("/to_me/")) {
       let base = WIPAY_CONFIG.baseUrl;
       if (base.endsWith("/")) base = base.slice(0, -1);
