@@ -59,9 +59,21 @@ function StatusBadge({ status }) {
 function MetricCard({ label, value, accent = C.teal, sub }) {
   return <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 22, padding: "24px 22px", boxShadow: "0 12px 28px rgba(15,23,42,0.04)" }}><div style={{ fontFamily: C.heading, fontSize: "clamp(26px,3vw,38px)", fontWeight: 800, color: accent, lineHeight: 1, marginBottom: 10 }}>{value}</div><div style={{ fontFamily: C.body, fontSize: 11, color: C.gray, letterSpacing: 1.6, textTransform: "uppercase", fontWeight: 800, marginBottom: 6 }}>{label}</div>{sub && <div style={{ fontFamily: C.body, fontSize: 13, color: C.gray }}>{sub}</div>}</div>;
 }
+
+// 🚀 UPDATED: ToolbarPill now properly displays counts explicitly even if they are 0
 function ToolbarPill({ label, active, onClick, badge }) {
-  return <button onClick={onClick} style={{ padding: "10px 16px", borderRadius: 999, border: active ? `2px solid ${C.navy}` : `1px solid ${C.border}`, background: active ? C.navy : C.card, color: active ? "#fff" : C.gray, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: C.body, transition: "all 0.2s ease", display: "inline-flex", alignItems: "center", gap: 8 }}>{label}{badge > 0 && <span style={{ background: active ? "rgba(255,255,255,0.18)" : C.coral, color: "#fff", borderRadius: 999, padding: "2px 8px", fontSize: 11, fontWeight: 800 }}>{badge}</span>}</button>;
+  return (
+    <button onClick={onClick} style={{ padding: "10px 16px", borderRadius: 999, border: active ? `2px solid ${C.navy}` : `1px solid ${C.border}`, background: active ? C.navy : C.card, color: active ? "#fff" : C.gray, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: C.body, transition: "all 0.2s ease", display: "inline-flex", alignItems: "center", gap: 8 }}>
+      {label}
+      {badge !== undefined && (
+        <span style={{ background: active ? "rgba(255,255,255,0.25)" : "#F1F5F9", color: active ? "#fff" : C.navy, borderRadius: 999, padding: "2px 8px", fontSize: 12, fontWeight: 800 }}>
+          {badge}
+        </span>
+      )}
+    </button>
+  );
 }
+
 function SearchBox({ value, onChange, placeholder = "Filter table by any keyword..." }) {
   return <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} style={{ padding: "12px 16px", borderRadius: 12, border: `1px solid ${C.border}`, fontSize: 14, width: 300, maxWidth: "100%", boxSizing: "border-box", fontFamily: C.body, outline: "none", background: "#fff" }} />;
 }
@@ -197,7 +209,6 @@ export default function AdminDashboardPage() {
   const toast = (text, ok = true) => { setActionMsg({ text, ok }); setTimeout(() => setActionMsg(null), 6000); };
   const refresh = () => setRefreshKey((k) => k + 1);
 
-  // 🚀 FIXED: Extremely permissive data loader. Does NOT rely on "ok: true".
   const loadDash = useCallback(() => {
     setLoading(true);
     api("admindashboard").then((d) => {
@@ -206,7 +217,6 @@ export default function AdminDashboardPage() {
         setLoggedIn(false);
         setLoginStep(0);
       } else {
-        // Success!
         setDashboard(d);
         setLoggedIn(true);
         try { sessionStorage.setItem(PW_KEY, auth); } catch {}
@@ -223,11 +233,11 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     if (!loggedIn) return;
     if (tab === "dashboard") loadDash();
-    else if (tab === "applications") { setLoading(true); api("adminlistapps", { status: appFilter }).then((d) => { if (d && !d.error) setApps(d.applications || []); setLoading(false); }).catch(() => setLoading(false)); }
+    else if (tab === "applications") { setLoading(true); api("adminlistapps").then((d) => { if (d && !d.error) setApps(d.applications || []); setLoading(false); }).catch(() => setLoading(false)); }
     else if (tab === "students") { setLoading(true); api("adminliststudents").then((d) => { if (d && !d.error) setStudents(d.students || []); setLoading(false); }).catch(() => setLoading(false)); }
     else if (tab === "payments") { setLoading(true); api("adminlistpayments").then((d) => { if (d && !d.error) setPayments(d.payments || []); setLoading(false); }).catch(() => setLoading(false)); }
     else if (tab === "activity") { setLoading(true); api("adminauditlog").then((d) => { if (d && !d.error) setAuditLog(d.entries || []); setLoading(false); }).catch(() => setLoading(false)); }
-  }, [loggedIn, tab, appFilter, refreshKey]);
+  }, [loggedIn, tab, refreshKey]);
 
   const doAction = (name, action, params) => {
     setBusy(name);
@@ -308,10 +318,11 @@ export default function AdminDashboardPage() {
     return safeList;
   }, [searchTerm, sortConfig]);
 
+  // 🚀 TABS AND BADGES DEFINITION
   const tabList = [
     { id: "dashboard", label: "Dashboard", icon: "📊" },
     { id: "applications", label: "Applications", icon: "📋", b: dashboard?.apps?.underReview },
-    { id: "students", label: "Students", icon: "🎓" },
+    { id: "students", label: "Students", icon: "🎓", b: dashboard?.students?.total }, // Added total students badge
     { id: "payments", label: "Payments", icon: "💳", b: dashboard?.pendingPayments?.length },
     { id: "activity", label: "Activity Log", icon: "⚡" },
   ];
@@ -365,7 +376,12 @@ export default function AdminDashboardPage() {
       </div>
 
       <div style={{ background: C.card, borderBottom: `1px solid ${C.border}`, padding: "0 34px", display: "flex", overflowX: "auto" }}>
-        {tabList.map((t) => <button key={t.id} onClick={() => { setTab(t.id); setSearchTerm(""); setSortConfig({ key: "timestamp", dir: "desc" }); }} style={{ padding: "18px 24px", border: "none", background: "none", cursor: "pointer", fontSize: 14, fontWeight: tab === t.id ? 800 : 600, color: tab === t.id ? C.navy : C.gray, borderBottom: tab === t.id ? `3px solid ${C.navy}` : "3px solid transparent", display: "flex", alignItems: "center", gap: 10, whiteSpace: "nowrap" }}><span style={{ fontSize: 18 }}>{t.icon}</span> {t.label}{t.b > 0 && <span style={{ background: C.coral, color: "#fff", borderRadius: 999, padding: "2px 8px", fontSize: 11, fontWeight: 800 }}>{t.b}</span>}</button>)}
+        {tabList.map((t) => (
+          <button key={t.id} onClick={() => { setTab(t.id); setSearchTerm(""); setSortConfig({ key: "timestamp", dir: "desc" }); }} style={{ padding: "18px 24px", border: "none", background: "none", cursor: "pointer", fontSize: 14, fontWeight: tab === t.id ? 800 : 600, color: tab === t.id ? C.navy : C.gray, borderBottom: tab === t.id ? `3px solid ${C.navy}` : "3px solid transparent", display: "flex", alignItems: "center", gap: 10, whiteSpace: "nowrap" }}>
+            <span style={{ fontSize: 18 }}>{t.icon}</span> {t.label}
+            {t.b !== undefined && <span style={{ background: tab === t.id ? "rgba(14, 143, 139, 0.15)" : C.coral, color: tab === t.id ? C.teal : "#fff", borderRadius: 999, padding: "2px 8px", fontSize: 11, fontWeight: 800 }}>{t.b}</span>}
+          </button>
+        ))}
       </div>
 
       {actionMsg && <div style={{ margin: "18px 34px 0", padding: "14px 18px", borderRadius: 12, background: actionMsg.ok ? C.emeraldLight : C.redLight, color: actionMsg.ok ? C.emerald : C.red, fontSize: 14, fontWeight: 700, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, border: `1px solid ${actionMsg.ok ? C.emerald : C.red}40` }}><span>{actionMsg.text}</span><button onClick={() => setActionMsg(null)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: "inherit" }}>✕</button></div>}
@@ -419,8 +435,12 @@ export default function AdminDashboardPage() {
 
         {tab === "applications" && (
           <div>
+            {/* 🚀 DYNAMIC TOOLBAR PILLS WITH COUNTS */}
             <div style={{ display: "flex", gap: 14, marginBottom: 24, alignItems: "center", background: "#fff", padding: "18px 22px", borderRadius: 18, border: `1px solid ${C.border}`, flexWrap: "wrap" }}>
-              {["Under Review", "Accepted", "Rejected", ""].map((f) => <ToolbarPill key={f || "All"} label={f || "All"} active={appFilter === f} onClick={() => setAppFilter(f)} />)}
+              {["Under Review", "Accepted", "Rejected", ""].map((f) => {
+                const count = f === "" ? apps.length : apps.filter(a => a.status === f).length;
+                return <ToolbarPill key={f || "All"} label={f || "All"} active={appFilter === f} onClick={() => setAppFilter(f)} badge={count} />;
+              })}
               <div style={{ marginLeft: "auto" }}><SearchBox value={searchTerm} onChange={setSearchTerm} /></div>
             </div>
             <TableShell title="Applications Queue">
@@ -470,8 +490,12 @@ export default function AdminDashboardPage() {
 
         {tab === "students" && (
           <div>
+            {/* 🚀 DYNAMIC TOOLBAR PILLS WITH COUNTS */}
             <div style={{ display: "flex", gap: 14, marginBottom: 24, alignItems: "center", background: "#fff", padding: "18px 22px", borderRadius: 18, border: `1px solid ${C.border}`, flexWrap: "wrap" }}>
-              {["", "Enrolled", "Active", "Pending Payment", "On Hold"].map((f) => <ToolbarPill key={f || "All"} label={f || "All"} active={studentFilter === f} onClick={() => setStudentFilter(f)} />)}
+              {["", "Enrolled", "Active", "Pending Payment", "On Hold"].map((f) => {
+                const count = f === "" ? students.length : students.filter(s => s.status === f).length;
+                return <ToolbarPill key={f || "All"} label={f || "All"} active={studentFilter === f} onClick={() => setStudentFilter(f)} badge={count} />;
+              })}
               <div style={{ marginLeft: "auto" }}><SearchBox value={searchTerm} onChange={setSearchTerm} /></div>
             </div>
             <TableShell title="Student Registry">
@@ -521,8 +545,12 @@ export default function AdminDashboardPage() {
 
         {tab === "payments" && (
           <div>
+            {/* 🚀 DYNAMIC TOOLBAR PILLS WITH COUNTS */}
             <div style={{ display: "flex", gap: 14, marginBottom: 24, alignItems: "center", background: "#fff", padding: "18px 22px", borderRadius: 18, border: `1px solid ${C.border}`, flexWrap: "wrap" }}>
-              {["Pending Verification", "Paid", ""].map((f) => <ToolbarPill key={f || "All"} label={f || "All"} active={payFilter === f} onClick={() => setPayFilter(f)} />)}
+              {["Pending Verification", "Paid", ""].map((f) => {
+                const count = f === "" ? payments.length : payments.filter(p => p.status === f).length;
+                return <ToolbarPill key={f || "All"} label={f || "All"} active={payFilter === f} onClick={() => setPayFilter(f)} badge={count} />;
+              })}
               <div style={{ marginLeft: "auto" }}><SearchBox value={searchTerm} onChange={setSearchTerm} /></div>
             </div>
             <TableShell title="Payments Queue">
