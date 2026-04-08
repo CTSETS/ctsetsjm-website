@@ -185,32 +185,32 @@ export default function AdminDashboardPage() {
   const api = useCallback(async (action, params) => {
     let url = `${VERCEL_URL}?action=${action}&pw=${encodeURIComponent(auth)}`;
     if (params) for (const k in params) if (params[k] !== undefined && params[k] !== "") url += `&${k}=${encodeURIComponent(params[k])}`;
-    // 🚀 DIAGNOSTIC FIX: If Vercel times out, it throws a network error. We catch it and report it.
     try { 
       const response = await fetch(url);
       const data = await response.json();
       return data;
     } catch(e) { 
-      return { ok: false, error: "Network Error: Google Backend Failed to Respond. " + e.message }; 
+      return { error: "Network Error: Backend Failed to Respond. " + e.message }; 
     }
   }, [auth]);
 
   const toast = (text, ok = true) => { setActionMsg({ text, ok }); setTimeout(() => setActionMsg(null), 6000); };
   const refresh = () => setRefreshKey((k) => k + 1);
 
-  // 🚀 DIAGNOSTIC FIX: Surfacing the exact backend error to the screen instead of "Session Expired"
+  // 🚀 FIXED: Extremely permissive data loader. As long as it doesn't throw an explicit error, we load it!
   const loadDash = useCallback(() => {
     setLoading(true);
     api("admindashboard").then((d) => {
-      if (d && (d.ok || d.success)) {
+      if (!d || d.error || d.ok === false) {
+        // Only reject if the server explicitly tells us there is an error
+        setLoginErr(`SERVER ERROR: ${d?.error || "Invalid response format"}`);
+        setLoggedIn(false);
+        setLoginStep(0);
+      } else {
+        // Success!
         setDashboard(d);
         setLoggedIn(true);
         try { sessionStorage.setItem(PW_KEY, auth); } catch {}
-      } else {
-        const backendError = d?.error || "Google Backend Error: No data returned.";
-        setLoginErr(`SERVER ERROR: ${backendError}`);
-        setLoggedIn(false);
-        setLoginStep(0);
       }
       setLoading(false);
     }).catch((err) => { 
@@ -220,19 +220,20 @@ export default function AdminDashboardPage() {
   }, [api, auth]);
 
   useEffect(() => { if (auth) loadDash(); }, []);
+  
   useEffect(() => {
     if (!loggedIn) return;
     if (tab === "dashboard") loadDash();
-    else if (tab === "applications") { setLoading(true); api("adminlistapps", { status: appFilter }).then((d) => { if (d && (d.ok || d.success)) setApps(d.applications || []); setLoading(false); }).catch(() => setLoading(false)); }
-    else if (tab === "students") { setLoading(true); api("adminliststudents").then((d) => { if (d && (d.ok || d.success)) setStudents(d.students || []); setLoading(false); }).catch(() => setLoading(false)); }
-    else if (tab === "payments") { setLoading(true); api("adminlistpayments").then((d) => { if (d && (d.ok || d.success)) setPayments(d.payments || []); setLoading(false); }).catch(() => setLoading(false)); }
-    else if (tab === "activity") { setLoading(true); api("adminauditlog").then((d) => { if (d && (d.ok || d.success)) setAuditLog(d.entries || []); setLoading(false); }).catch(() => setLoading(false)); }
+    else if (tab === "applications") { setLoading(true); api("adminlistapps", { status: appFilter }).then((d) => { if (d && !d.error) setApps(d.applications || []); setLoading(false); }).catch(() => setLoading(false)); }
+    else if (tab === "students") { setLoading(true); api("adminliststudents").then((d) => { if (d && !d.error) setStudents(d.students || []); setLoading(false); }).catch(() => setLoading(false)); }
+    else if (tab === "payments") { setLoading(true); api("adminlistpayments").then((d) => { if (d && !d.error) setPayments(d.payments || []); setLoading(false); }).catch(() => setLoading(false)); }
+    else if (tab === "activity") { setLoading(true); api("adminauditlog").then((d) => { if (d && !d.error) setAuditLog(d.entries || []); setLoading(false); }).catch(() => setLoading(false)); }
   }, [loggedIn, tab, appFilter, refreshKey]);
 
   const doAction = (name, action, params) => {
     setBusy(name);
     api(action, params).then((d) => { 
-      toast(d && (d.ok || d.success) ? (d.message || "Done") : ("Error: " + ((d && d.error) || "Failed")), !!(d && (d.ok || d.success))); 
+      toast(d && !d.error ? (d.message || "Done") : ("Error: " + ((d && d.error) || "Failed")), !!(d && !d.error)); 
       setBusy(""); 
       setEditModal(null);
       refresh(); 
@@ -242,7 +243,7 @@ export default function AdminDashboardPage() {
   const acceptApp = (ref) => { if (window.confirm("Accept " + ref + "?")) { setApps((prev) => prev.map((a) => a.ref === ref ? { ...a, status: "Accepted" } : a)); doAction(ref, "adminacceptapp", { ref }); } };
   const rejectApp = (ref) => { if (window.confirm("Reject " + ref + "?")) { setApps((prev) => prev.map((a) => a.ref === ref ? { ...a, status: "Rejected" } : a)); doAction(ref, "adminrejectapp", { ref }); } };
   const enrollStu = (ref) => { if (window.confirm("Enroll " + ref + "? Credentials will be sent.")) { setStudents((prev) => prev.map((s) => s.ref === ref ? { ...s, status: "Enrolled", lmsAccess: "Yes" } : s)); doAction(ref, "adminenrollstudent", { ref }); } };
-  const genRecord = (sn) => { setBusy(sn); api("generaterecord", { student: sn }).then((d) => { const success = d && (d.ok || d.success); const link = d ? (d.url || d.fileUrl || d.link || d.pdfUrl) : null; if (success && link) { window.open(link, "_blank"); toast("Record saved to Student Folder and opened!", true); } else toast("Failed to generate record: " + (d?.error || d?.message || "Unknown Error"), false); setBusy(""); }).catch(() => { toast("Network error.", false); setBusy(""); }); };
+  const genRecord = (sn) => { setBusy(sn); api("generaterecord", { student: sn }).then((d) => { const success = d && !d.error; const link = d ? (d.url || d.fileUrl || d.link || d.pdfUrl) : null; if (success && link) { window.open(link, "_blank"); toast("Record saved to Student Folder and opened!", true); } else toast("Failed to generate record: " + (d?.error || d?.message || "Unknown Error"), false); setBusy(""); }).catch(() => { toast("Network error.", false); setBusy(""); }); };
   const rejectPay = (ref) => { if (window.confirm("Reject payment for " + ref + "?")) { setPayments((prev) => prev.map((p) => p.ref === ref ? { ...p, status: "Rejected — Not Found" } : p)); if (dashboard) setDashboard((prev) => ({ ...prev, pendingPayments: prev.pendingPayments.filter((p) => p.ref !== ref) })); doAction(ref, "rejectpayment", { ref, txn: "admin-dashboard" }); } };
   const verifyPay = (ref, amt, txn) => { setPayments((prev) => prev.map((p) => p.ref === ref ? { ...p, status: "Paid", amount: amt } : p)); if (dashboard) setDashboard((prev) => ({ ...prev, pendingPayments: prev.pendingPayments.filter((p) => p.ref !== ref) })); doAction(ref, "verifypayment", { ref, amount: amt, txn }); setModal(null); };
 
@@ -265,7 +266,7 @@ export default function AdminDashboardPage() {
     setLoginErr(""); setLoading(true);
     try {
       const data1 = await (await fetch(`${VERCEL_URL}?action=verifyadminpw&pw=${encodeURIComponent(pw.trim())}`)).json();
-      if (data1 && (data1.ok || data1.success)) {
+      if (data1 && !data1.error) {
         setAuth(pw.trim());
         const data2 = await (await fetch(`${VERCEL_URL}?action=sendotp&identifier=ADMIN&purpose=admin_login`)).json();
         if (data2 && data2.success) setLoginStep(1); else setLoginErr("Failed to trigger 2FA sequence.");
