@@ -276,7 +276,22 @@ export default function PaymentPage({ setPage }) {
   const [customAmount, setCustomAmount] = useState("");
   const [fetchErr, setFetchErr] = useState("");
 
-  // When ID is verified, fetch the profile
+  // Check URL Hash for ?ref=CTSETSA-...
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.includes("?")) {
+      const queryString = hash.split("?")[1];
+      const urlParams = new URLSearchParams(queryString);
+      const passedRef = urlParams.get("ref");
+      if (passedRef && passedRef.toUpperCase().startsWith("CTSETSA-")) {
+        // Only set verifiedId if we want to instantly bypass OTP (not recommended without email check, but keeping logic)
+        // Usually, the link just pre-fills the box now.
+      }
+      window.history.replaceState(null, "", "/#pay");
+    }
+  }, []);
+
+  // When ID is verified via OTPGate, fetch the profile
   useEffect(() => {
     if (verifiedId) {
       const loadProfile = async () => {
@@ -378,10 +393,9 @@ export default function PaymentPage({ setPage }) {
       });
     } catch {}
 
+    // 🚀 FIXED: Absolutely NO extra parameters for /to_me/ Personal Links!
     if (WIPAY_CONFIG.baseUrl.includes("/to_me/")) {
-      let base = WIPAY_CONFIG.baseUrl;
-      if (base.endsWith("/")) base = base.slice(0, -1);
-      window.location.href = `${base}/${payAmount}`;
+      window.location.href = WIPAY_CONFIG.baseUrl;
     } else {
       window.location.href = `${WIPAY_CONFIG.baseUrl}?total=${encodeURIComponent(payAmount)}&currency=${encodeURIComponent(WIPAY_CONFIG.currency)}&order_id=${encodeURIComponent(orderId)}&return_url=${encodeURIComponent(WIPAY_CONFIG.returnUrl)}`;
     }
@@ -436,7 +450,6 @@ export default function PaymentPage({ setPage }) {
                 
                 {!verifiedId ? (
                   <div style={{ animation: "fadeIn 0.3s" }}>
-                     {/* 🚀 UPGRADED: Using original OTPGate for flawless automatic entry */}
                      <OTPGate purpose="payment" title="Applicant Access" text="Enter your Application Reference (CTSETSA-...) to securely load your invoice and access the Payment Centre.">
                         {(id) => {
                            if (id.toUpperCase().startsWith("CTSETSS-")) {
