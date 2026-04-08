@@ -59,14 +59,12 @@ function StatusBadge({ status }) {
 function MetricCard({ label, value, accent = C.teal, sub }) {
   return <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 22, padding: "24px 22px", boxShadow: "0 12px 28px rgba(15,23,42,0.04)" }}><div style={{ fontFamily: C.heading, fontSize: "clamp(26px,3vw,38px)", fontWeight: 800, color: accent, lineHeight: 1, marginBottom: 10 }}>{value}</div><div style={{ fontFamily: C.body, fontSize: 11, color: C.gray, letterSpacing: 1.6, textTransform: "uppercase", fontWeight: 800, marginBottom: 6 }}>{label}</div>{sub && <div style={{ fontFamily: C.body, fontSize: 13, color: C.gray }}>{sub}</div>}</div>;
 }
-
-// 🚀 UPDATED: ToolbarPill now properly displays counts explicitly even if they are 0
 function ToolbarPill({ label, active, onClick, badge }) {
   return (
     <button onClick={onClick} style={{ padding: "10px 16px", borderRadius: 999, border: active ? `2px solid ${C.navy}` : `1px solid ${C.border}`, background: active ? C.navy : C.card, color: active ? "#fff" : C.gray, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: C.body, transition: "all 0.2s ease", display: "inline-flex", alignItems: "center", gap: 8 }}>
       {label}
       {badge !== undefined && (
-        <span style={{ background: active ? "rgba(255,255,255,0.25)" : "#F1F5F9", color: active ? "#fff" : C.navy, borderRadius: 999, padding: "2px 8px", fontSize: 12, fontWeight: 800 }}>
+        <span style={{ background: active ? "rgba(255,255,255,0.25)" : "#E2E8F0", color: active ? "#fff" : C.navy, borderRadius: 999, padding: "2px 8px", fontSize: 12, fontWeight: 800 }}>
           {badge}
         </span>
       )}
@@ -212,7 +210,7 @@ export default function AdminDashboardPage() {
   const loadDash = useCallback(() => {
     setLoading(true);
     api("admindashboard").then((d) => {
-      if (!d || d.error) {
+      if (!d || d.error || d.ok === false) {
         setLoginErr(`SERVER ERROR: ${d?.error || "Invalid response format"}`);
         setLoggedIn(false);
         setLoginStep(0);
@@ -228,7 +226,33 @@ export default function AdminDashboardPage() {
     });
   }, [api, auth]);
 
-  useEffect(() => { if (auth) loadDash(); }, []);
+  // 🚀 FIXED: Step-Up Authentication on Session Resume
+  // If the browser remembers the password upon refresh, automatically trigger a new 2FA code.
+  useEffect(() => { 
+    if (auth && !loggedIn) {
+      setLoading(true);
+      fetch(`${VERCEL_URL}?action=sendotp&identifier=ADMIN&purpose=admin_login`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.success) {
+            setLoginStep(1); // Jump to OTP entry
+          } else {
+            setAuth("");
+            setPw("");
+            sessionStorage.removeItem(PW_KEY);
+            setLoginStep(0);
+          }
+          setLoading(false);
+        })
+        .catch(() => { 
+          setAuth("");
+          setPw("");
+          sessionStorage.removeItem(PW_KEY);
+          setLoginStep(0);
+          setLoading(false); 
+        });
+    } 
+  }, []);
   
   useEffect(() => {
     if (!loggedIn) return;
@@ -275,8 +299,9 @@ export default function AdminDashboardPage() {
     setLoginErr(""); setLoading(true);
     try {
       const data1 = await (await fetch(`${VERCEL_URL}?action=verifyadminpw&pw=${encodeURIComponent(pw.trim())}`)).json();
-      if (data1 && !data1.error) {
+      if (data1 && !data1.error && data1.ok) {
         setAuth(pw.trim());
+        try { sessionStorage.setItem(PW_KEY, pw.trim()); } catch {}
         const data2 = await (await fetch(`${VERCEL_URL}?action=sendotp&identifier=ADMIN&purpose=admin_login`)).json();
         if (data2 && data2.success) setLoginStep(1); else setLoginErr("Failed to trigger 2FA sequence.");
       } else setLoginErr("Invalid master password. Intrusion logged.");
@@ -318,12 +343,11 @@ export default function AdminDashboardPage() {
     return safeList;
   }, [searchTerm, sortConfig]);
 
-  // 🚀 TABS AND BADGES DEFINITION
-  const tabList = [
+ const tabList = [
     { id: "dashboard", label: "Dashboard", icon: "📊" },
-    { id: "applications", label: "Applications", icon: "📋", b: dashboard?.apps?.underReview },
-    { id: "students", label: "Students", icon: "🎓", b: dashboard?.students?.total }, // Added total students badge
-    { id: "payments", label: "Payments", icon: "💳", b: dashboard?.pendingPayments?.length },
+    { id: "applications", label: "Applications", icon: "📋", b: dashboard?.apps?.underReview || 0 },
+    { id: "students", label: "Students", icon: "🎓", b: dashboard?.students?.total || 0 },
+    { id: "payments", label: "Payments", icon: "💳", b: dashboard?.pendingPayments?.length || 0 },
     { id: "activity", label: "Activity Log", icon: "⚡" },
   ];
   
@@ -353,6 +377,11 @@ export default function AdminDashboardPage() {
             {loginStep === 0 ? <input type="password" value={pw} onChange={(e) => { setPw(e.target.value); setLoginErr(""); }} onKeyDown={(e) => e.key === "Enter" && handlePasswordSubmit()} autoFocus placeholder="Master Password" style={{ width: "100%", padding: "18px 20px", borderRadius: 14, border: `2px solid ${loginErr ? C.red : C.border}`, fontSize: 18, textAlign: "center", letterSpacing: 3, background: "#F8FAFC", fontWeight: 800, boxSizing: "border-box", marginBottom: 18 }} /> : <input type="text" value={otpCode} onChange={(e) => { setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6)); setLoginErr(""); }} onKeyDown={(e) => e.key === "Enter" && handleOtpSubmit()} autoFocus placeholder="000000" style={{ width: "100%", padding: "18px 20px", borderRadius: 14, border: `2px solid ${loginErr ? C.red : C.teal}`, fontSize: 30, fontFamily: "monospace", textAlign: "center", letterSpacing: 10, background: C.emeraldLight, fontWeight: 900, boxSizing: "border-box", marginBottom: 18 }} />}
             {loginErr && <div style={{ color: C.red, fontWeight: 800, marginBottom: 16, fontFamily: C.body, whiteSpace: "pre-wrap", textAlign: "left", padding: 12, background: C.redLight, borderRadius: 8 }}>{loginErr}</div>}
             <button onClick={loginStep === 0 ? handlePasswordSubmit : handleOtpSubmit} disabled={loading} style={{ width: "100%", padding: "18px", borderRadius: 14, border: "none", background: C.navy, color: "#fff", fontSize: 16, fontWeight: 900, cursor: "pointer", fontFamily: C.body }}>{loading ? "Authenticating..." : "Access Console"}</button>
+            {loginStep === 1 && (
+              <button onClick={() => { setLoginStep(0); setAuth(""); setPw(""); setOtpCode(""); setLoginErr(""); sessionStorage.removeItem(PW_KEY); }} style={{ marginTop: 20, background: "none", border: "none", color: C.gray, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: C.body, textDecoration: "underline" }}>
+                Cancel & Return
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -435,7 +464,6 @@ export default function AdminDashboardPage() {
 
         {tab === "applications" && (
           <div>
-            {/* 🚀 DYNAMIC TOOLBAR PILLS WITH COUNTS */}
             <div style={{ display: "flex", gap: 14, marginBottom: 24, alignItems: "center", background: "#fff", padding: "18px 22px", borderRadius: 18, border: `1px solid ${C.border}`, flexWrap: "wrap" }}>
               {["Under Review", "Accepted", "Rejected", ""].map((f) => {
                 const count = f === "" ? apps.length : apps.filter(a => a.status === f).length;
@@ -490,7 +518,6 @@ export default function AdminDashboardPage() {
 
         {tab === "students" && (
           <div>
-            {/* 🚀 DYNAMIC TOOLBAR PILLS WITH COUNTS */}
             <div style={{ display: "flex", gap: 14, marginBottom: 24, alignItems: "center", background: "#fff", padding: "18px 22px", borderRadius: 18, border: `1px solid ${C.border}`, flexWrap: "wrap" }}>
               {["", "Enrolled", "Active", "Pending Payment", "On Hold"].map((f) => {
                 const count = f === "" ? students.length : students.filter(s => s.status === f).length;
@@ -545,7 +572,6 @@ export default function AdminDashboardPage() {
 
         {tab === "payments" && (
           <div>
-            {/* 🚀 DYNAMIC TOOLBAR PILLS WITH COUNTS */}
             <div style={{ display: "flex", gap: 14, marginBottom: 24, alignItems: "center", background: "#fff", padding: "18px 22px", borderRadius: 18, border: `1px solid ${C.border}`, flexWrap: "wrap" }}>
               {["Pending Verification", "Paid", ""].map((f) => {
                 const count = f === "" ? payments.length : payments.filter(p => p.status === f).length;
