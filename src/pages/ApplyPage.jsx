@@ -19,6 +19,8 @@ import { fmt, fmtDate } from "../utils/formatting";
 import { registerDripSequence } from "../utils/email";
 import HeartFormBuilder from "../components/apply/HeartFormBuilder";
 
+const VERCEL_URL = "https://ctsetsjm-website.vercel.app/api/proxy";
+
 const PEOPLE = {
   hero: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1400&q=80",
   advisor: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
@@ -212,7 +214,7 @@ function PrayerModal({ prayer, onClose }) {
   );
 }
 
-function StatusTracker({ setPage, appsScriptUrl }) {
+function StatusTracker({ setPage }) {
   const [lookupVal, setLookupVal] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -222,7 +224,8 @@ function StatusTracker({ setPage, appsScriptUrl }) {
     if (!lookupVal.trim()) { setError("Please enter your Application Number or Student ID."); return; }
     setLoading(true); setError(""); setResult(null);
     try {
-      const res = await fetch(`${appsScriptUrl}?action=lookupstudent&ref=${encodeURIComponent(lookupVal.trim().toUpperCase())}`);
+      // 🚀 FIXED: Re-routed strictly through Vercel Proxy to bypass CORS blocks
+      const res = await fetch(`${VERCEL_URL}?action=lookupstudent&ref=${encodeURIComponent(lookupVal.trim().toUpperCase())}`);
       const data = await res.json();
       if (data.found) setResult(data); else setError("No application found. Please check your details and try again.");
     } catch { setError("Unable to connect. Please try again."); }
@@ -255,7 +258,7 @@ function StatusTracker({ setPage, appsScriptUrl }) {
   );
 }
 
-export default function ApplyPage({ setPage, appsScriptUrl }) {
+export default function ApplyPage({ setPage }) {
   const [applicantType, setApplicantType] = useState("");
   const [form, setForm] = useState({ firstName: "", lastName: "", email: "", phone: "", gender: "", dob: "", nationality: "", parish: "", country: "Jamaica", address: "", trn: "", highestQualification: "", employmentStatus: "", emergencyName: "", emergencyRelationship: "", emergencyPhone: "", level: "", programme: "", paymentPlan: "", hearAbout: "", message: "" });
   const [files, setFiles] = useState({});
@@ -416,7 +419,7 @@ export default function ApplyPage({ setPage, appsScriptUrl }) {
             <>
               <SectionIntro tag="Application Status" title="Check your current admissions progress" desc="Use your application reference or student ID to see where you are in the process and take the next step when prompted." accent={S.teal} />
               <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.08fr) minmax(320px, 0.92fr)", gap: 24, alignItems: "start" }} className="resp-grid-2">
-                <StatusTracker setPage={setPage} appsScriptUrl={appsScriptUrl} />
+                <StatusTracker setPage={setPage} />
                 <div style={{ display: "grid", gap: 18 }}>
                   <SideInfoCard title="Stay ready for the next step" desc="Once your application is reviewed, you may be asked to complete payment, submit an outstanding item, or prepare for onboarding." img={PEOPLE.tracker} accent={S.coral} />
                   <ChecklistCard title="Good to keep nearby" accent={S.teal} items={["Your application reference number", "The email address you used to apply", "Your student ID if already issued", "A copy of your payment instructions if accepted"]} />
@@ -447,81 +450,4 @@ export default function ApplyPage({ setPage, appsScriptUrl }) {
                       <Field label="Phone Number" required error={errors.phone} hint="10 digits starting with country code, e.g. 8761234567"><input type="tel" style={inputStyle} value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="8763819771" /></Field>
                       <Field label="Gender" required error={errors.gender}><select style={selectStyle} value={form.gender} onChange={(e) => set("gender", e.target.value)}><option value="">Select...</option>{GENDERS.map((g) => <option key={g} value={g}>{g}</option>)}</select></Field>
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 18px" }} className="resp-grid-2">
-                      <Field label="Date of Birth" required error={errors.dob}><input type="date" style={inputStyle} value={form.dob} onChange={(e) => set("dob", e.target.value)} max="2012-01-01" /></Field>
-                      <Field label="Nationality" required error={errors.nationality}><input style={inputStyle} value={form.nationality} onChange={(e) => set("nationality", e.target.value)} placeholder={isJamaican ? "Jamaican" : "e.g. Trinidadian"} /></Field>
-                    </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 18px" }} className="resp-grid-2">
-                      <Field label="Country" required error={errors.country}><input style={inputStyle} value={form.country} onChange={(e) => set("country", e.target.value)} /></Field>
-                      {isJamaican && <Field label="Parish" required error={errors.parish}><select style={selectStyle} value={form.parish} onChange={(e) => set("parish", e.target.value)}><option value="">Select parish...</option>{JA_PARISHES.map((p) => <option key={p} value={p}>{p}</option>)}</select></Field>}
-                    </div>
-                    <Field label="Street Address" required error={errors.address}><input style={inputStyle} value={form.address} onChange={(e) => set("address", e.target.value)} /></Field>
-                    {isJamaican && <Field label="TRN" required error={errors.trn} hint="9 digits — for NCTVET registration"><input style={inputStyle} value={form.trn} onChange={(e) => set("trn", e.target.value)} placeholder="123456789" maxLength={11} /></Field>}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 18px" }} className="resp-grid-2">
-                      <Field label="Highest Qualification" required error={errors.highestQualification}><select style={selectStyle} value={form.highestQualification} onChange={(e) => set("highestQualification", e.target.value)}><option value="">Select...</option>{["No Formal Qualification", "CXC/CSEC", "Diploma", "Associate Degree", "Bachelor's Degree", "Other"].map((o) => <option key={o} value={o}>{o}</option>)}</select></Field>
-                      <Field label="Employment Status" required error={errors.employmentStatus}><select style={selectStyle} value={form.employmentStatus} onChange={(e) => set("employmentStatus", e.target.value)}><option value="">Select...</option>{["Employed (Full-Time)", "Employed (Part-Time)", "Self-Employed", "Unemployed", "Student", "Retired"].map((o) => <option key={o} value={o}>{o}</option>)}</select></Field>
-                    </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0 18px" }} className="resp-grid-3">
-                      <Field label="Emergency Contact Name" required error={errors.emergencyName}><input style={inputStyle} value={form.emergencyName} onChange={(e) => set("emergencyName", e.target.value)} /></Field>
-                      <Field label="Relationship" required error={errors.emergencyRelationship}><input style={inputStyle} value={form.emergencyRelationship} onChange={(e) => set("emergencyRelationship", e.target.value)} /></Field>
-                      <Field label="Phone" required error={errors.emergencyPhone}><input style={inputStyle} value={form.emergencyPhone} onChange={(e) => set("emergencyPhone", e.target.value)} /></Field>
-                    </div>
-                  </SectionBlock>
-
-                  <SectionBlock num="3" title="Choose Your Programme" locked={!applicantType}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }} className="resp-grid-2">
-                      <div>
-                        <Field label="Qualification Level" required error={errors.programme}><select style={selectStyle} value={form.level} onChange={(e) => set("level", e.target.value)}><option value="">Select level...</option>{Object.keys(PROGRAMMES).map((l) => <option key={l} value={l}>{l}</option>)}</select></Field>
-                        <Field label="Programme" required error={errors.programme}><select style={selectStyle} value={form.programme} onChange={(e) => set("programme", e.target.value)} disabled={!form.level}><option value="">Select programme...</option>{availableProgrammes.map((p) => <option key={p.name} value={p.name}>{p.name}</option>)}</select></Field>
-                        <Field label="Payment Plan"><select style={selectStyle} value={form.paymentPlan} onChange={(e) => set("paymentPlan", e.target.value)}><option value="Gold">Gold — Pay in Full</option><option value="Silver">Silver — 60/40 Split</option><option value="Bronze">Bronze — 20% + Monthly</option></select></Field>
-                      </div>
-                      {form.programme && <div style={{ background: S.navy, borderRadius: 18, padding: 22, color: S.white, boxShadow: "0 16px 36px rgba(15,23,42,0.12)" }}>
-                        <div style={{ fontSize: 11, color: S.goldLight, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 10 }}>Selected Programme</div>
-                        <div style={{ fontFamily: S.heading, fontSize: 26, fontWeight: 800, marginBottom: 8 }}>{form.programme}</div>
-                        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.68)", fontFamily: S.body, lineHeight: 1.7, marginBottom: 14 }}>{form.level}</div>
-                        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.68)", fontFamily: S.body, lineHeight: 1.7 }}>Registration fee begins at {fmt(REG_FEE)}. Final training fee depends on the selected programme.</div>
-                      </div>}
-                    </div>
-                  </SectionBlock>
-
-                  {isJamaican && <SectionBlock num="4" title="HEART/NSTA Application Form" desc="Auto-filled from your details. Review, sign, and confirm — it will be automatically attached to your application." locked={!form.programme}><HeartFormBuilder formData={form} onComplete={(sig, heartFile) => { if (sig) { setHeartFormDone(true); if (heartFile) setFiles((prev) => ({ ...prev, heartForm: heartFile })); } }} /></SectionBlock>}
-
-                  <SectionBlock num={isJamaican ? "5" : "4"} title="Upload Your Documents" desc={`Required documents for ${APPLICANT_TYPES.find((t) => t.key === applicantType)?.label || "your"} applicants. Max 5 MB per file.${isJamaican ? " Your signed HEART form is auto-attached once completed." : ""}`} locked={!form.programme}>
-                    {applicantType && currentDocs.map((doc) => <FileUpload key={doc.slot} doc={doc} file={files[doc.slot]} onFileChange={onFileChange} />)}
-                    {Object.keys(errors).filter((k) => currentDocs.some((d) => d.slot === k)).map((k) => <div key={k} style={{ fontSize: 11, color: S.error, fontFamily: S.body, marginTop: -6, marginBottom: 10 }}>⚠️ {errors[k]}</div>)}
-                  </SectionBlock>
-
-                  <SectionBlock num={isJamaican ? "6" : "5"} title="Review & Submit">
-                    <div style={{ background: S.white, borderRadius: 18, padding: 18, border: `1px solid ${S.border}`, boxShadow: "0 8px 20px rgba(15,23,42,0.03)", marginBottom: 18 }}>
-                      <Field label="How did you hear about us?"><select style={selectStyle} value={form.hearAbout} onChange={(e) => set("hearAbout", e.target.value)}><option value="">Select...</option>{["Google Search", "Facebook", "Instagram", "TikTok", "LinkedIn", "WhatsApp", "A friend or family member", "Employer", "HEART/NSTA", "Other"].map((o) => <option key={o} value={o}>{o}</option>)}</select></Field>
-                      <Field label="Anything else you'd like us to know?" hint="Optional — special requests, questions, etc."><textarea style={{ ...inputStyle, height: 90, resize: "vertical" }} value={form.message} onChange={(e) => set("message", e.target.value)} placeholder="e.g. I have a question about payment plans..." /></Field>
-                      <div style={{ marginBottom: 20 }}><CaptchaChallenge onVerified={() => setCaptchaOk(true)} verified={captchaOk} />{errors.captcha && <div style={{ fontSize: 11, color: S.error, fontFamily: S.body, marginTop: 6 }}>⚠️ {errors.captcha}</div>}</div>
-                    </div>
-                    {errors.submit && <div style={{ padding: "14px 18px", borderRadius: 12, background: S.roseLight, border: `1px solid ${S.rose}30`, marginBottom: 18 }}><div style={{ fontSize: 13, color: S.roseDark, fontFamily: S.body, fontWeight: 700 }}>⚠️ {errors.submit}</div></div>}
-                    <button onClick={handleSubmit} disabled={submitting || !captchaOk} style={{ width: "100%", padding: "18px 40px", borderRadius: 14, border: "none", background: captchaOk ? `linear-gradient(135deg, ${S.coral} 0%, ${S.gold} 100%)` : "rgba(1,30,64,0.08)", color: captchaOk ? S.white : S.grayLight, fontSize: 16, fontWeight: 800, cursor: captchaOk ? "pointer" : "not-allowed", fontFamily: S.body, letterSpacing: 0.5, boxShadow: captchaOk ? `0 10px 30px ${S.coral}30` : "none", opacity: submitting ? 0.75 : 1 }}>{submitting ? "Submitting Application..." : "Submit Application →"}</button>
-                    <p style={{ textAlign: "center", fontSize: 11, color: S.gray, fontFamily: S.body, marginTop: 14, lineHeight: 1.6 }}>By submitting, you agree to our <button onClick={() => setPage("Terms")} style={{ background: "none", border: "none", color: S.teal, cursor: "pointer", fontFamily: S.body, fontSize: 11, padding: 0 }}>Terms & Conditions</button> and <button onClick={() => setPage("Privacy")} style={{ background: "none", border: "none", color: S.teal, cursor: "pointer", fontFamily: S.body, fontSize: 11, padding: 0 }}>Privacy Policy</button>.</p>
-                  </SectionBlock>
-
-                  <Reveal delay={0.2}><div style={{ marginTop: 32 }}><TestimonialCard t={TESTIMONIALS[2]} /></div></Reveal>
-                  <Reveal delay={0.28}><div style={{ marginTop: 24, padding: "20px 22px", borderRadius: 18, background: S.white, border: `1px solid ${S.border}`, display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap", boxShadow: "0 10px 24px rgba(15,23,42,0.03)" }}><div style={{ width: 46, height: 46, borderRadius: 12, background: S.skyLight, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>💬</div><div style={{ flex: 1, minWidth: 220 }}><div style={{ fontSize: 14, fontWeight: 800, color: S.navy, fontFamily: S.body }}>Need help with your application?</div><div style={{ fontSize: 12, color: S.gray, fontFamily: S.body, marginTop: 2 }}>WhatsApp us at 876-381-9771 or email admin@ctsetsjm.com. We respond within 48–72 hours.</div></div><a href="https://wa.me/8763819771?text=Hi%2C%20I%20need%20help%20with%20my%20CTS%20ETS%20application." target="_blank" rel="noopener noreferrer" style={{ padding: "11px 20px", borderRadius: 12, background: S.emerald, color: S.white, fontSize: 12, fontWeight: 700, fontFamily: S.body, textDecoration: "none", whiteSpace: "nowrap" }}>WhatsApp Us →</a></div></Reveal>
-                </div>
-
-                <div style={{ display: "grid", gap: 18, position: "sticky", top: 90 }}>
-                  <SideInfoCard title="A smoother application experience helps learners finish the process" desc="Clear admissions steps, visible support, and better layout reduce uncertainty and make it easier for applicants to keep going." img={PEOPLE.advisor} accent={S.coral} />
-                  <ChecklistCard title="Before you submit" accent={S.teal} items={["Choose your applicant type correctly", "Prepare your required identification files", "Select the exact programme you want", "Complete the HEART form if you are applying from Jamaica", "Finish the verification step before submitting"]} />
-                  <div style={{ background: S.navy, borderRadius: 22, padding: 22, color: S.white, boxShadow: "0 16px 36px rgba(15,23,42,0.12)" }}>
-                    <div style={{ fontSize: 11, color: S.goldLight, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 10 }}>Admissions Note</div>
-                    <div style={{ fontFamily: S.heading, fontSize: 24, fontWeight: 800, marginBottom: 10 }}>Registration fee begins at {fmt(REG_FEE)}</div>
-                    <div style={{ fontSize: 13, color: "rgba(255,255,255,0.74)", lineHeight: 1.8, fontFamily: S.body }}>Final training fees vary by programme. Once accepted, you will receive next-step instructions and the route into payment.</div>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-
-          <PageScripture page="apply" />
-        </WideWrap>
-      </section>
-    </PageWrapper>
-  );
-}
+                    <div style={{ display: "grid", gridTemplate
