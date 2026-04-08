@@ -224,12 +224,23 @@ function StatusTracker({ setPage }) {
     if (!lookupVal.trim()) { setError("Please enter your Application Number or Student ID."); return; }
     setLoading(true); setError(""); setResult(null);
     try {
-      // 🚀 FIXED: Securely routed through VERCEL_URL to bypass all browser CORS blocks
       const res = await fetch(`${VERCEL_URL}?action=lookupstudent&ref=${encodeURIComponent(lookupVal.trim().toUpperCase())}`);
-      const data = await res.json();
-      if (data.found) setResult(data); else setError("No application found. Please check your details and try again.");
+      const text = await res.text();
+      
+      let data;
+      try {
+         data = JSON.parse(text);
+      } catch(e) {
+         throw new Error("Server took too long to respond. Please try again.");
+      }
+      
+      if (data.found) {
+        setResult(data); 
+      } else { 
+        setError("No application found with this reference number. Please check for typos and try again.");
+      }
     } catch (e) { 
-      setError("Unable to connect to the server. Please try again."); 
+      setError(`Secure Connection Failed: ${e.message}`); 
     }
     setLoading(false);
   };
@@ -514,4 +525,19 @@ export default function ApplyPage({ setPage }) {
                 <div style={{ display: "grid", gap: 18, position: "sticky", top: 90 }}>
                   <SideInfoCard title="A smoother application experience helps learners finish the process" desc="Clear admissions steps, visible support, and better layout reduce uncertainty and make it easier for applicants to keep going." img={PEOPLE.advisor} accent={S.coral} />
                   <ChecklistCard title="Before you submit" accent={S.teal} items={["Choose your applicant type correctly", "Prepare your required identification files", "Select the exact programme you want", "Complete the HEART form if you are applying from Jamaica", "Finish the verification step before submitting"]} />
-                  <div style={{ background: S.navy, borderRadius: 22, padding: 22, color
+                  <div style={{ background: S.navy, borderRadius: 22, padding: 22, color: S.white, boxShadow: "0 16px 36px rgba(15,23,42,0.12)" }}>
+                    <div style={{ fontSize: 11, color: S.goldLight, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 10 }}>Admissions Note</div>
+                    <div style={{ fontFamily: S.heading, fontSize: 24, fontWeight: 800, marginBottom: 10 }}>Registration fee begins at {fmt(REG_FEE)}</div>
+                    <div style={{ fontSize: 13, color: "rgba(255,255,255,0.74)", lineHeight: 1.8, fontFamily: S.body }}>Final training fees vary by programme. Once accepted, you will receive next-step instructions and the route into payment.</div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          <PageScripture page="apply" />
+        </WideWrap>
+      </section>
+    </PageWrapper>
+  );
+}
