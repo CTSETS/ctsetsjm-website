@@ -435,9 +435,7 @@ export default function PaymentPage({ setPage }) {
 
     // 🚀 FIXED: Prevent 404s by stripping descriptions and extra params from /to_me links
     if (WIPAY_CONFIG.baseUrl.includes("/to_me/")) {
-      let base = WIPAY_CONFIG.baseUrl;
-      if (base.endsWith("/")) base = base.slice(0, -1);
-      window.location.href = `${base}/${payAmount}`;
+      window.location.href = WIPAY_CONFIG.baseUrl;
     } else {
       window.location.href = `${WIPAY_CONFIG.baseUrl}?total=${encodeURIComponent(payAmount)}&currency=${encodeURIComponent(WIPAY_CONFIG.currency)}&order_id=${encodeURIComponent(orderId)}&return_url=${encodeURIComponent(WIPAY_CONFIG.returnUrl)}`;
     }
