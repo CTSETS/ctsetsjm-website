@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import S from "../constants/styles";
 import { PROGRAMMES } from "../constants/programmes"; 
 import { APPS_SCRIPT_URL, WIPAY_CONFIG } from "../constants/config"; 
@@ -64,6 +64,60 @@ const loadConfetti = () => {
   script.async = true;
   document.body.appendChild(script);
 };
+
+// 🚀 6-Box OTP Input Component
+function OtpBoxes({ value, onChange, onEnter, disabled }) {
+  const inputRefs = useRef([]);
+  const [focused, setFocused] = useState(-1);
+
+  const handleChange = (e, idx) => {
+    const val = e.target.value.replace(/\D/g, "");
+    if (val.length > 1) { 
+      const paste = val.slice(0, 6);
+      onChange(paste);
+      inputRefs.current[Math.min(paste.length, 5)]?.focus();
+      return;
+    }
+    const newOtp = value.split("");
+    newOtp[idx] = val.slice(-1);
+    onChange(newOtp.join(""));
+    if (val && idx < 5) inputRefs.current[idx + 1]?.focus();
+  };
+
+  const handleKeyDown = (e, idx) => {
+    if (e.key === "Backspace" && !value[idx] && idx > 0) {
+      inputRefs.current[idx - 1]?.focus();
+    }
+    if (e.key === "Enter" && value.length === 6) {
+      onEnter();
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", gap: "8px", justifyContent: "center", margin: "20px 0" }}>
+      {[0, 1, 2, 3, 4, 5].map((i) => {
+        const isActive = focused === i;
+        const hasVal = !!value[i];
+        const borderCol = isActive ? "#3B82F6" : hasVal ? "#D97706" : "#E2E8F0"; 
+        return (
+          <input
+            key={i}
+            ref={el => inputRefs.current[i] = el}
+            type="text"
+            inputMode="numeric"
+            value={value[i] || ""}
+            onChange={(e) => handleChange(e, i)}
+            onKeyDown={(e) => handleKeyDown(e, i)}
+            onFocus={() => setFocused(i)}
+            onBlur={() => setFocused(-1)}
+            disabled={disabled}
+            style={{ width: "clamp(40px, 11vw, 54px)", height: "clamp(50px, 13vw, 64px)", fontSize: 24, fontFamily: "monospace", fontWeight: 800, textAlign: "center", borderRadius: 10, border: `2px solid ${borderCol}`, outline: "none", color: "#011E40", background: "#fff", transition: "0.2s", boxShadow: isActive ? "0 0 0 3px rgba(59,130,246,0.15)" : "none", boxSizing: "border-box" }}
+          />
+        )
+      })}
+    </div>
+  );
+}
 
 // ─── AI Study Assistant ───
 function AIStudyAssistant({ profile }) {
@@ -183,9 +237,10 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
     // Silently log the intent to the Google Sheet backend
     try { fetch(APPS_SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ action: "submitpayment", form_type: "WiPay Portal In-App Attempt", ref: profile.studentNumber, studentName: profile.name, email: profile.email, paymentPlan: "Dashboard Payment", amountPaid: customAmount, paymentMethod: "online", timestamp: new Date().toISOString() }) }); } catch (e) {}
 
-    // 🚀 FIXED: If it's a personal link, DO NOT append anything. Just open the link.
     if (WIPAY_CONFIG && WIPAY_CONFIG.baseUrl.includes("/to_me/")) {
-      window.location.href = WIPAY_CONFIG.baseUrl;
+      let base = WIPAY_CONFIG.baseUrl; if (base.endsWith("/")) base = base.slice(0, -1); 
+      // Sends ONLY the amount to prevent routing 404s
+      window.location.href = `${base}/${customAmount}`;
     } else if (WIPAY_CONFIG) {
       const orderId = profile.studentNumber + "-PORTAL"; 
       const returnUrl = encodeURIComponent(window.location.origin + "/#student-portal");
@@ -525,6 +580,7 @@ export default function StudentPortalPage({ setPage }) {
   const [otpCode, setOtpCode] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
+  const [maskedEmail, setMaskedEmail] = useState(""); // 🚀 Captures the masked email for the UI
   
   const [showTimeoutModal, setShowTimeoutModal] = useState(false);
   const [countdown, setCountdown] = useState(60);
@@ -542,7 +598,9 @@ export default function StudentPortalPage({ setPage }) {
           .then(res => res.json())
           .then(data => {
             setAuthLoading(false);
-            if (!data.success) {
+            if (data && data.success) {
+              setMaskedEmail(data.maskedEmail || "your email");
+            } else {
               sessionStorage.removeItem("cts_portal_session");
               setLoginStep(0);
             }
@@ -606,7 +664,10 @@ export default function StudentPortalPage({ setPage }) {
     try {
       const res = await fetch(`${VERCEL_URL}?action=sendotp&identifier=${encodeURIComponent(identifier.trim())}&purpose=portal`);
       const data = await res.json();
-      if (data.success) { setLoginStep(1); } 
+      if (data.success) { 
+        setMaskedEmail(data.maskedEmail || "your email");
+        setLoginStep(1); 
+      } 
       else { setAuthError("We could not find a student record with that ID."); }
     } catch (e) { setAuthError("Network error. Please check your connection."); }
     setAuthLoading(false);
@@ -644,16 +705,47 @@ export default function StudentPortalPage({ setPage }) {
           <a href="/#Home" style={{ color: "#fff", fontSize: 13, textDecoration: "none", fontWeight: 800, padding: "14px 28px", borderRadius: 8, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", transition: "all 0.2s", textTransform: "uppercase" }}>&larr; Back to Website</a>
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 20, background: `radial-gradient(circle at center, #0a2d4d 0%, ${S.navy} 100%)`, position: "relative", overflow: "hidden" }}>
-          <div style={{ background: "#fff", borderRadius: 24, padding: "64px 48px", maxWidth: 480, width: "100%", textAlign: "center", position: "relative", zIndex: 2, animation: "pulseGateway 4s infinite", border: `2px solid ${S.coral}50` }}>
-            <div style={{ fontSize: 96, marginBottom: 24, animation: "floatCap 5s ease-in-out infinite" }}>🎓</div>
-            <h1 style={{ fontFamily: S.heading, color: S.navy, fontSize: 36, margin: "0 0 12px", fontWeight: 900 }}>{loginStep === 0 ? "Welcome Student" : "Verify Identity"}</h1>
-            <p style={{ fontFamily: S.body, color: S.gray, fontSize: 15, margin: "0 0 40px", lineHeight: 1.6 }}>{loginStep === 0 ? "Enter your Student Number to access your classroom." : "A secure 6-digit code has been sent to your registered email."}</p>
-            {loginStep === 0 ? ( <div style={{ marginBottom: 24 }}><input type="text" value={identifier} onChange={e => { setIdentifier(e.target.value.toUpperCase()); setAuthError(""); }} onKeyDown={e => { if (e.key === "Enter") handleSendCode(); }} autoFocus placeholder="Student ID" style={{ width: "100%", padding: "20px", borderRadius: 12, border: "2px solid " + (authError ? S.rose : S.border), fontSize: 18, fontFamily: S.body, color: S.navy, boxSizing: "border-box", outline: "none", textAlign: "center", letterSpacing: 2, background: S.lightBg, fontWeight: 800 }} /></div>
-            ) : ( <div style={{ marginBottom: 24 }}><input type="text" value={otpCode} onChange={e => { setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6)); setAuthError(""); }} onKeyDown={e => { if (e.key === "Enter") handleVerifyCode(); }} autoFocus placeholder="000000" style={{ width: "100%", padding: "20px", borderRadius: 12, border: "2px solid " + (authError ? S.rose : S.teal), fontSize: 32, fontFamily: "monospace", color: S.navy, boxSizing: "border-box", outline: "none", textAlign: "center", letterSpacing: 12, background: S.tealLight, fontWeight: 900 }} /></div> )}
-            {authError && <div style={{ padding: "14px", borderRadius: 10, background: S.roseLight, color: S.roseDark, fontSize: 14, marginBottom: 24, fontFamily: S.body, fontWeight: 800, border: `1px solid ${S.rose}50` }}>{authError}</div>}
-            {loginStep === 0 ? ( <button onClick={handleSendCode} disabled={authLoading || !identifier.trim()} style={{ width: "100%", padding: "20px", borderRadius: 12, border: "none", background: (!identifier.trim() || authLoading) ? S.border : S.navy, color: "#fff", fontSize: 16, fontWeight: 900, cursor: identifier.trim() && !authLoading ? "pointer" : "not-allowed", fontFamily: S.body, transition: "all 0.2s", textTransform: "uppercase", letterSpacing: 2 }}>{authLoading ? "Connecting..." : "Initialize Link"}</button>
-            ) : ( <button onClick={handleVerifyCode} disabled={authLoading || otpCode.length !== 6} style={{ width: "100%", padding: "20px", borderRadius: 12, border: "none", background: (otpCode.length !== 6 || authLoading) ? S.border : S.coral, color: "#fff", fontSize: 16, fontWeight: 900, cursor: otpCode.length === 6 && !authLoading ? "pointer" : "not-allowed", fontFamily: S.body, transition: "all 0.2s", textTransform: "uppercase", letterSpacing: 2, boxShadow: otpCode.length === 6 ? `0 10px 30px ${S.coral}50` : "none" }}>{authLoading ? "Decrypting..." : "Access Classroom"}</button> )}
-            {loginStep === 1 && ( <button onClick={() => { handleLogout(); setAuthError(""); }} style={{ marginTop: 20, background: "none", border: "none", color: S.gray, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: S.body, textDecoration: "underline" }}>Cancel & Return</button> )}
+          <div style={{ background: "#fff", borderRadius: 24, padding: "64px 48px", maxWidth: 520, width: "100%", textAlign: "center", position: "relative", zIndex: 2, animation: "pulseGateway 4s infinite", border: `2px solid ${S.coral}50` }}>
+            
+            {loginStep === 0 && (
+              <div style={{ animation: "fadeIn 0.3s" }}>
+                <div style={{ fontSize: 96, marginBottom: 24, animation: "floatCap 5s ease-in-out infinite" }}>🎓</div>
+                <h1 style={{ fontFamily: S.heading, color: S.navy, fontSize: 36, margin: "0 0 12px", fontWeight: 900 }}>Welcome Student</h1>
+                <p style={{ fontFamily: S.body, color: S.gray, fontSize: 15, margin: "0 0 40px", lineHeight: 1.6 }}>Enter your Student Number to access your classroom.</p>
+                <div style={{ marginBottom: 24 }}>
+                  <input type="text" value={identifier} onChange={e => { setIdentifier(e.target.value.toUpperCase()); setAuthError(""); }} onKeyDown={e => { if (e.key === "Enter") handleSendCode(); }} autoFocus placeholder="Student ID" style={{ width: "100%", padding: "20px", borderRadius: 12, border: "2px solid " + (authError ? S.rose : S.border), fontSize: 18, fontFamily: S.body, color: S.navy, boxSizing: "border-box", outline: "none", textAlign: "center", letterSpacing: 2, background: S.lightBg, fontWeight: 800 }} />
+                </div>
+                {authError && <div style={{ padding: "14px", borderRadius: 10, background: S.roseLight, color: S.roseDark, fontSize: 14, marginBottom: 24, fontFamily: S.body, fontWeight: 800, border: `1px solid ${S.rose}50` }}>{authError}</div>}
+                <button onClick={handleSendCode} disabled={authLoading || !identifier.trim()} style={{ width: "100%", padding: "20px", borderRadius: 12, border: "none", background: (!identifier.trim() || authLoading) ? S.border : S.navy, color: "#fff", fontSize: 16, fontWeight: 900, cursor: identifier.trim() && !authLoading ? "pointer" : "not-allowed", fontFamily: S.body, transition: "all 0.2s", textTransform: "uppercase", letterSpacing: 2 }}>{authLoading ? "Connecting..." : "Initialize Link"}</button>
+              </div>
+            )}
+
+            {/* 🚀 UPGRADED 6-BOX OTP SCREEN FOR STUDENTS */}
+            {loginStep === 1 && (
+              <div style={{ animation: "fadeIn 0.3s" }}>
+                <div style={{ width: 64, height: 64, borderRadius: "50%", background: S.lightBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, margin: "0 auto 16px" }}>✉️</div>
+                <h1 style={{ fontFamily: S.heading, color: S.navy, fontSize: 32, margin: "0 0 12px", fontWeight: 900 }}>Check Your Email</h1>
+                <p style={{ fontFamily: S.body, color: S.gray, fontSize: 15, margin: "0 0 24px", lineHeight: 1.6 }}>We've sent a 6-digit code to <strong style={{ color: S.navy }}>{maskedEmail}</strong></p>
+                
+                <div style={{ background: S.lightBg, borderRadius: 12, padding: "14px", marginBottom: 24, fontSize: 14, fontFamily: S.body, color: S.navy, fontWeight: 800 }}>
+                  <span style={{ color: S.gray, fontWeight: 500, marginRight: 8 }}>Verifying:</span> {identifier}
+                </div>
+
+                <OtpBoxes value={otpCode} onChange={(v) => { setOtpCode(v); setAuthError(""); }} onEnter={handleVerifyCode} disabled={authLoading} />
+                
+                {authError && <div style={{ padding: "14px", borderRadius: 10, background: S.roseLight, color: S.roseDark, fontSize: 14, marginBottom: 24, fontFamily: S.body, fontWeight: 800 }}>{authError}</div>}
+                
+                <button onClick={handleVerifyCode} disabled={authLoading || otpCode.length !== 6} style={{ width: "100%", padding: "18px", borderRadius: 12, border: "none", background: authLoading ? "#529864" : (otpCode.length !== 6 ? S.border : S.emerald), color: "#fff", fontSize: 16, fontWeight: 900, cursor: otpCode.length === 6 && !authLoading ? "pointer" : "not-allowed", fontFamily: S.body, transition: "all 0.2s" }}>
+                  {authLoading ? "Verifying..." : "Verify Code"}
+                </button>
+                
+                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 24 }}>
+                  <button onClick={() => { setLoginStep(0); setOtpCode(""); setAuthError(""); handleLogout(); }} style={{ background: "none", border: "none", color: S.gray, fontSize: 13, fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}>&larr; Change Number</button>
+                  <button onClick={handleSendCode} disabled={authLoading} style={{ background: "none", border: "none", color: S.navy, fontSize: 13, fontWeight: 800, cursor: "pointer" }}>Resend Code</button>
+                </div>
+              </div>
+            )}
+
           </div>
           <div style={{ display: "flex", gap: 20, marginTop: 60, flexWrap: "wrap", justifyContent: "center", position: "relative", zIndex: 2 }}><NodeBadge label="LMS Server" delay="0s" /><NodeBadge label="Data Sync" delay="0.6s" /><NodeBadge label="Identity Auth" delay="1.2s" /></div>
         </div>

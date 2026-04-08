@@ -10,7 +10,8 @@ import {
 } from "../components/shared/CoreComponents";
 import { PaymentSecurityNotice, HoneypotField } from "../components/shared/DisplayComponents";
 import { fmt } from "../utils/formatting";
-import OTPGate from "../components/common/OTPGate";
+
+const VERCEL_URL = "https://ctsetsjm-website.vercel.app/api/proxy";
 
 const PEOPLE = {
   hero: "https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=1400&q=80",
@@ -208,29 +209,6 @@ function BreakdownRow({ item, last }) {
   );
 }
 
-function TrackerLookup({ refInput, setRefInput, handleLookup, lookupState, lookupMsg }) {
-  return (
-    <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
-      <input
-        type="text"
-        value={refInput}
-        onChange={(e) => setRefInput(e.target.value.toUpperCase())}
-        placeholder="CTSETSA-..."
-        style={{ flex: 1, minWidth: 220, padding: 14, borderRadius: 10, border: `1px solid ${S.border}`, background: S.white, fontFamily: S.body, fontSize: 14 }}
-      />
-      <button
-        id="otp-auto-lookup"
-        onClick={handleLookup}
-        disabled={lookupState === "loading"}
-        style={{ padding: "14px 24px", borderRadius: 10, background: S.navy, color: S.white, border: "none", fontWeight: 700, fontFamily: S.body, cursor: lookupState === "loading" ? "wait" : "pointer" }}
-      >
-        {lookupState === "loading" ? "Searching..." : "Look Up"}
-      </button>
-      {lookupMsg && <div style={{ width: "100%", fontSize: 13, color: S.coral, fontFamily: S.body }}>{lookupMsg}</div>}
-    </div>
-  );
-}
-
 function MethodCard({ active, onClick, icon, title, desc }) {
   return (
     <button
@@ -283,12 +261,69 @@ function SuccessState({ userPayAmount, setPage }) {
   );
 }
 
+// 🚀 6-Box OTP Input Component
+function OtpBoxes({ value, onChange, onEnter, disabled }) {
+  const inputRefs = useRef([]);
+  const [focused, setFocused] = useState(-1);
+
+  const handleChange = (e, idx) => {
+    const val = e.target.value.replace(/\D/g, "");
+    if (val.length > 1) { 
+      const paste = val.slice(0, 6);
+      onChange(paste);
+      inputRefs.current[Math.min(paste.length, 5)]?.focus();
+      return;
+    }
+    const newOtp = value.split("");
+    newOtp[idx] = val.slice(-1);
+    onChange(newOtp.join(""));
+    if (val && idx < 5) inputRefs.current[idx + 1]?.focus();
+  };
+
+  const handleKeyDown = (e, idx) => {
+    if (e.key === "Backspace" && !value[idx] && idx > 0) {
+      inputRefs.current[idx - 1]?.focus();
+    }
+    if (e.key === "Enter" && value.length === 6) {
+      onEnter();
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", gap: "8px", justifyContent: "center", margin: "20px 0" }}>
+      {[0, 1, 2, 3, 4, 5].map((i) => {
+        const isActive = focused === i;
+        const hasVal = !!value[i];
+        const borderCol = isActive ? S.teal : hasVal ? S.gold : S.border; 
+        return (
+          <input
+            key={i}
+            ref={el => inputRefs.current[i] = el}
+            type="text"
+            inputMode="numeric"
+            value={value[i] || ""}
+            onChange={(e) => handleChange(e, i)}
+            onKeyDown={(e) => handleKeyDown(e, i)}
+            onFocus={() => setFocused(i)}
+            onBlur={() => setFocused(-1)}
+            disabled={disabled}
+            style={{ width: "clamp(40px, 10vw, 50px)", height: "clamp(50px, 12vw, 60px)", fontSize: 24, fontFamily: "monospace", fontWeight: 800, textAlign: "center", borderRadius: 10, border: `2px solid ${borderCol}`, outline: "none", color: S.navy, background: "#fff", transition: "0.2s", boxShadow: isActive ? `0 0 0 3px ${S.teal}20` : "none", boxSizing: "border-box" }}
+          />
+        )
+      })}
+    </div>
+  );
+}
+
 export default function PaymentPage({ setPage }) {
-  const [verifiedId, setVerifiedId] = useState(null);
-  const [refInput, setRefInput] = useState("");
-  const [lookupState, setLookupState] = useState("idle");
+  const [identifier, setIdentifier] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [loginStep, setLoginStep] = useState(0); 
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState("");
+  const [maskedEmail, setMaskedEmail] = useState("");
+
   const [student, setStudent] = useState(null);
-  const [lookupMsg, setLookupMsg] = useState("");
   const [pricing, setPricing] = useState(null);
   const [selectedPlan, setSelectedPlan] = useState("Gold");
   const [payMethod, setPayMethod] = useState("");
@@ -299,29 +334,19 @@ export default function PaymentPage({ setPage }) {
   const startTime = useRef(Date.now());
   const [customAmount, setCustomAmount] = useState("");
 
+  // Check URL Hash for ?ref=CTSETSA-...
   useEffect(() => {
     const hash = window.location.hash;
     if (hash.includes("?")) {
       const queryString = hash.split("?")[1];
       const urlParams = new URLSearchParams(queryString);
       const passedRef = urlParams.get("ref");
-      if (passedRef) {
-        setVerifiedId(passedRef);
-        setRefInput(passedRef);
+      if (passedRef && passedRef.toUpperCase().startsWith("CTSETSA-")) {
+        setIdentifier(passedRef.toUpperCase());
       }
       window.history.replaceState(null, "", "/#pay");
     }
   }, []);
-
-  useEffect(() => {
-    if (verifiedId && lookupState === "idle") {
-      setRefInput(verifiedId);
-      setTimeout(() => {
-        const lookupBtn = document.getElementById("otp-auto-lookup");
-        if (lookupBtn) lookupBtn.click();
-      }, 300);
-    }
-  }, [verifiedId, lookupState]);
 
   useEffect(() => {
     if (student && student.level) setPricing(calcPricing(student.level));
@@ -337,32 +362,56 @@ export default function PaymentPage({ setPage }) {
     }
   }, [selectedPlan, pricing, student]);
 
-  const handleLookup = async () => {
-    const val = refInput.trim().toUpperCase();
-    if (!val) return;
-    setLookupState("loading");
-    setStudent(null);
-    setLookupMsg("");
-    setPricing(null);
-    try {
-      const res = await fetch(`${APPS_SCRIPT_URL}?action=lookupstudent&ref=${encodeURIComponent(val)}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.found) {
-          setStudent(data);
-          setLookupState("found");
-        } else {
-          setLookupState("not_found");
-          setLookupMsg("No application found.");
-        }
-      } else {
-        setLookupState("error");
-        setLookupMsg("Server error.");
-      }
-    } catch {
-      setLookupState("error");
-      setLookupMsg("Connection error.");
+  const handleSendCode = async () => {
+    let ref = identifier.trim().toUpperCase();
+    
+    // 🚀 STRICT APPLICANT ENFORCEMENT
+    if (ref.startsWith("CTSETSS-")) {
+      setAuthError("Student payments are processed inside the Student Portal. Please log into your portal.");
+      return;
     }
+    if (!ref.startsWith("CTSETSA-")) {
+      setAuthError("Please enter a valid Application Reference (e.g., CTSETSA-2026-...)");
+      return;
+    }
+
+    setAuthLoading(true); setAuthError("");
+    try {
+      const res = await fetch(`${VERCEL_URL}?action=sendotp&identifier=${encodeURIComponent(ref)}&purpose=payment`);
+      const data = await res.json();
+      if (data.success) { 
+        setMaskedEmail(data.maskedEmail || "your email");
+        setLoginStep(1); 
+      } else { 
+        setAuthError("We could not find an application with that reference number."); 
+      }
+    } catch (e) { setAuthError("Network error. Please check your connection."); }
+    setAuthLoading(false);
+  };
+
+  const handleVerifyCode = async () => {
+    if (otpCode.length !== 6) { setAuthError("Please enter the 6-digit code."); return; }
+    setAuthLoading(true); setAuthError("");
+    try {
+      const res = await fetch(`${VERCEL_URL}?action=verifyotp&identifier=${encodeURIComponent(identifier.trim())}&code=${otpCode}&purpose=payment`);
+      const data = await res.json();
+      if (data.success) { 
+        setAuthError(""); 
+        
+        // Immediately fetch the student's actual pricing profile!
+        const stuRes = await fetch(`${APPS_SCRIPT_URL}?action=lookupstudent&ref=${encodeURIComponent(identifier.trim())}`);
+        const stuData = await stuRes.json();
+        
+        if (stuData.found) {
+          setStudent(stuData);
+          setLoginStep(2); 
+        } else {
+          setAuthError("Verification successful, but record data could not be loaded.");
+        }
+      } 
+      else { setAuthError(data.error === "wrong_code" ? "Invalid code." : "Code expired. Please try again."); }
+    } catch (e) { setAuthError("Network error. Please check your connection."); }
+    setAuthLoading(false);
   };
 
   const toBase64 = (file) => new Promise((resolve, reject) => {
@@ -433,83 +482,17 @@ export default function PaymentPage({ setPage }) {
       });
     } catch {}
 
-    // 🚀 FIXED: Prevent 404s by stripping descriptions and extra params from /to_me links
+    // 🚀 FIXED: Extremely clean URL routing to prevent WiPay 404
     if (WIPAY_CONFIG.baseUrl.includes("/to_me/")) {
-      window.location.href = WIPAY_CONFIG.baseUrl;
+      let base = WIPAY_CONFIG.baseUrl;
+      if (base.endsWith("/")) base = base.slice(0, -1);
+      window.location.href = `${base}/${payAmount}`;
     } else {
       window.location.href = `${WIPAY_CONFIG.baseUrl}?total=${encodeURIComponent(payAmount)}&currency=${encodeURIComponent(WIPAY_CONFIG.currency)}&order_id=${encodeURIComponent(orderId)}&return_url=${encodeURIComponent(WIPAY_CONFIG.returnUrl)}`;
     }
   };
 
   if (submitted) return <SuccessState userPayAmount={userPayAmount} setPage={setPage} />;
-
-  if (!verifiedId) {
-    return (
-      <PageWrapper bg={S.lightBg}>
-        <div style={{ background: "linear-gradient(135deg, #0B1120 0%, #1E293B 58%, #0E8F8B 145%)", position: "relative", overflow: "hidden" }}>
-          <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 18% 22%, rgba(217,119,6,0.16), transparent 28%), radial-gradient(circle at 82% 18%, rgba(37,99,235,0.14), transparent 24%), radial-gradient(circle at 70% 80%, rgba(124,58,237,0.12), transparent 22%)" }} />
-          <WideWrap style={{ position: "relative", paddingTop: 64, paddingBottom: 60 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.05fr) minmax(360px, 0.95fr)", gap: 34, alignItems: "center" }} className="resp-grid-2">
-              <Reveal>
-                <div>
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 999, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", fontFamily: S.body, fontSize: 11, fontWeight: 800, letterSpacing: 1.8, textTransform: "uppercase", color: S.goldLight, marginBottom: 18 }}>Payment Centre</div>
-                  <h1 style={{ fontFamily: S.heading, fontSize: "clamp(38px, 6vw, 68px)", lineHeight: 1.02, color: S.white, fontWeight: 900, margin: "0 0 18px", maxWidth: 940 }}>Secure payment access starts with identity verification</h1>
-                  <p style={{ fontFamily: S.body, fontSize: "clamp(15px, 2vw, 19px)", lineHeight: 1.8, color: "rgba(255,255,255,0.82)", maxWidth: 860, margin: 0 }}>Enter through the same OTP-protected route, confirm your record, and then choose the payment path that fits your situation.</p>
-                </div>
-              </Reveal>
-              <Reveal delay={0.12}>
-                <div style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 26, padding: 18, backdropFilter: "blur(10px)", boxShadow: "0 20px 42px rgba(2,6,23,0.16)" }}>
-                  <div style={{ width: "100%", height: 420, borderRadius: 20, overflow: "hidden", marginBottom: 16 }}>
-                    <img src={PEOPLE.hero} alt="Professional making a secure digital payment" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                    <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, padding: 14, color: "#fff" }}>
-                      <div style={{ fontSize: 22, marginBottom: 8 }}>🔐</div>
-                      <div style={{ fontSize: 13, fontWeight: 700, fontFamily: S.body }}>OTP-protected access</div>
-                    </div>
-                    <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, padding: 14, color: "#fff" }}>
-                      <div style={{ fontSize: 22, marginBottom: 8 }}>🧾</div>
-                      <div style={{ fontSize: 13, fontWeight: 700, fontFamily: S.body }}>Clear payment paths</div>
-                    </div>
-                  </div>
-                </div>
-              </Reveal>
-            </div>
-          </WideWrap>
-        </div>
-        <WideWrap style={{ marginTop: -26, position: "relative", zIndex: 2 }}><Reveal><SocialProofBar /></Reveal></WideWrap>
-        <section style={{ paddingTop: 34 }}>
-          <WideWrap>
-            <SectionIntro tag="Access Verification" title="Enter the payment centre securely" desc="The OTP gate remains intact. The layout is simply clearer and more supportive so users understand why access is protected before they proceed." accent={S.teal} />
-            <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.05fr) minmax(320px, 0.95fr)", gap: 24, alignItems: "start" }} className="resp-grid-2">
-              <Reveal>
-                <div style={{ background: S.white, borderRadius: 24, padding: "32px clamp(22px,4vw,38px)", border: `1px solid ${S.border}`, boxShadow: "0 12px 30px rgba(15,23,42,0.04)" }}>
-                  <OTPGate purpose="payment" title="Payment Centre Access">
-                    {(id) => {
-                      setVerifiedId(id);
-                      return <div>Identity verified.</div>;
-                    }}
-                  </OTPGate>
-                </div>
-              </Reveal>
-              <div style={{ display: "grid", gap: 18 }}>
-                <div style={{ background: S.white, border: `1px solid ${S.border}`, borderRadius: 22, padding: 22, boxShadow: "0 12px 30px rgba(15,23,42,0.04)" }}>
-                  <div style={{ fontFamily: S.heading, fontSize: 24, color: S.navy, fontWeight: 800, marginBottom: 10 }}>Why the extra step?</div>
-                  <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, lineHeight: 1.8, margin: 0 }}>Payment access is tied to the correct student or application record so fees, receipts, and payment history stay connected to the right person.</p>
-                </div>
-                <div style={{ background: S.white, border: `1px solid ${S.border}`, borderRadius: 22, padding: 22, boxShadow: "0 12px 30px rgba(15,23,42,0.04)" }}>
-                  <div style={{ fontFamily: S.heading, fontSize: 24, color: S.navy, fontWeight: 800, marginBottom: 10 }}>Need support before you pay?</div>
-                  <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, lineHeight: 1.8, marginBottom: 14 }}>If your payment path is unclear, contact the CTS ETS team before proceeding.</p>
-                  <a href={BOOKING_URLS.general} target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", padding: "12px 18px", borderRadius: 12, background: S.teal, color: S.white, textDecoration: "none", fontFamily: S.body, fontSize: 13, fontWeight: 700 }}>Book a Consultation</a>
-                </div>
-              </div>
-            </div>
-            <PageScripture page="fees" />
-          </WideWrap>
-        </section>
-      </PageWrapper>
-    );
-  }
 
   return (
     <PageWrapper bg={S.lightBg}>
@@ -551,24 +534,71 @@ export default function PaymentPage({ setPage }) {
         <WideWrap>
           <SectionIntro tag="Payment Workflow" title="The same payment logic, presented more clearly" desc="Lookup, pricing rules, plan selection, custom payment amounts, WiPay redirection, and receipt submission are all preserved. The layout is simply wider and easier to follow." accent={S.teal} />
           <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.08fr) minmax(320px, 0.92fr)", gap: 28, alignItems: "start" }} className="resp-grid-2">
+            
+            {/* LEFT COLUMN: AUTHENTICATION OR VERIFIED PROFILE */}
             <div>
-              <div style={{ background: S.white, borderRadius: 22, padding: 24, border: `1px solid ${S.border}`, boxShadow: "0 12px 30px rgba(15,23,42,0.04)", marginBottom: 22 }}>
-                <SectionIntro tag="Lookup & Verification" title="Find your student or application record first" desc="Payment is matched to the correct record before any amount is processed or submitted." accent={S.teal} />
-                <HoneypotField value={hp} onChange={(e) => setHp(e.target.value)} />
-                <TrackerLookup refInput={refInput} setRefInput={setRefInput} handleLookup={handleLookup} lookupState={lookupState} lookupMsg={lookupMsg} />
-                {lookupState === "found" && student && (
-                  <div style={{ padding: "18px 20px", background: S.lightBg, borderRadius: 16, border: `1px solid ${S.border}` }}>
-                    <div style={{ fontSize: 11, color: S.teal, letterSpacing: 1.8, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 8 }}>Student Profile</div>
-                    <div style={{ fontFamily: S.heading, fontSize: 24, color: S.navy, fontWeight: 800, marginBottom: 6 }}>{student.name}</div>
-                    <div style={{ fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.7 }}>{student.level}{student.ref ? ` · ${student.ref}` : ""}</div>
+              <div style={{ background: S.white, borderRadius: 22, padding: "32px clamp(22px,4vw,38px)", border: `1px solid ${S.border}`, boxShadow: "0 12px 30px rgba(15,23,42,0.04)", marginBottom: 22 }}>
+                
+                {loginStep < 2 ? (
+                  <div style={{ textAlign: "center", animation: "fadeIn 0.3s" }}>
+                    <div style={{ width: 64, height: 64, borderRadius: "50%", background: S.lightBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, margin: "0 auto 16px" }}>
+                      {loginStep === 0 ? "🔐" : "✉️"}
+                    </div>
+                    <h3 style={{ fontFamily: S.heading, color: S.navy, fontSize: 26, margin: "0 0 12px", fontWeight: 800 }}>
+                      {loginStep === 0 ? "Applicant Access" : "Check Your Email"}
+                    </h3>
+                    <p style={{ fontFamily: S.body, color: S.gray, fontSize: 14, margin: "0 0 24px", lineHeight: 1.6 }}>
+                      {loginStep === 0 
+                        ? "Enter your Application Reference to securely load your invoice and access the Payment Centre." 
+                        : `We've sent a 6-digit code to ${maskedEmail}`
+                      }
+                    </p>
+
+                    {loginStep === 0 ? (
+                      <div style={{ marginBottom: 24 }}>
+                        <input type="text" value={identifier} onChange={e => { setIdentifier(e.target.value.toUpperCase()); setAuthError(""); }} onKeyDown={e => { if (e.key === "Enter") handleSendCode(); }} autoFocus placeholder="CTSETSA-..." style={{ width: "100%", padding: "18px", borderRadius: 12, border: "2px solid " + (authError ? S.rose : S.border), fontSize: 16, fontFamily: S.body, color: S.navy, boxSizing: "border-box", outline: "none", textAlign: "center", letterSpacing: 1, background: S.lightBg, fontWeight: 700 }} />
+                      </div>
+                    ) : (
+                      <>
+                        <div style={{ background: S.lightBg, borderRadius: 10, padding: "10px", marginBottom: 20, fontSize: 13, fontFamily: S.body, color: S.navy, fontWeight: 800 }}>
+                          <span style={{ color: S.gray, fontWeight: 500, marginRight: 6 }}>Verifying:</span> {identifier}
+                        </div>
+                        <OtpBoxes value={otpCode} onChange={(v) => { setOtpCode(v); setAuthError(""); }} onEnter={handleVerifyCode} disabled={authLoading} />
+                      </>
+                    )}
+
+                    {authError && <div style={{ padding: "12px", borderRadius: 10, background: S.roseLight, color: S.roseDark, fontSize: 13, marginBottom: 24, fontFamily: S.body, fontWeight: 800, border: `1px solid ${S.rose}50` }}>{authError}</div>}
+                    
+                    {loginStep === 0 ? ( 
+                      <button onClick={handleSendCode} disabled={authLoading || !identifier.trim()} style={{ width: "100%", padding: "18px", borderRadius: 12, border: "none", background: (!identifier.trim() || authLoading) ? S.border : S.navy, color: "#fff", fontSize: 15, fontWeight: 800, cursor: identifier.trim() && !authLoading ? "pointer" : "not-allowed", fontFamily: S.body, transition: "all 0.2s" }}>{authLoading ? "Connecting..." : "Load Invoice"}</button>
+                    ) : ( 
+                      <button onClick={handleVerifyCode} disabled={authLoading || otpCode.length !== 6} style={{ width: "100%", padding: "18px", borderRadius: 12, border: "none", background: (otpCode.length !== 6 || authLoading) ? S.border : S.teal, color: "#fff", fontSize: 15, fontWeight: 800, cursor: otpCode.length === 6 && !authLoading ? "pointer" : "not-allowed", fontFamily: S.body, transition: "all 0.2s" }}>{authLoading ? "Decrypting..." : "Access Payment Center"}</button> 
+                    )}
+
+                    {loginStep === 1 && ( 
+                      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 24 }}>
+                        <button onClick={() => { setLoginStep(0); setOtpCode(""); setAuthError(""); }} style={{ background: "none", border: "none", color: S.gray, fontSize: 13, fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}>&larr; Change ID</button>
+                        <button onClick={handleSendCode} disabled={authLoading} style={{ background: "none", border: "none", color: S.navy, fontSize: 13, fontWeight: 800, cursor: "pointer" }}>Resend Code</button>
+                      </div> 
+                    )}
+                  </div>
+                ) : (
+                  <div style={{ animation: "fadeIn 0.3s" }}>
+                    <div style={{ fontSize: 11, color: S.teal, letterSpacing: 1.8, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 8 }}>Applicant Profile</div>
+                    <div style={{ fontFamily: S.heading, fontSize: 26, color: S.navy, fontWeight: 800, marginBottom: 8 }}>{student?.name}</div>
+                    <div style={{ fontSize: 14, color: S.gray, fontFamily: S.body, lineHeight: 1.7 }}>{student?.level}{student?.ref ? ` · ${student.ref}` : ""}</div>
+                    <div style={{ marginTop: 18, padding: "8px 14px", background: S.emeraldLight, color: S.emeraldDark, borderRadius: 8, fontSize: 12, fontWeight: 800, display: "inline-block", fontFamily: S.body, border: `1px solid ${S.emerald}40` }}>✓ Identity Verified</div>
+                    <div style={{ marginTop: 24, paddingTop: 16, borderTop: `1px dashed ${S.border}` }}>
+                       <button onClick={() => { setLoginStep(0); setStudent(null); setIdentifier(""); setOtpCode(""); }} style={{ background: "none", border: "none", color: S.gray, fontSize: 13, fontWeight: 700, cursor: "pointer", textDecoration: "underline", padding: 0 }}>&larr; Pay for a different applicant</button>
+                    </div>
                   </div>
                 )}
               </div>
 
-              {lookupState === "found" && student && pricing && (
-                <>
+              {loginStep === 2 && student && pricing && (
+                <div style={{ animation: "fadeIn 0.4s" }}>
                   <div style={{ marginBottom: 22 }}>
-                    <SectionIntro tag="Plan Selection" title="Choose your payment plan" desc="Gold, Silver, and Bronze remain exactly as configured in your current pricing logic." accent={S.coral} />
+                    <SectionIntro tag="Plan Selection" title="Choose your payment plan" desc="Select the fee structure that best fits your situation." accent={S.coral} />
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, marginBottom: 24 }}>
                       {pricing.plans.map((plan) => <PlanCard key={plan.name} plan={plan} active={selectedPlan === plan.name} onClick={() => setSelectedPlan(plan.name)} />)}
                     </div>
@@ -600,13 +630,15 @@ export default function PaymentPage({ setPage }) {
                       </div>
                     </div>
                   )}
-                </>
+                </div>
               )}
             </div>
 
-            <div style={{ display: "grid", gap: 18 }}>
+            {/* RIGHT COLUMN: PAYMENT METHODS */}
+            <div style={{ display: "grid", gap: 18, opacity: loginStep === 2 ? 1 : 0.4, pointerEvents: loginStep === 2 ? "auto" : "none", transition: "opacity 0.4s ease" }}>
               <div style={{ background: S.white, borderRadius: 22, padding: 24, border: `1px solid ${S.border}`, boxShadow: "0 12px 30px rgba(15,23,42,0.04)" }}>
                 <SectionIntro tag="Payment Method" title="Choose how you want to pay" desc="Both paths remain active: secure online payment through WiPay or bank transfer with receipt upload." accent={S.gold} />
+                <HoneypotField value={hp} onChange={(e) => setHp(e.target.value)} />
                 <div style={{ display: "grid", gap: 16, marginBottom: 22 }}>
                   <MethodCard active={payMethod === "online"} onClick={() => setPayMethod("online")} icon="💳" title="Pay Online" desc="Use a credit card or Visa debit card through the secure WiPay payment page." />
                   <MethodCard active={payMethod === "upload"} onClick={() => setPayMethod("upload")} icon="🏦" title="Bank Transfer" desc="Transfer funds from your bank and upload your receipt for manual verification." />

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 
 const VERCEL_URL = "https://ctsetsjm-website.vercel.app/api/proxy";
 const PW_KEY = "ctsAdm";
@@ -96,6 +96,60 @@ function TableShell({ title, tools, children }) {
   return <div style={{ background: C.card, borderRadius: 24, border: `1px solid ${C.border}`, overflow: "hidden", boxShadow: "0 10px 26px rgba(15,23,42,0.04)" }}>{(title || tools) && <div style={{ padding: "22px 26px", borderBottom: `1px solid ${C.border}`, display: "flex", gap: 16, justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>{title && <h2 style={{ fontFamily: C.heading, color: C.navy, fontSize: 24, margin: 0, fontWeight: 800 }}>{title}</h2>}{tools}</div>}<div style={{ overflowX: "auto", maxHeight: "72vh" }}>{children}</div></div>;
 }
 
+// 🚀 6-Box OTP Input Component
+function OtpBoxes({ value, onChange, onEnter, disabled }) {
+  const inputRefs = useRef([]);
+  const [focused, setFocused] = useState(-1);
+
+  const handleChange = (e, idx) => {
+    const val = e.target.value.replace(/\D/g, "");
+    if (val.length > 1) { 
+      const paste = val.slice(0, 6);
+      onChange(paste);
+      inputRefs.current[Math.min(paste.length, 5)]?.focus();
+      return;
+    }
+    const newOtp = value.split("");
+    newOtp[idx] = val.slice(-1);
+    onChange(newOtp.join(""));
+    if (val && idx < 5) inputRefs.current[idx + 1]?.focus();
+  };
+
+  const handleKeyDown = (e, idx) => {
+    if (e.key === "Backspace" && !value[idx] && idx > 0) {
+      inputRefs.current[idx - 1]?.focus();
+    }
+    if (e.key === "Enter" && value.length === 6) {
+      onEnter();
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", gap: "8px", justifyContent: "center", margin: "20px 0" }}>
+      {[0, 1, 2, 3, 4, 5].map((i) => {
+        const isActive = focused === i;
+        const hasVal = !!value[i];
+        const borderCol = isActive ? "#3B82F6" : hasVal ? "#D97706" : "#E2E8F0"; 
+        return (
+          <input
+            key={i}
+            ref={el => inputRefs.current[i] = el}
+            type="text"
+            inputMode="numeric"
+            value={value[i] || ""}
+            onChange={(e) => handleChange(e, i)}
+            onKeyDown={(e) => handleKeyDown(e, i)}
+            onFocus={() => setFocused(i)}
+            onBlur={() => setFocused(-1)}
+            disabled={disabled}
+            style={{ width: "clamp(40px, 11vw, 54px)", height: "clamp(50px, 13vw, 64px)", fontSize: 24, fontFamily: "monospace", fontWeight: 800, textAlign: "center", borderRadius: 10, border: `2px solid ${borderCol}`, outline: "none", color: "#011E40", background: "#fff", transition: "0.2s", boxShadow: isActive ? "0 0 0 3px rgba(59,130,246,0.15)" : "none", boxSizing: "border-box" }}
+          />
+        )
+      })}
+    </div>
+  );
+}
+
 // ─── MODALS ───
 function VerifyModal({ modal, verifyAmt, setVerifyAmt, verifyTxn, setVerifyTxn, onConfirm, onClose, busy }) {
   if (!modal) return null;
@@ -168,6 +222,7 @@ export default function AdminDashboardPage() {
   const [otpCode, setOtpCode] = useState("");
   const [loginErr, setLoginErr] = useState("");
   const [loading, setLoading] = useState(false);
+  const [maskedEmail, setMaskedEmail] = useState(""); // 🚀 Captures the masked email for the UI
   const [tab, setTab] = useState("dashboard");
 
   const [dashboard, setDashboard] = useState(null);
@@ -225,7 +280,6 @@ export default function AdminDashboardPage() {
     });
   }, [api, auth]);
 
-  // Step-Up Authentication on Session Resume
   useEffect(() => { 
     if (auth && !loggedIn) {
       setLoading(true);
@@ -233,6 +287,7 @@ export default function AdminDashboardPage() {
         .then(res => res.json())
         .then(data => {
           if (data && data.success) {
+            setMaskedEmail(data.maskedEmail || "your email");
             setLoginStep(1);
           } else {
             setAuth("");
@@ -301,7 +356,12 @@ export default function AdminDashboardPage() {
         setAuth(pw.trim());
         try { sessionStorage.setItem(PW_KEY, pw.trim()); } catch {}
         const data2 = await (await fetch(`${VERCEL_URL}?action=sendotp&identifier=ADMIN&purpose=admin_login`)).json();
-        if (data2 && data2.success) setLoginStep(1); else setLoginErr("Failed to trigger 2FA sequence.");
+        if (data2 && data2.success) {
+          setMaskedEmail(data2.maskedEmail || "your email");
+          setLoginStep(1); 
+        } else {
+          setLoginErr("Failed to trigger 2FA sequence.");
+        }
       } else setLoginErr("Invalid master password. Intrusion logged.");
     } catch { setLoginErr("Connection error. Gateway offline."); }
     setLoading(false);
@@ -341,7 +401,6 @@ export default function AdminDashboardPage() {
     return safeList;
   }, [searchTerm, sortConfig]);
 
-  // 🚀 FIXED: Dynamic Tab Badges that sync exactly with the loaded data arrays
   const tabList = [
     { id: "dashboard", label: "Dashboard", icon: "📊" },
     { id: "applications", label: "Applications", icon: "📋", b: apps.length > 0 ? apps.filter(a => a.status === "Under Review").length : (dashboard?.apps?.underReview || 0) },
@@ -369,18 +428,45 @@ export default function AdminDashboardPage() {
         </div>
         <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
           <div style={{ background: C.card, borderRadius: 28, padding: "56px 42px", maxWidth: 500, width: "100%", textAlign: "center", border: `1px solid ${C.teal}40`, boxShadow: "0 24px 60px rgba(0,0,0,0.25)" }}>
-            <div style={{ fontSize: 82, marginBottom: 20 }}>🛡️</div>
-            <div style={{ fontSize: 11, color: C.teal, letterSpacing: 2, textTransform: "uppercase", fontWeight: 800, fontFamily: C.body, marginBottom: 12 }}>{loginStep === 0 ? "Step 1 of 2" : "Step 2 of 2"}</div>
-            <h1 style={{ fontFamily: C.heading, color: C.navy, fontSize: 36, fontWeight: 900, marginBottom: 12 }}>{loginStep === 0 ? "Admin Password" : "Two-Factor Code"}</h1>
-            <p style={{ color: C.gray, fontSize: 14, lineHeight: 1.75, marginBottom: 24, fontFamily: C.body }}>{loginStep === 0 ? "Enter the master password to initiate the secure login sequence." : "Enter the 6-digit verification code sent for admin access."}</p>
-            {loginStep === 0 ? <input type="password" value={pw} onChange={(e) => { setPw(e.target.value); setLoginErr(""); }} onKeyDown={(e) => e.key === "Enter" && handlePasswordSubmit()} autoFocus placeholder="Master Password" style={{ width: "100%", padding: "18px 20px", borderRadius: 14, border: `2px solid ${loginErr ? C.red : C.border}`, fontSize: 18, textAlign: "center", letterSpacing: 3, background: "#F8FAFC", fontWeight: 800, boxSizing: "border-box", marginBottom: 18 }} /> : <input type="text" value={otpCode} onChange={(e) => { setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6)); setLoginErr(""); }} onKeyDown={(e) => e.key === "Enter" && handleOtpSubmit()} autoFocus placeholder="000000" style={{ width: "100%", padding: "18px 20px", borderRadius: 14, border: `2px solid ${loginErr ? C.red : C.teal}`, fontSize: 30, fontFamily: "monospace", textAlign: "center", letterSpacing: 10, background: C.emeraldLight, fontWeight: 900, boxSizing: "border-box", marginBottom: 18 }} />}
-            {loginErr && <div style={{ color: C.red, fontWeight: 800, marginBottom: 16, fontFamily: C.body, whiteSpace: "pre-wrap", textAlign: "left", padding: 12, background: C.redLight, borderRadius: 8 }}>{loginErr}</div>}
-            <button onClick={loginStep === 0 ? handlePasswordSubmit : handleOtpSubmit} disabled={loading} style={{ width: "100%", padding: "18px", borderRadius: 14, border: "none", background: C.navy, color: "#fff", fontSize: 16, fontWeight: 900, cursor: "pointer", fontFamily: C.body }}>{loading ? "Authenticating..." : "Access Console"}</button>
-            {loginStep === 1 && (
-              <button onClick={() => { setLoginStep(0); setAuth(""); setPw(""); setOtpCode(""); setLoginErr(""); sessionStorage.removeItem(PW_KEY); }} style={{ marginTop: 20, background: "none", border: "none", color: C.gray, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: C.body, textDecoration: "underline" }}>
-                Cancel & Return
-              </button>
+            
+            {loginStep === 0 && (
+              <div style={{ animation: "fadeIn 0.3s" }}>
+                <div style={{ fontSize: 82, marginBottom: 20 }}>🛡️</div>
+                <div style={{ fontSize: 11, color: C.teal, letterSpacing: 2, textTransform: "uppercase", fontWeight: 800, fontFamily: C.body, marginBottom: 12 }}>Step 1 of 2</div>
+                <h1 style={{ fontFamily: C.heading, color: C.navy, fontSize: 36, fontWeight: 900, marginBottom: 12 }}>Admin Password</h1>
+                <p style={{ color: C.gray, fontSize: 14, lineHeight: 1.75, marginBottom: 24, fontFamily: C.body }}>Enter the master password to initiate the secure login sequence.</p>
+                <input type="password" value={pw} onChange={(e) => { setPw(e.target.value); setLoginErr(""); }} onKeyDown={(e) => e.key === "Enter" && handlePasswordSubmit()} autoFocus placeholder="Master Password" style={{ width: "100%", padding: "18px 20px", borderRadius: 14, border: `2px solid ${loginErr ? C.red : C.border}`, fontSize: 18, textAlign: "center", letterSpacing: 3, background: "#F8FAFC", fontWeight: 800, boxSizing: "border-box", marginBottom: 18 }} />
+                {loginErr && <div style={{ color: C.red, fontWeight: 800, marginBottom: 16, fontFamily: C.body, whiteSpace: "pre-wrap", textAlign: "left", padding: 12, background: C.redLight, borderRadius: 8 }}>{loginErr}</div>}
+                <button onClick={handlePasswordSubmit} disabled={loading} style={{ width: "100%", padding: "18px", borderRadius: 14, border: "none", background: C.navy, color: "#fff", fontSize: 16, fontWeight: 900, cursor: "pointer", fontFamily: C.body }}>{loading ? "Authenticating..." : "Access Console"}</button>
+              </div>
             )}
+
+            {/* 🚀 UPGRADED 6-BOX OTP SCREEN FOR ADMIN */}
+            {loginStep === 1 && (
+              <div style={{ animation: "fadeIn 0.3s" }}>
+                <div style={{ width: 64, height: 64, borderRadius: "50%", background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, margin: "0 auto 16px" }}>✉️</div>
+                <h1 style={{ fontFamily: C.heading, color: C.navy, fontSize: 32, margin: "0 0 12px", fontWeight: 900 }}>Check Your Email</h1>
+                <p style={{ fontFamily: C.body, color: C.gray, fontSize: 15, margin: "0 0 24px", lineHeight: 1.6 }}>We've sent a 6-digit code to <strong style={{ color: C.navy }}>{maskedEmail}</strong></p>
+                
+                <div style={{ background: "#F8FAFC", borderRadius: 12, padding: "14px", marginBottom: 24, fontSize: 14, fontFamily: C.body, color: C.navy, fontWeight: 800 }}>
+                  <span style={{ color: C.gray, fontWeight: 500, marginRight: 8 }}>Verifying:</span> ADMIN
+                </div>
+
+                <OtpBoxes value={otpCode} onChange={(v) => { setOtpCode(v); setLoginErr(""); }} onEnter={handleOtpSubmit} disabled={loading} />
+                
+                {loginErr && <div style={{ padding: "14px", borderRadius: 10, background: C.redLight, color: C.red, fontSize: 14, marginBottom: 24, fontFamily: C.body, fontWeight: 800 }}>{loginErr}</div>}
+                
+                <button onClick={handleOtpSubmit} disabled={loading || otpCode.length !== 6} style={{ width: "100%", padding: "18px", borderRadius: 12, border: "none", background: loading ? "#529864" : (otpCode.length !== 6 ? C.border : C.emerald), color: "#fff", fontSize: 16, fontWeight: 900, cursor: otpCode.length === 6 && !loading ? "pointer" : "not-allowed", fontFamily: C.body, transition: "all 0.2s" }}>
+                  {loading ? "Verifying..." : "Verify Code"}
+                </button>
+                
+                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 24 }}>
+                  <button onClick={() => { setLoginStep(0); setOtpCode(""); setAuth(""); sessionStorage.removeItem(PW_KEY); }} style={{ background: "none", border: "none", color: C.gray, fontSize: 13, fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}>&larr; Cancel & Return</button>
+                  <button onClick={handlePasswordSubmit} disabled={loading} style={{ background: "none", border: "none", color: C.navy, fontSize: 13, fontWeight: 800, cursor: "pointer" }}>Resend Code</button>
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
       </div>
@@ -431,9 +517,7 @@ export default function AdminDashboardPage() {
             <div style={{ display: "grid", gridTemplateColumns: "1.25fr 0.75fr", gap: 20 }}>
               <TableShell title="Recent Applications Requiring Attention" tools={<ActionBtn onClick={() => setTab("applications")} bg={C.navy} color="#fff">Open Applications</ActionBtn>}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  {/* 🚀 ADDED INDEX '#' COLUMN HEADER */}
                   <thead><tr><SortTh>#</SortTh><SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Submitted</SortTh><SortTh sortKey="ref" currentSort={sortConfig} onSort={handleSort}>Reference</SortTh><SortTh sortKey="name" currentSort={sortConfig} onSort={handleSort}>Name</SortTh><SortTh sortKey="programme" currentSort={sortConfig} onSort={handleSort}>Programme</SortTh><SortTh sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</SortTh></tr></thead>
-                  {/* 🚀 ADDED INDEX '#' ROW NUMBER */}
                   <tbody>{(dashboard?.recentApps || []).map((a, i) => <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}><Td bold color={C.grayLight}>{i + 1}</Td><Td bold color={C.gray}>{fmtTime(a)}</Td><Td mono bold>{a?.ref}</Td><Td bold>{a?.name}</Td><Td max={250}>{a?.programme}</Td><td style={{ padding: 16, borderBottom: `1px solid ${C.border}` }}><StatusBadge status={a?.status} /></td></tr>)}</tbody>
                   <Tfoot>
                     <tr><TdFoot colSpan={6}>Total Recent Items: {(dashboard?.recentApps || []).length}</TdFoot></tr>
@@ -474,7 +558,6 @@ export default function AdminDashboardPage() {
             </div>
             <TableShell title="Applications Queue">
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                {/* 🚀 ADDED INDEX '#' COLUMN HEADER */}
                 <thead><tr>
                   <SortTh>#</SortTh>
                   <SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Submitted</SortTh>
@@ -487,7 +570,6 @@ export default function AdminDashboardPage() {
                   <SortTh sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</SortTh>
                   <SortTh>Actions</SortTh>
                 </tr></thead>
-                {/* 🚀 ADDED INDEX '#' ROW NUMBER */}
                 <tbody>
                   {appRows.map((a, i) => (
                     <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff", opacity: busy === a.ref ? 0.5 : 1 }}>
@@ -532,7 +614,6 @@ export default function AdminDashboardPage() {
             </div>
             <TableShell title="Student Registry">
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                {/* 🚀 ADDED INDEX '#' COLUMN HEADER */}
                 <thead><tr>
                   <SortTh>#</SortTh>
                   <SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Status Update</SortTh>
@@ -545,7 +626,6 @@ export default function AdminDashboardPage() {
                   <SortTh sortKey="status" currentSort={sortConfig} onSort={handleSort}>Status</SortTh>
                   <SortTh>Services</SortTh>
                 </tr></thead>
-                {/* 🚀 ADDED INDEX '#' ROW NUMBER */}
                 <tbody>
                   {studentRows.map((s, i) => (
                     <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff", opacity: busy === s.studentNumber ? 0.5 : 1 }}>
@@ -590,7 +670,6 @@ export default function AdminDashboardPage() {
             </div>
             <TableShell title="Payments Queue">
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                {/* 🚀 ADDED INDEX '#' COLUMN HEADER */}
                 <thead><tr>
                   <SortTh>#</SortTh>
                   <SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Submission Time</SortTh>
@@ -601,7 +680,6 @@ export default function AdminDashboardPage() {
                   <SortTh>Evidence</SortTh>
                   <SortTh>Actions</SortTh>
                 </tr></thead>
-                {/* 🚀 ADDED INDEX '#' ROW NUMBER */}
                 <tbody>
                   {paymentRows.map((p, i) => (
                     <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}>
@@ -638,7 +716,6 @@ export default function AdminDashboardPage() {
         {tab === "activity" && (
           <TableShell title="Institutional Audit Log" tools={<SearchBox value={searchTerm} onChange={setSearchTerm} />}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              {/* 🚀 ADDED INDEX '#' COLUMN HEADER */}
               <thead><tr>
                 <SortTh>#</SortTh>
                 <SortTh sortKey="timestamp" currentSort={sortConfig} onSort={handleSort}>Exact Time</SortTh>
@@ -647,7 +724,6 @@ export default function AdminDashboardPage() {
                 <SortTh>Details</SortTh>
                 <SortTh sortKey="by" currentSort={sortConfig} onSort={handleSort}>Executed By</SortTh>
               </tr></thead>
-              {/* 🚀 ADDED INDEX '#' ROW NUMBER */}
               <tbody>
                 {activityRows.map((e, i) => (
                   <tr key={i} style={{ background: i % 2 ? "#F8FAFC" : "#fff" }}>
