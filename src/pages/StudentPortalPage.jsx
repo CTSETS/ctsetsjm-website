@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import S from "../constants/styles";
 import { PROGRAMMES } from "../constants/programmes"; 
+import { APPS_SCRIPT_URL, WIPAY_CONFIG } from "../constants/config"; 
 import { Container, PageWrapper, Btn } from "../components/shared/CoreComponents";
 import { fmt } from "../utils/formatting";
 
@@ -134,7 +135,14 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
   const [quizLoading, setQuizLoading] = useState(false);
   const [portfolioLink, setPortfolioLink] = useState("");
   const [imgError, setImgError] = useState(false);
-  const [showPaymentModal, setShowPaymentModal] = useState(false); // 💳 NEW PAYMENT MODAL STATE
+  
+  // 💳 EMBEDDED SMART PAYMENT SYSTEM STATES
+  const [showPaymentModal, setShowPaymentModal] = useState(false); 
+  const [payMethod, setPayMethod] = useState(""); 
+  const [customAmount, setCustomAmount] = useState(profile.outstanding || 0);
+  const [receipt, setReceipt] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [paySuccess, setPaySuccess] = useState(false);
   
   const secureImgUrl = getDriveImageUrl(profile.photoUrl);
   const validTermText = getValidTerm(profile.programme, profile.level, profile.dateEnrolled);
@@ -142,6 +150,84 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
   useEffect(() => { loadConfetti(); }, []);
 
   const handleQuizSelect = (qIndex, aIndex) => { setQuizAnswers(prev => ({ ...prev, [qIndex]: aIndex })); };
+
+  // Helper to convert uploaded receipt to Base64 for Google Drive
+  const toBase64 = (file) => new Promise((resolve, reject) => { 
+    const reader = new FileReader(); 
+    reader.onload = () => resolve(reader.result.split(',')[1]); 
+    reader.onerror = error => reject(error); 
+    reader.readAsDataURL(file); 
+  });
+
+  // 🚀 EMBEDDED BANK TRANSFER ENGINE
+  const handleReceiptUpload = async () => {
+    if (!receipt || submitting || customAmount < 1000) return;
+    setSubmitting(true);
+    try {
+      const b64 = await toBase64(receipt);
+      const fileData = [{ slot: "paymentReceipt", name: receipt.name, type: receipt.type, data: b64 }];
+      
+      const res = await fetch(APPS_SCRIPT_URL, { 
+        method: "POST", 
+        headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+        body: JSON.stringify({ 
+          action: "submitpayment", 
+          form_type: "Portal In-App Payment Evidence", 
+          ref: profile.studentNumber, 
+          studentName: profile.name, 
+          email: profile.email, 
+          paymentPlan: "Dashboard Payment", 
+          amountPaid: customAmount, 
+          paymentMethod: "bank_transfer", 
+          files: fileData, 
+          timestamp: new Date().toISOString() 
+        }) 
+      });
+
+      if (res.ok) {
+        setPaySuccess(true);
+        setReceipt(null);
+        if (window.confetti) window.confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      } else {
+        alert("Upload failed. Please check your internet connection and try again.");
+      }
+    } catch (e) { 
+      console.error(e); 
+      alert("A network error occurred. Please try again.");
+    }
+    setSubmitting(false); 
+  };
+
+  // 🚀 EMBEDDED WIPAY REDIRECT ENGINE
+  const handleWiPayCheckout = () => {
+    if (submitting || customAmount < 1000) return;
+    setSubmitting(true);
+    
+    const orderId = profile.studentNumber + "-PORTAL"; 
+    const paymentDescription = `Ref: ${profile.studentNumber} | Name: ${profile.name} | Email: ${profile.email}`;
+
+    // Silently log the attempt
+    try {
+      fetch(APPS_SCRIPT_URL, { 
+        method: "POST", 
+        headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+        body: JSON.stringify({ action: "submitpayment", form_type: "WiPay Portal In-App Attempt", ref: profile.studentNumber, studentName: profile.name, email: profile.email, paymentPlan: "Dashboard Payment", amountPaid: customAmount, paymentMethod: "online", timestamp: new Date().toISOString() }) 
+      });
+    } catch (e) {}
+
+    // Execute WiPay Redirect and bounce them back to the portal
+    if (WIPAY_CONFIG && WIPAY_CONFIG.baseUrl.includes("/to_me/")) {
+      let base = WIPAY_CONFIG.baseUrl;
+      if (base.endsWith("/")) base = base.slice(0, -1); 
+      window.location.href = `${base}/${customAmount}/${encodeURIComponent(paymentDescription)}`;
+    } else if (WIPAY_CONFIG) {
+      const returnUrl = encodeURIComponent(window.location.origin + "/#student-portal");
+      window.location.href = `${WIPAY_CONFIG.baseUrl}?total=${encodeURIComponent(customAmount)}&currency=${encodeURIComponent(WIPAY_CONFIG.currency)}&order_id=${encodeURIComponent(orderId)}&return_url=${returnUrl}`;
+    } else {
+      alert("WiPay is not configured correctly. Please use Bank Transfer.");
+      setSubmitting(false);
+    }
+  };
 
   const submitQuiz = async () => {
     let score = 0;
@@ -181,7 +267,97 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
 
   return (
     <div style={{ width: "100%", maxWidth: "1280px", margin: "0 auto", animation: "fadeIn 0.4s" }}>
-      {/* 🚀 UPGRADED HEADER */}
+      
+      {/* 💳 SMART EMBEDDED PAYMENT MODAL */}
+      {showPaymentModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(1, 30, 64, 0.85)", zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(6px)", padding: "20px" }}>
+          <div style={{ background: "#fff", padding: "40px", borderRadius: 24, maxWidth: 600, width: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.5)", position: "relative", animation: "fadeIn 0.3s" }}>
+            
+            <button onClick={() => { setShowPaymentModal(false); setPaySuccess(false); setPayMethod(""); }} style={{ position: "absolute", top: 20, right: 24, background: "none", border: "none", fontSize: 28, cursor: "pointer", color: S.grayLight }}>✕</button>
+            
+            {paySuccess ? (
+               <div style={{ textAlign: "center", padding: "20px 0", animation: "fadeIn 0.4s" }}>
+                 <div style={{ fontSize: 64, marginBottom: 16 }}>🎉</div>
+                 <h3 style={{ color: S.navy, fontFamily: S.heading, fontSize: 28, marginBottom: 16 }}>Evidence Submitted!</h3>
+                 <p style={{ color: S.gray, fontFamily: S.body, fontSize: 16, marginBottom: 32, lineHeight: 1.5 }}>Your receipt has been securely uploaded to our Finance department. We will verify your payment of <strong>{fmt(customAmount)}</strong> and update your portal balance within 48-72 hours.</p>
+                 <button onClick={() => { setShowPaymentModal(false); setPaySuccess(false); setPayMethod(""); fetchDashboard(profile.studentNumber); }} style={{ padding: "16px 36px", background: S.emerald, color: "#fff", borderRadius: 12, border: "none", fontSize: 18, fontWeight: 800, cursor: "pointer", fontFamily: S.body, boxShadow: `0 8px 20px ${S.emerald}40` }}>Return to Dashboard</button>
+               </div>
+            ) : (
+              <>
+                <h3 style={{ color: S.navy, fontFamily: S.heading, fontSize: 28, marginBottom: 16 }}>Clear Outstanding Balance</h3>
+                
+                {/* Custom Amount Input */}
+                <div style={{ background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 16, padding: 24, marginBottom: 24 }}>
+                  <label style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", fontSize: 13, fontWeight: 700, color: S.navy, marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+                    <span>Amount To Pay Today (JMD)</span>
+                    <span style={{ color: S.coral, fontSize: 12 }}>Outstanding: {fmt(profile.outstanding)}</span>
+                  </label>
+                  <input 
+                    type="number" 
+                    min="1000" 
+                    max={profile.outstanding} 
+                    value={customAmount} 
+                    onChange={(e) => setCustomAmount(e.target.value)} 
+                    style={{ width: "100%", padding: 16, fontSize: 24, fontWeight: 900, borderRadius: 10, border: "2px solid " + S.emerald, background: "#fff", color: S.navy, outline: "none", boxSizing: "border-box" }} 
+                  />
+                </div>
+
+                <h4 style={{ fontFamily: S.heading, color: S.navy, fontSize: 18, marginBottom: 16 }}>Select Payment Method</h4>
+                
+                {/* Method Toggles */}
+                <div style={{ display: "flex", gap: 16, marginBottom: payMethod ? 24 : 0 }}>
+                  <button onClick={() => setPayMethod("online")} style={{ flex: 1, padding: "20px 16px", borderRadius: 12, border: payMethod === "online" ? `2px solid ${S.teal}` : "2px solid #E2E8F0", background: payMethod === "online" ? S.tealLight : "#fff", cursor: "pointer", transition: "all 0.2s", textAlign: "center" }}>
+                    <div style={{ fontSize: 28, marginBottom: 8 }}>💳</div>
+                    <div style={{ fontWeight: 800, color: S.navy, fontSize: 15 }}>Pay Online</div>
+                  </button>
+                  <button onClick={() => setPayMethod("upload")} style={{ flex: 1, padding: "20px 16px", borderRadius: 12, border: payMethod === "upload" ? `2px solid ${S.teal}` : "2px solid #E2E8F0", background: payMethod === "upload" ? S.tealLight : "#fff", cursor: "pointer", transition: "all 0.2s", textAlign: "center" }}>
+                    <div style={{ fontSize: 28, marginBottom: 8 }}>🏦</div>
+                    <div style={{ fontWeight: 800, color: S.navy, fontSize: 15 }}>Bank Transfer</div>
+                  </button>
+                </div>
+
+                {/* Online Gateway Logic */}
+                {payMethod === "online" && (
+                  <div style={{ animation: "fadeIn 0.3s" }}>
+                    <p style={{ fontSize: 14, color: S.gray, marginBottom: 20, lineHeight: 1.5 }}>You will be temporarily redirected to our secure WiPay checkout. Once completed, you will be brought right back to your digital classroom.</p>
+                    <button onClick={handleWiPayCheckout} disabled={submitting || customAmount < 1000} style={{ padding: 18, background: S.navy, color: "#fff", border: "none", borderRadius: 12, width: "100%", fontWeight: 800, fontSize: 16, cursor: (submitting || customAmount < 1000) ? "not-allowed" : "pointer", boxShadow: "0 6px 16px rgba(1,30,64,0.2)" }}>
+                      {submitting ? "Connecting to WiPay..." : `Pay ${fmt(customAmount)} Securely`}
+                    </button>
+                  </div>
+                )}
+
+                {/* Bank Transfer Logic */}
+                {payMethod === "upload" && (
+                  <div style={{ animation: "fadeIn 0.3s" }}>
+                    <div style={{ background: "#fff", padding: "16px", borderRadius: 12, fontSize: 13, fontFamily: "monospace", border: `1px solid ${S.grayLight}`, lineHeight: 1.6, marginBottom: 20 }}>
+                      <div style={{ marginBottom: 12, paddingBottom: 12, borderBottom: "1px dashed #CBD5E1" }}>
+                        <div style={{ fontWeight: 800, color: S.navy, fontSize: 14, marginBottom: 6, fontFamily: S.body }}>🏦 Scotiabank (BNS)</div>
+                        <strong>Account Name:</strong> Mark Lindo trading as CTS Empowerment & Training Solution<br/>
+                        <strong>Account Number:</strong> 001041411 (Savings)<br/>
+                        <strong>Branch:</strong> Scotia Center / 50765
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 800, color: S.navy, fontSize: 14, marginBottom: 6, fontFamily: S.body }}>🏦 National Commercial Bank (NCB)</div>
+                        <strong>Account Name:</strong> Mark Lindo<br/>
+                        <strong>Account Number:</strong> 214121697 (Personal)
+                      </div>
+                    </div>
+                    
+                    <p style={{ fontSize: 14, color: S.navy, fontWeight: 700, marginBottom: 12 }}>Upload Transfer Receipt</p>
+                    <input type="file" onChange={e => setReceipt(e.target.files[0])} style={{ marginBottom: 20, width: "100%", padding: 12, borderRadius: 8, border: "1px dashed #CBD5E1", background: "#F8FAFC", boxSizing: "border-box" }} />
+                    
+                    <button onClick={handleReceiptUpload} disabled={submitting || !receipt || customAmount < 1000} style={{ padding: 18, background: S.emerald, color: "#fff", border: "none", borderRadius: 10, width: "100%", fontWeight: 800, fontSize: 16, cursor: (submitting || !receipt || customAmount < 1000) ? "not-allowed" : "pointer", boxShadow: "0 4px 12px rgba(16,185,129,0.2)" }}>
+                      {submitting ? "Uploading Evidence..." : `Submit Receipt for ${fmt(customAmount)}`}
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 🚀 HEADER */}
       <div style={{ background: `linear-gradient(135deg, ${S.navy} 0%, ${S.teal} 100%)`, borderRadius: 16, padding: "32px", color: "#fff", marginBottom: 32, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 20, boxShadow: "0 10px 30px rgba(1, 30, 64, 0.15)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
           {secureImgUrl && !imgError ? (
@@ -373,7 +549,7 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
                 <span style={{ color: profile.outstanding > 0 ? S.coral : S.emerald, fontWeight: 700 }}>Outstanding: {fmt(profile.outstanding)}</span>
               </div>
 
-              {/* 💳 NEW MAKE A PAYMENT BUTTON */}
+              {/* 💳 EMBEDDED MAKE A PAYMENT BUTTON */}
               {profile.outstanding > 0 && (
                 <div style={{ textAlign: "center", marginTop: 24 }}>
                   <button 
@@ -415,4 +591,191 @@ function Dashboard({ studentData, onLogout, fetchDashboard }) {
                               {p.status}
                             </span>
                           </td>
-                          <td style={{ padding: 16, fontFamily: S.body, fontSize: 14
+                          <td style={{ padding: 16, fontFamily: S.body, fontSize: 14 }}>
+                            {p.receipt ? <a href={p.receipt} target="_blank" rel="noreferrer" style={{ color: S.blue, fontWeight: 700, textDecoration: "underline" }}>View</a> : "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function StudentPortalPage({ setPage }) {
+  const [orientationPassed, setOrientationPassed] = useState(false);
+  const [studentData, setStudentData] = useState(null);
+  
+  useEffect(() => {
+    if (studentData && studentData.profile && studentData.profile.studentNumber) {
+      if (studentData.profile.OrientationPassed === true || studentData.profile.OrientationPassed === "TRUE") {
+        setOrientationPassed(true);
+      } else {
+        const passed = localStorage.getItem(`cts_orientation_${studentData.profile.studentNumber}`);
+        if (passed === "true") {
+          setOrientationPassed(true);
+        }
+      }
+    }
+  }, [studentData]);
+
+  const [loginStep, setLoginStep] = useState(0); 
+  const [identifier, setIdentifier] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState("");
+  
+  const [showTimeoutModal, setShowTimeoutModal] = useState(false);
+  const [countdown, setCountdown] = useState(60);
+
+  useEffect(() => {
+    if (!studentData) return;
+    let idleTimer;
+    let countdownInterval;
+
+    const startIdleTimer = () => {
+      clearTimeout(idleTimer);
+      clearInterval(countdownInterval);
+      setShowTimeoutModal(false);
+      setCountdown(60);
+
+      idleTimer = setTimeout(() => {
+        setShowTimeoutModal(true);
+        countdownInterval = setInterval(() => {
+          setCountdown(prev => {
+            if (prev <= 1) {
+              clearInterval(countdownInterval);
+              handleLogout();
+              alert("Signed out due to inactivity for security purposes.");
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      }, 14 * 60 * 1000);
+    };
+
+    const events = ["mousedown", "keydown", "scroll", "touchstart"];
+    const resetTimer = () => { if (!showTimeoutModal) startIdleTimer(); };
+    events.forEach(evt => document.addEventListener(evt, resetTimer));
+    
+    startIdleTimer();
+    return () => {
+      events.forEach(evt => document.removeEventListener(evt, resetTimer));
+      clearTimeout(idleTimer);
+      clearInterval(countdownInterval);
+    };
+  }, [studentData, showTimeoutModal]);
+
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem("cts_portal_session");
+      if (saved) setStudentData(JSON.parse(saved));
+    } catch(e) {}
+  }, []);
+
+  const fetchDashboard = async (verifiedId) => {
+    try {
+      const res = await fetch(`${VERCEL_URL}?action=getstudentdashboard_otp&ref=${encodeURIComponent(verifiedId)}`);
+      const data = await res.json();
+      if (data.ok) { setStudentData(data); sessionStorage.setItem("cts_portal_session", JSON.stringify(data)); } 
+      else { setAuthError(data.error || "Could not load student record."); setLoginStep(0); }
+    } catch (e) { setAuthError("Network error connecting to the learning portal."); setLoginStep(0); }
+  };
+
+  const handleSendCode = async () => {
+    if (!identifier.trim()) return;
+    setAuthLoading(true); setAuthError("");
+    try {
+      const res = await fetch(`${VERCEL_URL}?action=sendotp&identifier=${encodeURIComponent(identifier.trim())}&purpose=portal`);
+      const data = await res.json();
+      if (data.success) { setLoginStep(1); } 
+      else { setAuthError("We could not find a student record with that ID."); }
+    } catch (e) { setAuthError("Network error. Please check your connection."); }
+    setAuthLoading(false);
+  };
+
+  const handleVerifyCode = async () => {
+    if (otpCode.length !== 6) { setAuthError("Please enter the 6-digit code."); return; }
+    setAuthLoading(true); setAuthError("");
+    try {
+      const res = await fetch(`${VERCEL_URL}?action=verifyotp&identifier=${encodeURIComponent(identifier.trim())}&code=${otpCode}&purpose=portal`);
+      const data = await res.json();
+      if (data.success) { setAuthError(""); await fetchDashboard(identifier.trim()); } 
+      else { setAuthError(data.error === "wrong_code" ? "Invalid code." : "Code expired. Please try again."); }
+    } catch (e) { setAuthError("Network error. Please check your connection."); }
+    setAuthLoading(false);
+  };
+
+  const handleLogout = () => {
+    setStudentData(null); setLoginStep(0); setIdentifier(""); setOtpCode("");
+    sessionStorage.removeItem("cts_portal_session");
+  };
+
+  if (!studentData) {
+    const animStyles = `@keyframes pulseGateway { 0% { box-shadow: 0 0 0 0 rgba(232, 99, 74, 0.4); } 70% { box-shadow: 0 0 0 40px rgba(232, 99, 74, 0); } 100% { box-shadow: 0 0 0 0 rgba(232, 99, 74, 0); } } @keyframes floatCap { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-15px) scale(1.05); } } @keyframes blinkNode { 0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 12px ${S.teal}; } 50% { opacity: 0.3; transform: scale(0.8); box-shadow: 0 0 2px ${S.teal}; } }`;
+    const NodeBadge = ({ label, delay }) => ( <div style={{ display: "flex", alignItems: "center", gap: 10, background: "rgba(0,0,0,0.4)", padding: "14px 24px", borderRadius: 30, border: "1px solid rgba(14, 143, 139, 0.3)", backdropFilter: "blur(4px)" }}><div style={{ width: 12, height: 12, borderRadius: "50%", background: S.teal, animation: `blinkNode 2s infinite ${delay}` }} /><span style={{ color: S.teal, fontSize: 12, fontWeight: 800, fontFamily: S.body, letterSpacing: 2, textTransform: "uppercase" }}>{label}: ONLINE</span></div> );
+    return (
+      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: S.bg, fontFamily: S.body }}>
+        <style>{animStyles}</style>
+        <div style={{ background: S.navy, padding: "20px 40px", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.4)", position: "relative", zIndex: 10, borderBottom: `2px solid ${S.coral}` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 18 }}><img src="/logo.jpg" alt="CTS ETS" style={{ width: 56, height: 56, borderRadius: 12, border: `2px solid ${S.gold}` }} /><div><div style={{ color: "#fff", fontWeight: 900, fontSize: 24, fontFamily: S.heading }}>Student Portal</div><div style={{ color: S.coral, fontSize: 11, letterSpacing: 4, fontWeight: 800, marginTop: 4, textTransform: "uppercase" }}>SECURE LEARNING GATEWAY</div></div></div>
+          <a href="/#Home" style={{ color: "#fff", fontSize: 13, textDecoration: "none", fontWeight: 800, padding: "14px 28px", borderRadius: 8, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", transition: "all 0.2s", textTransform: "uppercase" }}>&larr; Back to Website</a>
+        </div>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 20, background: `radial-gradient(circle at center, #0a2d4d 0%, ${S.navy} 100%)`, position: "relative", overflow: "hidden" }}>
+          <div style={{ background: "#fff", borderRadius: 24, padding: "64px 48px", maxWidth: 480, width: "100%", textAlign: "center", position: "relative", zIndex: 2, animation: "pulseGateway 4s infinite", border: `2px solid ${S.coral}50` }}>
+            <div style={{ fontSize: 96, marginBottom: 24, animation: "floatCap 5s ease-in-out infinite" }}>🎓</div>
+            <h1 style={{ fontFamily: S.heading, color: S.navy, fontSize: 36, margin: "0 0 12px", fontWeight: 900 }}>{loginStep === 0 ? "Welcome Student" : "Verify Identity"}</h1>
+            <p style={{ fontFamily: S.body, color: S.gray, fontSize: 15, margin: "0 0 40px", lineHeight: 1.6 }}>{loginStep === 0 ? "Enter your Student Number to access your classroom." : "A secure 6-digit code has been sent to your registered email."}</p>
+            {loginStep === 0 ? ( <div style={{ marginBottom: 24 }}><input type="text" value={identifier} onChange={e => { setIdentifier(e.target.value.toUpperCase()); setAuthError(""); }} onKeyDown={e => { if (e.key === "Enter") handleSendCode(); }} autoFocus placeholder="Student ID" style={{ width: "100%", padding: "20px", borderRadius: 12, border: "2px solid " + (authError ? S.rose : S.border), fontSize: 18, fontFamily: S.body, color: S.navy, boxSizing: "border-box", outline: "none", textAlign: "center", letterSpacing: 2, background: S.lightBg, fontWeight: 800 }} /></div>
+            ) : ( <div style={{ marginBottom: 24 }}><input type="text" value={otpCode} onChange={e => { setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6)); setAuthError(""); }} onKeyDown={e => { if (e.key === "Enter") handleVerifyCode(); }} autoFocus placeholder="000000" style={{ width: "100%", padding: "20px", borderRadius: 12, border: "2px solid " + (authError ? S.rose : S.teal), fontSize: 32, fontFamily: "monospace", color: S.navy, boxSizing: "border-box", outline: "none", textAlign: "center", letterSpacing: 12, background: S.tealLight, fontWeight: 900 }} /></div> )}
+            {authError && <div style={{ padding: "14px", borderRadius: 10, background: S.roseLight, color: S.roseDark, fontSize: 14, marginBottom: 24, fontFamily: S.body, fontWeight: 800, border: `1px solid ${S.rose}50` }}>{authError}</div>}
+            {loginStep === 0 ? ( <button onClick={handleSendCode} disabled={authLoading || !identifier.trim()} style={{ width: "100%", padding: "20px", borderRadius: 12, border: "none", background: (!identifier.trim() || authLoading) ? S.border : S.navy, color: "#fff", fontSize: 16, fontWeight: 900, cursor: identifier.trim() && !authLoading ? "pointer" : "not-allowed", fontFamily: S.body, transition: "all 0.2s", textTransform: "uppercase", letterSpacing: 2 }}>{authLoading ? "Connecting..." : "Initialize Link"}</button>
+            ) : ( <button onClick={handleVerifyCode} disabled={authLoading || otpCode.length !== 6} style={{ width: "100%", padding: "20px", borderRadius: 12, border: "none", background: (otpCode.length !== 6 || authLoading) ? S.border : S.coral, color: "#fff", fontSize: 16, fontWeight: 900, cursor: otpCode.length === 6 && !authLoading ? "pointer" : "not-allowed", fontFamily: S.body, transition: "all 0.2s", textTransform: "uppercase", letterSpacing: 2, boxShadow: otpCode.length === 6 ? `0 10px 30px ${S.coral}50` : "none" }}>{authLoading ? "Decrypting..." : "Access Classroom"}</button> )}
+            {loginStep === 1 && ( <button onClick={() => { setLoginStep(0); setOtpCode(""); setAuthError(""); }} style={{ marginTop: 20, background: "none", border: "none", color: S.gray, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: S.body, textDecoration: "underline" }}>Cancel & Return</button> )}
+          </div>
+          <div style={{ display: "flex", gap: 20, marginTop: 60, flexWrap: "wrap", justifyContent: "center", position: "relative", zIndex: 2 }}><NodeBadge label="LMS Server" delay="0s" /><NodeBadge label="Data Sync" delay="0.6s" /><NodeBadge label="Identity Auth" delay="1.2s" /></div>
+        </div>
+        <div style={{ background: "#020b14", padding: "24px", textAlign: "center", borderTop: "1px solid rgba(232, 99, 74, 0.2)" }}><p style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, fontFamily: S.body, margin: 0, letterSpacing: 1, textTransform: "uppercase", fontWeight: 700 }}>&copy; 2026 CTS ETS. Enrolled Students Only. Unauthorized access is strictly prohibited.</p></div>
+      </div>
+    );
+  }
+
+  // ═══ AUTHENTICATED VIEW ═══
+  
+  if (!orientationPassed) {
+    return <OrientationGateway onComplete={async () => {
+      setOrientationPassed(true);
+      if (studentData && studentData.profile && studentData.profile.studentNumber) {
+        localStorage.setItem(`cts_orientation_${studentData.profile.studentNumber}`, "true");
+        try {
+          await fetch(`${VERCEL_URL}?action=passorientation&ref=${encodeURIComponent(studentData.profile.studentNumber)}`);
+        } catch(e) { console.log("Cloud sync error, but local unlock succeeded.", e); }
+      }
+    }} />;
+  }
+
+  return (
+    <PageWrapper>
+        {showTimeoutModal && (
+          <div style={{ position: "fixed", inset: 0, background: "rgba(1, 30, 64, 0.9)", zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(5px)" }}>
+            <div style={{ background: "#fff", padding: "40px", borderRadius: 24, textAlign: "center", maxWidth: 420, width: "90%", boxShadow: "0 20px 50px rgba(0,0,0,0.5)" }}>
+              <div style={{ fontSize: 56, marginBottom: 16, animation: "pulseGateway 1.5s infinite" }}>⏱️</div>
+              <h3 style={{ color: S.navy, fontFamily: S.heading, fontSize: 26, margin: "0 0 12px", fontWeight: 800 }}>Are you still there?</h3>
+              <p style={{ color: S.gray, fontFamily: S.body, fontSize: 16, marginBottom: 32, lineHeight: 1.5 }}>For your security, you will be automatically logged out in <strong style={{ color: S.coral, fontSize: 20 }}>{countdown}</strong> seconds.</p>
+              <Btn primary onClick={() => setShowTimeoutModal(false)} style={{ background: S.emerald, color: "#fff", width: "100%", padding: "18px", fontSize: 16, fontWeight: 800, borderRadius: 12 }}>Stay Logged In</Btn>
+            </div>
+          </div>
+        )}
+        <div style={{ background: S.bg, minHeight: "85vh", padding: "48px 20px" }}>
+          <Dashboard studentData={studentData} onLogout={handleLogout} fetchDashboard={fetchDashboard} />
+          <AIStudyAssistant profile={studentData.profile} />
+        </div>
+    </PageWrapper>
+  );
+}
