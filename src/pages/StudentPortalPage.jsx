@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 
 const VERCEL_URL = "https://ctsetsjm-website.vercel.app/api/proxy";
-const PW_KEY = "ctsAdm";
+const PW_KEY = "ctsAdmin2026!";
 
 const C = {
   navy: "#011E40", gold: "#C49112", teal: "#0E8F8B", coral: "#E8634A",
