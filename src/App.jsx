@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, Component, Suspense, lazy } from "react";
 import S from "./constants/styles";
-import { PAGES, APPS_SCRIPT_URL, EMAILJS_KEY } from "./constants/config";
+import { PAGES, APPS_SCRIPT_URL, EMAILJS_KEY, APPLY_URL, PAYMENT_URL, PORTAL_URL, ADMIN_URL } from "./constants/config";
 import { retryQueuedSubmissions } from "./utils/submission";
 import { initGA4, trackPageView } from "./utils/analytics";
 import "./styles/global.css";
@@ -14,8 +14,6 @@ const ProgrammesPage = lazy(() => import("./pages/ProgrammesPage"));
 const FeesPage = lazy(() => import("./pages/FeesPage"));
 const ContactPage = lazy(() => import("./pages/ContactPage"));
 const WhyChoosePage = lazy(() => import("./pages/WhyChoosePage"));
-const ApplyPage = lazy(() => import("./pages/ApplyPage"));
-const PaymentPage = lazy(() => import("./pages/PaymentPage"));
 const EmployersPage = lazy(() => import("./pages/EmployersPage"));
 const InternationalPage = lazy(() => import("./pages/InternationalPage"));
 const StudentJourneyPage = lazy(() => import("./pages/StudentJourneyPage"));
@@ -24,10 +22,17 @@ const FeedbackPage = lazy(() => import("./pages/FeedbackPage"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const TermsPage = lazy(() => import("./pages/TermsPage"));
 const FAQPage = lazy(() => import("./pages/FAQPage"));
-const StudentPortalPage = lazy(() => import("./pages/StudentPortalPage"));
-const AdminDashboardPage = lazy(() => import("./pages/AdminDashboardPage"));
 const AIUsagePolicyPage = lazy(() => import("./pages/AIUsagePolicyPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
+
+// 🔀 Redirect map — old hash routes → external platform URLs
+const EXTERNAL_REDIRECTS = {
+  "apply": APPLY_URL,
+  "pay": PAYMENT_URL,
+  "student portal": PORTAL_URL,
+  "student-portal": PORTAL_URL,
+  "admin": ADMIN_URL,
+};
 
 function PageLoader() {
   return <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}><div style={{ textAlign: "center" }}><div style={{ width: 40, height: 40, borderRadius: "50%", border: "3px solid " + S.gold + "30", borderTopColor: S.gold, animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} /><p style={{ fontFamily: S.body, fontSize: 13, color: S.gray }}>Loading...</p></div><style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style></div>;
@@ -43,16 +48,46 @@ class ErrorBoundary extends Component {
   }
 }
 
-const TITLES = { Home: "CTS ETS — Jamaica's Digital Vocational School", About: "About CTS ETS", "Why Choose": "Why Choose CTS ETS", Programmes: "Programmes | CTS ETS", "Fees & Calculator": "Student Finance | CTS ETS", "For Employers": "For Employers | CTS ETS", "Student Journey": "Student Journey | CTS ETS", Apply: "Apply Now | CTS ETS", Pay: "Make a Payment | CTS ETS", Contact: "Contact Us | CTS ETS", International: "International Students | CTS ETS", "Verify Certificate": "Verify Certificate | CTS ETS", Feedback: "Feedback | CTS ETS", FAQ: "Frequently Asked Questions | CTS ETS", "Student Portal": "Student Portal | CTS ETS", Admin: "Admin Dashboard | CTS ETS", "AI Policy": "AI Usage Policy | CTS ETS", Privacy: "Privacy Policy | CTS ETS", Terms: "Terms & Conditions | CTS ETS" };
+const TITLES = {
+  Home: "CTS ETS — Jamaica's Digital Vocational School",
+  About: "About CTS ETS",
+  "Why Choose": "Why Choose CTS ETS",
+  Programmes: "Programmes | CTS ETS",
+  "Fees & Calculator": "Student Finance | CTS ETS",
+  "For Employers": "For Employers | CTS ETS",
+  "Student Journey": "Student Journey | CTS ETS",
+  Contact: "Contact Us | CTS ETS",
+  International: "International Students | CTS ETS",
+  "Verify Certificate": "Verify Certificate | CTS ETS",
+  Feedback: "Feedback | CTS ETS",
+  FAQ: "Frequently Asked Questions | CTS ETS",
+  "AI Policy": "AI Usage Policy | CTS ETS",
+  Privacy: "Privacy Policy | CTS ETS",
+  Terms: "Terms & Conditions | CTS ETS"
+};
+
+// 🔀 Check if hash matches an external redirect and send user there
+function checkExternalRedirect() {
+  const rawHash = window.location.hash.split("?")[0];
+  const hash = rawHash.replace("#", "").replace(/-/g, " ").toLowerCase();
+  const url = EXTERNAL_REDIRECTS[hash];
+  if (url) {
+    window.location.href = url;
+    return true;
+  }
+  return false;
+}
 
 export default function CTSApp() {
   const [page, setPage] = useState(() => {
-    // 🚀 FIXED: Ignore anything after the "?" so the router doesn't get confused
+    // 🔀 If hash matches an external route, redirect immediately
+    if (checkExternalRedirect()) return "Home";
+
     const rawHash = window.location.hash.split("?")[0];
     const hash = rawHash.replace("#", "").replace(/-/g, " ");
-    if (hash.toLowerCase() === "admin") return "Admin";
     return PAGES.find(p => p.toLowerCase() === hash.toLowerCase()) || "Home";
   });
+
   const [transitioning, setTransitioning] = useState(false);
 
   const navigate = useCallback((p) => {
@@ -61,31 +96,53 @@ export default function CTSApp() {
       setPage(p);
       window.history.pushState(null, "", p === "Home" ? window.location.pathname : "#" + p.toLowerCase().replace(/ /g, "-"));
       window.scrollTo({ top: 0, behavior: "instant" });
-      setTimeout(() => { const el = document.getElementById("main-content"); if (el) el.focus({ preventScroll: true }); setTransitioning(false); }, 50);
+      setTimeout(() => {
+        const el = document.getElementById("main-content");
+        if (el) el.focus({ preventScroll: true });
+        setTransitioning(false);
+      }, 50);
     }, 150);
   }, []);
 
-  useEffect(() => { 
-    const onPop = () => { 
-      // 🚀 FIXED: Ignore anything after the "?" here too
+  useEffect(() => {
+    const onPop = () => {
+      // 🔀 Check external redirects on back/forward navigation too
+      if (checkExternalRedirect()) return;
+
       const rawHash = window.location.hash.split("?")[0];
-      const h = rawHash.replace("#", "").replace(/-/g, " "); 
-      if (h.toLowerCase() === "admin") { setPage("Admin"); } 
-      else { setPage(PAGES.find(p => p.toLowerCase() === h.toLowerCase()) || "Home"); } 
-      window.scrollTo({ top: 0, behavior: "instant" }); 
-    }; 
-    window.addEventListener("popstate", onPop); 
-    return () => window.removeEventListener("popstate", onPop); 
+      const h = rawHash.replace("#", "").replace(/-/g, " ");
+      setPage(PAGES.find(p => p.toLowerCase() === h.toLowerCase()) || "Home");
+      window.scrollTo({ top: 0, behavior: "instant" });
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
   }, []);
-  
+
   useEffect(() => { document.title = TITLES[page] || "CTS ETS"; }, [page]);
   useEffect(() => { initGA4(); }, []);
   useEffect(() => { trackPageView(page); }, [page]);
   useEffect(() => { retryQueuedSubmissions(); }, []);
-  useEffect(() => { if (!EMAILJS_KEY || document.getElementById("emailjs-sdk")) return; const s = document.createElement("script"); s.id = "emailjs-sdk"; s.async = true; s.src = "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"; s.onload = () => { if (window.emailjs) { try { window.emailjs.init({ publicKey: EMAILJS_KEY }); } catch { window.emailjs.init(EMAILJS_KEY); } } }; document.head.appendChild(s); }, []);
-  useEffect(() => { if (!APPS_SCRIPT_URL) return; try { const d = window.innerWidth < 768 ? "mobile" : window.innerWidth < 1100 ? "tablet" : "desktop"; fetch(APPS_SCRIPT_URL + "?action=track&page=" + encodeURIComponent(page) + "&device=" + d).catch(() => {}); } catch {} }, [page]);
 
-  const isAppUI = page === "Admin" || page === "Student Portal";
+  useEffect(() => {
+    if (!EMAILJS_KEY || document.getElementById("emailjs-sdk")) return;
+    const s = document.createElement("script");
+    s.id = "emailjs-sdk"; s.async = true;
+    s.src = "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js";
+    s.onload = () => {
+      if (window.emailjs) {
+        try { window.emailjs.init({ publicKey: EMAILJS_KEY }); } catch { window.emailjs.init(EMAILJS_KEY); }
+      }
+    };
+    document.head.appendChild(s);
+  }, []);
+
+  useEffect(() => {
+    if (!APPS_SCRIPT_URL) return;
+    try {
+      const d = window.innerWidth < 768 ? "mobile" : window.innerWidth < 1100 ? "tablet" : "desktop";
+      fetch(APPS_SCRIPT_URL + "?action=track&page=" + encodeURIComponent(page) + "&device=" + d).catch(() => {});
+    } catch {}
+  }, [page]);
 
   const renderPage = () => {
     const p = { setPage: navigate };
@@ -97,15 +154,11 @@ export default function CTSApp() {
       case "Fees & Calculator": return <FeesPage {...p} />;
       case "For Employers": return <EmployersPage {...p} />;
       case "Student Journey": return <StudentJourneyPage {...p} />;
-      case "Apply": return <ApplyPage {...p} />;
-      case "Pay": return <PaymentPage {...p} />;
       case "Contact": return <ContactPage {...p} />;
       case "International": return <InternationalPage {...p} />;
       case "Verify Certificate": return <VerifyCertificatePage {...p} />;
       case "Feedback": return <FeedbackPage {...p} />;
       case "FAQ": return <FAQPage {...p} />;
-      case "Student Portal": return <StudentPortalPage {...p} />;
-      case "Admin": return <AdminDashboardPage {...p} />;
       case "AI Policy": return <AIUsagePolicyPage />;
       case "Privacy": return <PrivacyPage />;
       case "Terms": return <TermsPage />;
@@ -116,20 +169,22 @@ export default function CTSApp() {
   return (
     <ErrorBoundary>
       <div style={{ fontFamily: S.body, WebkitFontSmoothing: "antialiased" }}>
-        {!isAppUI && <OfflineBanner />}
-        {!isAppUI && <AnnouncementBar setPage={navigate} />}
-        {!isAppUI && <Navbar page={page} setPage={navigate} />}
-        
+        <OfflineBanner />
+        <AnnouncementBar setPage={navigate} />
+        <Navbar page={page} setPage={navigate} />
         <Suspense fallback={<PageLoader />}>
-          <div key={page} style={{ opacity: transitioning ? 0 : 1, transform: transitioning ? "translateY(8px)" : "translateY(0)", transition: "opacity 0.3s ease, transform 0.3s ease" }}>
+          <div key={page} style={{
+            opacity: transitioning ? 0 : 1,
+            transform: transitioning ? "translateY(8px)" : "translateY(0)",
+            transition: "opacity 0.3s ease, transform 0.3s ease"
+          }}>
             {renderPage()}
           </div>
         </Suspense>
-        
-        {!isAppUI && <Footer setPage={navigate} />}
-        {!isAppUI && <ScrollNav />}
-        {!isAppUI && <WhatsAppBtn currentPage={page} />}
-        {!isAppUI && <CookieBanner setPage={navigate} />}
+        <Footer setPage={navigate} />
+        <ScrollNav />
+        <WhatsAppBtn currentPage={page} />
+        <CookieBanner setPage={navigate} />
       </div>
     </ErrorBoundary>
   );
