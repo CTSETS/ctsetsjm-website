@@ -90,7 +90,21 @@ export default function CTSApp() {
 
   const [transitioning, setTransitioning] = useState(false);
 
+  // 🔀 Map for setPage() calls that should redirect externally
+  const PAGE_REDIRECTS = {
+    "Apply": APPLY_URL,
+    "Pay": PAYMENT_URL,
+    "Student Portal": PORTAL_URL,
+    "Admin": ADMIN_URL,
+  };
+
   const navigate = useCallback((p) => {
+    // 🔀 Intercept pages that now live on ets.ctsgroup.app
+    if (PAGE_REDIRECTS[p]) {
+      window.open(PAGE_REDIRECTS[p], "_blank", "noopener,noreferrer");
+      return;
+    }
+
     setTransitioning(true);
     setTimeout(() => {
       setPage(p);
