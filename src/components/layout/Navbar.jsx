@@ -1,6 +1,6 @@
 import { useState } from "react";
 import S from "../../constants/styles";
-import { NAV_LOGO, APPLY_URL, PAYMENT_URL, PORTAL_URL } from "../../constants/config";
+import { NAV_LOGO, APPLY_URL, TRACK_URL, PAYMENT_URL, PORTAL_URL } from "../../constants/config";
 
 const NAV_GROUPS = [
   { label: "Home", page: "Home" },
@@ -16,7 +16,7 @@ const NAV_GROUPS = [
     label: "Admissions",
     children: [
       { label: "Start Application", href: APPLY_URL },
-      { label: "Check Application Status", href: PORTAL_URL },
+      { label: "Check Application Status", href: TRACK_URL },
       { label: "Student Journey", page: "Student Journey" },
     ]
   },
