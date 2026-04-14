@@ -15,7 +15,8 @@ const NAV_GROUPS = [
   {
     label: "Admissions",
     children: [
-      { label: "Apply / Check Status", href: APPLY_URL },
+      { label: "Start Application", href: APPLY_URL },
+      { label: "Check Application Status", href: PORTAL_URL },
       { label: "Student Journey", page: "Student Journey" },
     ]
   },
