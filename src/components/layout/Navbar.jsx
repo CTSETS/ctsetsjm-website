@@ -17,8 +17,6 @@ const NAV_GROUPS = [
     children: [
       { label: "Apply / Check Status", href: APPLY_URL },
       { label: "Student Journey", page: "Student Journey" },
-      { label: "For Employers", page: "For Employers" },
-      { label: "International Students", page: "International" }
     ]
   },
   {

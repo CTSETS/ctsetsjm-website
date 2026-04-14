@@ -87,8 +87,6 @@ export default function Footer({ setPage }) {
             {extLink("Apply Now", APPLY_URL)}
             {link("Programmes", "Programmes")}
             {link("Why Choose CTS ETS", "Why Choose")}
-            {link("International Students", "International")}
-            {link("For Employers", "For Employers")}
             {link("Student Journey", "Student Journey")}
             {link("About CTS ETS", "About")}
           </div>
