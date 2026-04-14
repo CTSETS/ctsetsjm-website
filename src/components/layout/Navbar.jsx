@@ -23,8 +23,7 @@ const NAV_GROUPS = [
     label: "Student Finance",
     children: [
       { label: "Fees & Calculator", page: "Fees & Calculator" },
-      { label: "Make a Payment", href: PAYMENT_URL },
-      { label: "Student Portal", href: PORTAL_URL }
+      { label: "Make a Payment", href: PAYMENT_URL }
     ]
   },
   {
