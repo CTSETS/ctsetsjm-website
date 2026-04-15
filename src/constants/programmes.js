@@ -12,7 +12,7 @@ export const PROGRAMMES = {
     { name: "Introduction to ICT Proficiency", duration: "2 months", tuition: "J$10,000", total: "J$15,000", desc: "A foundational course in information and communication technology." },
     { name: "Team Leader", duration: "2.5 months", tuition: "J$10,000", total: "J$15,000", desc: "Learn to lead, motivate, and manage small teams effectively.", popular: true },
   ],
-  "C/NVQ Level 2 — Certificate": [
+  "Level 2 — Vocational Certificates": [
     { name: "Accounting", duration: "6 months", tuition: "J$15,000", total: "J$20,000", desc: "Foundation-level accounting — journal entries, ledgers, payroll, and financial record keeping aligned to NCTVET standards.", popular: true },
     { name: "Administrative Assistance", duration: "6 months", tuition: "J$15,000", total: "J$20,000", desc: "Professional office management and administrative support." },
     { name: "Business Administration (Secretarial)", duration: "6 months", tuition: "J$15,000", total: "J$20,000", desc: "Comprehensive secretarial and business administration training." },
@@ -20,7 +20,7 @@ export const PROGRAMMES = {
     { name: "Entrepreneurship", duration: "6 months", tuition: "J$15,000", total: "J$20,000", desc: "Plan, launch, and manage a small business venture." },
     { name: "Industrial Security Operations", duration: "6 months", tuition: "J$15,000", total: "J$20,000", desc: "Formalise your security experience with recognised certification.", popular: true },
   ],
-  "C/NVQ Level 3 — Diploma": [
+  "Level 3 — Diploma": [
     { name: "Accounting", duration: "8 months", tuition: "J$20,000", total: "J$25,000", desc: "Comprehensive accounting — financial reporting, costing, accounts receivable/payable, payroll, and supervisory accounting functions. 13 NCTVET clusters, 161 credits.", popular: true },
     { name: "Business Administration — Management", duration: "7 months", tuition: "J$20,000", total: "J$25,000", desc: "Core business management for aspiring mid-level managers.", popular: true },
     { name: "Customer Service", duration: "7 months", tuition: "J$20,000", total: "J$25,000", desc: "Advanced strategy, quality assurance, and team coordination." },
@@ -29,22 +29,22 @@ export const PROGRAMMES = {
     { name: "Industrial Security Operations", duration: "7 months", tuition: "J$20,000", total: "J$25,000", desc: "Senior-level security operations and risk assessment." },
     { name: "Supervisory Management", duration: "7 months", tuition: "J$20,000", total: "J$25,000", desc: "Leadership, decision-making, and people management skills." },
   ],
-  "C/NVQ Level 4 — Associate Degree": [
+  "Level 4 — Associate Equivalent": [
     { name: "Business Administration — Management", duration: "9 months", tuition: "J$25,000", total: "J$30,000", desc: "Advanced business strategy and organisational leadership." },
     { name: "Human Resource Management", duration: "8 months", tuition: "J$25,000", total: "J$30,000", desc: "Strategic HR including workforce planning and labour relations.", popular: true },
     { name: "Training & Assessment", duration: "5 months", tuition: "J$25,000", total: "J$30,000", desc: "Design, deliver, and assess competency-based training programmes. Aligned to NCTVET standards for vocational trainers and assessors.", popular: true },
   ],
-  "C/NVQ Level 5 — Bachelor's Degree": [
+  "Level 5 — Bachelor's Equivalent": [
     { name: "Business Administration Management", duration: "9 months", tuition: "J$30,000", total: "J$35,000", desc: "Comprehensive senior management and executive leadership." },
     { name: "Human Resource Management", duration: "6 months", tuition: "J$30,000", total: "J$35,000", desc: "Executive-level HR strategy and organisational change." },
   ],
 };
 export const CAREER_OUTCOMES = {
   "Job Certificate": { salaryRange: "J$600K – J$1.2M/yr", outlook: "High demand — digital literacy and customer service roles expanding across BPO, retail, government." },
-  "C/NVQ Level 2": { salaryRange: "J$800K – J$1.5M/yr", outlook: "Strong — vocational holders prioritised for entry-level supervisory and admin positions." },
-  "C/NVQ Level 3": { salaryRange: "J$1.2M – J$2.2M/yr", outlook: "Very strong — diploma holders qualify for supervisory, management, specialist roles." },
-  "C/NVQ Level 4": { salaryRange: "J$1.8M – J$3.5M/yr", outlook: "Excellent — qualified HR managers, operations managers, business analysts in high demand." },
-  "C/NVQ Level 5": { salaryRange: "J$2.5M – J$5M+/yr", outlook: "Senior management and executive roles. Eligible for director-level positions." },
+  "Level 2": { salaryRange: "J$800K – J$1.5M/yr", outlook: "Strong — vocational holders prioritised for entry-level supervisory and admin positions." },
+  "Level 3": { salaryRange: "J$1.2M – J$2.2M/yr", outlook: "Very strong — diploma holders qualify for supervisory, management, specialist roles." },
+  "Level 4 (Associate Equiv.)": { salaryRange: "J$1.8M – J$3.5M/yr", outlook: "Excellent — qualified HR managers, operations managers, business analysts in high demand." },
+  "Level 5 (Bachelor's Equiv.)": { salaryRange: "J$2.5M – J$5M+/yr", outlook: "Senior management and executive roles. Eligible for director-level positions." },
 };
 export const CALC_DATA = [
   { level: "Job Certificate", name: "Basic Digital Literacy Skills Proficiency", tuition: 10000 },
@@ -77,11 +77,11 @@ export const CALC_DATA = [
   { level: "C/NVQ Level 5 — Bachelor's Degree", name: "Human Resource Management", tuition: 30000, bronzeMonths: 5 },
 ];
 export const GROUP_DISCOUNTS = [
-  { level: "Job Certificate", standard: "J$15,000", group: "J$5,000 reg only", saving: "J$10,000" },
-  { level: "C/NVQ Level 2", standard: "J$20,000", group: "J$5,000 reg only", saving: "J$15,000" },
-  { level: "C/NVQ Level 3", standard: "J$25,000", group: "J$5,000 reg only", saving: "J$20,000" },
-  { level: "C/NVQ Level 4", standard: "J$30,000", group: "J$5,000 reg only", saving: "J$25,000" },
-  { level: "C/NVQ Level 5", standard: "J$35,000", group: "J$5,000 reg only", saving: "J$30,000" },
+  { level: "Job Certificate", standard: "J$10,000", group: "J$8,500", saving: "J$1,500" },
+  { level: "Level 2", standard: "J$20,000", group: "J$17,000", saving: "J$3,000" },
+  { level: "Level 3", standard: "J$30,000", group: "J$25,500", saving: "J$4,500" },
+  { level: "Level 4 (Associate Equiv.)", standard: "J$40,000", group: "J$34,000", saving: "J$6,000" },
+  { level: "Level 5 (Bachelor's Equiv.)", standard: "J$50,000", group: "J$42,500", saving: "J$7,500" },
 ];
 
 // ── Programme details for the expanded cards on ProgrammesPage ──
