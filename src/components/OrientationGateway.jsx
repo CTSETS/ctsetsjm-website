@@ -21,7 +21,7 @@ export default function OrientationGateway({ onComplete }) {
       image: "/logo.jpg",
       content: (
         <div>
-          <h4 style={{ color: T.gold, textTransform: "uppercase", letterSpacing: "1px", marginBottom: "16px", lineHeight: "1.4" }}>"Called to Serve, Excellence through Service."</h4>
+          <h4 style={{ color: T.gold, textTransform: "uppercase", letterSpacing: "1px", marginBottom: "16px", lineHeight: "1.4" }}>"Called To Serve — Excellence Through Service."</h4>
           <p>Your journey to professional certification starts right here on our fully digital campus. We are thrilled to have you!</p>
         </div>
       )
