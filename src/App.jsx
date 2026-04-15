@@ -6,7 +6,7 @@ import { initGA4, trackPageView } from "./utils/analytics";
 import "./styles/global.css";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
-import { ScrollNav, WhatsAppBtn, AnnouncementBar, OfflineBanner, CookieBanner } from "./components/layout/LayoutUtilities";
+import { ScrollNav, WhatsAppBtn, OfflineBanner, CookieBanner } from "./components/layout/LayoutUtilities";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
@@ -184,7 +184,6 @@ export default function CTSApp() {
     <ErrorBoundary>
       <div style={{ fontFamily: S.body, WebkitFontSmoothing: "antialiased" }}>
         <OfflineBanner />
-        <AnnouncementBar setPage={navigate} />
         <Navbar page={page} setPage={navigate} />
         <Suspense fallback={<PageLoader />}>
           <div key={page} style={{

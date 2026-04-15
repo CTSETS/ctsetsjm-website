@@ -27,15 +27,8 @@ export function ScrollNav() {
   return <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} aria-label="Back to top" style={{ position: "fixed", right: 24, bottom: 96, width: 44, height: 44, borderRadius: 22, background: S.navy, border: "2px solid " + S.gold, color: S.gold, fontSize: 16, cursor: "pointer", boxShadow: "0 4px 16px rgba(0,0,0,0.2)", zIndex: 9996, display: "flex", alignItems: "center", justifyContent: "center", opacity: 0.9, transition: "opacity 0.3s" }}>↑</button>;
 }
 
-export function AnnouncementBar({ setPage }) {
-  const [dismissed, setDismissed] = useState(() => { try { return sessionStorage.getItem("cts_ann_off") === "1"; } catch { return false; } });
-  if (dismissed) return null;
-  return (
-    <div onClick={() => setPage?.("Apply")} role="banner" style={{ background: `linear-gradient(135deg, ${S.coral}, ${S.gold})`, padding: "8px 20px", display: "flex", alignItems: "center", justifyContent: "center", gap: 12, flexWrap: "wrap", cursor: "pointer", position: "relative", zIndex: 1001 }}>
-      <span style={{ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body, textAlign: "center" }}>🎓 NEXT TERM — ENROL NOW — Multiple Programmes, 100% Online, From J$10,000 <span style={{ textDecoration: "underline" }}>Apply Now →</span></span>
-      <button onClick={e => { e.stopPropagation(); try { sessionStorage.setItem("cts_ann_off", "1"); } catch {} setDismissed(true); }} aria-label="Dismiss" style={{ background: "rgba(1,30,64,0.1)", border: "none", borderRadius: "50%", width: 22, height: 22, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: S.navy, fontWeight: 700, flexShrink: 0 }}>✕</button>
-    </div>
-  );
+export function AnnouncementBar() {
+  return null;
 }
 
 export function OfflineBanner() {

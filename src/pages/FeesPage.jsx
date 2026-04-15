@@ -30,16 +30,16 @@ const PLAN_INFO = {
     badge: "Best Value",
   },
   Silver: {
-    fee: "+10%",
+    fee: "+15%",
     title: "Split Payment",
-    desc: "60% at enrolment and 40% later. Available for Level 3–5 programmes.",
+    desc: "60% at enrolment and 40% later. 15% surcharge on training fee.",
     color: S.gray,
     bg: S.white,
   },
   Bronze: {
-    fee: "+15%",
+    fee: "+20%",
     title: "Deposit + Monthly",
-    desc: "20% deposit plus monthly payments. Available for Level 3–5 programmes.",
+    desc: "20% deposit plus monthly payments. 20% surcharge on training fee.",
     color: "#CD7F32",
     bg: S.white,
   },
@@ -186,42 +186,38 @@ export default function FeesPage({ setPage }) {
   const [selLevel, setSelLevel] = useState(levels[0]);
   const [selProg, setSelProg] = useState(null);
   const [selPlan, setSelPlan] = useState("Gold");
-  const [isGroup, setIsGroup] = useState(false);
+  const [progCount, setProgCount] = useState(1);
 
   const progsForLevel = CALC_DATA.filter((d) => d.level === selLevel);
   const prog = selProg || progsForLevel[0];
-  const isGoldOnly = prog?.goldOnly;
 
   useEffect(() => {
     const p = CALC_DATA.filter((d) => d.level === selLevel);
     setSelProg(p[0]);
-    if (p[0]?.goldOnly) setSelPlan("Gold");
   }, [selLevel]);
-
-  useEffect(() => {
-    if (isGoldOnly && selPlan !== "Gold") setSelPlan("Gold");
-  }, [isGoldOnly, selPlan]);
 
   const calc = () => {
     if (!prog) return null;
     const t = prog.tuition;
-    const gd = isGroup ? 0.85 : 1;
+
+    // Multi-programme discount: 2=10%, 3=15%, 4+=20%
+    const discountRate = progCount >= 4 ? 0.20 : progCount === 3 ? 0.15 : progCount === 2 ? 0.10 : 0;
+    const discountedTuition = Math.round(t * (1 - discountRate));
     const regLabel = `${fmt(REG_FEE)} non-refundable reg`;
 
     if (selPlan === "Gold") {
-      const tt = t * gd;
-      const ae = tt + REG_FEE;
+      const ae = discountedTuition + REG_FEE;
       return {
         plan: "Gold",
         grandTotal: fmt(ae),
         rawGrandTotal: ae,
-        steps: [{ label: "At Enrolment", amount: fmt(ae), detail: `${fmt(tt)} training + ${regLabel}` }],
-        savings: isGroup ? fmt(t * 0.15) : null,
+        steps: [{ label: "At Enrolment", amount: fmt(ae), detail: `${fmt(discountedTuition)} training + ${regLabel}` }],
+        savings: discountRate > 0 ? fmt(Math.round(t * discountRate)) : null,
         note: "0% surcharge — best value option",
       };
     }
     if (selPlan === "Silver") {
-      const st = Math.round(t * 1.1 * gd);
+      const st = Math.round(discountedTuition * 1.15);
       const ep = Math.round(st * 0.6);
       const mp = st - ep;
       const ae = ep + REG_FEE;
@@ -233,12 +229,13 @@ export default function FeesPage({ setPage }) {
           { label: "At Enrolment", amount: fmt(ae), detail: `${fmt(ep)} (60% training) + ${regLabel}` },
           { label: "At Mid-Point", amount: fmt(mp), detail: "Remaining 40% of training fee" },
         ],
-        savings: isGroup ? fmt(Math.round(t * 1.1 * 0.15)) : null,
-        note: "+10% surcharge on training only",
+        savings: discountRate > 0 ? fmt(Math.round(t * discountRate)) : null,
+        note: "+15% surcharge on training only",
       };
     }
+    // Bronze
     const m = prog.bronzeMonths || 6;
-    const bronzeT = Math.round(t * 1.15 * gd);
+    const bronzeT = Math.round(discountedTuition * 1.20);
     const bronzeDeposit = Math.round(bronzeT * 0.2);
     const remaining = bronzeT - bronzeDeposit;
     const roundedMonthly = Math.round(remaining / m);
@@ -253,8 +250,8 @@ export default function FeesPage({ setPage }) {
         { label: "At Enrolment", amount: fmt(ae), detail: `${fmt(bronzeDeposit)} deposit + ${regLabel}` },
         { label: `${m} Monthly Payments`, amount: `${fmt(roundedMonthly)}/mth`, detail: `${fmt(monthlyTotal)} over ${m} months` },
       ],
-      savings: isGroup ? `${fmt(Math.round(t * 1.15) - bronzeT)} (group)` : null,
-      note: "+15% surcharge on training only",
+      savings: discountRate > 0 ? fmt(Math.round(t * discountRate)) : null,
+      note: "+20% surcharge on training only",
     };
   };
 
@@ -332,7 +329,7 @@ export default function FeesPage({ setPage }) {
           <SectionIntro tag="Payment Plans" title="Choose the payment path that fits your situation" desc={`J$${REG_FEE.toLocaleString()} non-refundable registration fee plus training fee. Surcharges apply to training only, and the calculator below keeps the same pricing rules from your current page.`} accent={S.coral} />
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 22, marginBottom: 48 }} className="resp-grid-3">
             {["Gold", "Silver", "Bronze"].map((plan) => (
-              <Reveal key={plan}><PlanCard plan={plan} active={selPlan === plan} disabled={isGoldOnly && plan !== "Gold"} onClick={() => setSelPlan(plan)} /></Reveal>
+              <Reveal key={plan}><PlanCard plan={plan} active={selPlan === plan} disabled={false} onClick={() => setSelPlan(plan)} /></Reveal>
             ))}
           </div>
         </WideWrap>
@@ -358,30 +355,30 @@ export default function FeesPage({ setPage }) {
                   ))}
                 </div>
                 <label style={labelStyle}>3. Select Payment Plan</label>
-                {isGoldOnly && (
-                  <div style={{ fontSize: 12, color: S.amberDark, fontFamily: S.body, marginBottom: 12, padding: "10px 14px", background: S.amberLight, borderRadius: 10, fontWeight: 600, lineHeight: 1.6 }}>
-                    Job Certificates and Level 2 programmes are currently Gold (Pay in Full) only.
-                  </div>
-                )}
                 <div style={{ display: "flex", gap: 10, marginBottom: 22, flexWrap: "wrap" }}>
                   {["Gold", "Silver", "Bronze"].map((plan) => {
-                    const dis = isGoldOnly && plan !== "Gold";
                     const act = selPlan === plan;
                     const c = { Gold: S.gold, Silver: S.gray, Bronze: "#CD7F32" };
                     return (
-                      <button key={plan} onClick={() => !dis && setSelPlan(plan)} style={{ flex: 1, minWidth: 96, padding: "14px 8px", borderRadius: 12, border: `2px solid ${act ? c[plan] : S.border}`, background: act ? `${c[plan]}15` : S.white, cursor: dis ? "not-allowed" : "pointer", opacity: dis ? 0.4 : 1, textAlign: "center", transition: "0.2s" }}>
+                      <button key={plan} onClick={() => setSelPlan(plan)} style={{ flex: 1, minWidth: 96, padding: "14px 8px", borderRadius: 12, border: `2px solid ${act ? c[plan] : S.border}`, background: act ? `${c[plan]}15` : S.white, cursor: "pointer", textAlign: "center", transition: "0.2s" }}>
                         <div style={{ fontSize: 14, fontWeight: 800, color: act ? c[plan] : S.gray, fontFamily: S.body }}>{plan}</div>
                       </button>
                     );
                   })}
                 </div>
-                <button onClick={() => setIsGroup(!isGroup)} style={{ width: "100%", padding: "16px", borderRadius: 14, border: `2px solid ${isGroup ? S.emerald : S.border}`, background: isGroup ? S.emeraldLight : S.lightBg, cursor: "pointer", display: "flex", alignItems: "center", gap: "14px", transition: "0.2s" }}>
-                  <div style={{ width: "24px", height: "24px", borderRadius: "6px", border: `2px solid ${isGroup ? S.emerald : "#ccc"}`, background: isGroup ? S.emerald : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{isGroup && <span style={{ color: S.white, fontSize: "14px", fontWeight: "bold" }}>✓</span>}</div>
-                  <div style={{ textAlign: "left" }}>
-                    <div style={{ fontSize: "14px", fontWeight: 700, color: S.navy, fontFamily: S.body }}>Apply Employer Group Discount</div>
-                    <div style={{ fontSize: "12px", color: S.gray, fontFamily: S.body }}>Save 15% per learner for group enrolment (8+ learners)</div>
-                  </div>
-                </button>
+                <label style={labelStyle}>4. How many programmes?</label>
+                <div style={{ display: "flex", gap: 8, marginBottom: 22, flexWrap: "wrap" }}>
+                  {[
+                    { n: 1, label: "1" },
+                    { n: 2, label: "2 (10% off)" },
+                    { n: 3, label: "3 (15% off)" },
+                    { n: 4, label: "4+ (20% off)" },
+                  ].map((opt) => (
+                    <button key={opt.n} onClick={() => setProgCount(opt.n)} style={{ flex: 1, minWidth: 80, padding: "14px 6px", borderRadius: 12, border: `2px solid ${progCount === opt.n ? S.emerald : S.border}`, background: progCount === opt.n ? S.emeraldLight : S.white, cursor: "pointer", textAlign: "center", transition: "0.2s" }}>
+                      <div style={{ fontSize: 13, fontWeight: progCount === opt.n ? 800 : 600, color: progCount === opt.n ? S.emerald : S.gray, fontFamily: S.body }}>{opt.label}</div>
+                    </button>
+                  ))}
+                </div>
               </div>
             </Reveal>
 
@@ -408,7 +405,7 @@ export default function FeesPage({ setPage }) {
                       <div style={{ marginTop: "16px", paddingTop: "20px", borderTop: "2px dashed rgba(255,255,255,0.2)" }}>
                         <SummaryRow label="Total (USD Estimate)" value={`US$${Math.round(result.rawGrandTotal / USD_RATE).toLocaleString()}`} strong />
                         <SummaryRow label="Total (JMD)" value={result.grandTotal} accent={S.gold} />
-                        {result.savings && <div style={{ fontSize: 13, color: S.emerald, fontFamily: S.body, marginTop: 10, textAlign: "right", fontWeight: 700 }}>Group discount saves {result.savings} per learner</div>}
+                        {result.savings && <div style={{ fontSize: 13, color: S.emerald, fontFamily: S.body, marginTop: 10, textAlign: "right", fontWeight: 700 }}>Multi-programme discount saves {result.savings}</div>}
                         {result.note && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.54)", fontFamily: S.body, marginTop: 10, textAlign: "right", fontStyle: "italic" }}>{result.note}</div>}
                       </div>
                       <div style={{ marginTop: 24, display: "flex", gap: 12, flexDirection: "column" }}>
