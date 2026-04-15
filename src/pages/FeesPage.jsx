@@ -183,99 +183,117 @@ function SummaryRow({ label, value, strong = false, accent }) {
 
 export default function FeesPage({ setPage }) {
   const levels = [...new Set(CALC_DATA.map((d) => d.level))];
-  const [selLevel, setSelLevel] = useState(levels[0]);
-  const [selProg, setSelProg] = useState(null);
   const [selPlan, setSelPlan] = useState("Gold");
   const [progCount, setProgCount] = useState(1);
 
+  // Single-programme mode
+  const [selLevel, setSelLevel] = useState(levels[0]);
+  const [selProg, setSelProg] = useState(null);
+
+  // Multi-programme mode: array of selected programmes
+  const [selectedProgs, setSelectedProgs] = useState([]);
+  const [addingLevel, setAddingLevel] = useState(levels[0]);
+
   const progsForLevel = CALC_DATA.filter((d) => d.level === selLevel);
   const prog = selProg || progsForLevel[0];
+
+  // Programmes available for the "add" dropdown in multi mode
+  const addingProgsForLevel = CALC_DATA.filter((d) => d.level === addingLevel);
 
   useEffect(() => {
     const p = CALC_DATA.filter((d) => d.level === selLevel);
     setSelProg(p[0]);
   }, [selLevel]);
 
-  const calc = () => {
+  // Reset selections when progCount changes
+  useEffect(() => {
+    if (progCount === 1) {
+      setSelectedProgs([]);
+    } else {
+      // If switching to multi, seed with current single selection if available
+      if (prog && selectedProgs.length === 0) {
+        setSelectedProgs([prog]);
+      }
+    }
+  }, [progCount]);
+
+  const addProgramme = (p) => {
+    if (selectedProgs.length < progCount) {
+      setSelectedProgs(prev => [...prev, p]);
+    }
+  };
+
+  const removeProgramme = (index) => {
+    setSelectedProgs(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // ── Fee Calculation ──────────────────────────────────────────────────
+  const PATHWAY_FEE = 2500;
+
+  const calcSingle = () => {
     if (!prog) return null;
     const t = prog.tuition;
-
-    // Multi-programme discount: 2=10%, 3=15%, 4+=20%
-    const discountRate = progCount >= 4 ? 0.20 : progCount === 3 ? 0.15 : progCount === 2 ? 0.10 : 0;
-    const discountedTuition = Math.round(t * (1 - discountRate));
+    const discountRate = 0; // single programme, no discount
+    const discountedTuition = t;
     const regLabel = `${fmt(REG_FEE)} non-refundable reg`;
-
-    // Pathway commitment fee: J$2,500 one-time to lock in multi-programme discount (Silver/Bronze only)
-    const PATHWAY_FEE = 2500;
-    const needsPathwayFee = progCount > 1 && selPlan !== "Gold";
 
     if (selPlan === "Gold") {
       const ae = discountedTuition + REG_FEE;
-      return {
-        plan: "Gold",
-        grandTotal: fmt(ae),
-        rawGrandTotal: ae,
-        steps: [{ label: "At Enrolment", amount: fmt(ae), detail: `${fmt(discountedTuition)} training + ${regLabel}` }],
-        savings: discountRate > 0 ? fmt(Math.round(t * discountRate)) : null,
-        note: "0% surcharge — best value option" + (progCount > 1 ? ". No pathway fee — paying in full." : ""),
-        discountRate,
-        pathwayFee: 0,
-      };
+      return { plan: "Gold", grandTotal: fmt(ae), rawGrandTotal: ae, steps: [{ label: "At Enrolment", amount: fmt(ae), detail: `${fmt(discountedTuition)} training + ${regLabel}` }], note: "0% surcharge — best value option", discountRate: 0, pathwayFee: 0 };
     }
     if (selPlan === "Silver") {
       const st = Math.round(discountedTuition * 1.15);
-      const ep = Math.round(st * 0.6);
-      const mp = st - ep;
-      const ae = ep + REG_FEE;
-      const steps = [
-        { label: "At Enrolment", amount: fmt(ae), detail: `${fmt(ep)} (60% training) + ${regLabel}` },
-        { label: "At Mid-Point", amount: fmt(mp), detail: "Remaining 40% of training fee" },
-      ];
-      if (needsPathwayFee) {
-        steps.push({ label: "Pathway Fee (one-time)", amount: fmt(PATHWAY_FEE), detail: `Non-refundable — locks in your ${Math.round(discountRate * 100)}% discount across all ${progCount} programmes` });
-      }
-      return {
-        plan: "Silver",
-        grandTotal: fmt(ae + mp + (needsPathwayFee ? PATHWAY_FEE : 0)),
-        rawGrandTotal: ae + mp + (needsPathwayFee ? PATHWAY_FEE : 0),
-        rawPerProgWithoutPathway: ae + mp,
-        steps,
-        savings: discountRate > 0 ? fmt(Math.round(t * discountRate)) : null,
-        note: "+15% surcharge on training only",
-        discountRate,
-        pathwayFee: needsPathwayFee ? PATHWAY_FEE : 0,
-      };
+      const ep = Math.round(st * 0.6); const mp = st - ep; const ae = ep + REG_FEE;
+      return { plan: "Silver", grandTotal: fmt(ae + mp), rawGrandTotal: ae + mp, steps: [{ label: "At Enrolment", amount: fmt(ae), detail: `${fmt(ep)} (60% training) + ${regLabel}` }, { label: "At Mid-Point", amount: fmt(mp), detail: "Remaining 40% of training fee" }], note: "+15% surcharge on training only", discountRate: 0, pathwayFee: 0 };
     }
-    // Bronze
     const m = prog.bronzeMonths || 6;
     const bronzeT = Math.round(discountedTuition * 1.20);
-    const bronzeDeposit = Math.round(bronzeT * 0.2);
-    const remaining = bronzeT - bronzeDeposit;
-    const roundedMonthly = Math.round(remaining / m);
-    const ae = bronzeDeposit + REG_FEE;
-    const monthlyTotal = roundedMonthly * m;
-    const gt = ae + monthlyTotal;
-    const bronzeSteps = [
-      { label: "At Enrolment", amount: fmt(ae), detail: `${fmt(bronzeDeposit)} deposit + ${regLabel}` },
-      { label: `${m} Monthly Payments`, amount: `${fmt(roundedMonthly)}/mth`, detail: `${fmt(monthlyTotal)} over ${m} months` },
-    ];
-    if (needsPathwayFee) {
-      bronzeSteps.push({ label: "Pathway Fee (one-time)", amount: fmt(PATHWAY_FEE), detail: `Non-refundable — locks in your ${Math.round(discountRate * 100)}% discount across all ${progCount} programmes` });
-    }
+    const bronzeDeposit = Math.round(bronzeT * 0.2); const remaining = bronzeT - bronzeDeposit;
+    const roundedMonthly = Math.round(remaining / m); const ae = bronzeDeposit + REG_FEE;
+    const monthlyTotal = roundedMonthly * m; const gt = ae + monthlyTotal;
+    return { plan: "Bronze", grandTotal: fmt(gt), rawGrandTotal: gt, steps: [{ label: "At Enrolment", amount: fmt(ae), detail: `${fmt(bronzeDeposit)} deposit + ${regLabel}` }, { label: `${m} Monthly Payments`, amount: `${fmt(roundedMonthly)}/mth`, detail: `${fmt(monthlyTotal)} over ${m} months` }], note: "+20% surcharge on training only", discountRate: 0, pathwayFee: 0 };
+  };
+
+  const calcMulti = () => {
+    if (selectedProgs.length === 0) return null;
+    const count = selectedProgs.length;
+    const discountRate = count >= 4 ? 0.20 : count === 3 ? 0.15 : count === 2 ? 0.10 : 0;
+    const needsPathwayFee = selPlan !== "Gold";
+    const surchargeRate = selPlan === "Silver" ? 0.15 : selPlan === "Bronze" ? 0.20 : 0;
+    const surchargeLabel = selPlan === "Silver" ? "+15%" : selPlan === "Bronze" ? "+20%" : "";
+
+    let totalTuition = 0, totalDiscount = 0, totalSurcharge = 0, totalReg = 0, totalFinal = 0;
+    const breakdown = selectedProgs.map((p, i) => {
+      const tuition = p.tuition;
+      const discount = Math.round(tuition * discountRate);
+      const discounted = tuition - discount;
+      const surcharge = Math.round(discounted * surchargeRate);
+      const reg = REG_FEE;
+      const lineTotal = discounted + surcharge + reg;
+      totalTuition += tuition; totalDiscount += discount; totalSurcharge += surcharge; totalReg += reg; totalFinal += lineTotal;
+      return { name: p.name, level: p.level, tuition, discount, discounted, surcharge, reg, lineTotal };
+    });
+
+    const pathwayFee = needsPathwayFee ? PATHWAY_FEE : 0;
+    const grandTotal = totalFinal + pathwayFee;
+
     return {
-      plan: "Bronze",
-      grandTotal: fmt(gt + (needsPathwayFee ? PATHWAY_FEE : 0)),
-      rawGrandTotal: gt + (needsPathwayFee ? PATHWAY_FEE : 0),
-      rawPerProgWithoutPathway: gt,
-      steps: bronzeSteps,
-      savings: discountRate > 0 ? fmt(Math.round(t * discountRate)) : null,
-      note: "+20% surcharge on training only",
+      plan: selPlan,
       discountRate,
-      pathwayFee: needsPathwayFee ? PATHWAY_FEE : 0,
+      surchargeRate,
+      surchargeLabel,
+      breakdown,
+      totalTuition, totalDiscount, totalSurcharge, totalReg,
+      totalFinal,
+      pathwayFee,
+      grandTotal,
+      count,
+      complete: count >= progCount,
     };
   };
 
-  const result = calc();
+  const result = progCount === 1 ? calcSingle() : null;
+  const multiResult = progCount > 1 ? calcMulti() : null;
 
   const inputStyle = {
     width: "100%",
@@ -361,20 +379,24 @@ export default function FeesPage({ setPage }) {
             <Reveal>
               <div style={{ background: S.white, borderRadius: 24, padding: "34px 28px", border: `1px solid ${S.border}`, boxShadow: "0 12px 30px rgba(15,23,42,0.04)" }}>
                 <div style={{ fontSize: "11px", color: S.teal, letterSpacing: "2px", textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: "18px" }}>Build Your Quote</div>
-                <label style={labelStyle}>1. Select Your Level</label>
-                <select value={selLevel} onChange={(e) => setSelLevel(e.target.value)} style={{ ...inputStyle, marginBottom: 22 }}>
-                  {levels.map((l) => <option key={l}>{l}</option>)}
-                </select>
-                <label style={labelStyle}>2. Choose Programme</label>
-                <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 22 }}>
-                  {progsForLevel.map((p) => (
-                    <button key={p.name} onClick={() => setSelProg(p)} style={{ padding: "16px", borderRadius: 14, border: `2px solid ${prog?.name === p.name ? S.teal : S.border}`, background: prog?.name === p.name ? S.tealLight : S.white, color: S.navy, cursor: "pointer", textAlign: "left", transition: "0.2s" }}>
-                      <div style={{ fontSize: 14, fontWeight: prog?.name === p.name ? 800 : 600, fontFamily: S.body }}>{p.name}</div>
-                      <div style={{ fontSize: 12, color: S.gray, marginTop: 4, fontFamily: S.body }}>Base tuition: {fmt(p.tuition)}</div>
+
+                {/* Step 1: How many programmes */}
+                <label style={labelStyle}>1. How many programmes are you enrolling in?</label>
+                <div style={{ display: "flex", gap: 8, marginBottom: 22, flexWrap: "wrap" }}>
+                  {[
+                    { n: 1, label: "1" },
+                    { n: 2, label: "2 (10% off)" },
+                    { n: 3, label: "3 (15% off)" },
+                    { n: 4, label: "4+ (20% off)" },
+                  ].map((opt) => (
+                    <button key={opt.n} onClick={() => { setProgCount(opt.n); setSelectedProgs([]); }} style={{ flex: 1, minWidth: 80, padding: "14px 6px", borderRadius: 12, border: `2px solid ${progCount === opt.n ? S.emerald : S.border}`, background: progCount === opt.n ? S.emeraldLight : S.white, cursor: "pointer", textAlign: "center", transition: "0.2s" }}>
+                      <div style={{ fontSize: 13, fontWeight: progCount === opt.n ? 800 : 600, color: progCount === opt.n ? S.emerald : S.gray, fontFamily: S.body }}>{opt.label}</div>
                     </button>
                   ))}
                 </div>
-                <label style={labelStyle}>3. Select Payment Plan</label>
+
+                {/* Step 2: Payment Plan */}
+                <label style={labelStyle}>2. Select Payment Plan</label>
                 <div style={{ display: "flex", gap: 10, marginBottom: 22, flexWrap: "wrap" }}>
                   {["Gold", "Silver", "Bronze"].map((plan) => {
                     const act = selPlan === plan;
@@ -386,43 +408,98 @@ export default function FeesPage({ setPage }) {
                     );
                   })}
                 </div>
-                <label style={labelStyle}>4. How many programmes?</label>
-                <div style={{ display: "flex", gap: 8, marginBottom: 22, flexWrap: "wrap" }}>
-                  {[
-                    { n: 1, label: "1" },
-                    { n: 2, label: "2 (10% off)" },
-                    { n: 3, label: "3 (15% off)" },
-                    { n: 4, label: "4+ (20% off)" },
-                  ].map((opt) => (
-                    <button key={opt.n} onClick={() => setProgCount(opt.n)} style={{ flex: 1, minWidth: 80, padding: "14px 6px", borderRadius: 12, border: `2px solid ${progCount === opt.n ? S.emerald : S.border}`, background: progCount === opt.n ? S.emeraldLight : S.white, cursor: "pointer", textAlign: "center", transition: "0.2s" }}>
-                      <div style={{ fontSize: 13, fontWeight: progCount === opt.n ? 800 : 600, color: progCount === opt.n ? S.emerald : S.gray, fontFamily: S.body }}>{opt.label}</div>
-                    </button>
-                  ))}
-                </div>
+
+                {/* SINGLE PROGRAMME MODE */}
+                {progCount === 1 && (
+                  <>
+                    <label style={labelStyle}>3. Select Your Level</label>
+                    <select value={selLevel} onChange={(e) => setSelLevel(e.target.value)} style={{ ...inputStyle, marginBottom: 22 }}>
+                      {levels.map((l) => <option key={l}>{l}</option>)}
+                    </select>
+                    <label style={labelStyle}>4. Choose Programme</label>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 22 }}>
+                      {progsForLevel.map((p) => (
+                        <button key={p.name} onClick={() => setSelProg(p)} style={{ padding: "16px", borderRadius: 14, border: `2px solid ${prog?.name === p.name ? S.teal : S.border}`, background: prog?.name === p.name ? S.tealLight : S.white, color: S.navy, cursor: "pointer", textAlign: "left", transition: "0.2s" }}>
+                          <div style={{ fontSize: 14, fontWeight: prog?.name === p.name ? 800 : 600, fontFamily: S.body }}>{p.name}</div>
+                          <div style={{ fontSize: 12, color: S.gray, marginTop: 4, fontFamily: S.body }}>Base tuition: {fmt(p.tuition)}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {/* MULTI-PROGRAMME MODE */}
                 {progCount > 1 && (
-                  <div style={{ fontSize: 12, color: S.emerald, fontFamily: S.body, marginBottom: 16, padding: "10px 14px", background: S.emeraldLight, borderRadius: 10, fontWeight: 600, lineHeight: 1.6 }}>
-                    The discount applies to tuition on <strong>each</strong> programme. Your quote shows the cost per programme, plus the combined total for all {progCount}.
-                    {selPlan !== "Gold" && <span> A one-time <strong>J$2,500 pathway fee</strong> locks in your discount across all programmes.</span>}
-                    {selPlan === "Gold" && <span> No pathway fee required when paying in full.</span>}
-                  </div>
+                  <>
+                    {/* Info box */}
+                    <div style={{ fontSize: 12, color: S.emerald, fontFamily: S.body, marginBottom: 16, padding: "10px 14px", background: S.emeraldLight, borderRadius: 10, fontWeight: 600, lineHeight: 1.6 }}>
+                      Select all {progCount} programmes below to see your combined quote with {progCount >= 4 ? "20%" : progCount === 3 ? "15%" : "10%"} discount on each.
+                      {selPlan !== "Gold" && <span> A one-time <strong>J$2,500 pathway fee</strong> applies to lock in the discount.</span>}
+                    </div>
+
+                    {/* Selected programmes */}
+                    {selectedProgs.length > 0 && (
+                      <div style={{ marginBottom: 16 }}>
+                        <label style={labelStyle}>Your Programmes ({selectedProgs.length}/{progCount})</label>
+                        {selectedProgs.map((p, i) => (
+                          <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", marginBottom: 6, borderRadius: 12, background: S.tealLight, border: `1.5px solid ${S.teal}30` }}>
+                            <div>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: S.navy, fontFamily: S.body }}>{p.name}</div>
+                              <div style={{ fontSize: 11, color: S.gray, fontFamily: S.body }}>{p.level} · Tuition: {fmt(p.tuition)}</div>
+                            </div>
+                            <button onClick={() => removeProgramme(i)} style={{ background: "none", border: "none", color: S.gray, cursor: "pointer", fontSize: 16, padding: "4px 8px" }}>✕</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Add programme picker */}
+                    {selectedProgs.length < progCount && (
+                      <>
+                        <label style={labelStyle}>{selectedProgs.length === 0 ? "3. Add Your Programmes" : `Add Programme ${selectedProgs.length + 1} of ${progCount}`}</label>
+                        <select value={addingLevel} onChange={(e) => setAddingLevel(e.target.value)} style={{ ...inputStyle, marginBottom: 12 }}>
+                          {levels.map((l) => <option key={l}>{l}</option>)}
+                        </select>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+                          {addingProgsForLevel.map((p) => (
+                            <button key={p.name} onClick={() => addProgramme(p)} style={{ padding: "14px", borderRadius: 12, border: `1.5px solid ${S.border}`, background: S.lightBg, color: S.navy, cursor: "pointer", textAlign: "left", transition: "0.2s", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <div>
+                                <div style={{ fontSize: 13, fontWeight: 600, fontFamily: S.body }}>{p.name}</div>
+                                <div style={{ fontSize: 11, color: S.gray, fontFamily: S.body }}>Tuition: {fmt(p.tuition)}</div>
+                              </div>
+                              <span style={{ color: S.teal, fontWeight: 800, fontSize: 18 }}>+</span>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    {/* Completion prompt */}
+                    {selectedProgs.length > 0 && selectedProgs.length < progCount && (
+                      <div style={{ fontSize: 12, color: S.amberDark, fontFamily: S.body, padding: "10px 14px", background: S.amberLight, borderRadius: 10, fontWeight: 600, lineHeight: 1.6 }}>
+                        Select {progCount - selectedProgs.length} more programme{progCount - selectedProgs.length > 1 ? "s" : ""} to see your full quote.
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </Reveal>
 
-            {result && (
+            {/* SINGLE PROGRAMME RESULT */}
+            {progCount === 1 && result && (
               <Reveal>
                 <div style={{ display: "grid", gap: 20 }}>
                   <div style={{ background: S.navy, borderRadius: 24, padding: "34px 30px", position: "sticky", top: "100px", boxShadow: "0 20px 40px rgba(1,30,64,0.15)", overflow: "hidden" }}>
                     <div style={{ position: "absolute", top: "-50px", right: "-50px", width: "200px", height: "200px", borderRadius: "50%", background: `radial-gradient(circle, ${S.coral}30 0%, transparent 70%)`, zIndex: 0 }} />
                     <div style={{ position: "relative", zIndex: 2 }}>
-                      <div style={{ fontSize: "11px", color: S.coral, letterSpacing: "2px", textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: "8px" }}>{progCount > 1 ? `Per Programme Quote (${progCount} programmes)` : "Your Formal Quote"}</div>
+                      <div style={{ fontSize: "11px", color: S.coral, letterSpacing: "2px", textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: "8px" }}>Your Formal Quote</div>
                       <div style={{ fontSize: "22px", color: S.white, fontFamily: S.heading, fontWeight: 800, marginBottom: "6px", lineHeight: 1.35 }}>{prog?.name}</div>
-                      <div style={{ fontSize: "14px", color: S.goldLight, fontFamily: S.body, fontWeight: 700, marginBottom: "22px" }}>{result.plan} Plan{progCount > 1 ? ` · ${Math.round(result.discountRate * 100)}% multi-programme discount` : ""}</div>
+                      <div style={{ fontSize: "14px", color: S.goldLight, fontFamily: S.body, fontWeight: 700, marginBottom: "22px" }}>{result.plan} Plan</div>
                       <div style={{ marginBottom: 20 }}>
                         {result.steps.map((step, i) => (
                           <div key={i} style={{ padding: "18px 0", borderBottom: i < result.steps.length - 1 ? "1px solid rgba(255,255,255,0.1)" : "none" }}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16, marginBottom: "6px" }}>
-                              <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.82)", fontFamily: S.body, fontWeight: 700 }}>{step.label}{progCount > 1 ? " (each)" : ""}</span>
+                              <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.82)", fontFamily: S.body, fontWeight: 700 }}>{step.label}</span>
                               <span style={{ fontSize: "24px", fontWeight: 800, color: S.coral, fontFamily: S.heading, textAlign: "right" }}>{step.amount}</span>
                             </div>
                             <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.54)", fontFamily: S.body, lineHeight: 1.6 }}>{step.detail}</div>
@@ -430,33 +507,69 @@ export default function FeesPage({ setPage }) {
                         ))}
                       </div>
                       <div style={{ marginTop: "16px", paddingTop: "20px", borderTop: "2px dashed rgba(255,255,255,0.2)" }}>
-                        <SummaryRow label={progCount > 1 ? "Per Programme (USD)" : "Total (USD Estimate)"} value={`US$${Math.round((result.rawPerProgWithoutPathway || result.rawGrandTotal) / USD_RATE).toLocaleString()}`} strong />
-                        <SummaryRow label={progCount > 1 ? "Per Programme (JMD)" : "Total (JMD)"} value={fmt(result.rawPerProgWithoutPathway || result.rawGrandTotal)} accent={S.gold} />
-                        {progCount > 1 && (
-                          <>
-                            <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.12)" }} />
-                            <SummaryRow label={`Total for ${progCount} programmes (USD)`} value={`US$${Math.round(((result.rawPerProgWithoutPathway || result.rawGrandTotal) * progCount + (result.pathwayFee || 0)) / USD_RATE).toLocaleString()}`} strong />
-                            <SummaryRow label={`Total for ${progCount} programmes (JMD)`} value={fmt((result.rawPerProgWithoutPathway || result.rawGrandTotal) * progCount + (result.pathwayFee || 0))} accent={S.gold} />
-                            {result.pathwayFee > 0 && <div style={{ fontSize: 11, color: S.goldLight, fontFamily: S.body, marginTop: 4, textAlign: "right" }}>Includes one-time J$2,500 pathway fee</div>}
-                            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontFamily: S.body, marginTop: 6, textAlign: "right", fontStyle: "italic" }}>Assuming {progCount} programmes at the same level and plan</div>
-                          </>
-                        )}
-                        {result.savings && <div style={{ fontSize: 13, color: S.emerald, fontFamily: S.body, marginTop: 10, textAlign: "right", fontWeight: 700 }}>Multi-programme discount saves {result.savings} per programme</div>}
+                        <SummaryRow label="Total (USD Estimate)" value={`US$${Math.round(result.rawGrandTotal / USD_RATE).toLocaleString()}`} strong />
+                        <SummaryRow label="Total (JMD)" value={result.grandTotal} accent={S.gold} />
                         {result.note && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.54)", fontFamily: S.body, marginTop: 10, textAlign: "right", fontStyle: "italic" }}>{result.note}</div>}
                       </div>
                       <div style={{ marginTop: 24, display: "flex", gap: 12, flexDirection: "column" }}>
                         <Btn primary onClick={() => setPage("Apply")} style={{ color: S.white, background: S.coral, width: "100%", padding: "16px", fontSize: "16px", border: "none", boxShadow: `0 8px 20px ${S.coral}40`, borderRadius: 12 }}>Apply for This Programme</Btn>
-                        <WhatsAppShare text={`CTS ETS Fees: ${prog?.name} — ${result.plan}${progCount > 1 ? ` (${progCount} programmes, ${Math.round(result.discountRate * 100)}% off)` : ""}: ${result.grandTotal} per programme | ctsetsjm.com`} label="Share Quote via WhatsApp" />
+                        <WhatsAppShare text={`CTS ETS Fees: ${prog?.name} — ${result.plan}: ${result.grandTotal} | ctsetsjm.com`} label="Share Quote via WhatsApp" />
                       </div>
                     </div>
                   </div>
+                </div>
+              </Reveal>
+            )}
 
-                  <div style={{ background: S.white, borderRadius: 24, padding: 20, border: `1px solid ${S.border}`, boxShadow: "0 12px 30px rgba(15,23,42,0.04)" }}>
-                    <div style={{ width: "100%", height: 260, borderRadius: 18, overflow: "hidden", marginBottom: 16 }}>
-                      <img src={PEOPLE.advisor} alt="Advisor helping a learner understand pricing options" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            {/* MULTI-PROGRAMME RESULT */}
+            {progCount > 1 && multiResult && multiResult.complete && (
+              <Reveal>
+                <div style={{ display: "grid", gap: 20 }}>
+                  <div style={{ background: S.navy, borderRadius: 24, padding: "34px 30px", position: "sticky", top: "100px", boxShadow: "0 20px 40px rgba(1,30,64,0.15)", overflow: "hidden" }}>
+                    <div style={{ position: "absolute", top: "-50px", right: "-50px", width: "200px", height: "200px", borderRadius: "50%", background: `radial-gradient(circle, ${S.coral}30 0%, transparent 70%)`, zIndex: 0 }} />
+                    <div style={{ position: "relative", zIndex: 2 }}>
+                      <div style={{ fontSize: "11px", color: S.coral, letterSpacing: "2px", textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: "8px" }}>Combined Quote — {multiResult.count} Programmes</div>
+                      <div style={{ fontSize: "14px", color: S.goldLight, fontFamily: S.body, fontWeight: 700, marginBottom: "22px" }}>{multiResult.plan} Plan · {Math.round(multiResult.discountRate * 100)}% multi-programme discount{multiResult.surchargeLabel ? ` · ${multiResult.surchargeLabel} surcharge` : ""}</div>
+
+                      {/* Per-programme breakdown */}
+                      <div style={{ marginBottom: 20 }}>
+                        {multiResult.breakdown.map((item, i) => (
+                          <div key={i} style={{ padding: "14px 0", borderBottom: i < multiResult.breakdown.length - 1 ? "1px solid rgba(255,255,255,0.08)" : "none" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 4 }}>
+                              <div>
+                                <div style={{ fontSize: 14, fontWeight: 700, color: S.white, fontFamily: S.body }}>{item.name}</div>
+                                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontFamily: S.body, marginTop: 2 }}>{item.level}</div>
+                              </div>
+                              <div style={{ textAlign: "right" }}>
+                                <div style={{ fontSize: 20, fontWeight: 800, color: S.coral, fontFamily: S.heading }}>{fmt(item.lineTotal)}</div>
+                              </div>
+                            </div>
+                            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", fontFamily: S.body, lineHeight: 1.6 }}>
+                              Tuition {fmt(item.tuition)}{item.discount > 0 ? ` − ${fmt(item.discount)} discount` : ""}{item.surcharge > 0 ? ` + ${fmt(item.surcharge)} surcharge` : ""} + {fmt(item.reg)} reg
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Totals */}
+                      <div style={{ marginTop: "16px", paddingTop: "20px", borderTop: "2px dashed rgba(255,255,255,0.2)" }}>
+                        <SummaryRow label="Total tuition" value={fmt(multiResult.totalTuition)} />
+                        {multiResult.totalDiscount > 0 && <SummaryRow label={`Discount (${Math.round(multiResult.discountRate * 100)}%)`} value={`−${fmt(multiResult.totalDiscount)}`} accent={S.emerald} />}
+                        {multiResult.totalSurcharge > 0 && <SummaryRow label={`${multiResult.plan} surcharge`} value={`+${fmt(multiResult.totalSurcharge)}`} />}
+                        <SummaryRow label={`Registration (${multiResult.count} × ${fmt(REG_FEE)})`} value={fmt(multiResult.totalReg)} />
+                        {multiResult.pathwayFee > 0 && <SummaryRow label="Pathway fee (one-time)" value={fmt(multiResult.pathwayFee)} />}
+                        <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.15)" }} />
+                        <SummaryRow label="Grand Total (USD)" value={`US$${Math.round(multiResult.grandTotal / USD_RATE).toLocaleString()}`} strong />
+                        <SummaryRow label="Grand Total (JMD)" value={fmt(multiResult.grandTotal)} accent={S.gold} />
+                        {multiResult.totalDiscount > 0 && <div style={{ fontSize: 13, color: S.emerald, fontFamily: S.body, marginTop: 10, textAlign: "right", fontWeight: 700 }}>You save {fmt(multiResult.totalDiscount)} on tuition</div>}
+                        {multiResult.pathwayFee > 0 && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontFamily: S.body, marginTop: 6, textAlign: "right", fontStyle: "italic" }}>Pathway fee is one-time and locks in your discount. Pay in full (Gold) to waive it.</div>}
+                      </div>
+
+                      <div style={{ marginTop: 24, display: "flex", gap: 12, flexDirection: "column" }}>
+                        <Btn primary onClick={() => setPage("Apply")} style={{ color: S.white, background: S.coral, width: "100%", padding: "16px", fontSize: "16px", border: "none", boxShadow: `0 8px 20px ${S.coral}40`, borderRadius: 12 }}>Apply Now</Btn>
+                        <WhatsAppShare text={`CTS ETS Quote: ${multiResult.count} programmes (${multiResult.plan}, ${Math.round(multiResult.discountRate * 100)}% off) — Total: ${fmt(multiResult.grandTotal)} | ctsetsjm.com`} label="Share Quote via WhatsApp" />
+                      </div>
                     </div>
-                    <div style={{ fontFamily: S.heading, fontSize: 26, color: S.navy, fontWeight: 800, marginBottom: 10 }}>Clear pricing helps learners decide with confidence</div>
-                    <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, lineHeight: 1.8, margin: 0 }}>The fees page should help visitors compare plans, understand timing, and move toward enrolment without confusion.</p>
                   </div>
                 </div>
               </Reveal>
