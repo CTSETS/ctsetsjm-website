@@ -22,6 +22,7 @@ export const REG_FEE = 5000;
 export const PORTAL_URL = "https://ets.ctsgroup.app/student-portal";
 export const LEARNING_PORTAL_URL = "https://ets.ctsgroup.app/student-portal";
 export const APPLY_URL = "https://ets.ctsgroup.app/apply";
+export const TRACK_URL = "https://ets.ctsgroup.app/track";
 export const PAYMENT_URL = "https://ets.ctsgroup.app/student-portal";
 export const ADMIN_URL = "https://ets.ctsgroup.app";
 

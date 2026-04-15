@@ -1,6 +1,6 @@
 import { useState } from "react";
 import S from "../../constants/styles";
-import { NAV_LOGO, APPLY_URL, PAYMENT_URL, PORTAL_URL } from "../../constants/config";
+import { NAV_LOGO, APPLY_URL, TRACK_URL, PAYMENT_URL, PORTAL_URL } from "../../constants/config";
 
 const NAV_GROUPS = [
   { label: "Home", page: "Home" },
@@ -15,18 +15,16 @@ const NAV_GROUPS = [
   {
     label: "Admissions",
     children: [
-      { label: "Apply / Check Status", href: APPLY_URL },
+      { label: "Start Application", href: APPLY_URL },
+      { label: "Check Application Status", href: TRACK_URL },
       { label: "Student Journey", page: "Student Journey" },
-      { label: "For Employers", page: "For Employers" },
-      { label: "International Students", page: "International" }
     ]
   },
   {
     label: "Student Finance",
     children: [
       { label: "Fees & Calculator", page: "Fees & Calculator" },
-      { label: "Make a Payment", href: PAYMENT_URL },
-      { label: "Student Portal", href: PORTAL_URL }
+      { label: "Make a Payment", href: PAYMENT_URL }
     ]
   },
   {

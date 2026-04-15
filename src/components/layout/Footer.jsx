@@ -87,8 +87,6 @@ export default function Footer({ setPage }) {
             {extLink("Apply Now", APPLY_URL)}
             {link("Programmes", "Programmes")}
             {link("Why Choose CTS ETS", "Why Choose")}
-            {link("International Students", "International")}
-            {link("For Employers", "For Employers")}
             {link("Student Journey", "Student Journey")}
             {link("About CTS ETS", "About")}
           </div>
@@ -98,18 +96,6 @@ export default function Footer({ setPage }) {
             <div style={{ fontSize: 10, color: S.gold, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 12 }}>Student Finance</div>
             {link("Fees & Calculator", "Fees & Calculator")}
             {extLink("Make a Payment", PAYMENT_URL)}
-            <a
-              href={PORTAL_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: "flex", alignItems: "center", gap: 4,
-                background: "none", border: "none",
-                color: "#93C5FD", fontSize: 12, fontFamily: S.body,
-                padding: "3px 0", cursor: "pointer", fontWeight: 600,
-                textAlign: "left", textDecoration: "none",
-              }}
-            >Student Portal → <span style={{ fontSize: 8, opacity: 0.4 }}>↗</span></a>
           </div>
 
           {/* Column 4: Support */}

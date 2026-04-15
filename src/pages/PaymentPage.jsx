@@ -22,6 +22,12 @@ const PEOPLE = {
 
 const TUITION_MAP = {
   "Job / Professional Certificates": 5000,
+  "Job Certificate": 5000,
+  "C/NVQ Level 2 — Certificate": 15000,
+  "C/NVQ Level 3 — Diploma": 25000,
+  "C/NVQ Level 4 — Associate Degree": 35000,
+  "C/NVQ Level 5 — Bachelor's Degree": 45000,
+  // Legacy names
   "Level 2 — Vocational Certificate": 15000,
   "Level 3 — Diploma": 25000,
   "Level 4 — Associate Equivalent": 35000,

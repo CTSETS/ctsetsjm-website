@@ -166,10 +166,10 @@ export default function CTSApp() {
       case "Why Choose": return <WhyChoosePage {...p} />;
       case "Programmes": return <ProgrammesPage {...p} />;
       case "Fees & Calculator": return <FeesPage {...p} />;
-      case "For Employers": return <EmployersPage {...p} />;
+      case "For Employers": return <NotFoundPage {...p} />;
       case "Student Journey": return <StudentJourneyPage {...p} />;
       case "Contact": return <ContactPage {...p} />;
-      case "International": return <InternationalPage {...p} />;
+      case "International": return <NotFoundPage {...p} />;
       case "Verify Certificate": return <VerifyCertificatePage {...p} />;
       case "Feedback": return <FeedbackPage {...p} />;
       case "FAQ": return <FAQPage {...p} />;

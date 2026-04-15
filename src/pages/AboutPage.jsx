@@ -43,7 +43,7 @@ const STATS = [
   { num: "28", label: "Programmes", sub: "Multiple progression options", color: S.coral },
   { num: "5", label: "Qualification Levels", sub: "Job Certificate to Level 5", color: S.teal },
   { num: "100%", label: "Online Delivery", sub: "Flexible study model", color: S.violet },
-  { num: "CTS ETS", label: "Called to Serve", sub: "Mission-led identity", color: S.gold },
+  { num: "CTS ETS", label: "Called To Serve", sub: "Mission-led identity", color: S.gold },
 ];
 
 function WideWrap({ children, style }) {
