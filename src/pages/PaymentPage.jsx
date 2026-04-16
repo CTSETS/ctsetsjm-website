@@ -21,28 +21,28 @@ const PEOPLE = {
 };
 
 const TUITION_MAP = {
-  "Job / Professional Certificates": 5000,
-  "Job Certificate": 5000,
+  "Job / Professional Certificates": 10000,
+  "Job Certificate": 10000,
   "C/NVQ Level 2 — Certificate": 15000,
-  "C/NVQ Level 3 — Diploma": 25000,
-  "C/NVQ Level 4 — Associate Degree": 35000,
-  "C/NVQ Level 5 — Bachelor's Degree": 45000,
+  "C/NVQ Level 3 — Diploma": 20000,
+  "C/NVQ Level 4 — Associate Degree": 25000,
+  "C/NVQ Level 5 — Bachelor's Degree": 30000,
   // Legacy names
   "Level 2 — Vocational Certificate": 15000,
-  "Level 3 — Diploma": 25000,
-  "Level 4 — Associate Equivalent": 35000,
-  "Level 5 — Bachelor's Equivalent": 45000,
+  "Level 3 — Diploma": 20000,
+  "Level 4 — Associate Equivalent": 25000,
+  "Level 5 — Bachelor's Equivalent": 30000,
 };
 
 function getTuition(level) {
-  if (!level) return 5000;
+  if (!level) return 10000;
   if (TUITION_MAP[level] !== undefined) return TUITION_MAP[level];
   const l = level.toLowerCase();
-  if (l.includes("level 5") || l.includes("bachelor")) return 45000;
-  if (l.includes("level 4") || l.includes("associate")) return 35000;
-  if (l.includes("level 3") || l.includes("diploma")) return 25000;
+  if (l.includes("level 5") || l.includes("bachelor")) return 30000;
+  if (l.includes("level 4") || l.includes("associate")) return 25000;
+  if (l.includes("level 3") || l.includes("diploma")) return 20000;
   if (l.includes("level 2") || l.includes("vocational")) return 15000;
-  return 5000;
+  return 10000;
 }
 
 function calcPricing(level) {
@@ -60,8 +60,8 @@ function calcPricing(level) {
     ],
   }];
 
-  if (l3plus) {
-    const silverTuition = Math.round(tuition * 1.1);
+  if (true) { // All levels get Silver/Bronze
+    const silverTuition = Math.round(tuition * 1.15);
     const silverFirst = Math.round(silverTuition * 0.6);
     const silverSecond = silverTuition - silverFirst;
     plans.push({
@@ -76,7 +76,7 @@ function calcPricing(level) {
       ],
     });
 
-    const bronzeTuition = Math.round(tuition * 1.15);
+    const bronzeTuition = Math.round(tuition * 1.20);
     const bronzeDeposit = Math.round(bronzeTuition * 0.2);
     const bronzeBalance = bronzeTuition - bronzeDeposit;
     plans.push({
