@@ -1,6 +1,6 @@
 import React from "react";
 import S from "../constants/styles";
-import { TESTIMONIALS, SOCIAL_PROOF } from "../constants/content";
+import { SOCIAL_PROOF, TESTIMONIALS } from "../constants/content";
 import {
   PageWrapper,
   Btn,
@@ -11,105 +11,106 @@ import {
 } from "../components/shared/CoreComponents";
 import { PartnerLogos } from "../components/shared/DisplayComponents";
 
-const PEOPLE = {
-  hero: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
-  learner: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=80",
-  mentor: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
+const IMAGES = {
+  hero: "https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  learner: "https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  service: "https://images.pexels.com/photos/7709298/pexels-photo-7709298.jpeg?auto=compress&cs=tinysrgb&w=1200",
 };
 
-const PATHWAYS = [
+const C = {
+  navy: "#0b1630",
+  navySoft: "#122447",
+  gold: "#c49112",
+  teal: "#0a6e8a",
+  green: "#1c7b47",
+  white: "#ffffff",
+  mist: "#f6f8fb",
+  ink: "#142033",
+  inkSoft: "#5b6676",
+  line: "rgba(11,22,48,0.10)",
+  shadow: "0 16px 36px rgba(11,22,48,0.08)",
+};
+
+const stats = [
+  { value: SOCIAL_PROOF.enrolled, label: "Facilitating learning", accent: C.gold },
+  { value: SOCIAL_PROOF.programmes, label: "Programmes", accent: C.teal },
+  { value: SOCIAL_PROOF.completionRate, label: "Completion rate", accent: C.green },
+  { value: SOCIAL_PROOF.satisfaction, label: "Learner satisfaction", accent: "#d26a43" },
+];
+
+const studyAreas = [
+  {
+    title: "Business and Office",
+    text: "Administrative support, workplace systems, communication, and office readiness.",
+  },
+  {
+    title: "People and Service",
+    text: "Customer service, human resource pathways, team support, and client-facing professionalism.",
+  },
+  {
+    title: "Digital and Data",
+    text: "Modern workplace technology, practical digital confidence, and useful data awareness.",
+  },
+  {
+    title: "Leadership and Growth",
+    text: "Progression for supervisors, managers, and learners preparing for broader responsibility.",
+  },
+];
+
+const pathways = [
   {
     title: "Job Certificate",
-    tag: "Entry Level",
-    color: S.emerald,
-    desc: "A practical starting point for learners building confidence, employability, and foundational workplace skills.",
+    tag: "Entry level",
+    desc: "A practical starting point for learners building confidence and employability.",
+    accent: C.green,
   },
   {
     title: "Level 2",
     tag: "Vocational",
-    color: S.teal,
-    desc: "Structured skills training for customer service, office support, digital tools, and core business functions.",
+    desc: "Structured training for service, office support, business basics, and digital tools.",
+    accent: C.teal,
   },
   {
     title: "Level 3",
     tag: "Diploma",
-    color: S.violet,
-    desc: "Advanced development for supervisors, team leaders, and learners preparing for greater responsibility.",
+    desc: "Advanced development for stronger workplace responsibility and team contribution.",
+    accent: C.gold,
   },
   {
-    title: "Level 4–5",
+    title: "Level 4 to 5",
     tag: "Leadership",
-    color: S.coral,
-    desc: "Professional progression for management, planning, coordination, and strategic workplace growth.",
+    desc: "Higher-level progression for management, planning, HR, and long-term growth.",
+    accent: "#d26a43",
   },
 ];
 
-const PROGRAMME_BUCKETS = [
-  {
-    title: "Business & Office",
-    emoji: "💼",
-    desc: "Administrative support, records handling, workplace communication, and professional office readiness.",
-  },
-  {
-    title: "People & Service",
-    emoji: "🤝",
-    desc: "Customer service, team support, human resource pathways, and professional engagement skills.",
-  },
-  {
-    title: "Digital & Data",
-    emoji: "💻",
-    desc: "Digital literacy, modern workplace technology, and practical data awareness for today's job market.",
-  },
-  {
-    title: "Leadership & Growth",
-    emoji: "📈",
-    desc: "Higher-level progression for learners moving into supervisory, management, and strategic roles.",
-  },
+const reasons = [
+  "100% online delivery",
+  "Designed for busy adults",
+  "Structured and professional",
+  "Jamaican rooted, internationally aware",
 ];
 
-const REASONS = [
-  {
-    title: "100% online delivery",
-    desc: "Study from your phone, tablet, or laptop without the pressure of a traditional classroom timetable.",
-    icon: "🌐",
-  },
-  {
-    title: "Designed for busy adults",
-    desc: "Built for working professionals, parents, and determined learners who need flexibility without sacrificing quality.",
-    icon: "⏰",
-  },
-  {
-    title: "Structured, professional experience",
-    desc: "Clear pathways, polished learner materials, and guided support make the entire journey feel credible and organised.",
-    icon: "🧭",
-  },
-  {
-    title: "Jamaican rooted, internationally aware",
-    desc: "CTS ETS presents local learners with a modern digital experience shaped for professional opportunities at home and beyond.",
-    icon: "🇯🇲",
-  },
-];
-
-const STEPS = [
+const steps = [
   {
     num: "01",
-    title: "Explore your options",
-    desc: "Review programmes and identify the pathway that best matches your goals, experience, and next career move.",
+    title: "Explore",
+    text: "Review programmes and choose the path that fits your next move.",
   },
   {
     num: "02",
-    title: "Submit your application",
-    desc: "Complete the online application process and receive your next-step guidance from the CTS ETS team.",
+    title: "Apply",
+    text: "Complete the online application and receive clear next-step guidance.",
   },
   {
     num: "03",
     title: "Get set up",
-    desc: "Receive onboarding information, learner support details, and a clearer picture of your study journey.",
+    text: "Receive onboarding details and a clearer view of your learner journey.",
   },
   {
     num: "04",
-    title: "Start learning confidently",
-    desc: "Move into a digital training environment focused on structure, flexibility, and meaningful progress.",
+    title: "Start learning",
+    text: "Enter a digital training environment built for consistency and progress.",
   },
 ];
 
@@ -118,7 +119,7 @@ function WideWrap({ children, style }) {
     <div
       style={{
         width: "100%",
-        padding: "0 clamp(18px, 3vw, 40px)",
+        padding: "0 clamp(16px, 3vw, 34px)",
         boxSizing: "border-box",
         ...style,
       }}
@@ -128,60 +129,78 @@ function WideWrap({ children, style }) {
   );
 }
 
-function SectionIntro({ tag, title, desc, accent = S.teal }) {
+function Shell({ children, style }) {
+  return (
+    <div
+      style={{
+        maxWidth: 980,
+        margin: "0 auto",
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function Label({ children, dark = false }) {
+  return (
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        minHeight: 24,
+        padding: "0 8px",
+        borderRadius: 999,
+        background: dark ? "rgba(255,255,255,0.08)" : "rgba(196,145,18,0.12)",
+        border: dark ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(196,145,18,0.18)",
+        color: dark ? C.white : C.gold,
+        fontSize: 8,
+        textTransform: "uppercase",
+        letterSpacing: 1.1,
+        fontWeight: 800,
+        fontFamily: S.body,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function Intro({ tag, title, desc, dark = false }) {
   return (
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: "minmax(260px, 0.85fr) minmax(320px, 1.15fr)",
-        gap: 30,
+        gridTemplateColumns: "minmax(200px, 0.82fr) minmax(220px, 1.18fr)",
+        gap: 14,
         alignItems: "end",
-        marginBottom: 30,
+        marginBottom: 10,
       }}
       className="resp-grid-2"
     >
       <div>
+        <Label dark={dark}>{tag}</Label>
         <div
           style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-            padding: "7px 12px",
-            borderRadius: 999,
-            background: `${accent}12`,
-            color: accent,
-            fontSize: 11,
-            fontWeight: 800,
-            letterSpacing: 1.5,
-            textTransform: "uppercase",
-            fontFamily: S.body,
-            marginBottom: 14,
-          }}
-        >
-          {tag}
-        </div>
-        <h2
-          style={{
             fontFamily: S.heading,
-            fontSize: "clamp(30px, 4vw, 50px)",
-            lineHeight: 1.06,
-            color: S.navy,
-            margin: 0,
-            fontWeight: 900,
-            maxWidth: 720,
+            fontWeight: 800,
+            fontSize: "clamp(15px, 2vw, 18px)",
+            lineHeight: 1.12,
+            color: dark ? C.white : C.ink,
+            marginTop: 7,
           }}
         >
           {title}
-        </h2>
+        </div>
       </div>
       <p
         style={{
-          fontFamily: S.body,
-          fontSize: 16,
-          lineHeight: 1.85,
-          color: S.gray,
           margin: 0,
-          maxWidth: 860,
+          color: dark ? "rgba(255,255,255,0.74)" : C.inkSoft,
+          fontSize: 11,
+          lineHeight: 1.5,
+          fontFamily: S.body,
         }}
       >
         {desc}
@@ -190,41 +209,266 @@ function SectionIntro({ tag, title, desc, accent = S.teal }) {
   );
 }
 
-function StatCard({ value, label, accent = S.gold }) {
+function FeaturePill({ children }) {
   return (
     <div
       style={{
-        background: "#fff",
-        border: "1px solid " + S.border,
-        borderRadius: 18,
-        padding: "20px 18px",
-        boxShadow: "0 12px 36px rgba(15,23,42,0.05)",
+        background: "rgba(255,255,255,0.08)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: 8,
+        padding: "7px 7px",
+        color: C.white,
+        fontSize: 9,
+        fontWeight: 700,
+        fontFamily: S.body,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function StatBar() {
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+        background: C.navy,
+        borderRadius: 8,
+        overflow: "hidden",
+        border: "1px solid rgba(255,255,255,0.06)",
+        boxShadow: C.shadow,
+      }}
+      className="resp-grid-4"
+    >
+      {stats.map((stat, index) => (
+        <div
+          key={stat.label}
+          style={{
+            padding: "12px 8px",
+            textAlign: "center",
+            borderRight: index < stats.length - 1 ? "1px solid rgba(196,145,18,0.16)" : "none",
+          }}
+        >
+          <div
+            style={{
+              fontFamily: S.heading,
+              fontWeight: 800,
+              fontSize: "clamp(16px, 2vw, 20px)",
+              color: stat.accent,
+              lineHeight: 1,
+            }}
+          >
+            {stat.value}
+          </div>
+          <div
+            style={{
+              marginTop: 4,
+              color: "rgba(255,255,255,0.72)",
+              fontSize: 8,
+              letterSpacing: 1,
+              textTransform: "uppercase",
+              fontWeight: 600,
+              fontFamily: S.body,
+            }}
+          >
+            {stat.label}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function VisualPanel() {
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 0.92fr",
+        gap: 8,
+      }}
+      className="resp-grid-2"
+    >
+      <div
+        style={{
+          minHeight: 196,
+          borderRadius: 8,
+          overflow: "hidden",
+          position: "relative",
+          border: "1px solid rgba(255,255,255,0.12)",
+          padding: 12,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+        }}
+      >
+        <img
+          src={IMAGES.hero}
+          alt="Black professionals collaborating in a modern office setting"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(180deg, rgba(11,22,48,0.18) 0%, rgba(11,22,48,0.72) 100%)",
+          }}
+        />
+        <div
+          style={{
+            position: "relative",
+            zIndex: 1,
+            display: "inline-flex",
+            alignItems: "center",
+            minHeight: 22,
+            padding: "0 8px",
+            borderRadius: 999,
+            background: "rgba(255,255,255,0.08)",
+            color: "#f4e1ad",
+            fontSize: 8,
+            letterSpacing: 1,
+            textTransform: "uppercase",
+            fontWeight: 700,
+            fontFamily: S.body,
+          }}
+        >
+          Online learner experience
+        </div>
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <div
+            style={{
+              fontFamily: S.heading,
+              fontSize: 15,
+              lineHeight: 1.12,
+              fontWeight: 800,
+              color: C.white,
+            }}
+          >
+            A cleaner first impression for serious learners
+          </div>
+          <div
+            style={{
+              marginTop: 7,
+              color: "rgba(255,255,255,0.76)",
+              fontSize: 11,
+              lineHeight: 1.55,
+              fontFamily: S.body,
+            }}
+          >
+            Flexible study, clearer pathways, and a more professional public face.
+          </div>
+        </div>
+      </div>
+      <div style={{ display: "grid", gap: 8 }}>
+        {[
+          {
+            label: "Professional learners",
+            src: IMAGES.learner,
+            alt: "Black woman working confidently on a laptop",
+          },
+          {
+            label: "Service pathways",
+            src: IMAGES.service,
+            alt: "Black customer service professional wearing a headset",
+          },
+        ].map((item) => (
+          <div
+            key={item.label}
+            role="img"
+            aria-label={item.alt}
+            style={{
+              minHeight: 94,
+              borderRadius: 8,
+              position: "relative",
+              overflow: "hidden",
+              border: "1px solid rgba(255,255,255,0.12)",
+              padding: 9,
+              display: "flex",
+              alignItems: "end",
+              color: "rgba(255,255,255,0.82)",
+              fontWeight: 600,
+              lineHeight: 1.35,
+              fontSize: 10,
+              fontFamily: S.body,
+            }}
+          >
+            <img
+              src={item.src}
+              alt={item.alt}
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: "linear-gradient(180deg, rgba(11,22,48,0.12) 0%, rgba(11,22,48,0.7) 100%)",
+              }}
+            />
+            <div style={{ position: "relative", zIndex: 1 }}>{item.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function StudyCard({ item }) {
+  return (
+    <div
+      style={{
+        background: C.white,
+        border: `1px solid ${C.line}`,
+        borderRadius: 8,
+        padding: 12,
+        boxShadow: "0 8px 18px rgba(11,22,48,0.04)",
       }}
     >
       <div
         style={{
-          fontFamily: S.heading,
-          fontSize: "clamp(24px, 3vw, 34px)",
-          fontWeight: 800,
-          color: accent,
-          lineHeight: 1,
+          width: 22,
+          height: 22,
+          borderRadius: 8,
+          background: "rgba(10,110,138,0.1)",
+          border: "1px solid rgba(10,110,138,0.12)",
           marginBottom: 8,
         }}
-      >
-        {value}
-      </div>
+      />
       <div
         style={{
-          fontFamily: S.body,
-          fontSize: 11,
-          color: S.gray,
-          letterSpacing: 1.6,
-          textTransform: "uppercase",
+          fontFamily: S.heading,
           fontWeight: 700,
+          fontSize: 13,
+          lineHeight: 1.12,
+          color: C.ink,
         }}
       >
-        {label}
+        {item.title}
       </div>
+      <p
+        style={{
+          margin: "6px 0 0",
+          color: C.inkSoft,
+          fontSize: 11,
+          lineHeight: 1.5,
+          fontFamily: S.body,
+        }}
+      >
+        {item.text}
+      </p>
     </div>
   );
 }
@@ -233,60 +477,50 @@ function PathwayCard({ item }) {
   return (
     <div
       style={{
-        background: "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)",
-        border: "1px solid " + S.border,
-        borderRadius: 22,
-        padding: 24,
-        boxShadow: "0 18px 40px rgba(15,23,42,0.05)",
-        minHeight: 220,
+        background: C.white,
+        border: `1px solid ${C.line}`,
+        borderRadius: 8,
+        padding: 12,
+        boxShadow: "0 8px 18px rgba(11,22,48,0.05)",
       }}
     >
       <div
         style={{
           display: "inline-flex",
           alignItems: "center",
-          gap: 8,
-          padding: "7px 12px",
+          minHeight: 22,
+          padding: "0 7px",
           borderRadius: 999,
-          background: item.color + "18",
-          color: item.color,
-          fontSize: 11,
-          fontWeight: 800,
-          letterSpacing: 1.3,
+          background: `${item.accent}18`,
+          color: item.accent,
+          fontSize: 8,
+          letterSpacing: 1,
           textTransform: "uppercase",
+          fontWeight: 800,
           fontFamily: S.body,
-          marginBottom: 18,
         }}
       >
-        <span
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: "50%",
-            background: item.color,
-          }}
-        />
         {item.tag}
       </div>
-      <h3
+      <div
         style={{
           fontFamily: S.heading,
-          fontSize: 28,
-          lineHeight: 1.1,
-          color: S.navy,
-          margin: "0 0 12px",
-          fontWeight: 800,
+          fontWeight: 700,
+          fontSize: 14,
+          lineHeight: 1.12,
+          color: C.ink,
+          marginTop: 8,
         }}
       >
         {item.title}
-      </h3>
+      </div>
       <p
         style={{
+          margin: "6px 0 0",
+          color: C.inkSoft,
+          fontSize: 11,
+          lineHeight: 1.5,
           fontFamily: S.body,
-          fontSize: 14,
-          lineHeight: 1.8,
-          color: S.gray,
-          margin: 0,
         }}
       >
         {item.desc}
@@ -295,134 +529,67 @@ function PathwayCard({ item }) {
   );
 }
 
-function BucketCard({ item }) {
+function ReasonTile({ text }) {
   return (
     <div
       style={{
-        background: "#fff",
-        border: "1px solid " + S.border,
-        borderRadius: 22,
-        padding: 24,
-        boxShadow: "0 14px 32px rgba(15,23,42,0.04)",
+        background: "rgba(255,255,255,0.08)",
+        border: "1px solid rgba(255,255,255,0.12)",
+        borderRadius: 8,
+        padding: 10,
+        color: C.white,
+        fontSize: 11,
+        lineHeight: 1.45,
+        fontWeight: 600,
+        fontFamily: S.body,
       }}
     >
-      <div style={{ fontSize: 30, marginBottom: 14 }}>{item.emoji}</div>
-      <h3
-        style={{
-          fontFamily: S.heading,
-          fontSize: 24,
-          color: S.navy,
-          margin: "0 0 10px",
-          fontWeight: 800,
-        }}
-      >
-        {item.title}
-      </h3>
-      <p
-        style={{
-          fontFamily: S.body,
-          fontSize: 14,
-          color: S.gray,
-          lineHeight: 1.75,
-          margin: 0,
-        }}
-      >
-        {item.desc}
-      </p>
-    </div>
-  );
-}
-
-function ReasonCard({ item }) {
-  return (
-    <div
-      style={{
-        background: "#fff",
-        border: "1px solid " + S.border,
-        borderRadius: 20,
-        padding: 22,
-        boxShadow: "0 14px 32px rgba(15,23,42,0.04)",
-      }}
-    >
-      <div style={{ fontSize: 28, marginBottom: 12 }}>{item.icon}</div>
-      <h3
-        style={{
-          fontFamily: S.heading,
-          fontSize: 22,
-          color: S.navy,
-          margin: "0 0 10px",
-          fontWeight: 800,
-        }}
-      >
-        {item.title}
-      </h3>
-      <p
-        style={{
-          fontFamily: S.body,
-          fontSize: 14,
-          lineHeight: 1.75,
-          color: S.gray,
-          margin: 0,
-        }}
-      >
-        {item.desc}
-      </p>
+      {text}
     </div>
   );
 }
 
 function StepCard({ item }) {
   return (
-    <div
-      style={{
-        background: "rgba(255,255,255,0.06)",
-        border: "1px solid rgba(255,255,255,0.1)",
-        borderRadius: 22,
-        padding: 24,
-        backdropFilter: "blur(10px)",
-        minHeight: 210,
-      }}
-    >
+    <div style={{ position: "relative", zIndex: 1 }}>
       <div
         style={{
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: 44,
-          height: 44,
+          width: 24,
+          height: 24,
           borderRadius: "50%",
-          background: S.gold,
-          color: S.navy,
-          fontFamily: S.body,
-          fontSize: 12,
-          fontWeight: 900,
-          letterSpacing: 1.5,
-          marginBottom: 16,
+          background: C.gold,
+          color: C.navy,
+          display: "grid",
+          placeItems: "center",
+          fontFamily: S.heading,
+          fontWeight: 800,
+          fontSize: 10,
+          marginBottom: 8,
         }}
       >
         {item.num}
       </div>
-      <h3
+      <div
         style={{
           fontFamily: S.heading,
-          fontSize: 24,
-          color: "#fff",
-          margin: "0 0 10px",
-          fontWeight: 800,
+          fontWeight: 700,
+          fontSize: 13,
+          lineHeight: 1.12,
+          color: C.white,
         }}
       >
         {item.title}
-      </h3>
+      </div>
       <p
         style={{
+          margin: "6px 0 0",
+          color: "rgba(255,255,255,0.76)",
+          fontSize: 11,
+          lineHeight: 1.5,
           fontFamily: S.body,
-          fontSize: 14,
-          lineHeight: 1.8,
-          color: "rgba(255,255,255,0.75)",
-          margin: 0,
         }}
       >
-        {item.desc}
+        {item.text}
       </p>
     </div>
   );
@@ -430,820 +597,438 @@ function StepCard({ item }) {
 
 export default function HomePage({ setPage }) {
   return (
-    <PageWrapper bg={S.lightBg}>
-      {/* ═══════════ HERO ═══════════ */}
-      <div
-        style={{
-          position: "relative",
-          overflow: "hidden",
-          background:
-            "linear-gradient(135deg, #0B1120 0%, #15233B 52%, #0E8F8B 140%)",
-        }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "radial-gradient(circle at 15% 25%, rgba(217,119,6,0.18), transparent 32%), radial-gradient(circle at 85% 20%, rgba(37,99,235,0.16), transparent 28%), radial-gradient(circle at 60% 80%, rgba(14,143,139,0.14), transparent 26%)",
-          }}
-        />
-        <WideWrap style={{ position: "relative", paddingTop: 72, paddingBottom: 72 }}>
+    <PageWrapper bg={C.mist}>
+      <WideWrap style={{ paddingTop: 18, paddingBottom: 22 }}>
+        <Shell>
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(0, 1.15fr) minmax(420px, 0.85fr)",
-              gap: 42,
-              alignItems: "stretch",
+              background:
+                "radial-gradient(circle at 16% 18%, rgba(10,110,138,0.20), transparent 30%), radial-gradient(circle at 90% 10%, rgba(196,145,18,0.14), transparent 24%), linear-gradient(135deg, #0b1630 0%, #122447 58%, #17345f 100%)",
+              borderRadius: 8,
+              padding: 14,
+              border: "1px solid rgba(255,255,255,0.08)",
+              boxShadow: C.shadow,
+              overflow: "hidden",
             }}
-            className="resp-grid-2"
           >
-            <Reveal>
-              <div>
-                <h1
-                  style={{
-                    fontFamily: S.heading,
-                    fontSize: "clamp(40px, 7vw, 78px)",
-                    lineHeight: 1.02,
-                    color: "#fff",
-                    margin: "0 0 20px",
-                    fontWeight: 900,
-                    maxWidth: 980,
-                  }}
-                >
-                  Flexible Online Training for
-                  <span style={{ display: "block", color: S.goldLight }}>
-                    Career Growth in Jamaica and Beyond
-                  </span>
-                </h1>
-
-                <p
-                  style={{
-                    fontFamily: S.body,
-                    fontSize: "clamp(16px, 2vw, 20px)",
-                    lineHeight: 1.8,
-                    color: "rgba(255,255,255,0.82)",
-                    maxWidth: 900,
-                    margin: "0 0 30px",
-                  }}
-                >
-                  CTS ETS is built for working adults, ambitious learners, and
-                  professionals who need a structured training experience without
-                  losing the flexibility of online study.
-                </p>
-
-                <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 22 }}>
-                  <Btn
-                    primary
-                    onClick={() => setPage("Apply")}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "minmax(260px, 0.98fr) minmax(260px, 1.02fr)",
+                gap: 12,
+                alignItems: "center",
+              }}
+              className="resp-grid-2"
+            >
+              <Reveal>
+                <div>
+                  <Label dark>NCTVET certified and fully online</Label>
+                  <h1
                     style={{
-                      background: S.gold,
-                      color: S.navy,
-                      borderRadius: 14,
-                      padding: "16px 28px",
-                      boxShadow: "0 16px 36px rgba(217,119,6,0.28)",
+                      fontFamily: S.heading,
+                      fontWeight: 800,
+                      fontSize: "clamp(18px, 2.6vw, 22px)",
+                      lineHeight: 1.12,
+                      letterSpacing: -0.1,
+                      margin: "8px 0 7px",
+                      color: C.white,
+                      maxWidth: 360,
                     }}
                   >
-                    Start Your Application
-                  </Btn>
-                  <Btn
-                    onClick={() => setPage("Programmes")}
+                    Flexible online training for career growth in Jamaica and beyond
+                  </h1>
+                  <p
                     style={{
-                      background: "rgba(255,255,255,0.05)",
-                      border: "1px solid rgba(255,255,255,0.18)",
-                      color: "#fff",
-                      borderRadius: 14,
-                      padding: "16px 28px",
+                      margin: 0,
+                      fontSize: 12,
+                      lineHeight: 1.5,
+                      color: "rgba(255,255,255,0.78)",
+                      maxWidth: 360,
+                      fontFamily: S.body,
                     }}
                   >
-                    Explore Programmes
-                  </Btn>
-                </div>
-
-                {/* ✅ REMOVED: Upcoming Classes block */}
-
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-                    gap: 12,
-                  }}
-                  className="resp-grid-4"
-                >
-                  {[
-                    "100% online delivery",
-                    "Flexible pathways",
-                    "Professional support",
-                    "Modern learner experience",
-                  ].map((item) => (
-                    <div
-                      key={item}
+                    CTS ETS is built for working adults, ambitious learners, and professionals who need a structured
+                    training experience without losing the flexibility of online study.
+                  </p>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
+                    <Btn
+                      primary
+                      onClick={() => setPage("Apply")}
                       style={{
-                        background: "rgba(255,255,255,0.06)",
-                        border: "1px solid rgba(255,255,255,0.08)",
-                        borderRadius: 16,
-                        padding: "14px 16px",
-                        color: "#fff",
-                        fontFamily: S.body,
-                        fontSize: 13,
+                        minHeight: 34,
+                        padding: "0 12px",
+                        borderRadius: 8,
+                        background: `linear-gradient(180deg, ${C.gold} 0%, #9f7411 100%)`,
+                        color: C.white,
                         fontWeight: 700,
+                        fontSize: 11,
+                        boxShadow: "0 8px 16px rgba(196,145,18,0.16)",
                       }}
                     >
-                      {item}
-                    </div>
-                  ))}
+                      Start Your Application
+                    </Btn>
+                    <Btn
+                      onClick={() => setPage("Programmes")}
+                      style={{
+                        minHeight: 34,
+                        padding: "0 12px",
+                        borderRadius: 8,
+                        background: "rgba(255,255,255,0.08)",
+                        border: "1px solid rgba(255,255,255,0.18)",
+                        color: C.white,
+                        fontWeight: 700,
+                        fontSize: 11,
+                        backdropFilter: "blur(12px)",
+                      }}
+                    >
+                      Explore Programmes
+                    </Btn>
+                  </div>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+                      gap: 6,
+                      marginTop: 10,
+                    }}
+                    className="resp-grid-4"
+                  >
+                    {[
+                      "100% online delivery",
+                      "Flexible pathways",
+                      "Professional support",
+                      "Modern learner experience",
+                    ].map((item) => (
+                      <FeaturePill key={item}>{item}</FeaturePill>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </Reveal>
+              </Reveal>
+              <Reveal delay={0.08}>
+                <VisualPanel />
+              </Reveal>
+            </div>
+          </div>
+        </Shell>
+      </WideWrap>
 
-            <Reveal delay={0.12}>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "minmax(0, 1fr) minmax(0, 0.92fr)",
-                  gap: 18,
-                }}
-                className="resp-grid-2"
-              >
+      <WideWrap style={{ marginTop: -8, position: "relative", zIndex: 2 }}>
+        <Shell>
+          <Reveal>
+            <StatBar />
+          </Reveal>
+        </Shell>
+      </WideWrap>
+
+      <WideWrap style={{ paddingTop: 24 }}>
+        <Shell>
+          <Reveal>
+            <PartnerLogos />
+          </Reveal>
+        </Shell>
+      </WideWrap>
+
+      <section id="study-areas" style={{ paddingTop: 18, paddingBottom: 10 }}>
+        <WideWrap>
+          <Shell>
+            <Intro
+              tag="Featured study areas"
+              title="Professional options learners can quickly understand"
+              desc="Explore the main areas of study available through CTS ETS, from business support and customer service to digital confidence and leadership growth."
+            />
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "minmax(220px, 0.92fr) minmax(0, 1.08fr)",
+                gap: 10,
+              }}
+              className="resp-grid-2"
+            >
+              <Reveal>
                 <div
                   style={{
-                    gridRow: "1 / 3",
-                    minHeight: 420,
-                    borderRadius: 28,
-                    background:
-                      "linear-gradient(180deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.06) 100%)",
-                    border: "1px solid rgba(255,255,255,0.14)",
-                    padding: 20,
-                    backdropFilter: "blur(12px)",
+                    minHeight: 190,
+                    borderRadius: 8,
+                    position: "relative",
+                    overflow: "hidden",
+                    border: `1px solid ${C.line}`,
+                    padding: 12,
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "space-between",
+                    boxShadow: "0 10px 22px rgba(11,22,48,0.06)",
                   }}
                 >
-                  <div>
+                  <img
+                    src={IMAGES.learner}
+                    alt="Black woman working confidently on a laptop"
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      background: "linear-gradient(180deg, rgba(11,22,48,0.14) 0%, rgba(11,22,48,0.72) 100%)",
+                    }}
+                  />
+                  <Label dark>Professional learners</Label>
+                  <div style={{ position: "relative", zIndex: 1 }}>
                     <div
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 8,
-                        padding: "7px 12px",
-                        borderRadius: 999,
-                        background: "rgba(255,255,255,0.08)",
-                        color: S.goldLight,
-                        fontSize: 11,
-                        fontWeight: 800,
-                        fontFamily: S.body,
-                        letterSpacing: 1.3,
-                        textTransform: "uppercase",
-                        marginBottom: 14,
-                      }}
-                    >
-                      Digital Campus
-                    </div>
-                    <div
-                      style={{
-                        width: "100%",
-                        height: 210,
-                        borderRadius: 22,
-                        overflow: "hidden",
-                        marginBottom: 18,
-                        boxShadow: "0 18px 36px rgba(2,6,23,0.18)",
-                      }}
-                    >
-                      <img
-                        src={PEOPLE.hero}
-                        alt="Learners collaborating around a laptop in a modern professional setting"
-                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                      />
-                    </div>
-                    <h3
                       style={{
                         fontFamily: S.heading,
-                        fontSize: 34,
-                        color: "#fff",
-                        margin: "0 0 10px",
-                        lineHeight: 1.08,
-                        fontWeight: 800,
-                      }}
-                    >
-                      A cleaner learning journey for serious learners
-                    </h3>
-                    <p
-                      style={{
-                        fontFamily: S.body,
+                        fontWeight: 700,
                         fontSize: 14,
-                        lineHeight: 1.8,
+                        lineHeight: 1.12,
+                        color: C.white,
+                      }}
+                    >
+                      Training with structure, support, and flexibility
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 6,
                         color: "rgba(255,255,255,0.78)",
-                        margin: 0,
+                        lineHeight: 1.5,
+                        fontSize: 11,
+                        fontFamily: S.body,
                       }}
                     >
-                      Study online with a more polished, structured, and flexible
-                      experience designed to support progress without unnecessary
-                      friction.
-                    </p>
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                    <div
-                      style={{
-                        background: "rgba(255,255,255,0.07)",
-                        borderRadius: 18,
-                        padding: 16,
-                        border: "1px solid rgba(255,255,255,0.08)",
-                      }}
-                    >
-                      <div style={{ color: S.goldLight, fontSize: 22, marginBottom: 8 }}>🎓</div>
-                      <div style={{ color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: S.body }}>
-                        Guided learning support
-                      </div>
-                    </div>
-                    <div
-                      style={{
-                        background: "rgba(255,255,255,0.07)",
-                        borderRadius: 18,
-                        padding: 16,
-                        border: "1px solid rgba(255,255,255,0.08)",
-                      }}
-                    >
-                      <div style={{ color: S.goldLight, fontSize: 22, marginBottom: 8 }}>📱</div>
-                      <div style={{ color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: S.body }}>
-                        Learn from any device
-                      </div>
+                      Online study with clearer pathways, stronger support, and a more confident first impression.
                     </div>
                   </div>
                 </div>
-
-                <div
-                  style={{
-                    borderRadius: 24,
-                    background: "#fff",
-                    padding: 22,
-                    boxShadow: "0 18px 44px rgba(2,6,23,0.14)",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "100%",
-                      height: 130,
-                      borderRadius: 18,
-                      overflow: "hidden",
-                      marginBottom: 14,
-                    }}
-                  >
-                    <img
-                      src={PEOPLE.learner}
-                      alt="Professional learner studying online with a laptop"
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    />
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: S.heading,
-                      fontSize: 24,
-                      color: S.navy,
-                      fontWeight: 800,
-                      marginBottom: 8,
-                    }}
-                  >
-                    Local heart. Professional presentation.
-                  </div>
-                  <p
-                    style={{
-                      fontFamily: S.body,
-                      fontSize: 13,
-                      color: S.gray,
-                      lineHeight: 1.75,
-                      margin: 0,
-                    }}
-                  >
-                    Study with a Jamaican training institution that presents a
-                    clear, modern, and professional online learning experience.
-                  </p>
-                </div>
-
-                <div
-                  style={{
-                    borderRadius: 24,
-                    background: "rgba(255,255,255,0.08)",
-                    border: "1px solid rgba(255,255,255,0.14)",
-                    padding: 22,
-                    backdropFilter: "blur(12px)",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontFamily: S.heading,
-                      fontSize: 30,
-                      color: S.goldLight,
-                      fontWeight: 800,
-                      marginBottom: 6,
-                    }}
-                  >
-                    {SOCIAL_PROOF.programmes}
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: S.body,
-                      fontSize: 12,
-                      color: "rgba(255,255,255,0.75)",
-                      letterSpacing: 1.5,
-                      textTransform: "uppercase",
-                      fontWeight: 700,
-                      marginBottom: 10,
-                    }}
-                  >
-                    Programmes
-                  </div>
-                  <p
-                    style={{
-                      fontFamily: S.body,
-                      fontSize: 13,
-                      lineHeight: 1.75,
-                      color: "rgba(255,255,255,0.76)",
-                      margin: 0,
-                    }}
-                  >
-                    Multiple learning pathways help learners identify where they
-                    fit and how they can progress.
-                  </p>
-                </div>
-              </div>
-            </Reveal>
-          </div>
-        </WideWrap>
-      </div>
-
-      {/* ═══════════ STATS ═══════════ */}
-      <WideWrap style={{ marginTop: -36, position: "relative", zIndex: 2 }}>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-            gap: 14,
-          }}
-          className="resp-grid-4"
-        >
-          <Reveal>
-            <StatCard value={SOCIAL_PROOF.enrolled} label="Facilitating Learning" accent={S.sky} />
-          </Reveal>
-          <Reveal delay={0.04}>
-            <StatCard value={SOCIAL_PROOF.programmes} label="Programmes" accent={S.goldDark} />
-          </Reveal>
-          <Reveal delay={0.08}>
-            <StatCard value={SOCIAL_PROOF.completionRate} label="Completion Rate" accent={S.emerald} />
-          </Reveal>
-          <Reveal delay={0.12}>
-            <StatCard value={SOCIAL_PROOF.satisfaction} label="Student Satisfaction" accent={S.violet} />
-          </Reveal>
-        </div>
-      </WideWrap>
-
-      {/* ═══════════ PARTNERS ═══════════ */}
-      <WideWrap style={{ paddingTop: 44 }}>
-        <Reveal>
-          <PartnerLogos />
-        </Reveal>
-      </WideWrap>
-
-      {/* ═══════════ FEATURED STUDY AREAS ═══════════ */}
-      <section style={{ paddingTop: 30 }}>
-        <WideWrap>
-          <SectionIntro
-            tag="Featured Study Areas"
-            title="Professional options learners can quickly understand"
-            desc="Explore the main areas of study available through CTS ETS, from office and business training to digital skills, people support, and leadership development."
-            accent={S.teal}
-          />
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(320px, 0.9fr) minmax(0, 1.1fr)",
-              gap: 24,
-              alignItems: "stretch",
-            }}
-            className="resp-grid-2"
-          >
-            <Reveal>
-              <div
-                style={{
-                  background: "#fff",
-                  border: `1px solid ${S.border}`,
-                  borderRadius: 26,
-                  padding: 20,
-                  boxShadow: "0 14px 32px rgba(15,23,42,0.04)",
-                  minHeight: 100,
-                }}
-              >
-                <div
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    minHeight: 300,
-                    borderRadius: 20,
-                    overflow: "hidden",
-                    marginBottom: 18,
-                  }}
-                >
-                  <img
-                    src={PEOPLE.mentor}
-                    alt="Professional mentor guiding learners during a digital training session"
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                </div>
-                <div
-                  style={{
-                    fontFamily: S.heading,
-                    fontSize: 28,
-                    color: S.navy,
-                    fontWeight: 800,
-                    marginBottom: 10,
-                  }}
-                >
-                  Training with structure, support, and real human connection
-                </div>
-                <p
-                  style={{
-                    fontFamily: S.body,
-                    fontSize: 14,
-                    color: S.gray,
-                    lineHeight: 1.8,
-                    margin: 0,
-                  }}
-                >
-                  CTS ETS combines flexibility with a more organised learner
-                  experience so online study still feels guided and professional.
-                </p>
-              </div>
-            </Reveal>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                gap: 18,
-              }}
-              className="resp-grid-2"
-            >
-              {PROGRAMME_BUCKETS.map((item, index) => (
-                <Reveal key={item.title} delay={index * 0.05}>
-                  <BucketCard item={item} />
-                </Reveal>
-              ))}
-            </div>
-          </div>
-          <div style={{ marginTop: 28 }}>
-            <Btn onClick={() => setPage("Programmes")} style={{ borderRadius: 12, padding: "14px 30px" }}>
-              View All Programmes
-            </Btn>
-          </div>
-        </WideWrap>
-      </section>
-
-      {/* ═══════════ STUDY PATHWAYS ═══════════ */}
-      <section style={{ paddingTop: 48 }}>
-        <WideWrap>
-          <SectionIntro
-            tag="Study Pathways"
-            title="Find the level that fits your next step"
-            desc="Whether you are just starting, strengthening practical workplace skills, or preparing for leadership, CTS ETS offers levels that support clear progression."
-            accent={S.goldDark}
-          />
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-              gap: 20,
-            }}
-            className="resp-grid-4"
-          >
-            {PATHWAYS.map((item, index) => (
-              <Reveal key={item.title} delay={index * 0.05}>
-                <PathwayCard item={item} />
               </Reveal>
-            ))}
-          </div>
-        </WideWrap>
-      </section>
-
-      {/* ═══════════ WHY CTS ETS ═══════════ */}
-      <section style={{ paddingTop: 48 }}>
-        <WideWrap>
-          <SectionIntro
-            tag="Why CTS ETS"
-            title="A clearer reason to choose CTS ETS"
-            desc="Learn in a flexible online environment built for serious adults who want structure, support, and a more professional training experience."
-            accent={S.coral}
-          />
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(0, 1.1fr) minmax(320px, 0.9fr)",
-              gap: 24,
-              alignItems: "stretch",
-            }}
-            className="resp-grid-2"
-          >
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                gap: 18,
-              }}
-              className="resp-grid-2"
-            >
-              {REASONS.map((item, index) => (
-                <Reveal key={item.title} delay={index * 0.05}>
-                  <ReasonCard item={item} />
-                </Reveal>
-              ))}
-            </div>
-            <Reveal>
               <div
                 style={{
-                  background: "#fff",
-                  border: `1px solid ${S.border}`,
-                  borderRadius: 26,
-                  padding: 20,
-                  boxShadow: "0 14px 32px rgba(15,23,42,0.04)",
-                  minHeight: 100,
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                  gap: 10,
                 }}
+                className="resp-grid-2"
               >
-                <div
-                  style={{
-                    width: "100%",
-                    minHeight: 320,
-                    borderRadius: 20,
-                    overflow: "hidden",
-                    marginBottom: 18,
-                  }}
-                >
-                  <img
-                    src={PEOPLE.hero}
-                    alt="Professionals and learners collaborating in a modern training environment"
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                </div>
-                <div
-                  style={{
-                    fontFamily: S.heading,
-                    fontSize: 28,
-                    color: S.navy,
-                    fontWeight: 800,
-                    marginBottom: 10,
-                  }}
-                >
-                  A modern institution for ambitious learners
-                </div>
-                <p
-                  style={{
-                    fontFamily: S.body,
-                    fontSize: 14,
-                    color: S.gray,
-                    lineHeight: 1.8,
-                    margin: 0,
-                  }}
-                >
-                  CTS ETS is designed to help learners move forward with a stronger
-                  sense of professionalism, direction, and possibility.
-                </p>
+                {studyAreas.map((item, index) => (
+                  <Reveal key={item.title} delay={index * 0.05}>
+                    <StudyCard item={item} />
+                  </Reveal>
+                ))}
               </div>
-            </Reveal>
-          </div>
+            </div>
+          </Shell>
         </WideWrap>
       </section>
 
-      {/* ═══════════ HOW IT WORKS ═══════════ */}
-      <section
-        style={{
-          marginTop: 60,
-          background:
-            "linear-gradient(135deg, #0B1120 0%, #1E293B 58%, #0E8F8B 140%)",
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "radial-gradient(circle at 20% 20%, rgba(217,119,6,0.14), transparent 28%), radial-gradient(circle at 82% 70%, rgba(124,58,237,0.14), transparent 24%)",
-          }}
-        />
-        <WideWrap style={{ position: "relative", paddingTop: 64, paddingBottom: 64 }}>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(0, 0.78fr) minmax(0, 1.22fr)",
-              gap: 34,
-              alignItems: "start",
-            }}
-            className="resp-grid-2"
-          >
-            <Reveal>
-              <div>
-                <div
-                  style={{
-                    fontFamily: S.body,
-                    fontSize: 11,
-                    color: S.goldLight,
-                    letterSpacing: 2,
-                    textTransform: "uppercase",
-                    fontWeight: 800,
-                    marginBottom: 14,
-                  }}
-                >
-                  How It Works
-                </div>
-                <h2
-                  style={{
-                    fontFamily: S.heading,
-                    fontSize: "clamp(30px, 4vw, 52px)",
-                    color: "#fff",
-                    lineHeight: 1.06,
-                    margin: "0 0 14px",
-                    fontWeight: 900,
-                    maxWidth: 640,
-                  }}
-                >
-                  A simple enrolment journey builds confidence
-                </h2>
-                <p
-                  style={{
-                    fontFamily: S.body,
-                    fontSize: 16,
-                    lineHeight: 1.8,
-                    color: "rgba(255,255,255,0.75)",
-                    margin: "0 0 24px",
-                    maxWidth: 560,
-                  }}
-                >
-                  From exploring programmes to submitting an application and
-                  starting your training, the path is designed to feel clear,
-                  guided, and manageable.
-                </p>
-                <Btn
-                  primary
-                  onClick={() => setPage("Apply")}
-                  style={{
-                    background: "#fff",
-                    color: S.navy,
-                    borderRadius: 14,
-                    padding: "15px 28px",
-                  }}
-                >
-                  Enquire or Apply
-                </Btn>
-              </div>
-            </Reveal>
+      <section style={{ paddingTop: 10, paddingBottom: 10 }}>
+        <WideWrap>
+          <Shell>
+            <Intro
+              tag="Study pathways"
+              title="Find the level that fits your next step"
+              desc="Whether you are just starting, strengthening practical workplace skills, or preparing for leadership, CTS ETS offers levels that support clear progression."
+            />
             <div
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-                gap: 16,
+                gap: 10,
               }}
               className="resp-grid-4"
             >
-              {STEPS.map((item, index) => (
-                <Reveal key={item.num} delay={index * 0.05}>
-                  <StepCard item={item} />
+              {pathways.map((item, index) => (
+                <Reveal key={item.title} delay={index * 0.05}>
+                  <PathwayCard item={item} />
                 </Reveal>
               ))}
             </div>
-          </div>
+          </Shell>
         </WideWrap>
       </section>
 
-      {/* ═══════════ TESTIMONIALS ═══════════ */}
-      <section style={{ paddingTop: 54 }}>
+      <section style={{ paddingTop: 10, paddingBottom: 10 }}>
         <WideWrap>
-          <SectionIntro
-            tag="Learner Voices"
-            title="See how learners describe the CTS ETS experience"
-            desc="Real learner feedback helps new visitors understand the value of the training, the flexibility of the model, and the quality of the support provided."
-            accent={S.violet}
-          />
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-              gap: 18,
-            }}
-            className="resp-grid-3"
-          >
-            {TESTIMONIALS.slice(0, 3).map((t, index) => (
-              <Reveal key={t.name} delay={index * 0.05}>
-                <TestimonialCard t={t} />
-              </Reveal>
-            ))}
-          </div>
-          <TalkToGraduate setPage={setPage} />
-        </WideWrap>
-      </section>
-
-      {/* ═══════════ CTA ═══════════ */}
-      <section style={{ paddingTop: 56 }}>
-        <WideWrap>
-          <Reveal>
+          <Shell>
             <div
               style={{
-                borderRadius: 28,
-                padding: "36px clamp(22px, 4vw, 42px)",
-                background: "linear-gradient(135deg, #0B1120 0%, #1E293B 100%)",
-                boxShadow: "0 24px 56px rgba(15,23,42,0.16)",
+                background: "linear-gradient(135deg, #0c1b37 0%, #122447 58%, #173b67 100%)",
+                borderRadius: 8,
+                padding: 12,
+                border: "1px solid rgba(255,255,255,0.08)",
+                boxShadow: C.shadow,
               }}
             >
+              <Intro
+                tag="Why CTS ETS"
+                title="A clearer reason to choose CTS ETS"
+                desc="Study with a Jamaican training institution that combines flexibility, structure, and a professional online learner experience."
+                dark
+              />
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "minmax(0, 1.1fr) minmax(320px, 0.9fr)",
-                  gap: 28,
-                  alignItems: "center",
+                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                  gap: 10,
                 }}
                 className="resp-grid-2"
               >
-                <div>
-                  <div
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 8,
-                      padding: "7px 12px",
-                      borderRadius: 999,
-                      background: "rgba(255,255,255,0.06)",
-                      color: S.goldLight,
-                      fontSize: 11,
-                      fontWeight: 800,
-                      letterSpacing: 1.5,
-                      textTransform: "uppercase",
-                      fontFamily: S.body,
-                      marginBottom: 14,
-                    }}
-                  >
-                    Ready to Take the Next Step?
-                  </div>
-                  <h2
-                    style={{
-                      fontFamily: S.heading,
-                      fontSize: "clamp(30px, 4vw, 48px)",
-                      color: "#fff",
-                      lineHeight: 1.08,
-                      margin: "0 0 14px",
-                      fontWeight: 900,
-                      maxWidth: 760,
-                    }}
-                  >
-                    Start your next step with CTS ETS
-                  </h2>
-                  <p
-                    style={{
-                      fontFamily: S.body,
-                      fontSize: 16,
-                      lineHeight: 1.8,
-                      color: "rgba(255,255,255,0.74)",
-                      margin: 0,
-                      maxWidth: 700,
-                    }}
-                  >
-                    Explore your options, apply online, and begin a flexible
-                    learning journey designed to support real personal and
-                    professional progress.
-                  </p>
+                {reasons.map((item, index) => (
+                  <Reveal key={item} delay={index * 0.05}>
+                    <ReasonTile text={item} />
+                  </Reveal>
+                ))}
+              </div>
+            </div>
+          </Shell>
+        </WideWrap>
+      </section>
+
+      <section style={{ paddingTop: 10, paddingBottom: 10 }}>
+        <WideWrap>
+          <Shell>
+            <div
+              style={{
+                background: C.navy,
+                borderRadius: 8,
+                padding: 12,
+                border: "1px solid rgba(255,255,255,0.08)",
+                boxShadow: C.shadow,
+              }}
+            >
+              <Intro
+                tag="How it works"
+                title="A simpler enrolment journey builds confidence"
+                desc="From exploring options to starting your programme, the path is designed to feel clear, guided, and manageable."
+                dark
+              />
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+                  gap: 10,
+                }}
+                className="resp-grid-4"
+              >
+                {steps.map((item, index) => (
+                  <Reveal key={item.num} delay={index * 0.05}>
+                    <StepCard item={item} />
+                  </Reveal>
+                ))}
+              </div>
+            </div>
+          </Shell>
+        </WideWrap>
+      </section>
+
+      <section style={{ paddingTop: 10, paddingBottom: 10 }}>
+        <WideWrap>
+          <Shell>
+            <Intro
+              tag="Learner voices"
+              title="Real learner results still do important trust work"
+              desc="Real learner feedback helps visitors understand the value of the training, the flexibility of the model, and the quality of the support provided."
+            />
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                gap: 10,
+              }}
+              className="resp-grid-3"
+            >
+              {TESTIMONIALS.slice(0, 3).map((t, index) => (
+                <Reveal key={t.name} delay={index * 0.05}>
+                  <TestimonialCard t={t} />
+                </Reveal>
+              ))}
+            </div>
+            <TalkToGraduate setPage={setPage} />
+          </Shell>
+        </WideWrap>
+      </section>
+
+      <section style={{ paddingTop: 10, paddingBottom: 22 }}>
+        <WideWrap>
+          <Shell>
+            <Reveal>
+              <div
+                style={{
+                  background: "linear-gradient(135deg, #0b1630 0%, #17345f 100%)",
+                  borderRadius: 8,
+                  padding: 12,
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  boxShadow: C.shadow,
+                }}
+              >
+                <div
+                  style={{
+                    color: C.gold,
+                    textTransform: "uppercase",
+                    letterSpacing: 1.2,
+                    fontWeight: 800,
+                    fontSize: 8,
+                    marginBottom: 7,
+                    fontFamily: S.body,
+                  }}
+                >
+                  Ready to take the next step?
                 </div>
                 <div
                   style={{
-                    display: "flex",
-                    gap: 12,
-                    flexWrap: "wrap",
-                    justifyContent: "flex-start",
+                    display: "grid",
+                    gridTemplateColumns: "minmax(200px, 1fr) auto",
+                    gap: 10,
+                    alignItems: "center",
                   }}
+                  className="resp-grid-2"
                 >
+                  <div>
+                    <div
+                      style={{
+                        fontFamily: S.heading,
+                        fontWeight: 800,
+                        fontSize: "clamp(15px, 2vw, 18px)",
+                        lineHeight: 1.12,
+                        color: C.white,
+                      }}
+                    >
+                      Start your next step with CTS ETS
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 5,
+                        color: "rgba(255,255,255,0.78)",
+                        fontSize: 11,
+                        lineHeight: 1.5,
+                        fontFamily: S.body,
+                      }}
+                    >
+                      Explore your options, apply online, and begin a flexible learning journey designed to support real personal and professional progress.
+                    </div>
+                  </div>
                   <Btn
                     primary
                     onClick={() => setPage("Apply")}
                     style={{
-                      background: S.gold,
-                      color: S.navy,
-                      borderRadius: 14,
-                      padding: "16px 28px",
+                      minHeight: 34,
+                      padding: "0 12px",
+                      borderRadius: 8,
+                      background: `linear-gradient(180deg, ${C.gold} 0%, #9f7411 100%)`,
+                      color: C.white,
+                      fontWeight: 700,
+                      fontSize: 11,
+                      boxShadow: "0 8px 16px rgba(196,145,18,0.16)",
                     }}
                   >
                     Apply Now
                   </Btn>
-                  <Btn
-                    onClick={() => setPage("Contact")}
-                    style={{
-                      background: "rgba(255,255,255,0.05)",
-                      border: "1px solid rgba(255,255,255,0.16)",
-                      color: "#fff",
-                      borderRadius: 14,
-                      padding: "16px 28px",
-                    }}
-                  >
-                    Contact Admissions
-                  </Btn>
                 </div>
               </div>
-            </div>
-          </Reveal>
+            </Reveal>
+          </Shell>
         </WideWrap>
       </section>
 

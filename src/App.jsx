@@ -78,14 +78,19 @@ function checkExternalRedirect() {
   return false;
 }
 
+function resolvePageFromHash() {
+  const rawHash = window.location.hash.split("?")[0];
+  const hash = rawHash.replace("#", "").replace(/-/g, " ");
+  if (hash.toLowerCase() === "design preview") return "Home";
+  return PAGES.find(p => p.toLowerCase() === hash.toLowerCase()) || "Home";
+}
+
 export default function CTSApp() {
   const [page, setPage] = useState(() => {
     // 🔀 If hash matches an external route, redirect immediately
     if (checkExternalRedirect()) return "Home";
 
-    const rawHash = window.location.hash.split("?")[0];
-    const hash = rawHash.replace("#", "").replace(/-/g, " ");
-    return PAGES.find(p => p.toLowerCase() === hash.toLowerCase()) || "Home";
+    return resolvePageFromHash();
   });
 
   const [transitioning, setTransitioning] = useState(false);
@@ -123,9 +128,7 @@ export default function CTSApp() {
       // 🔀 Check external redirects on back/forward navigation too
       if (checkExternalRedirect()) return;
 
-      const rawHash = window.location.hash.split("?")[0];
-      const h = rawHash.replace("#", "").replace(/-/g, " ");
-      setPage(PAGES.find(p => p.toLowerCase() === h.toLowerCase()) || "Home");
+      setPage(resolvePageFromHash());
       window.scrollTo({ top: 0, behavior: "instant" });
     };
     window.addEventListener("popstate", onPop);
