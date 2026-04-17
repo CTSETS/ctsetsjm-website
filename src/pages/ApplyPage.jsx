@@ -9,7 +9,6 @@ import {
   SectionBlock,
   Reveal,
   PageScripture,
-  SocialProofBar,
   TestimonialCard,
 } from "../components/shared/CoreComponents";
 import { CaptchaChallenge, HoneypotField } from "../components/shared/DisplayComponents";
@@ -434,8 +433,8 @@ export default function ApplyPage({ setPage }) {
       <PrayerModal prayer={prayer} onClose={() => setPrayer(null)} />
       {submitting && <div style={{ position: "fixed", inset: 0, zIndex: 99999, background: "rgba(1,30,64,0.85)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}><div style={{ background: S.white, borderRadius: 18, padding: 40, textAlign: "center", maxWidth: 420 }}><div style={{ fontSize: 48, marginBottom: 16 }}>📨</div><h3 style={{ fontFamily: S.heading, fontSize: 22, color: S.navy, fontWeight: 800, marginBottom: 10 }}>Submitting Application</h3><p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, lineHeight: 1.7 }}>Please wait while we process your application and upload your documents.</p></div></div>}
 
-      <div style={{ background: "linear-gradient(135deg, #0B1120 0%, #1E293B 58%, #0E8F8B 145%)", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 18% 22%, rgba(217,119,6,0.16), transparent 28%), radial-gradient(circle at 82% 18%, rgba(37,99,235,0.14), transparent 24%), radial-gradient(circle at 70% 80%, rgba(124,58,237,0.12), transparent 22%)" }} />
+      <div style={{ background: "linear-gradient(135deg, #061428 0%, #011E40 54%, #0A6E8A 122%)", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 18% 22%, rgba(196,145,18,0.18), transparent 28%), radial-gradient(circle at 82% 18%, rgba(10,110,138,0.16), transparent 24%), radial-gradient(circle at 70% 80%, rgba(0,155,58,0.12), transparent 22%)" }} />
         <WideWrap style={{ position: "relative", paddingTop: 64, paddingBottom: 60 }}>
           <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.08fr) minmax(360px, 0.92fr)", gap: 34, alignItems: "center" }} className="resp-grid-2">
             <Reveal>
@@ -471,8 +470,6 @@ export default function ApplyPage({ setPage }) {
         </WideWrap>
       </div>
 
-      <WideWrap style={{ marginTop: -26, position: "relative", zIndex: 2 }}><Reveal><SocialProofBar /></Reveal></WideWrap>
-
       <section style={{ paddingTop: 34 }}>
         <WideWrap>
           {showTracker ? (
@@ -488,7 +485,7 @@ export default function ApplyPage({ setPage }) {
             </>
           ) : (
             <>
-              <SectionIntro tag="Admissions Form" title="Complete your application with more clarity" desc="The application logic remains the same, including applicant type, personal details, programme selection, HEART form handling, document upload, verification, and submission." accent={S.violet} />
+              <SectionIntro tag="Admissions Form" title="Complete your application with more clarity" desc="The application logic remains the same, including applicant type, personal details, programme selection, HEART form handling, document upload, verification, and submission." accent={S.gold} />
               <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.08fr) minmax(320px, 0.92fr)", gap: 24, alignItems: "start" }} className="resp-grid-2">
                 <div>
                   <HoneypotField value={hp} onChange={(e) => setHp(e.target.value)} />

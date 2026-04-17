@@ -7,7 +7,6 @@ import {
   Btn,
   Reveal,
   PageScripture,
-  SocialProofBar,
   TestimonialCard,
 } from "../components/shared/CoreComponents";
 import { WhatsAppShare } from "../components/shared/DisplayComponents";
@@ -260,6 +259,8 @@ export default function FeesPage({ setPage }) {
   const [selProg, setSelProg] = useState(null);
   const [selectedProgs, setSelectedProgs] = useState([]);
   const [addingLevel, setAddingLevel] = useState(levels[0]);
+  const [singleProgrammesOpen, setSingleProgrammesOpen] = useState(false);
+  const [multiProgrammesOpen, setMultiProgrammesOpen] = useState(false);
 
   const progsForLevel = CALC_DATA.filter((d) => d.level === selLevel);
   const prog = selProg || progsForLevel[0];
@@ -416,6 +417,12 @@ export default function FeesPage({ setPage }) {
     fontWeight: 800,
     display: "block",
     marginBottom: 8,
+  };
+
+  const sectionCardStyle = {
+    borderRadius: 8,
+    padding: 12,
+    border: `1px solid ${C.line}`,
   };
 
   return (
@@ -580,22 +587,17 @@ export default function FeesPage({ setPage }) {
           </div>
         </Shell>
       </WideWrap>
-
-      <WideWrap style={{ marginTop: -8, position: "relative", zIndex: 2 }}>
-        <Shell>
-          <Reveal>
-            <SocialProofBar />
-          </Reveal>
-        </Shell>
-      </WideWrap>
-
       <section style={{ paddingTop: 18, paddingBottom: 10 }}>
         <WideWrap>
           <Shell>
             <Intro
               tag="Payment plans"
               title="Choose the payment path that fits your situation"
-              desc={`J$${REG_FEE.toLocaleString()} non-refundable registration fee plus training fee. Surcharges apply to training only, and the calculator below keeps the same pricing rules from your current page.`}
+              desc={
+                <span style={{ color: "#b42318", fontWeight: 800 }}>
+                  {`J$${REG_FEE.toLocaleString()} non-refundable registration fee applies to each course, in addition to the training fee. Multi-programme discounts apply to training fees only, not registration fees. Surcharges also apply to training only, and the calculator below follows those same pricing rules.`}
+                </span>
+              }
             />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 10, marginBottom: 12 }} className="resp-grid-3">
               {["Gold", "Silver", "Bronze"].map((plan) => (
@@ -614,62 +616,122 @@ export default function FeesPage({ setPage }) {
             <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.14fr) minmax(260px, 0.86fr)", gap: 10, alignItems: "start", marginBottom: 12 }} className="resp-grid-2">
               <Reveal>
                 <div style={{ background: C.white, borderRadius: 8, padding: 14, border: `1px solid ${C.line}`, boxShadow: "0 8px 18px rgba(11,22,48,0.04)" }}>
-                  <div style={{ fontSize: 8, color: C.teal, letterSpacing: "1.4px", textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 12 }}>
+                  <div style={{ fontSize: 8, color: C.teal, letterSpacing: "1.4px", textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 6 }}>
+                    Quote builder
+                  </div>
+                  <div style={{ fontFamily: S.heading, fontSize: "clamp(22px, 3vw, 30px)", color: C.ink, fontWeight: 800, lineHeight: 1.05, marginBottom: 14 }}>
                     Build your quote
                   </div>
 
-                  <label style={labelStyle}>1. How many programmes are you enrolling in?</label>
-                  <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
-                    {[
-                      { n: 1, label: "1" },
-                      { n: 2, label: "2 (10% off)" },
-                      { n: 3, label: "3 (15% off)" },
-                      { n: 4, label: "4+ (20% off)" },
-                    ].map((opt) => (
-                      <OptionButton key={opt.n} active={progCount === opt.n} onClick={() => { setProgCount(opt.n); setSelectedProgs([]); }}>
-                        {opt.label}
-                      </OptionButton>
-                    ))}
-                  </div>
+                  {progCount === 1 ? (
+                    <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 14, alignItems: "start", marginBottom: 8 }} className="resp-grid-2">
+                      <div>
+                        <div style={{ ...sectionCardStyle, background: "rgba(28,123,71,0.30)", borderColor: "rgba(28,123,71,0.42)", marginBottom: 12 }}>
+                          <label style={{ ...labelStyle, color: C.green }}>1. How many programmes are you enrolling in?</label>
+                          <div style={{ display: "flex", gap: 8, marginBottom: 0, flexWrap: "wrap" }}>
+                            {[
+                              { n: 1, label: "1" },
+                              { n: 2, label: "2 (10% off)" },
+                              { n: 3, label: "3 (15% off)" },
+                              { n: 4, label: "4+ (20% off)" },
+                            ].map((opt) => (
+                              <OptionButton key={opt.n} active={progCount === opt.n} onClick={() => { setProgCount(opt.n); setSelectedProgs([]); }}>
+                                {opt.label}
+                              </OptionButton>
+                            ))}
+                          </div>
+                        </div>
 
-                  <label style={labelStyle}>2. Select payment plan</label>
-                  <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
-                    {["Gold", "Silver", "Bronze"].map((plan) => (
-                      <OptionButton key={plan} active={selPlan === plan} onClick={() => setSelPlan(plan)}>
-                        {plan}
-                      </OptionButton>
-                    ))}
-                  </div>
+                        <div style={{ ...sectionCardStyle, background: "rgba(196,145,18,0.24)", borderColor: "rgba(196,145,18,0.36)" }}>
+                          <label style={{ ...labelStyle, color: C.gold }}>2. Select payment plan</label>
+                          <div style={{ display: "flex", gap: 8, marginBottom: 0, flexWrap: "wrap" }}>
+                            {["Gold", "Silver", "Bronze"].map((plan) => (
+                              <OptionButton key={plan} active={selPlan === plan} onClick={() => setSelPlan(plan)}>
+                                {plan}
+                              </OptionButton>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
 
-                  {progCount === 1 && (
-                    <>
-                      <label style={labelStyle}>3. Select your level</label>
-                      <select value={selLevel} onChange={(e) => setSelLevel(e.target.value)} style={{ ...inputStyle, marginBottom: 14 }}>
-                        {levels.map((l) => (
-                          <option key={l}>{cleanText(l)}</option>
-                        ))}
-                      </select>
+                      <div>
+                        <div style={{ ...sectionCardStyle, background: "rgba(10,110,138,0.34)", borderColor: "rgba(10,110,138,0.44)" }}>
+                          <label style={{ ...labelStyle, color: C.teal }}>3. Select your level</label>
+                          <select value={selLevel} onChange={(e) => setSelLevel(e.target.value)} style={{ ...inputStyle, marginBottom: 12 }}>
+                            {levels.map((l) => (
+                              <option key={l}>{cleanText(l)}</option>
+                            ))}
+                          </select>
 
-                      <label style={labelStyle}>4. Choose programme</label>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 6 }}>
-                        {progsForLevel.map((p) => (
                           <button
-                            key={p.name}
-                            onClick={() => setSelProg(p)}
+                            onClick={() => setSingleProgrammesOpen((prev) => !prev)}
                             style={{
-                              padding: "12px",
+                              width: "100%",
                               borderRadius: 8,
-                              border: `1px solid ${prog?.name === p.name ? C.teal : C.line}`,
-                              background: prog?.name === p.name ? "rgba(10,110,138,0.08)" : C.white,
-                              color: C.ink,
+                              border: `1px solid ${C.line}`,
+                              background: singleProgrammesOpen ? "rgba(10,110,138,0.12)" : C.white,
+                              padding: "12px",
                               cursor: "pointer",
                               textAlign: "left",
-                              transition: "0.2s",
                             }}
                           >
-                            <div style={{ fontSize: 11, fontWeight: prog?.name === p.name ? 800 : 600, fontFamily: S.body }}>{cleanText(p.name)}</div>
-                            <div style={{ fontSize: 10, color: C.inkSoft, marginTop: 4, fontFamily: S.body }}>Base tuition: {fmt(p.tuition)}</div>
+                            <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
+                              <div>
+                                <div style={{ ...labelStyle, marginBottom: 4 }}>4. Choose programme</div>
+                                <div style={{ fontSize: 11, color: C.ink, fontFamily: S.body, fontWeight: 700 }}>{cleanText(prog?.name || "Select a programme")}</div>
+                              </div>
+                              <span style={{ fontSize: 14, color: C.inkSoft, fontWeight: 800 }}>{singleProgrammesOpen ? "-" : "+"}</span>
+                            </div>
                           </button>
+
+                          {singleProgrammesOpen && (
+                            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
+                              {progsForLevel.map((p) => (
+                                <button
+                                  key={p.name}
+                                  onClick={() => setSelProg(p)}
+                                  style={{
+                                    padding: "12px",
+                                    borderRadius: 8,
+                                    border: `1px solid ${prog?.name === p.name ? C.teal : C.line}`,
+                                    background: prog?.name === p.name ? "rgba(10,110,138,0.08)" : C.white,
+                                    color: C.ink,
+                                    cursor: "pointer",
+                                    textAlign: "left",
+                                    transition: "0.2s",
+                                  }}
+                                >
+                                  <div style={{ fontSize: 11, fontWeight: prog?.name === p.name ? 800 : 600, fontFamily: S.body }}>{cleanText(p.name)}</div>
+                                  <div style={{ fontSize: 10, color: C.inkSoft, marginTop: 4, fontFamily: S.body }}>Base tuition: {fmt(p.tuition)}</div>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <label style={labelStyle}>1. How many programmes are you enrolling in?</label>
+                      <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+                        {[
+                          { n: 1, label: "1" },
+                          { n: 2, label: "2 (10% off)" },
+                          { n: 3, label: "3 (15% off)" },
+                          { n: 4, label: "4+ (20% off)" },
+                        ].map((opt) => (
+                          <OptionButton key={opt.n} active={progCount === opt.n} onClick={() => { setProgCount(opt.n); setSelectedProgs([]); }}>
+                            {opt.label}
+                          </OptionButton>
+                        ))}
+                      </div>
+
+                      <label style={labelStyle}>2. Select payment plan</label>
+                      <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+                        {["Gold", "Silver", "Bronze"].map((plan) => (
+                          <OptionButton key={plan} active={selPlan === plan} onClick={() => setSelPlan(plan)}>
+                            {plan}
+                          </OptionButton>
                         ))}
                       </div>
                     </>
@@ -725,39 +787,64 @@ export default function FeesPage({ setPage }) {
 
                       {selectedProgs.length < progCount && (
                         <>
-                          <label style={labelStyle}>{selectedProgs.length === 0 ? "3. Add your programmes" : `Add programme ${selectedProgs.length + 1} of ${progCount}`}</label>
-                          <select value={addingLevel} onChange={(e) => setAddingLevel(e.target.value)} style={{ ...inputStyle, marginBottom: 10 }}>
-                            {levels.map((l) => (
-                              <option key={l}>{cleanText(l)}</option>
-                            ))}
-                          </select>
-                          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 10 }}>
-                            {addingProgsForLevel.map((p) => (
-                              <button
-                                key={p.name}
-                                onClick={() => addProgramme(p)}
-                                style={{
-                                  padding: "12px",
-                                  borderRadius: 8,
-                                  border: `1px solid ${C.line}`,
-                                  background: C.mist,
-                                  color: C.ink,
-                                  cursor: "pointer",
-                                  textAlign: "left",
-                                  transition: "0.2s",
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <div>
-                                  <div style={{ fontSize: 11, fontWeight: 600, fontFamily: S.body }}>{cleanText(p.name)}</div>
-                                  <div style={{ fontSize: 10, color: C.inkSoft, fontFamily: S.body }}>Tuition: {fmt(p.tuition)}</div>
-                                </div>
-                                <span style={{ color: C.teal, fontWeight: 800, fontSize: 16 }}>+</span>
-                              </button>
-                            ))}
-                          </div>
+                          <button
+                            onClick={() => setMultiProgrammesOpen((prev) => !prev)}
+                            style={{
+                              width: "100%",
+                              borderRadius: 8,
+                              border: `1px solid ${C.line}`,
+                              background: multiProgrammesOpen ? "rgba(10,110,138,0.08)" : C.white,
+                              padding: "12px",
+                              cursor: "pointer",
+                              textAlign: "left",
+                              marginBottom: 10,
+                            }}
+                          >
+                            <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
+                              <div>
+                                <div style={labelStyle}>{selectedProgs.length === 0 ? "3. Add your programmes" : `Add programme ${selectedProgs.length + 1} of ${progCount}`}</div>
+                                <div style={{ fontSize: 11, color: C.ink, fontFamily: S.body, fontWeight: 700 }}>Open the subject list only when you need it</div>
+                              </div>
+                              <span style={{ fontSize: 14, color: C.inkSoft, fontWeight: 800 }}>{multiProgrammesOpen ? "-" : "+"}</span>
+                            </div>
+                          </button>
+
+                          {multiProgrammesOpen && (
+                            <>
+                              <select value={addingLevel} onChange={(e) => setAddingLevel(e.target.value)} style={{ ...inputStyle, marginBottom: 10 }}>
+                                {levels.map((l) => (
+                                  <option key={l}>{cleanText(l)}</option>
+                                ))}
+                              </select>
+                              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 10 }}>
+                                {addingProgsForLevel.map((p) => (
+                                  <button
+                                    key={p.name}
+                                    onClick={() => addProgramme(p)}
+                                    style={{
+                                      padding: "12px",
+                                      borderRadius: 8,
+                                      border: `1px solid ${C.line}`,
+                                      background: C.mist,
+                                      color: C.ink,
+                                      cursor: "pointer",
+                                      textAlign: "left",
+                                      transition: "0.2s",
+                                      display: "flex",
+                                      justifyContent: "space-between",
+                                      alignItems: "center",
+                                    }}
+                                  >
+                                    <div>
+                                      <div style={{ fontSize: 11, fontWeight: 600, fontFamily: S.body }}>{cleanText(p.name)}</div>
+                                      <div style={{ fontSize: 10, color: C.inkSoft, fontFamily: S.body }}>Tuition: {fmt(p.tuition)}</div>
+                                    </div>
+                                    <span style={{ color: C.teal, fontWeight: 800, fontSize: 16 }}>+</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </>
+                          )}
                         </>
                       )}
 
@@ -905,7 +992,7 @@ export default function FeesPage({ setPage }) {
           <Shell>
             <Reveal>
               <div style={{ padding: "12px 14px", borderRadius: 8, background: "rgba(196,145,18,0.12)", border: "1px solid rgba(196,145,18,0.22)", fontSize: "11px", color: C.ink, fontFamily: S.body, lineHeight: 1.6, marginBottom: 12 }}>
-                <strong>Prices current as of 2026</strong> and subject to change. Confirmed enrolments are honoured at the agreed rate. NCTVET registration and assessment fees are arranged through HEART/NSTA and are set by NCTVET where necessary.
+                <strong>Prices current as of April 2026</strong> and subject to change. Confirmed enrolments are honoured at the agreed rate. NCTVET registration and assessment fees are arranged through HEART/NSTA and are set by NCTVET where necessary.
               </div>
             </Reveal>
 

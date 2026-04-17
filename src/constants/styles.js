@@ -1,13 +1,13 @@
 const S = {
-  heading: "'Playfair Display', Georgia, serif",
+  heading: "'Cormorant Garamond', 'Playfair Display', Georgia, serif",
   body: "'DM Sans', sans-serif",
 
   // ─── PRIMARY PALETTE ───
   navy: "#0B1120",           // Deep midnight (was #011E40)
   navyMid: "#1E293B",        // Slate mid-tone
-  gold: "#D97706",           // Warm amber (was #D4A017)
+  gold: "#C49112",           // CTS brass gold
   goldLight: "#FEF3C7",
-  goldDark: "#B45309",
+  goldDark: "#9F7411",
 
   // ─── NEUTRALS ───
   gray: "#475569",
@@ -19,7 +19,7 @@ const S = {
 
   // ─── ACCENT PALETTE ───
   coral: "#E8634A",  coralLight: "#FDE8E4",  coralDark: "#C44B33",
-  teal: "#0E8F8B",   tealLight: "#D5F5F4",   tealDark: "#087E7A",
+  teal: "#0A6E8A",   tealLight: "#D8EEF3",   tealDark: "#085A71",
   violet: "#7C3AED", violetLight: "#EDE9FE",  violetDark: "#6D28D9",
   sky: "#2563EB",    skyLight: "#DBEAFE",     skyDark: "#1D4ED8",    // Electric blue — primary CTAs
   rose: "#E11D48",   roseLight: "#FFF1F2",    roseDark: "#BE123C",

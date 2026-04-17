@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import S from "../constants/styles";
 import { PROGRAMMES, PROGRAMME_DETAILS, CAREER_OUTCOMES } from "../constants/programmes";
 import { REG_FEE, USD_RATE } from "../constants/config";
@@ -13,9 +13,9 @@ import { fmt } from "../utils/formatting";
 import LevelQuiz from "../components/quiz/LevelQuiz";
 
 const IMAGES = {
-  hero: "https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1400",
+  hero: "https://images.pexels.com/photos/3182763/pexels-photo-3182763.jpeg?auto=compress&cs=tinysrgb&w=1400",
   advisor: "https://images.pexels.com/photos/1181406/pexels-photo-1181406.jpeg?auto=compress&cs=tinysrgb&w=1200",
-  learner: "https://images.pexels.com/photos/8867482/pexels-photo-8867482.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  learner: "https://images.pexels.com/photos/4050315/pexels-photo-4050315.jpeg?auto=compress&cs=tinysrgb&w=1200",
 };
 
 const C = {
@@ -38,6 +38,34 @@ const LEVEL_COLORS = {
   "Level 3 - Diploma": C.gold,
   "Level 4 - Associate Equivalent": "#d26a43",
   "Level 5 - Bachelor's Equivalent": "#8f5a25",
+};
+
+const LEVEL_BACKGROUNDS = {
+  "Job / Professional Certificates": {
+    shell: "linear-gradient(180deg, rgba(28,123,71,0.18) 0%, rgba(28,123,71,0.09) 100%)",
+    header: "linear-gradient(180deg, rgba(28,123,71,0.26) 0%, rgba(28,123,71,0.16) 100%)",
+    badge: "#ffffff",
+  },
+  "Level 2 - Vocational Certificates": {
+    shell: "linear-gradient(180deg, rgba(10,110,138,0.18) 0%, rgba(10,110,138,0.09) 100%)",
+    header: "linear-gradient(180deg, rgba(10,110,138,0.26) 0%, rgba(10,110,138,0.16) 100%)",
+    badge: "#ffffff",
+  },
+  "Level 3 - Diploma": {
+    shell: "linear-gradient(180deg, rgba(196,145,18,0.20) 0%, rgba(196,145,18,0.10) 100%)",
+    header: "linear-gradient(180deg, rgba(196,145,18,0.28) 0%, rgba(196,145,18,0.16) 100%)",
+    badge: "#fff8e7",
+  },
+  "Level 4 - Associate Equivalent": {
+    shell: "linear-gradient(180deg, rgba(210,106,67,0.18) 0%, rgba(210,106,67,0.09) 100%)",
+    header: "linear-gradient(180deg, rgba(210,106,67,0.26) 0%, rgba(210,106,67,0.16) 100%)",
+    badge: "#fff4ef",
+  },
+  "Level 5 - Bachelor's Equivalent": {
+    shell: "linear-gradient(180deg, rgba(143,90,37,0.18) 0%, rgba(143,90,37,0.10) 100%)",
+    header: "linear-gradient(180deg, rgba(143,90,37,0.26) 0%, rgba(143,90,37,0.16) 100%)",
+    badge: "#fff8f2",
+  },
 };
 
 const LEVEL_SUMMARIES = {
@@ -66,22 +94,26 @@ const LEVEL_SUMMARIES = {
 function cleanText(value) {
   if (value == null) return "";
   return String(value)
-    .replace(/â€”/g, "-")
-    .replace(/â€“/g, "-")
-    .replace(/â€"/g, "-")
-    .replace(/â€™/g, "'")
-    .replace(/â€˜/g, "'")
-    .replace(/â€œ|â€/g, '"')
-    .replace(/â†’/g, "->")
-    .replace(/Â·/g, "·")
-    .replace(/Ã—/g, "x")
-    .replace(/âˆ’/g, "-")
-    .replace(/Â/g, "")
+    .replace(/[–—]/g, "-")
+    .replace(/Ã¢â‚¬â€/g, "-")
+    .replace(/Ã¢â‚¬â€œ/g, "-")
+    .replace(/Ã¢â‚¬"/g, "-")
+    .replace(/Ã¢â‚¬â„¢/g, "'")
+    .replace(/Ã¢â‚¬Ëœ/g, "'")
+    .replace(/Ã¢â‚¬Å“|Ã¢â‚¬Â/g, '"')
+    .replace(/Ã¢â€ â€™/g, "->")
+    .replace(/Ã‚·/g, "·")
+    .replace(/Ãƒâ€”/g, "x")
+    .replace(/Ã¢Ë†â€™/g, "-")
+    .replace(/Ã‚/g, "")
     .trim();
 }
 
 function normalizeLevel(level) {
-  return cleanText(level);
+  return cleanText(level)
+    .replace(/\s*-\s*/g, " - ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function WideWrap({ children, style }) {
@@ -179,15 +211,18 @@ function Intro({ tag, title, desc, dark = false }) {
   );
 }
 
-function LevelOverviewCard({ title, count, summary, color }) {
+function LevelOverviewCard({ title, count, summary, color, treatment }) {
+  const cardBackground = treatment?.header || `linear-gradient(180deg, ${color}18 0%, rgba(255,255,255,0.96) 100%)`;
+  const badgeBackground = treatment?.badge || C.white;
+
   return (
     <div
       style={{
-        background: C.white,
-        border: `1px solid ${C.line}`,
+        background: cardBackground,
+        border: `1px solid ${color}30`,
         borderRadius: 8,
         padding: 12,
-        boxShadow: "0 8px 18px rgba(11,22,48,0.04)",
+        boxShadow: "0 10px 22px rgba(11,22,48,0.05)",
       }}
     >
       <div
@@ -197,7 +232,7 @@ function LevelOverviewCard({ title, count, summary, color }) {
           minHeight: 22,
           padding: "0 7px",
           borderRadius: 999,
-          background: `${color}18`,
+          background: badgeBackground,
           color,
           fontSize: 8,
           letterSpacing: 1,
@@ -234,7 +269,7 @@ function LevelOverviewCard({ title, count, summary, color }) {
       <div
         style={{
           fontSize: 9,
-          color: C.inkSoft,
+          color,
           letterSpacing: 1,
           textTransform: "uppercase",
           fontWeight: 700,
@@ -311,9 +346,10 @@ function ProgrammeCard({ prog, level, levelColor, expanded, onToggle, setPage })
         style={{
           width: "100%",
           padding: "14px 14px",
-          background: expanded ? `${levelColor}0C` : C.white,
+          background: expanded ? `${levelColor}16` : `${levelColor}08`,
           cursor: "pointer",
           border: "none",
+          borderLeft: `4px solid ${levelColor}`,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
@@ -362,7 +398,7 @@ function ProgrammeCard({ prog, level, levelColor, expanded, onToggle, setPage })
             flexShrink: 0,
           }}
         >
-          ▼
+          {open ? "-" : "+"}
         </span>
       </button>
 
@@ -555,16 +591,16 @@ function CertDropdown() {
 
   const items = [
     {
-      title: "National recognition",
-      text: "NVQ-J is Jamaica's recognised vocational qualification standard administered through NCTVET under HEART/NSTA Trust.",
+      title: "NCTVET mandate",
+      text: "The mandate of the NCTVET is to develop and promote a certification system that is relevant, responsive and effective. With that in mind, the NCTVET has the responsibility to develop standards, accredit programmes, develop assessments and award certificates and diplomas to individuals who have demonstrated competence in vocational areas.",
     },
     {
-      title: "CTS ETS pathway",
-      text: "CTS ETS programmes are aligned to competency standards and learners are prepared for assessment through the recognised process.",
+      title: "How CTS ETS prepares learners",
+      text: "CTS ETS prepares learners through structured online study, guided learner support, and programme content aligned to recognised occupational standards so students can move toward assessment with stronger confidence and readiness.",
     },
     {
-      title: "Why it matters",
-      text: "It strengthens employability, credibility, and confidence by linking learning to recognised occupational competence.",
+      title: "What the qualification means",
+      text: "It means the learner has demonstrated competence in a recognised vocational area against approved standards, giving employers and institutions a clearer benchmark for credibility, readiness, and occupational capability.",
     },
   ];
 
@@ -592,7 +628,7 @@ function CertDropdown() {
             About NCTVET certification
           </div>
           <div style={{ fontSize: 11, color: open ? "rgba(255,255,255,0.76)" : C.inkSoft, fontFamily: S.body }}>
-            Understand NVQ-J, how CTS ETS prepares learners, and what the qualification means.
+            Understand the NCTVET mandate, how CTS ETS prepares learners for recognised assessment, and what the qualification means for real vocational competence.
           </div>
         </div>
         <span
@@ -604,7 +640,7 @@ function CertDropdown() {
             transition: "transform 0.2s ease",
           }}
         >
-          ▼
+          {open ? "-" : "+"}
         </span>
       </button>
       {open && (
@@ -655,6 +691,11 @@ function CertDropdown() {
 
 export default function ProgrammesPage({ setPage }) {
   const [expanded, setExpanded] = useState({});
+  const [openLevels, setOpenLevels] = useState(() => {
+    const firstLevel = Object.keys(PROGRAMMES)[0];
+    return firstLevel ? { [normalizeLevel(firstLevel)]: true } : {};
+  });
+  const [quizOpen, setQuizOpen] = useState(false);
 
   const groupedProgrammes = useMemo(
     () =>
@@ -677,6 +718,13 @@ export default function ProgrammesPage({ setPage }) {
       else next[key] = true;
       return next;
     });
+  };
+
+  const toggleLevel = (level) => {
+    setOpenLevels((prev) => ({
+      ...prev,
+      [level]: !prev[level],
+    }));
   };
 
   return (
@@ -866,10 +914,64 @@ export default function ProgrammesPage({ setPage }) {
       <section style={{ paddingTop: 18, paddingBottom: 10 }}>
         <WideWrap>
           <Shell>
+            <Reveal>
+              <div
+                style={{
+                  background: C.white,
+                  border: `1px solid ${C.line}`,
+                  borderRadius: 8,
+                  padding: 12,
+                  boxShadow: "0 8px 18px rgba(11,22,48,0.04)",
+                  marginBottom: 12,
+                }}
+              >
+                <CertDropdown />
+              </div>
+            </Reveal>
+
+            <Reveal>
+              <div
+                style={{
+                  background: C.white,
+                  border: `1px solid ${C.line}`,
+                  borderRadius: 8,
+                  padding: 12,
+                  boxShadow: "0 8px 18px rgba(11,22,48,0.04)",
+                  marginBottom: 12,
+                }}
+              >
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "minmax(220px, 0.92fr) minmax(0, 1.08fr)",
+                    gap: 12,
+                    alignItems: "center",
+                  }}
+                  className="resp-grid-2"
+                >
+                  <div style={{ width: "100%", height: 220, borderRadius: 8, overflow: "hidden" }}>
+                    <img src={IMAGES.advisor} alt="Advisor supporting a learner with programme selection" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  </div>
+                  <div>
+                    <Label>Guided choices</Label>
+                    <div style={{ fontFamily: S.heading, fontSize: 16, color: C.ink, fontWeight: 700, margin: "8px 0 6px", lineHeight: 1.15 }}>
+                      Find the route that fits your goals more quickly
+                    </div>
+                    <p style={{ fontFamily: S.body, fontSize: 11, color: C.inkSoft, lineHeight: 1.6, margin: 0 }}>
+                      If you already know the field you want, the level cards below help you compare options quickly. If you are unsure where to begin, the quiz can suggest a starting point based on your current qualifications and experience.
+                    </p>
+                    <p style={{ fontFamily: S.body, fontSize: 11, color: C.inkSoft, lineHeight: 1.6, margin: "8px 0 0" }}>
+                      The goal of this page is simple: help you understand the levels, see what each route costs, and move into the right programme with more confidence.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Reveal>
+
             <Intro
               tag="Programme finder"
               title="Browse the structure first, then drill into the details"
-              desc="All programmes remain online and self-paced. This page improves browsing and comparison while preserving the level quiz, programme details, and direct route actions."
+              desc=""
             />
             <div
               style={{
@@ -882,7 +984,6 @@ export default function ProgrammesPage({ setPage }) {
               className="resp-grid-2"
             >
               <div>
-                <CertDropdown />
                 <Reveal>
                   <div
                     style={{
@@ -893,31 +994,99 @@ export default function ProgrammesPage({ setPage }) {
                       boxShadow: "0 8px 18px rgba(11,22,48,0.04)",
                     }}
                   >
-                    <LevelQuiz setPage={setPage} />
+                    <button
+                      onClick={() => setQuizOpen((prev) => !prev)}
+                      style={{
+                        width: "100%",
+                        background: quizOpen ? "rgba(10,110,138,0.08)" : C.white,
+                        border: `1px solid ${quizOpen ? "rgba(10,110,138,0.18)" : C.line}`,
+                        borderRadius: 8,
+                        padding: 12,
+                        cursor: "pointer",
+                        textAlign: "left",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <div
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              minHeight: 22,
+                              padding: "0 7px",
+                              borderRadius: 999,
+                              background: "rgba(10,110,138,0.10)",
+                              color: C.teal,
+                              fontSize: 8,
+                              letterSpacing: 1,
+                              textTransform: "uppercase",
+                              fontWeight: 800,
+                              fontFamily: S.body,
+                              marginBottom: 8,
+                            }}
+                          >
+                            Level quiz
+                          </div>
+                          <div style={{ fontFamily: S.heading, fontSize: 14, color: C.ink, fontWeight: 700, marginBottom: 6 }}>
+                            Not sure where to start?
+                          </div>
+                          <div style={{ fontFamily: S.body, fontSize: 11, color: C.inkSoft, lineHeight: 1.55 }}>
+                            Open the quick quiz and we will help point you toward the right starting level.
+                          </div>
+                        </div>
+                        <span
+                          style={{
+                            fontSize: 12,
+                            color: C.inkSoft,
+                            fontWeight: 800,
+                            transform: quizOpen ? "rotate(180deg)" : "none",
+                            transition: "transform 0.2s ease",
+                            flexShrink: 0,
+                            marginTop: 2,
+                          }}
+                        >
+                          {quizOpen ? "-" : "+"}
+                        </span>
+                      </div>
+                    </button>
+
+                    {quizOpen && (
+                      <div style={{ marginTop: 10 }}>
+                        <LevelQuiz setPage={setPage} />
+                      </div>
+                    )}
                   </div>
                 </Reveal>
               </div>
-              <Reveal>
-                <div
-                  style={{
-                    background: C.white,
-                    border: `1px solid ${C.line}`,
-                    borderRadius: 8,
-                    padding: 12,
-                    boxShadow: "0 8px 18px rgba(11,22,48,0.04)",
-                  }}
-                >
-                  <div style={{ width: "100%", height: 220, borderRadius: 8, overflow: "hidden", marginBottom: 12 }}>
-                    <img src={IMAGES.advisor} alt="Advisor supporting a learner with programme selection" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <div>
+                <Reveal>
+                  <div
+                    style={{
+                      background: C.white,
+                      border: `1px solid ${C.line}`,
+                      borderRadius: 8,
+                      padding: 16,
+                      boxShadow: "0 8px 18px rgba(11,22,48,0.04)",
+                      minHeight: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <img
+                      src="/NCTVET Logo.jpg"
+                      alt="NCTVET logo"
+                      style={{
+                        width: "100%",
+                        maxWidth: 240,
+                        height: "auto",
+                        objectFit: "contain",
+                        display: "block",
+                      }}
+                    />
                   </div>
-                  <div style={{ fontFamily: S.heading, fontSize: 14, color: C.ink, fontWeight: 700, marginBottom: 6 }}>
-                    Find the route that fits your goals more quickly
-                  </div>
-                  <p style={{ fontFamily: S.body, fontSize: 11, color: C.inkSoft, lineHeight: 1.55, margin: 0 }}>
-                    Compare levels, understand costs, and move toward a confident decision with less scrolling and less confusion.
-                  </p>
-                </div>
-              </Reveal>
+                </Reveal>
+              </div>
             </div>
           </Shell>
         </WideWrap>
@@ -929,7 +1098,7 @@ export default function ProgrammesPage({ setPage }) {
             <Intro
               tag="Level overview"
               title="See the programme structure at a glance"
-              desc="Each level stays organised the same way, but the layout now gives learners a quicker overview before they open the full programme cards."
+              desc=""
             />
             <Reveal>
               <div
@@ -941,9 +1110,19 @@ export default function ProgrammesPage({ setPage }) {
                 }}
                 className="resp-grid-5"
               >
-                {groupedProgrammes.map(({ level, progs, color, summary }) => (
-                  <LevelOverviewCard key={level} title={level} count={progs.length} summary={summary} color={color} />
-                ))}
+                {groupedProgrammes.map(({ level, progs, color, summary }) => {
+                  const treatment = LEVEL_BACKGROUNDS[level] || null;
+                  return (
+                    <LevelOverviewCard
+                      key={level}
+                      title={level}
+                      count={progs.length}
+                      summary={summary}
+                      color={color}
+                      treatment={treatment}
+                    />
+                  );
+                })}
               </div>
             </Reveal>
             <div style={{ fontSize: 10, color: C.inkSoft, fontFamily: S.body, marginBottom: 12, lineHeight: 1.6 }}>
@@ -956,68 +1135,115 @@ export default function ProgrammesPage({ setPage }) {
       <section style={{ paddingTop: 4, paddingBottom: 10 }}>
         <WideWrap>
           <Shell>
-            {groupedProgrammes.map(({ level, progs, color, summary }, groupIndex) => {
-              const firstProg = progs[0];
-              const firstTotal = firstProg ? fmt(parseInt(String(firstProg.total).replace(/[^0-9]/g, ""), 10)) : "";
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                gap: 12,
+              }}
+              className="resp-grid-2"
+            >
+              {groupedProgrammes.map(({ level, progs, color, summary }, groupIndex) => {
+                const firstProg = progs[0];
+                const firstTotal = firstProg ? fmt(parseInt(String(firstProg.total).replace(/[^0-9]/g, ""), 10)) : "";
+                const isOpen = !!openLevels[level];
+                const treatment = LEVEL_BACKGROUNDS[level] || {
+                  shell: `${color}10`,
+                  header: `${color}18`,
+                  badge: C.white,
+                };
 
-              return (
-                <Reveal key={level} delay={groupIndex * 0.03}>
-                  <section style={{ marginBottom: 18 }}>
-                    <div
+                return (
+                  <Reveal key={level} delay={groupIndex * 0.03}>
+                    <section
                       style={{
-                        background: C.white,
-                        border: `1px solid ${C.line}`,
-                        borderRadius: 8,
-                        padding: 12,
-                        boxShadow: "0 8px 18px rgba(11,22,48,0.04)",
-                        marginBottom: 10,
+                        background: treatment.shell,
+                        border: `1px solid ${color}24`,
+                        borderRadius: 10,
+                        padding: 10,
+                        alignSelf: "start",
                       }}
                     >
-                      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
-                        <div style={{ width: 5, height: 26, borderRadius: 999, background: color }} />
-                        <div style={{ fontFamily: S.heading, fontSize: 16, fontWeight: 700, color: C.ink, lineHeight: 1.15 }}>{level}</div>
-                      </div>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", marginBottom: 6 }}>
-                        <span
-                          style={{
-                            padding: "4px 8px",
-                            borderRadius: 999,
-                            background: `${color}14`,
-                            color,
-                            fontSize: 8,
-                            fontWeight: 800,
-                            letterSpacing: 1,
-                            textTransform: "uppercase",
-                            fontFamily: S.body,
-                          }}
-                        >
-                          {summary.label}
-                        </span>
-                        <span style={{ fontSize: 10, color: C.inkSoft, fontFamily: S.body, fontWeight: 700 }}>
-                          {progs.length} programme{progs.length > 1 ? "s" : ""} · totals from {firstTotal}
-                        </span>
-                      </div>
-                      <p style={{ margin: 0, fontFamily: S.body, fontSize: 11, color: C.inkSoft, lineHeight: 1.55 }}>{summary.note}</p>
-                    </div>
+                      <button
+                        onClick={() => toggleLevel(level)}
+                        style={{
+                          width: "100%",
+                          background: treatment.header,
+                          border: `1px solid ${color}2e`,
+                          borderRadius: 8,
+                          padding: 12,
+                          boxShadow: "0 8px 18px rgba(11,22,48,0.03)",
+                          textAlign: "left",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+                          <div style={{ minWidth: 0, flex: 1 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
+                              <div style={{ width: 5, height: 26, borderRadius: 999, background: color }} />
+                              <div style={{ fontFamily: S.heading, fontSize: 16, fontWeight: 700, color: C.ink, lineHeight: 1.15 }}>{level}</div>
+                            </div>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", marginBottom: 6 }}>
+                              <span
+                                style={{
+                                  padding: "4px 8px",
+                                  borderRadius: 999,
+                                  background: treatment.badge,
+                                  color,
+                                  fontSize: 8,
+                                  fontWeight: 800,
+                                  letterSpacing: 1,
+                                  textTransform: "uppercase",
+                                  fontFamily: S.body,
+                                }}
+                              >
+                                {summary.label}
+                              </span>
+                              <span style={{ fontSize: 10, color: C.inkSoft, fontFamily: S.body, fontWeight: 700 }}>
+                                {progs.length} programme{progs.length > 1 ? "s" : ""} · totals from {firstTotal}
+                              </span>
+                            </div>
+                            <p style={{ margin: 0, fontFamily: S.body, fontSize: 11, color: C.inkSoft, lineHeight: 1.55 }}>{summary.note}</p>
+                          </div>
+                          <span
+                            style={{
+                              fontSize: 12,
+                              color: C.inkSoft,
+                              fontWeight: 800,
+                              transform: isOpen ? "rotate(180deg)" : "none",
+                              transition: "transform 0.2s ease",
+                              flexShrink: 0,
+                              marginTop: 2,
+                            }}
+                          >
+                            {isOpen ? "-" : "+"}
+                          </span>
+                        </div>
+                      </button>
 
-                    {progs.map((prog) => {
-                      const key = `${level}-${prog.name}`;
-                      return (
-                        <ProgrammeCard
-                          key={key}
-                          prog={prog}
-                          level={level}
-                          levelColor={color}
-                          expanded={!!expanded[key]}
-                          onToggle={() => toggle(key)}
-                          setPage={setPage}
-                        />
-                      );
-                    })}
-                  </section>
-                </Reveal>
-              );
-            })}
+                      {isOpen && (
+                        <div style={{ marginTop: 10 }}>
+                          {progs.map((prog) => {
+                            const key = `${level}-${prog.name}`;
+                            return (
+                              <ProgrammeCard
+                                key={key}
+                                prog={prog}
+                                level={level}
+                                levelColor={color}
+                                expanded={!!expanded[key]}
+                                onToggle={() => toggle(key)}
+                                setPage={setPage}
+                              />
+                            );
+                          })}
+                        </div>
+                      )}
+                    </section>
+                  </Reveal>
+                );
+              })}
+            </div>
           </Shell>
         </WideWrap>
       </section>
@@ -1115,3 +1341,13 @@ export default function ProgrammesPage({ setPage }) {
     </PageWrapper>
   );
 }
+
+
+
+
+
+
+
+
+
+

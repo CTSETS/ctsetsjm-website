@@ -6,7 +6,6 @@ import {
   Btn,
   Reveal,
   PageScripture,
-  SocialProofBar,
 } from "../components/shared/CoreComponents";
 
 const QUICK_TOPICS = ["Application", "Payment", "Self-paced", "HEART", "Certification", "Support"];
@@ -188,8 +187,8 @@ export default function FAQPage({ setPage }) {
 
   return (
     <PageWrapper bg={S.lightBg}>
-      <div style={{ background: "linear-gradient(135deg, #0B1120 0%, #1E293B 58%, #0E8F8B 145%)", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 18% 22%, rgba(217,119,6,0.16), transparent 28%), radial-gradient(circle at 82% 18%, rgba(37,99,235,0.14), transparent 24%), radial-gradient(circle at 70% 80%, rgba(124,58,237,0.12), transparent 22%)" }} />
+      <div style={{ background: "linear-gradient(135deg, #061428 0%, #011E40 54%, #0A6E8A 122%)", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 18% 22%, rgba(196,145,18,0.18), transparent 28%), radial-gradient(circle at 82% 18%, rgba(10,110,138,0.16), transparent 24%), radial-gradient(circle at 70% 80%, rgba(0,155,58,0.12), transparent 22%)" }} />
         <WideWrap style={{ position: "relative", paddingTop: 64, paddingBottom: 60 }}>
           <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.08fr) minmax(380px, 0.92fr)", gap: 34, alignItems: "center" }} className="resp-grid-2">
             <Reveal>
@@ -223,10 +222,6 @@ export default function FAQPage({ setPage }) {
           </div>
         </WideWrap>
       </div>
-
-      <WideWrap style={{ marginTop: -26, position: "relative", zIndex: 2 }}>
-        <Reveal><SocialProofBar /></Reveal>
-      </WideWrap>
 
       <section style={{ paddingTop: 34 }}>
         <WideWrap>
