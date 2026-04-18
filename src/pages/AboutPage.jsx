@@ -88,7 +88,7 @@ function WideWrap({ children, style }) {
     <div
       style={{
         width: "100%",
-        maxWidth: 1120,
+        maxWidth: 1440,
         margin: "0 auto",
         padding: "0 clamp(18px, 3vw, 40px)",
         boxSizing: "border-box",
@@ -134,7 +134,7 @@ function SectionIntro({ tag, title, desc, accent = S.teal }) {
         <h2
           style={{
             fontFamily: S.heading,
-            fontSize: "clamp(22px, 2.6vw, 30px)",
+            fontSize: "clamp(26px, 3.2vw, 36px)",
             lineHeight: 1.12,
             color: S.navy,
             margin: 0,
@@ -148,7 +148,7 @@ function SectionIntro({ tag, title, desc, accent = S.teal }) {
       <p
         style={{
           fontFamily: S.body,
-          fontSize: 14,
+          fontSize: 15,
           lineHeight: 1.75,
           color: S.gray,
           margin: 0,
@@ -253,7 +253,7 @@ function ValueWordCard({ item }) {
           </div>
         </div>
       </div>
-      <p style={{ fontFamily: S.body, fontSize: 11.5, color: S.gray, lineHeight: 1.55, margin: 0 }}>{item.text}</p>
+      <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.62, margin: 0 }}>{item.text}</p>
     </CompactCard>
   );
 }
@@ -283,7 +283,7 @@ function InfoCard({ title, text, accent }) {
       <div style={{ fontFamily: S.heading, fontSize: 16, color: S.navy, marginBottom: 6, fontWeight: 800, lineHeight: 1.1 }}>
         {title}
       </div>
-      <p style={{ fontFamily: S.body, fontSize: 11.5, color: S.gray, lineHeight: 1.55, margin: 0 }}>{text}</p>
+      <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.62, margin: 0 }}>{text}</p>
     </CompactCard>
   );
 }
@@ -324,10 +324,10 @@ export default function AboutPage({ setPage }) {
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 10px", borderRadius: 999, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", fontFamily: S.body, fontSize: 10, fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: S.goldLight, marginBottom: 10 }}>
                   About
                 </div>
-                <h1 style={{ fontFamily: S.heading, fontSize: "clamp(22px, 2.8vw, 29px)", lineHeight: 1.08, color: "#fff", fontWeight: 800, margin: "0 0 8px", maxWidth: 540 }}>
+                <h1 style={{ fontFamily: S.heading, fontSize: "clamp(30px, 4.2vw, 46px)", lineHeight: 1.04, color: "#fff", fontWeight: 800, margin: "0 0 10px", maxWidth: 720 }}>
                   An institution built to expand access, structure, and meaningful vocational progression
                 </h1>
-                <p style={{ fontFamily: S.body, fontSize: 12.5, lineHeight: 1.58, color: "rgba(255,255,255,0.82)", maxWidth: 560, margin: "0 0 14px" }}>
+                <p style={{ fontFamily: S.body, fontSize: 14.5, lineHeight: 1.68, color: "rgba(255,255,255,0.82)", maxWidth: 680, margin: "0 0 16px" }}>
                   CTS ETS was created to offer a more flexible, professionally presented, and mission-led route for learners who need recognised development without being blocked by rigid delivery models or distance.
                 </p>
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -366,7 +366,7 @@ export default function AboutPage({ setPage }) {
                 <div style={{ fontFamily: S.heading, fontSize: 17, fontWeight: 800, color: S.navy, lineHeight: 1.1, marginBottom: 6 }}>
                   Built around access, structure, and credible learner progression
                 </div>
-                <p style={{ fontFamily: S.body, fontSize: 11.5, color: S.gray, lineHeight: 1.55, margin: 0 }}>
+                <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.62, margin: 0 }}>
                   CTS ETS is presented as an institution designed to widen access to meaningful training through a structured, professional, and flexible online environment.
                 </p>
               </CompactCard>
@@ -377,7 +377,7 @@ export default function AboutPage({ setPage }) {
                 <div style={{ fontFamily: S.heading, fontSize: 16, color: S.navy, fontWeight: 800, marginBottom: 6, lineHeight: 1.1 }}>
                   Built to serve learners who need access and direction
                 </div>
-                <p style={{ fontFamily: S.body, fontSize: 11.5, color: S.gray, lineHeight: 1.55, margin: 0 }}>
+                <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.62, margin: 0 }}>
                   The goal is not only to provide courses, but to offer a clearer route into recognised development, confidence, and vocational readiness.
                 </p>
               </CompactCard>
@@ -389,7 +389,7 @@ export default function AboutPage({ setPage }) {
               <h2 style={{ fontFamily: S.heading, fontSize: "clamp(18px, 2.2vw, 24px)", color: S.navy, fontWeight: 800, lineHeight: 1.12, margin: "0 0 10px" }}>
                 A mission rooted in access, dignity, and opportunity
               </h2>
-              <div style={{ fontFamily: S.body, fontSize: 12, color: "#334155", lineHeight: 1.62 }}>
+              <div style={{ fontFamily: S.body, fontSize: 14, color: "#334155", lineHeight: 1.75 }}>
                 <p style={{ margin: "0 0 12px" }}>
                   CTS ETS was built around a simple conviction: that more people should be able to access meaningful training and recognised development without being blocked by inflexible systems, distance, or circumstance.
                 </p>
@@ -465,10 +465,10 @@ export default function AboutPage({ setPage }) {
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 10px", borderRadius: 999, background: "rgba(255,255,255,0.06)", color: S.goldLight, fontSize: 10, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", fontFamily: S.body, marginBottom: 8 }}>
                     Take the Next Step
                   </div>
-                  <h2 style={{ fontFamily: S.heading, fontSize: "clamp(18px,2.2vw,24px)", color: S.white, lineHeight: 1.1, margin: "0 0 8px", fontWeight: 800 }}>
+                  <h2 style={{ fontFamily: S.heading, fontSize: "clamp(22px,3vw,30px)", color: S.white, lineHeight: 1.1, margin: "0 0 10px", fontWeight: 800 }}>
                     Explore the programmes behind the institutional mission
                   </h2>
-                  <p style={{ fontFamily: S.body, fontSize: 12, color: "rgba(255,255,255,0.74)", lineHeight: 1.58, margin: 0, maxWidth: 500 }}>
+                  <p style={{ fontFamily: S.body, fontSize: 14, color: "rgba(255,255,255,0.74)", lineHeight: 1.68, margin: 0, maxWidth: 620 }}>
                     Review the training pathways shaped by the mission, values, and learner-centred direction of CTS ETS.
                   </p>
                 </div>

@@ -135,7 +135,7 @@ function Shell({ children, style }) {
   return (
     <div
       style={{
-        maxWidth: 1080,
+        maxWidth: 1440,
         margin: "0 auto",
         ...style,
       }}
@@ -187,7 +187,7 @@ function Intro({ tag, title, desc, dark = false }) {
           style={{
             fontFamily: S.heading,
             fontWeight: 800,
-            fontSize: "clamp(15px, 2vw, 18px)",
+            fontSize: "clamp(26px, 3.2vw, 36px)",
             lineHeight: 1.12,
             color: dark ? C.white : C.ink,
             marginTop: 7,
@@ -665,7 +665,7 @@ function CertDropdown() {
             {items.map((item) => (
               <div key={item.title} style={{ background: C.mist, border: `1px solid ${C.line}`, borderRadius: 8, padding: 12 }}>
                 <div style={{ fontFamily: S.heading, fontSize: 13, color: C.ink, fontWeight: 700, marginBottom: 6 }}>{item.title}</div>
-                <p style={{ fontFamily: S.body, fontSize: 11, color: C.inkSoft, lineHeight: 1.55, margin: 0 }}>{item.text}</p>
+                <p style={{ fontFamily: S.body, fontSize: 13, color: C.inkSoft, lineHeight: 1.7, margin: 0 }}>{item.text}</p>
               </div>
             ))}
           </div>
@@ -755,7 +755,7 @@ export default function ProgrammesPage({ setPage }) {
                     style={{
                       fontFamily: S.heading,
                       fontWeight: 800,
-                      fontSize: "clamp(18px, 2.6vw, 22px)",
+                      fontSize: "clamp(30px, 4.2vw, 46px)",
                       lineHeight: 1.12,
                       letterSpacing: -0.1,
                       margin: "8px 0 7px",
@@ -952,10 +952,10 @@ export default function ProgrammesPage({ setPage }) {
                     <div style={{ fontFamily: S.heading, fontSize: 16, color: C.ink, fontWeight: 700, margin: "8px 0 6px", lineHeight: 1.15 }}>
                       Find the route that fits your goals more quickly
                     </div>
-                    <p style={{ fontFamily: S.body, fontSize: 11, color: C.inkSoft, lineHeight: 1.6, margin: 0 }}>
+                    <p style={{ fontFamily: S.body, fontSize: 13, color: C.inkSoft, lineHeight: 1.72, margin: 0 }}>
                       If you already know the field you want, the level cards below help you compare options quickly. If you are unsure where to begin, the quiz can suggest a starting point based on your current qualifications and experience.
                     </p>
-                    <p style={{ fontFamily: S.body, fontSize: 11, color: C.inkSoft, lineHeight: 1.6, margin: "8px 0 0" }}>
+                    <p style={{ fontFamily: S.body, fontSize: 13, color: C.inkSoft, lineHeight: 1.72, margin: "8px 0 0" }}>
                       The goal of this page is simple: help you understand the levels, see what each route costs, and move into the right programme with more confidence.
                     </p>
                   </div>
@@ -1005,10 +1005,10 @@ export default function ProgrammesPage({ setPage }) {
                         <div style={{ background: "rgba(10,110,138,0.10)", color: C.teal, fontSize: 8, letterSpacing: 1, textTransform: "uppercase", fontWeight: 800, fontFamily: S.body, display: "inline-flex", alignItems: "center", minHeight: 24, padding: "0 8px", borderRadius: 999, marginBottom: 8 }}>
                           Level quiz
                         </div>
-                        <div style={{ fontFamily: S.heading, fontSize: 14, color: C.ink, fontWeight: 700, marginBottom: 6 }}>
+                        <div style={{ fontFamily: S.heading, fontSize: 18, color: C.ink, fontWeight: 700, marginBottom: 8 }}>
                           Not sure where to start?
                         </div>
-                        <div style={{ fontFamily: S.body, fontSize: 11, color: C.inkSoft, lineHeight: 1.55 }}>
+                        <div style={{ fontFamily: S.body, fontSize: 13, color: C.inkSoft, lineHeight: 1.7 }}>
                           Answer a few quick questions and we will help point you toward the level that best matches your current qualifications and experience.
                         </div>
                       </div>
@@ -1051,7 +1051,7 @@ export default function ProgrammesPage({ setPage }) {
                         <div style={{ width: 18, height: 18, borderRadius: 999, background: "rgba(196,145,18,0.14)", color: C.gold, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, fontFamily: S.body, flexShrink: 0, marginTop: 1 }}>
                           {index + 1}
                         </div>
-                        <div style={{ fontFamily: S.body, fontSize: 11, color: C.inkSoft, lineHeight: 1.55 }}>
+                        <div style={{ fontFamily: S.body, fontSize: 13, color: C.inkSoft, lineHeight: 1.7 }}>
                           {item}
                         </div>
                       </div>
@@ -1175,7 +1175,7 @@ export default function ProgrammesPage({ setPage }) {
                                 {progs.length} programme{progs.length > 1 ? "s" : ""} � totals from {firstTotal}
                               </span>
                             </div>
-                            <p style={{ margin: 0, fontFamily: S.body, fontSize: 11, color: C.inkSoft, lineHeight: 1.55 }}>{summary.note}</p>
+                            <p style={{ margin: 0, fontFamily: S.body, fontSize: 13, color: C.inkSoft, lineHeight: 1.7 }}>{summary.note}</p>
                           </div>
                           <span
                             style={{
@@ -1256,7 +1256,7 @@ export default function ProgrammesPage({ setPage }) {
                     >
                       Need help choosing?
                     </div>
-                    <div style={{ fontFamily: S.heading, fontWeight: 800, fontSize: "clamp(15px, 2vw, 18px)", lineHeight: 1.12, color: C.white }}>
+                    <div style={{ fontFamily: S.heading, fontWeight: 800, fontSize: "clamp(26px, 3.2vw, 36px)", lineHeight: 1.12, color: C.white }}>
                       Move from browsing to action with less friction
                     </div>
                     <div

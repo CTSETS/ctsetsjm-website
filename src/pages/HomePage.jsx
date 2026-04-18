@@ -161,7 +161,7 @@ function Shell({ children, style }) {
   return (
     <div
       style={{
-        maxWidth: 1080,
+        maxWidth: 1440,
         margin: "0 auto",
         ...style,
       }}
@@ -213,7 +213,7 @@ function Intro({ tag, title, desc, dark = false }) {
           style={{
             fontFamily: S.heading,
             fontWeight: 800,
-            fontSize: "clamp(22px, 2.6vw, 30px)",
+            fontSize: "clamp(26px, 3.2vw, 36px)",
             lineHeight: 1.12,
             color: dark ? C.white : C.ink,
             marginTop: 10,
@@ -226,7 +226,7 @@ function Intro({ tag, title, desc, dark = false }) {
         style={{
           margin: 0,
           color: dark ? "rgba(255,255,255,0.74)" : C.inkSoft,
-          fontSize: 14,
+          fontSize: 15,
           lineHeight: 1.75,
           fontFamily: S.body,
         }}
@@ -857,7 +857,7 @@ export default function HomePage({ setPage }) {
                     style={{
                       fontFamily: S.heading,
                       fontWeight: 800,
-                        fontSize: "clamp(20px, 2.8vw, 25px)",
+                        fontSize: "clamp(30px, 4.4vw, 46px)",
                       lineHeight: 1.12,
                       letterSpacing: -0.1,
                       margin: "8px 0 7px",
@@ -870,7 +870,7 @@ export default function HomePage({ setPage }) {
                   <p
                     style={{
                       margin: 0,
-                      fontSize: 12,
+                      fontSize: 14.5,
                       lineHeight: 1.5,
                       color: "rgba(255,255,255,0.78)",
                       maxWidth: 360,
@@ -1255,7 +1255,7 @@ export default function HomePage({ setPage }) {
                       style={{
                         fontFamily: S.heading,
                         fontWeight: 800,
-                        fontSize: "clamp(15px, 2vw, 18px)",
+                        fontSize: "clamp(18px, 2.5vw, 24px)",
                         lineHeight: 1.12,
                         color: C.white,
                       }}
