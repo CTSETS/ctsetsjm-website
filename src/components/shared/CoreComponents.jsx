@@ -3,14 +3,14 @@ import S from "../../constants/styles";
 import { SCRIPTURES, SOCIAL_PROOF } from "../../constants/content";
 
 export function Container({ children, style }) {
-  return <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 clamp(16px,3vw,48px)", ...style }}>{children}</div>;
+  return <div style={{ width: "100%", maxWidth: 1180, margin: "0 auto", padding: "0 clamp(16px,3.5vw,44px)", ...style }}>{children}</div>;
 }
 export function PageWrapper({ children, bg = "#fff" }) {
-  return <main id="main-content" tabIndex={-1} style={{ minHeight: "calc(100vh - 72px)", background: bg, padding: "0 0 60px", outline: "none" }}>{children}</main>;
+  return <main id="main-content" tabIndex={-1} style={{ minHeight: "calc(100vh - 72px)", background: bg, padding: "0 0 clamp(36px, 5vw, 60px)", outline: "none", width: "100%", overflowX: "hidden" }}>{children}</main>;
 }
 export function Btn({ children, primary, onClick, style, ariaLabel }) {
   return (
-    <button onClick={onClick} aria-label={ariaLabel} style={{ padding: primary ? "14px 32px" : "12px 28px", borderRadius: 8, border: primary ? "none" : "2px solid " + S.navy, background: primary ? S.gold : "transparent", color: primary ? S.navy : S.navy, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: S.body, letterSpacing: 0.5, transition: "all 0.2s", ...style }}>{children}</button>
+    <button onClick={onClick} aria-label={ariaLabel} style={{ padding: primary ? "clamp(12px, 1.7vw, 14px) clamp(20px, 3vw, 32px)" : "clamp(10px, 1.5vw, 12px) clamp(18px, 2.7vw, 28px)", borderRadius: 8, border: primary ? "none" : "2px solid " + S.navy, background: primary ? S.gold : "transparent", color: primary ? S.navy : S.navy, fontSize: "clamp(13px, 1.5vw, 14px)", fontWeight: 700, cursor: "pointer", fontFamily: S.body, letterSpacing: 0.3, transition: "all 0.2s", maxWidth: "100%", ...style }}>{children}</button>
   );
 }
 export function Reveal({ children, delay = 0, direction = "up", style = {} }) {
@@ -27,10 +27,10 @@ export function Reveal({ children, delay = 0, direction = "up", style = {} }) {
 export function SectionHeader({ tag, title, desc, light = false, accentColor }) {
   return (
     <Reveal>
-      <div style={{ textAlign: "center", marginBottom: 48, padding: "48px 24px 0" }}>
+      <div style={{ textAlign: "center", marginBottom: "clamp(28px, 4vw, 48px)", padding: "clamp(28px, 4vw, 48px) clamp(16px, 3vw, 24px) 0" }}>
         <span style={{ fontSize: 11, color: accentColor || S.gold, letterSpacing: 3, textTransform: "uppercase", fontFamily: S.body, fontWeight: 600 }}>{tag}</span>
-        <h2 style={{ fontFamily: S.heading, fontSize: "clamp(26px, 4vw, 40px)", color: light ? "#fff" : S.navy, margin: "10px 0 0", fontWeight: 700 }}>{title}</h2>
-        {desc && <p style={{ fontFamily: S.body, fontSize: 15, color: light ? "rgba(255,255,255,0.7)" : S.gray, marginTop: 14, maxWidth: 600, marginLeft: "auto", marginRight: "auto", lineHeight: 1.65 }}>{desc}</p>}
+        <h2 style={{ fontFamily: S.heading, fontSize: "clamp(24px, 3.5vw, 36px)", color: light ? "#fff" : S.navy, margin: "10px 0 0", fontWeight: 700, lineHeight: 1.08 }}>{title}</h2>
+        {desc && <p style={{ fontFamily: S.body, fontSize: "clamp(14px, 1.6vw, 15px)", color: light ? "rgba(255,255,255,0.7)" : S.gray, marginTop: 14, maxWidth: 680, marginLeft: "auto", marginRight: "auto", lineHeight: 1.65 }}>{desc}</p>}
       </div>
     </Reveal>
   );

@@ -2,15 +2,18 @@ import { useState } from "react";
 import S from "../../constants/styles";
 import { NAV_LOGO, APPLY_URL, TRACK_URL, PAYMENT_URL, PORTAL_URL } from "../../constants/config";
 
+const NAV_ACCENTS = {
+  Home: { bg: "rgba(196,145,18,0.18)", border: "rgba(196,145,18,0.28)", text: "#F5D67A" },
+  About: { bg: "rgba(28,123,71,0.16)", border: "rgba(28,123,71,0.26)", text: "#CBEAC8" },
+  Programmes: { bg: "rgba(10,110,138,0.16)", border: "rgba(10,110,138,0.28)", text: "#CDEEF6" },
+  Admissions: { bg: "rgba(210,106,67,0.16)", border: "rgba(210,106,67,0.26)", text: "#FFD9C8" },
+  "Student Finance": { bg: "rgba(130,92,201,0.16)", border: "rgba(130,92,201,0.26)", text: "#E3D8FF" },
+  Support: { bg: "rgba(93,115,146,0.18)", border: "rgba(93,115,146,0.28)", text: "#DDE6F2" },
+};
+
 const NAV_GROUPS = [
   { label: "Home", page: "Home" },
-  {
-    label: "About",
-    children: [
-      { label: "Our Story", page: "About" },
-      { label: "Why Choose CTS ETS", page: "Why Choose" },
-    ],
-  },
+  { label: "About", page: "About" },
   { label: "Programmes", page: "Programmes" },
   {
     label: "Admissions",
@@ -29,20 +32,23 @@ const NAV_GROUPS = [
   },
   {
     label: "Support",
-    children: [
-      { label: "FAQ", page: "FAQ" },
-      { label: "Contact Us", page: "Contact" },
+    children: [      { label: "Contact Us", page: "Contact" },
       { label: "Verify Certificate", page: "Verify Certificate" },
       { label: "Feedback", page: "Feedback" },
     ],
   },
 ];
 
+function getNavTone(label) {
+  return NAV_ACCENTS[label] || { bg: "rgba(255,255,255,0.08)", border: "rgba(255,255,255,0.12)", text: "rgba(255,255,255,0.82)" };
+}
+
 function NavDropdown({ group, page, setPage }) {
   const [hovered, setHovered] = useState(false);
   const isActive = group.children
     ? group.children.some((c) => c.page && c.page === page)
     : group.page === page;
+  const tone = getNavTone(group.label);
 
   if (!group.children) {
     return (
@@ -51,11 +57,11 @@ function NavDropdown({ group, page, setPage }) {
         style={{
           padding: "8px 14px",
           borderRadius: 6,
-          border: "none",
-          background: isActive ? "rgba(196,145,18,0.14)" : "transparent",
-          color: isActive ? "#F5D67A" : "rgba(255,255,255,0.78)",
+          border: `1px solid ${tone.border}`,
+          background: isActive ? tone.bg : tone.bg,
+          color: isActive ? tone.text : tone.text,
           fontSize: 12,
-          fontWeight: isActive ? 700 : 500,
+          fontWeight: isActive ? 700 : 600,
           cursor: "pointer",
           fontFamily: S.body,
           transition: "all 0.2s",
@@ -79,11 +85,11 @@ function NavDropdown({ group, page, setPage }) {
         style={{
           padding: "8px 14px",
           borderRadius: 6,
-          border: "none",
-          background: isActive ? "rgba(196,145,18,0.14)" : "transparent",
-          color: isActive ? "#F5D67A" : "rgba(255,255,255,0.78)",
+          border: `1px solid ${tone.border}`,
+          background: tone.bg,
+          color: tone.text,
           fontSize: 12,
-          fontWeight: isActive ? 700 : 500,
+          fontWeight: isActive ? 700 : 600,
           cursor: "pointer",
           fontFamily: S.body,
           display: "flex",
@@ -128,11 +134,11 @@ function NavDropdown({ group, page, setPage }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setHovered(false)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    width: "100%",
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      width: "100%",
                     padding: "10px 20px",
                     background: "transparent",
                     color: "rgba(255,255,255,0.72)",
@@ -208,12 +214,13 @@ export default function Navbar({ page, setPage }) {
       >
         <div
           style={{
+            width: "100%",
             maxWidth: 1200,
             margin: "0 auto",
-            padding: "0 20px",
+            padding: "0 clamp(16px, 3vw, 20px)",
             display: "flex",
             alignItems: "center",
-            height: 72,
+            height: "clamp(64px, 8vw, 72px)",
             justifyContent: "space-between",
           }}
         >
@@ -225,9 +232,9 @@ export default function Navbar({ page, setPage }) {
             onKeyDown={(e) => e.key === "Enter" && setPage("Home")}
             aria-label="CTS ETS Home"
           >
-            <img src={NAV_LOGO} alt="CTS ETS" style={{ width: 52, height: 58, objectFit: "contain", borderRadius: 4 }} width={52} height={58} />
+            <img src={NAV_LOGO} alt="CTS ETS" style={{ width: "clamp(44px, 6vw, 52px)", height: "clamp(48px, 6.8vw, 58px)", objectFit: "contain", borderRadius: 4, flexShrink: 0 }} width={52} height={58} />
             <div className="nav-brand-text">
-              <div style={{ fontFamily: S.heading, fontSize: 17, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>
+              <div style={{ fontFamily: S.heading, fontSize: "clamp(15px, 1.6vw, 17px)", fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>
                 CTS Empowerment &amp; Training Solutions
               </div>
               <div className="nav-tagline" style={{ fontSize: 9, color: S.gold, fontFamily: S.body, letterSpacing: 1, marginTop: 2 }}>
@@ -291,7 +298,7 @@ export default function Navbar({ page, setPage }) {
         </div>
 
         {open && (
-          <div style={{ background: "#0B1120", borderTop: "1px solid rgba(196,145,18,0.10)", padding: "8px 0 16px" }} role="menu">
+          <div style={{ background: "#0B1120", borderTop: "1px solid rgba(196,145,18,0.10)", padding: "8px 0 16px", maxHeight: "calc(100vh - 64px)", overflowY: "auto" }} role="menu">
             {NAV_GROUPS.map((g) => {
               if (!g.children) {
                 return (
@@ -302,17 +309,17 @@ export default function Navbar({ page, setPage }) {
                       setOpen(false);
                     }}
                     style={{
-                      display: "block",
-                      width: "100%",
-                      padding: "12px 24px",
-                      border: "none",
-                      background: page === g.page ? "rgba(196,145,18,0.12)" : "transparent",
-                      color: page === g.page ? "#F5D67A" : "rgba(255,255,255,0.85)",
-                      fontSize: 14,
-                      fontWeight: page === g.page ? 700 : 400,
-                      cursor: "pointer",
-                      fontFamily: S.body,
-                      textAlign: "left",
+          display: "block",
+          width: "100%",
+          padding: "12px 24px",
+          border: "none",
+          background: page === g.page ? getNavTone(g.label).bg : "transparent",
+          color: page === g.page ? getNavTone(g.label).text : "rgba(255,255,255,0.85)",
+          fontSize: 14,
+          fontWeight: page === g.page ? 700 : 400,
+          cursor: "pointer",
+          fontFamily: S.body,
+          textAlign: "left",
                     }}
                   >
                     {g.label}
@@ -423,3 +430,5 @@ export default function Navbar({ page, setPage }) {
     </>
   );
 }
+
+

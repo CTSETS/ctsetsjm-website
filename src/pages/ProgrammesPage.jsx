@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import S from "../constants/styles";
 import { PROGRAMMES, PROGRAMME_DETAILS, CAREER_OUTCOMES } from "../constants/programmes";
 import { REG_FEE, USD_RATE } from "../constants/config";
@@ -94,18 +94,18 @@ const LEVEL_SUMMARIES = {
 function cleanText(value) {
   if (value == null) return "";
   return String(value)
-    .replace(/[–—]/g, "-")
-    .replace(/Ã¢â‚¬â€/g, "-")
-    .replace(/Ã¢â‚¬â€œ/g, "-")
-    .replace(/Ã¢â‚¬"/g, "-")
-    .replace(/Ã¢â‚¬â„¢/g, "'")
-    .replace(/Ã¢â‚¬Ëœ/g, "'")
-    .replace(/Ã¢â‚¬Å“|Ã¢â‚¬Â/g, '"')
-    .replace(/Ã¢â€ â€™/g, "->")
-    .replace(/Ã‚·/g, "·")
-    .replace(/Ãƒâ€”/g, "x")
-    .replace(/Ã¢Ë†â€™/g, "-")
-    .replace(/Ã‚/g, "")
+    .replace(/[��]/g, "-")
+    .replace(/â€”/g, "-")
+    .replace(/â€“/g, "-")
+    .replace(/â€"/g, "-")
+    .replace(/â€™/g, "'")
+    .replace(/â€˜/g, "'")
+    .replace(/â€œ|â€/g, '"')
+    .replace(/â†’/g, "->")
+    .replace(/Â�/g, "�")
+    .replace(/Ã—/g, "x")
+    .replace(/âˆ’/g, "-")
+    .replace(/Â/g, "")
     .trim();
 }
 
@@ -121,7 +121,7 @@ function WideWrap({ children, style }) {
     <div
       style={{
         width: "100%",
-        padding: "0 clamp(16px, 3vw, 34px)",
+        padding: "0 clamp(18px, 3vw, 40px)",
         boxSizing: "border-box",
         ...style,
       }}
@@ -135,7 +135,7 @@ function Shell({ children, style }) {
   return (
     <div
       style={{
-        maxWidth: 980,
+        maxWidth: 1080,
         margin: "0 auto",
         ...style,
       }}
@@ -303,7 +303,7 @@ function FeePreview({ tuitionNum, totalNum, usd, levelColor }) {
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 12, paddingTop: 8, borderTop: `1px solid ${C.line}` }}>
         <span style={{ fontFamily: S.heading, fontWeight: 800, fontSize: 13, color: C.ink }}>Estimated total</span>
-        <span style={{ fontFamily: S.heading, fontWeight: 800, fontSize: 13, color: levelColor }}>{fmt(totalNum)} · US${usd}</span>
+        <span style={{ fontFamily: S.heading, fontWeight: 800, fontSize: 13, color: levelColor }}>{fmt(totalNum)} � US${usd}</span>
       </div>
       <div style={{ fontSize: 10, color: C.inkSoft, fontFamily: S.body, marginTop: 8, lineHeight: 1.5 }}>
         NCTVET registration and assessment fees are not included where applicable. USD amounts are approximate.
@@ -381,7 +381,7 @@ function ProgrammeCard({ prog, level, levelColor, expanded, onToggle, setPage })
             )}
           </div>
           <div style={{ fontSize: 11, color: C.inkSoft, fontFamily: S.body }}>
-            {cleanText(prog.duration)} · {cleanText(prog.desc)}
+            {cleanText(prog.duration)} � {cleanText(prog.desc)}
           </div>
         </div>
         <div style={{ textAlign: "right", flexShrink: 0 }}>
@@ -691,10 +691,7 @@ function CertDropdown() {
 
 export default function ProgrammesPage({ setPage }) {
   const [expanded, setExpanded] = useState({});
-  const [openLevels, setOpenLevels] = useState(() => {
-    const firstLevel = Object.keys(PROGRAMMES)[0];
-    return firstLevel ? { [normalizeLevel(firstLevel)]: true } : {};
-  });
+  const [openLevels, setOpenLevels] = useState(() => ({}));
   const [quizOpen, setQuizOpen] = useState(false);
 
   const groupedProgrammes = useMemo(
@@ -905,9 +902,7 @@ export default function ProgrammesPage({ setPage }) {
 
       <WideWrap style={{ marginTop: -8, position: "relative", zIndex: 2 }}>
         <Shell>
-          <Reveal>
-            <SocialProofBar />
-          </Reveal>
+          <Reveal></Reveal>
         </Shell>
       </WideWrap>
 
@@ -970,123 +965,100 @@ export default function ProgrammesPage({ setPage }) {
 
             <Intro
               tag="Programme finder"
-              title="Browse the structure first, then drill into the details"
+              title={"Browse\u00A0the\u00A0structure\u00A0first,\u00A0then\u00A0drill\u00A0into\u00A0the\u00A0details"}
               desc=""
             />
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "minmax(0, 1.12fr) minmax(220px, 0.88fr)",
+                gridTemplateColumns: "minmax(0, 1.05fr) minmax(220px, 0.95fr)",
                 gap: 10,
                 alignItems: "start",
                 marginBottom: 12,
               }}
               className="resp-grid-2"
             >
-              <div>
-                <Reveal>
-                  <div
+              <Reveal>
+                <div
+                  style={{
+                    background: C.white,
+                    border: `1px solid ${C.line}`,
+                    borderRadius: 8,
+                    padding: 12,
+                    boxShadow: "0 8px 18px rgba(11,22,48,0.04)",
+                  }}
+                >
+                  <button
+                    onClick={() => setQuizOpen((prev) => !prev)}
                     style={{
-                      background: C.white,
-                      border: `1px solid ${C.line}`,
+                      width: "100%",
+                      background: quizOpen ? "rgba(10,110,138,0.08)" : C.white,
+                      border: `1px solid ${quizOpen ? "rgba(10,110,138,0.18)" : C.line}` ,
                       borderRadius: 8,
                       padding: 12,
-                      boxShadow: "0 8px 18px rgba(11,22,48,0.04)",
+                      cursor: "pointer",
+                      textAlign: "left",
                     }}
                   >
-                    <button
-                      onClick={() => setQuizOpen((prev) => !prev)}
-                      style={{
-                        width: "100%",
-                        background: quizOpen ? "rgba(10,110,138,0.08)" : C.white,
-                        border: `1px solid ${quizOpen ? "rgba(10,110,138,0.18)" : C.line}`,
-                        borderRadius: 8,
-                        padding: 12,
-                        cursor: "pointer",
-                        textAlign: "left",
-                      }}
-                    >
-                      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
-                        <div style={{ minWidth: 0, flex: 1 }}>
-                          <div
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              minHeight: 22,
-                              padding: "0 7px",
-                              borderRadius: 999,
-                              background: "rgba(10,110,138,0.10)",
-                              color: C.teal,
-                              fontSize: 8,
-                              letterSpacing: 1,
-                              textTransform: "uppercase",
-                              fontWeight: 800,
-                              fontFamily: S.body,
-                              marginBottom: 8,
-                            }}
-                          >
-                            Level quiz
-                          </div>
-                          <div style={{ fontFamily: S.heading, fontSize: 14, color: C.ink, fontWeight: 700, marginBottom: 6 }}>
-                            Not sure where to start?
-                          </div>
-                          <div style={{ fontFamily: S.body, fontSize: 11, color: C.inkSoft, lineHeight: 1.55 }}>
-                            Open the quick quiz and we will help point you toward the right starting level.
-                          </div>
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ background: "rgba(10,110,138,0.10)", color: C.teal, fontSize: 8, letterSpacing: 1, textTransform: "uppercase", fontWeight: 800, fontFamily: S.body, display: "inline-flex", alignItems: "center", minHeight: 24, padding: "0 8px", borderRadius: 999, marginBottom: 8 }}>
+                          Level quiz
                         </div>
-                        <span
-                          style={{
-                            fontSize: 12,
-                            color: C.inkSoft,
-                            fontWeight: 800,
-                            transform: quizOpen ? "rotate(180deg)" : "none",
-                            transition: "transform 0.2s ease",
-                            flexShrink: 0,
-                            marginTop: 2,
-                          }}
-                        >
-                          {quizOpen ? "-" : "+"}
-                        </span>
+                        <div style={{ fontFamily: S.heading, fontSize: 14, color: C.ink, fontWeight: 700, marginBottom: 6 }}>
+                          Not sure where to start?
+                        </div>
+                        <div style={{ fontFamily: S.body, fontSize: 11, color: C.inkSoft, lineHeight: 1.55 }}>
+                          Answer a few quick questions and we will help point you toward the level that best matches your current qualifications and experience.
+                        </div>
                       </div>
-                    </button>
+                      <span style={{ fontSize: 12, color: C.inkSoft, fontWeight: 800, transform: quizOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s ease", flexShrink: 0, marginTop: 2 }}>
+                        {quizOpen ? "-" : "+"}
+                      </span>
+                    </div>
+                  </button>
 
-                    {quizOpen && (
-                      <div style={{ marginTop: 10 }}>
-                        <LevelQuiz setPage={setPage} />
+                  {quizOpen && (
+                    <div style={{ marginTop: 10 }}>
+                      <LevelQuiz setPage={setPage} />
+                    </div>
+                  )}
+                </div>
+              </Reveal>
+              <Reveal delay={0.04}>
+                <div
+                  style={{
+                    background: C.white,
+                    border: `1px solid ${C.line}`,
+                    borderRadius: 8,
+                    padding: 14,
+                    boxShadow: "0 8px 18px rgba(11,22,48,0.04)",
+                  }}
+                >
+                  <div style={{ background: "rgba(196,145,18,0.12)", color: C.gold, fontSize: 8, letterSpacing: 1, textTransform: "uppercase", fontWeight: 800, fontFamily: S.body, display: "inline-flex", alignItems: "center", minHeight: 24, padding: "0 8px", borderRadius: 999, marginBottom: 8 }}>
+                    How this page works
+                  </div>
+                  <div style={{ fontFamily: S.heading, fontSize: 14, color: C.ink, fontWeight: 700, marginBottom: 8 }}>
+                    Use the page in this order
+                  </div>
+                  <div style={{ display: "grid", gap: 8 }}>
+                    {[
+                      "Open the level quiz if you are unsure where to begin.",
+                      "Review the level overview cards to compare the progression stages.",
+                      "Open any level below to see programmes, fees, and entry requirements."
+                    ].map((item, index) => (
+                      <div key={index} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+                        <div style={{ width: 18, height: 18, borderRadius: 999, background: "rgba(196,145,18,0.14)", color: C.gold, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, fontFamily: S.body, flexShrink: 0, marginTop: 1 }}>
+                          {index + 1}
+                        </div>
+                        <div style={{ fontFamily: S.body, fontSize: 11, color: C.inkSoft, lineHeight: 1.55 }}>
+                          {item}
+                        </div>
                       </div>
-                    )}
+                    ))}
                   </div>
-                </Reveal>
-              </div>
-              <div>
-                <Reveal>
-                  <div
-                    style={{
-                      background: C.white,
-                      border: `1px solid ${C.line}`,
-                      borderRadius: 8,
-                      padding: 16,
-                      boxShadow: "0 8px 18px rgba(11,22,48,0.04)",
-                      minHeight: "100%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <img
-                      src="/NCTVET Logo.jpg"
-                      alt="NCTVET logo"
-                      style={{
-                        width: "100%",
-                        maxWidth: 240,
-                        height: "auto",
-                        objectFit: "contain",
-                        display: "block",
-                      }}
-                    />
-                  </div>
-                </Reveal>
-              </div>
+                </div>
+              </Reveal>
             </div>
           </Shell>
         </WideWrap>
@@ -1200,7 +1172,7 @@ export default function ProgrammesPage({ setPage }) {
                                 {summary.label}
                               </span>
                               <span style={{ fontSize: 10, color: C.inkSoft, fontFamily: S.body, fontWeight: 700 }}>
-                                {progs.length} programme{progs.length > 1 ? "s" : ""} · totals from {firstTotal}
+                                {progs.length} programme{progs.length > 1 ? "s" : ""} � totals from {firstTotal}
                               </span>
                             </div>
                             <p style={{ margin: 0, fontFamily: S.body, fontSize: 11, color: C.inkSoft, lineHeight: 1.55 }}>{summary.note}</p>
@@ -1316,7 +1288,7 @@ export default function ProgrammesPage({ setPage }) {
                       Apply Now
                     </Btn>
                     <Btn
-                      onClick={() => setPage("FAQ")}
+                      onClick={() => setPage("Contact")}
                       style={{
                         minHeight: 34,
                         padding: "0 12px",
@@ -1328,7 +1300,7 @@ export default function ProgrammesPage({ setPage }) {
                         fontSize: 11,
                       }}
                     >
-                      View FAQ
+                      Get Support
                     </Btn>
                   </div>
                 </div>
@@ -1341,6 +1313,22 @@ export default function ProgrammesPage({ setPage }) {
     </PageWrapper>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

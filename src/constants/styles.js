@@ -1,5 +1,5 @@
 const S = {
-  heading: "'Cormorant Garamond', 'Playfair Display', Georgia, serif",
+  heading: "'Playfair Display', 'Cormorant Garamond', Georgia, serif",
   body: "'DM Sans', sans-serif",
 
   // ─── PRIMARY PALETTE ───

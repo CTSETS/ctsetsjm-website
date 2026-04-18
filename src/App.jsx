@@ -21,7 +21,6 @@ const VerifyCertificatePage = lazy(() => import("./pages/VerifyCertificatePage")
 const FeedbackPage = lazy(() => import("./pages/FeedbackPage"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const TermsPage = lazy(() => import("./pages/TermsPage"));
-const FAQPage = lazy(() => import("./pages/FAQPage"));
 const AIUsagePolicyPage = lazy(() => import("./pages/AIUsagePolicyPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
@@ -60,7 +59,6 @@ const TITLES = {
   International: "International Students | CTS ETS",
   "Verify Certificate": "Verify Certificate | CTS ETS",
   Feedback: "Feedback | CTS ETS",
-  FAQ: "Frequently Asked Questions | CTS ETS",
   "AI Policy": "AI Usage Policy | CTS ETS",
   Privacy: "Privacy Policy | CTS ETS",
   Terms: "Terms & Conditions | CTS ETS"
@@ -174,9 +172,7 @@ export default function CTSApp() {
       case "Contact": return <ContactPage {...p} />;
       case "International": return <NotFoundPage {...p} />;
       case "Verify Certificate": return <VerifyCertificatePage {...p} />;
-      case "Feedback": return <FeedbackPage {...p} />;
-      case "FAQ": return <FAQPage {...p} />;
-      case "AI Policy": return <AIUsagePolicyPage />;
+      case "Feedback": return <FeedbackPage {...p} />;      case "AI Policy": return <AIUsagePolicyPage />;
       case "Privacy": return <PrivacyPage />;
       case "Terms": return <TermsPage />;
       default: return <NotFoundPage {...p} />;
@@ -185,7 +181,7 @@ export default function CTSApp() {
 
   return (
     <ErrorBoundary>
-      <div style={{ fontFamily: S.body, WebkitFontSmoothing: "antialiased" }}>
+      <div className="site-shell" style={{ fontFamily: S.body, WebkitFontSmoothing: "antialiased" }}>
         <OfflineBanner />
         <Navbar page={page} setPage={navigate} />
         <Suspense fallback={<PageLoader />}>
@@ -205,3 +201,5 @@ export default function CTSApp() {
     </ErrorBoundary>
   );
 }
+
+

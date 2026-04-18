@@ -36,10 +36,10 @@ function SectionIntro({ tag, title, desc, accent = S.teal }) {
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: "minmax(260px, 0.82fr) minmax(320px, 1.18fr)",
-        gap: 30,
+        gridTemplateColumns: "minmax(240px, 0.8fr) minmax(320px, 1.2fr)",
+        gap: 20,
         alignItems: "end",
-        marginBottom: 28,
+        marginBottom: 22,
       }}
       className="resp-grid-2"
     >
@@ -58,7 +58,7 @@ function SectionIntro({ tag, title, desc, accent = S.teal }) {
             letterSpacing: 1.5,
             textTransform: "uppercase",
             fontFamily: S.body,
-            marginBottom: 14,
+            marginBottom: 12,
           }}
         >
           {tag}
@@ -66,12 +66,12 @@ function SectionIntro({ tag, title, desc, accent = S.teal }) {
         <h2
           style={{
             fontFamily: S.heading,
-            fontSize: "clamp(30px, 4vw, 48px)",
-            lineHeight: 1.06,
+            fontSize: "clamp(22px, 2.6vw, 30px)",
+            lineHeight: 1.1,
             color: S.navy,
             margin: 0,
             fontWeight: 900,
-            maxWidth: 760,
+            maxWidth: 700,
           }}
         >
           {title}
@@ -80,11 +80,11 @@ function SectionIntro({ tag, title, desc, accent = S.teal }) {
       <p
         style={{
           fontFamily: S.body,
-          fontSize: 16,
-          lineHeight: 1.85,
+          fontSize: 14,
+          lineHeight: 1.75,
           color: S.gray,
           margin: 0,
-          maxWidth: 860,
+          maxWidth: 720,
         }}
       >
         {desc}
@@ -98,13 +98,13 @@ function QuickTopic({ topic, active, onClick }) {
     <button
       onClick={onClick}
       style={{
-        padding: "10px 14px",
+        padding: "9px 12px",
         borderRadius: 999,
         border: `1px solid ${active ? S.coral : S.border}`,
         background: active ? `${S.coral}12` : S.white,
         color: active ? S.coral : S.navy,
         fontFamily: S.body,
-        fontSize: 13,
+        fontSize: 12,
         fontWeight: 700,
         cursor: "pointer",
         transition: "all 0.2s ease",
@@ -120,12 +120,12 @@ function FAQItem({ faq, isOpen, onClick, delay = 0 }) {
     <Reveal delay={delay}>
       <div
         style={{
-          marginBottom: 12,
-          borderRadius: 18,
+          marginBottom: 10,
+          borderRadius: 16,
           border: `1px solid ${isOpen ? S.coral : S.border}`,
           overflow: "hidden",
           background: S.white,
-          boxShadow: isOpen ? `0 14px 30px ${S.coral}14` : "0 8px 20px rgba(15,23,42,0.03)",
+          boxShadow: isOpen ? `0 12px 24px ${S.coral}12` : "0 8px 18px rgba(15,23,42,0.03)",
           transition: "all 0.22s ease",
         }}
       >
@@ -133,22 +133,22 @@ function FAQItem({ faq, isOpen, onClick, delay = 0 }) {
           onClick={onClick}
           style={{
             width: "100%",
-            padding: "20px 22px",
+            padding: "16px 18px",
             border: "none",
             background: isOpen ? S.coral : S.white,
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            gap: 16,
+            gap: 14,
             textAlign: "left",
             transition: "all 0.2s ease",
           }}
         >
-          <span style={{ fontSize: 15, fontWeight: 700, color: isOpen ? S.white : S.navy, fontFamily: S.body, lineHeight: 1.55 }}>{faq.q}</span>
-          <span style={{ fontSize: 20, color: isOpen ? S.white : S.gray, fontWeight: 700, flexShrink: 0, transition: "transform 0.22s ease", transform: isOpen ? "rotate(45deg)" : "none" }}>+</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: isOpen ? S.white : S.navy, fontFamily: S.body, lineHeight: 1.5 }}>{faq.q}</span>
+          <span style={{ fontSize: 18, color: isOpen ? S.white : S.gray, fontWeight: 700, flexShrink: 0, transition: "transform 0.22s ease", transform: isOpen ? "rotate(45deg)" : "none" }}>+</span>
         </button>
-        {isOpen && <div style={{ padding: "22px 22px 24px", background: S.white, borderTop: `1px solid ${S.coral}22`, fontSize: 14, color: S.gray, fontFamily: S.body, lineHeight: 1.82 }}>{faq.a}</div>}
+        {isOpen && <div style={{ padding: "18px 18px 20px", background: S.white, borderTop: `1px solid ${S.coral}22`, fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.75 }}>{faq.a}</div>}
       </div>
     </Reveal>
   );
@@ -160,17 +160,17 @@ function HelpCard({ image, title, text, accent = S.teal }) {
       style={{
         background: S.white,
         border: `1px solid ${S.border}`,
-        borderRadius: 24,
-        padding: 20,
-        boxShadow: "0 14px 32px rgba(15,23,42,0.04)",
+        borderRadius: 18,
+        padding: 14,
+        boxShadow: "0 10px 22px rgba(15,23,42,0.04)",
       }}
     >
-      <div style={{ width: "100%", height: 220, borderRadius: 18, overflow: "hidden", marginBottom: 16 }}>
+      <div style={{ width: "100%", height: 170, borderRadius: 14, overflow: "hidden", marginBottom: 14 }}>
         <img src={image} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
       </div>
-      <div style={{ fontSize: 11, color: accent, letterSpacing: 1.8, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 10 }}>Support Guidance</div>
-      <div style={{ fontFamily: S.heading, fontSize: 26, color: S.navy, fontWeight: 800, marginBottom: 10, lineHeight: 1.1 }}>{title}</div>
-      <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, lineHeight: 1.8, margin: 0 }}>{text}</p>
+      <div style={{ fontSize: 10, color: accent, letterSpacing: 1.6, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 8 }}>Support Guidance</div>
+      <div style={{ fontFamily: S.heading, fontSize: 18, color: S.navy, fontWeight: 800, marginBottom: 8, lineHeight: 1.1 }}>{title}</div>
+      <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.75, margin: 0 }}>{text}</p>
     </div>
   );
 }
@@ -187,57 +187,56 @@ export default function FAQPage({ setPage }) {
 
   return (
     <PageWrapper bg={S.lightBg}>
-      <div style={{ background: "linear-gradient(135deg, #061428 0%, #011E40 54%, #0A6E8A 122%)", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 18% 22%, rgba(196,145,18,0.18), transparent 28%), radial-gradient(circle at 82% 18%, rgba(10,110,138,0.16), transparent 24%), radial-gradient(circle at 70% 80%, rgba(0,155,58,0.12), transparent 22%)" }} />
-        <WideWrap style={{ position: "relative", paddingTop: 64, paddingBottom: 60 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.08fr) minmax(380px, 0.92fr)", gap: 34, alignItems: "center" }} className="resp-grid-2">
+      <section style={{ paddingTop: 30, paddingBottom: 18, background: "linear-gradient(135deg, #102543 0%, #17325B 55%, #244D74 100%)" }}>
+        <WideWrap>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(300px, 0.92fr)", gap: 18, alignItems: "center" }} className="resp-grid-2">
             <Reveal>
               <div>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 999, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", fontFamily: S.body, fontSize: 11, fontWeight: 800, letterSpacing: 1.8, textTransform: "uppercase", color: S.goldLight, marginBottom: 18 }}>Help Centre</div>
-                <h1 style={{ fontFamily: S.heading, fontSize: "clamp(38px, 6vw, 70px)", lineHeight: 1.02, color: S.white, fontWeight: 900, margin: "0 0 18px", maxWidth: 940 }}>Find answers faster through a clearer support page</h1>
-                <p style={{ fontFamily: S.body, fontSize: "clamp(15px, 2vw, 19px)", lineHeight: 1.8, color: "rgba(255,255,255,0.82)", maxWidth: 860, margin: "0 0 24px" }}>Search common questions, jump to key topics, and move straight to contact or application when you are ready.</p>
-                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                  <Btn primary onClick={() => setPage("Contact")} style={{ background: S.gold, color: S.navy, borderRadius: 14, padding: "15px 26px", boxShadow: "0 16px 38px rgba(217,119,6,0.24)" }}>Contact Us</Btn>
-                  <Btn onClick={() => setPage("Apply")} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.18)", color: S.white, borderRadius: 14, padding: "15px 26px" }}>Start Application</Btn>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "7px 12px", borderRadius: 999, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", fontFamily: S.body, fontSize: 11, fontWeight: 800, letterSpacing: 1.8, textTransform: "uppercase", color: S.goldLight, marginBottom: 14 }}>Help Centre</div>
+                <h1 style={{ fontFamily: S.heading, fontSize: "clamp(22px, 2.8vw, 32px)", lineHeight: 1.08, color: S.white, fontWeight: 900, margin: "0 0 12px", maxWidth: 640 }}>Find answers faster through a clearer support page.</h1>
+                <p style={{ fontFamily: S.body, fontSize: 14, lineHeight: 1.75, color: "rgba(255,255,255,0.82)", maxWidth: 640, margin: "0 0 18px" }}>Search common questions, jump to key topics, and move straight to contact or application when you are ready.</p>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  <Btn primary onClick={() => setPage("Contact")} style={{ background: S.gold, color: S.navy, borderRadius: 10, padding: "12px 20px", boxShadow: "0 10px 20px rgba(196,145,18,0.18)" }}>Contact Us</Btn>
+                  <Btn onClick={() => setPage("Apply")} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.18)", color: S.white, borderRadius: 10, padding: "12px 20px" }}>Start Application</Btn>
                 </div>
               </div>
             </Reveal>
-            <Reveal delay={0.12}>
-              <div style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 26, padding: 18, backdropFilter: "blur(10px)", boxShadow: "0 20px 42px rgba(2,6,23,0.16)" }}>
-                <div style={{ width: "100%", height: 420, borderRadius: 20, overflow: "hidden", marginBottom: 16 }}>
+            <Reveal delay={0.1}>
+              <div style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 18, padding: 12, boxShadow: "0 12px 26px rgba(2,6,23,0.12)" }}>
+                <div style={{ width: "100%", height: 210, borderRadius: 16, overflow: "hidden", marginBottom: 12 }}>
                   <img src={PEOPLE.hero} alt="Support team helping learners solve questions online" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                  <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, padding: 14, color: "#fff" }}>
-                    <div style={{ fontSize: 22, marginBottom: 8 }}>🔎</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, fontFamily: S.body }}>Search quickly</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 12, padding: 10, color: S.white }}>
+                    <div style={{ fontSize: 10, letterSpacing: 1.3, textTransform: "uppercase", fontFamily: S.body, color: S.goldLight, fontWeight: 800, marginBottom: 6 }}>Search</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, fontFamily: S.body }}>Find answers more quickly</div>
                   </div>
-                  <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, padding: 14, color: "#fff" }}>
-                    <div style={{ fontSize: 22, marginBottom: 8 }}>💬</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, fontFamily: S.body }}>Move to real support</div>
+                  <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 12, padding: 10, color: S.white }}>
+                    <div style={{ fontSize: 10, letterSpacing: 1.3, textTransform: "uppercase", fontFamily: S.body, color: S.goldLight, fontWeight: 800, marginBottom: 6 }}>Support</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, fontFamily: S.body }}>Move from questions to the next step</div>
                   </div>
                 </div>
               </div>
             </Reveal>
           </div>
         </WideWrap>
-      </div>
+      </section>
 
-      <section style={{ paddingTop: 34 }}>
+      <section style={{ paddingTop: 24 }}>
         <WideWrap>
-          <SectionIntro tag="Support Centre" title="Search common questions before you reach out" desc="The search and accordion behaviour stays the same. The page is simply wider, easier to scan, and more supportive in how it guides people to the answer they need." accent={S.coral} />
-          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.12fr) minmax(320px, 0.88fr)", gap: 24, alignItems: "start", marginBottom: 26 }} className="resp-grid-2">
+          <SectionIntro tag="Support Centre" title="Search common questions before you reach out" desc="" accent={S.coral} />
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.1fr) minmax(280px, 0.9fr)", gap: 18, alignItems: "start", marginBottom: 22 }} className="resp-grid-2">
             <div>
               <Reveal>
-                <div style={{ background: S.white, border: `1px solid ${S.border}`, borderRadius: 24, padding: "18px 18px 14px", boxShadow: "0 12px 28px rgba(15,23,42,0.04)", marginBottom: 18 }}>
+                <div style={{ background: S.white, border: `1px solid ${S.border}`, borderRadius: 18, padding: "14px 14px 12px", boxShadow: "0 10px 22px rgba(15,23,42,0.04)", marginBottom: 16 }}>
                   <input
                     type="text"
                     value={search}
                     onChange={(e) => { setSearch(e.target.value); setOpenFaq(null); }}
                     placeholder="Search questions... e.g. HEART, payment, self-paced, certificate"
-                    style={{ width: "100%", padding: "16px 18px", borderRadius: 16, border: `1px solid ${S.border}`, fontSize: 15, fontFamily: S.body, color: S.navy, outline: "none", boxSizing: "border-box", background: S.lightBg, marginBottom: 14 }}
+                    style={{ width: "100%", padding: "14px 16px", borderRadius: 14, border: `1px solid ${S.border}`, fontSize: 14, fontFamily: S.body, color: S.navy, outline: "none", boxSizing: "border-box", background: S.lightBg, marginBottom: 12 }}
                   />
-                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                     {QUICK_TOPICS.map((topic) => (
                       <QuickTopic key={topic} topic={topic} active={search.trim().toLowerCase() === topic.toLowerCase()} onClick={() => { setSearch(topic); setOpenFaq(null); }} />
                     ))}
@@ -245,9 +244,9 @@ export default function FAQPage({ setPage }) {
                 </div>
               </Reveal>
 
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 18 }}>
-                <div style={{ fontSize: 13, color: S.gray, fontFamily: S.body, fontWeight: 600 }}>{filtered.length} {filtered.length === 1 ? "question" : "questions"} found</div>
-                {search && <button onClick={() => { setSearch(""); setOpenFaq(null); }} style={{ border: "none", background: "transparent", color: S.coral, fontFamily: S.body, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Clear search</button>}
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 16 }}>
+                <div style={{ fontSize: 12, color: S.gray, fontFamily: S.body, fontWeight: 600 }}>{filtered.length} {filtered.length === 1 ? "question" : "questions"} found</div>
+                {search && <button onClick={() => { setSearch(""); setOpenFaq(null); }} style={{ border: "none", background: "transparent", color: S.coral, fontFamily: S.body, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Clear search</button>}
               </div>
 
               <div>
@@ -255,41 +254,34 @@ export default function FAQPage({ setPage }) {
                   <FAQItem key={i} faq={faq} isOpen={openFaq === i} onClick={() => setOpenFaq(openFaq === i ? null : i)} delay={i * 0.02} />
                 )) : (
                   <Reveal>
-                    <div style={{ textAlign: "center", padding: "46px 28px", background: S.white, borderRadius: 22, border: `1px dashed ${S.border}`, boxShadow: "0 10px 24px rgba(15,23,42,0.03)" }}>
-                      <div style={{ fontSize: 42, marginBottom: 12 }}>🔍</div>
-                      <p style={{ fontFamily: S.body, fontSize: 15, color: S.gray, lineHeight: 1.75, margin: "0 0 18px" }}>No questions match your search right now. Try different keywords or reach out directly.</p>
-                      <Btn onClick={() => setPage("Contact")} style={{ borderRadius: 12, padding: "13px 24px" }}>Go to Contact Page</Btn>
+                    <div style={{ textAlign: "center", padding: "36px 24px", background: S.white, borderRadius: 18, border: `1px dashed ${S.border}`, boxShadow: "0 10px 22px rgba(15,23,42,0.03)" }}>
+                      <div style={{ fontSize: 15, color: S.navy, fontFamily: S.body, fontWeight: 700, marginBottom: 10 }}>No matching questions found.</div>
+                      <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.75, margin: "0 0 16px" }}>Try different keywords or reach out directly if you still need help.</p>
+                      <Btn onClick={() => setPage("Contact")} style={{ borderRadius: 10, padding: "12px 20px" }}>Go to Contact Page</Btn>
                     </div>
                   </Reveal>
                 )}
               </div>
             </div>
 
-            <div style={{ display: "grid", gap: 18 }}>
-              <Reveal>
-                <HelpCard image={PEOPLE.support} title="Most visitors just need one clear answer to keep moving" text="A stronger FAQ page helps visitors solve the small questions that often slow down application, payment, or enrolment decisions." accent={S.teal} />
-              </Reveal>
-              <Reveal delay={0.06}>
-                <HelpCard image={PEOPLE.advisor} title="When the FAQ is not enough, the next step should feel obvious" text="Visitors should be able to move smoothly from questions into contact, WhatsApp, or application without feeling lost." accent={S.coral} />
-              </Reveal>
-            </div>
+
           </div>
         </WideWrap>
       </section>
 
-      <section style={{ paddingTop: 20 }}>
+      <section style={{ paddingTop: 18 }}>
         <WideWrap>
           <Reveal>
-            <div style={{ marginTop: 20, borderRadius: 26, padding: "32px clamp(22px,4vw,38px)", background: S.white, border: `1px solid ${S.border}`, boxShadow: "0 14px 34px rgba(15,23,42,0.04)" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.1fr) minmax(260px, 0.9fr)", gap: 24, alignItems: "center" }} className="resp-grid-2">
+            <div style={{ marginTop: 18, borderRadius: 20, padding: "24px clamp(18px,4vw,30px)", background: S.white, border: `1px solid ${S.border}`, boxShadow: "0 12px 26px rgba(15,23,42,0.04)" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.08fr) minmax(240px, 0.92fr)", gap: 18, alignItems: "center" }} className="resp-grid-2">
                 <div>
-                  <div style={{ fontSize: 11, color: S.teal, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 12 }}>Still Need Help?</div>
-                  <h2 style={{ fontFamily: S.heading, fontSize: "clamp(26px,4vw,38px)", color: S.navy, margin: "0 0 10px", lineHeight: 1.1, fontWeight: 900 }}>Move from questions to action more easily</h2>
-                  <p style={{ fontFamily: S.body, fontSize: 15, color: S.gray, lineHeight: 1.8, margin: 0, maxWidth: 620 }}>If your answer is not here, reach out directly or move forward with your next step on the site.</p>
+                  <div style={{ fontSize: 10, color: S.teal, letterSpacing: 1.8, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 10 }}>Still Need Help?</div>
+                  <h2 style={{ fontFamily: S.heading, fontSize: "clamp(20px,2.6vw,28px)", color: S.navy, margin: "0 0 8px", lineHeight: 1.1, fontWeight: 900 }}>Move from questions to action more easily</h2>
+                  <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.75, margin: 0, maxWidth: 560 }}>If your answer is not here, reach out directly or move forward with your next step on the site.</p>
                 </div>
-                <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "flex-start" }}>
-                  <a href="https://wa.me/8763819771?text=Hi%2C%20I%20have%20a%20question%20about%20CTS%20ETS." target="_blank" rel="noopener noreferrer" style={{ padding: "14px 24px", borderRadius: 12, background: S.emerald, color: S.white, fontSize: 14, fontWeight: 700, fontFamily: S.body, textDecoration: "none", boxShadow: `0 12px 26px ${S.emerald}26` }}>WhatsApp Us</a>
-                  <Btn onClick={() => setPage("Contact")} style={{ borderRadius: 12, padding: "14px 24px", border: `2px solid ${S.teal}`, color: S.teal }}>Contact Page</Btn>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-start" }}>
+                  <a href="https://wa.me/8763819771?text=Hi%2C%20I%20have%20a%20question%20about%20CTS%20ETS." target="_blank" rel="noopener noreferrer" style={{ padding: "12px 20px", borderRadius: 10, background: S.emerald, color: S.white, fontSize: 13, fontWeight: 700, fontFamily: S.body, textDecoration: "none", boxShadow: `0 10px 20px ${S.emerald}22` }}>WhatsApp Us</a>
+                  <Btn onClick={() => setPage("Contact")} style={{ borderRadius: 10, padding: "12px 20px", border: `1px solid ${S.teal}`, color: S.teal }}>Contact Page</Btn>
                 </div>
               </div>
             </div>
@@ -300,3 +292,5 @@ export default function FAQPage({ setPage }) {
     </PageWrapper>
   );
 }
+
+

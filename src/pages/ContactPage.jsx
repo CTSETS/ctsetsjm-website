@@ -38,10 +38,10 @@ function SectionIntro({ tag, title, desc, accent = S.teal }) {
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: "minmax(260px, 0.82fr) minmax(320px, 1.18fr)",
-        gap: 30,
+        gridTemplateColumns: "minmax(240px, 0.8fr) minmax(320px, 1.2fr)",
+        gap: 14,
         alignItems: "end",
-        marginBottom: 28,
+        marginBottom: 14,
       }}
       className="resp-grid-2"
     >
@@ -60,7 +60,7 @@ function SectionIntro({ tag, title, desc, accent = S.teal }) {
             letterSpacing: 1.5,
             textTransform: "uppercase",
             fontFamily: S.body,
-            marginBottom: 14,
+            marginBottom: 12,
           }}
         >
           {tag}
@@ -68,12 +68,12 @@ function SectionIntro({ tag, title, desc, accent = S.teal }) {
         <h2
           style={{
             fontFamily: S.heading,
-            fontSize: "clamp(30px, 4vw, 50px)",
-            lineHeight: 1.06,
+            fontSize: "clamp(18px, 1.9vw, 22px)",
+            lineHeight: 1.1,
             color: S.navy,
             margin: 0,
             fontWeight: 900,
-            maxWidth: 760,
+            maxWidth: 700,
           }}
         >
           {title}
@@ -82,11 +82,11 @@ function SectionIntro({ tag, title, desc, accent = S.teal }) {
       <p
         style={{
           fontFamily: S.body,
-          fontSize: 16,
-          lineHeight: 1.85,
+          fontSize: 14,
+          lineHeight: 1.75,
           color: S.gray,
           margin: 0,
-          maxWidth: 860,
+          maxWidth: 720,
         }}
       >
         {desc}
@@ -100,22 +100,22 @@ function ContactMethodCard({ icon, label, value, href, color, external }) {
     <a href={href} style={{ textDecoration: "none" }} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined}>
       <div
         style={{
-          background: "#fff",
-          borderRadius: 22,
-          padding: "30px 24px",
+          background: S.white,
+          borderRadius: 18,
+          padding: "16px 14px",
           border: `1px solid ${S.border}`,
-          transition: "all 0.28s",
-          boxShadow: "0 10px 28px rgba(15,23,42,0.04)",
+          transition: "all 0.24s ease",
+          boxShadow: "0 10px 22px rgba(15,23,42,0.04)",
           height: "100%",
         }}
       >
-        <div style={{ width: 60, height: 60, borderRadius: 18, background: `${color}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 30, marginBottom: 18 }}>
+        <div style={{ width: 32, height: 32, borderRadius: 14, background: `${color}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, marginBottom: 10 }}>
           {icon}
         </div>
-        <div style={{ fontSize: 11, color, letterSpacing: 1.8, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 8 }}>
+        <div style={{ fontSize: 10, color, letterSpacing: 1.6, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 8 }}>
           {label}
         </div>
-        <div style={{ fontSize: 18, color: S.navy, fontWeight: 800, fontFamily: S.heading, lineHeight: 1.35 }}>
+        <div style={{ fontSize: 13, color: S.navy, fontWeight: 800, fontFamily: S.heading, lineHeight: 1.3 }}>
           {value}
         </div>
       </div>
@@ -128,24 +128,24 @@ function AppointmentCard({ apt }) {
     <a href={apt.url} target="_blank" rel="noopener noreferrer" onClick={() => trackBookingClicked(apt.title)} style={{ textDecoration: "none" }}>
       <div
         style={{
-          background: "#fff",
-          borderRadius: 20,
-          padding: "28px 24px",
+          background: S.white,
+          borderRadius: 16,
+          padding: "16px 14px",
           border: `1px solid ${S.border}`,
-          transition: "all 0.28s ease",
+          transition: "all 0.24s ease",
           cursor: "pointer",
-          boxShadow: "0 8px 24px rgba(15,23,42,0.04)",
+          boxShadow: "0 8px 20px rgba(15,23,42,0.04)",
           display: "flex",
           flexDirection: "column",
           height: "100%",
         }}
       >
-        <div style={{ fontSize: 32, marginBottom: 16 }}>{apt.icon}</div>
-        <div style={{ fontFamily: S.heading, fontSize: 20, fontWeight: 800, color: S.navy, marginBottom: 8 }}>{apt.title}</div>
-        <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, marginBottom: 20, lineHeight: 1.75, flex: 1 }}>{apt.desc}</p>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: `1px solid ${S.border}`, paddingTop: 16 }}>
-          <span style={{ fontSize: 12, fontWeight: 800, color: apt.color, fontFamily: S.body, background: `${apt.color}15`, padding: "6px 12px", borderRadius: 8 }}>{apt.dur}</span>
-          <span style={{ fontSize: 13, color: apt.color, fontWeight: 700, fontFamily: S.body }}>Book Slot →</span>
+        <div style={{ fontSize: 24, marginBottom: 12 }}>{apt.icon}</div>
+        <div style={{ fontFamily: S.heading, fontSize: 13, fontWeight: 800, color: S.navy, marginBottom: 8 }}>{apt.title}</div>
+        <p style={{ fontFamily: S.body, fontSize: 11, color: S.gray, marginBottom: 12, lineHeight: 1.7, flex: 1 }}>{apt.desc}</p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: `1px solid ${S.border}`, paddingTop: 14 }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: apt.color, fontFamily: S.body, background: `${apt.color}15`, padding: "6px 10px", borderRadius: 8 }}>{apt.dur}</span>
+          <span style={{ fontSize: 12, color: apt.color, fontWeight: 700, fontFamily: S.body }}>Book Slot</span>
         </div>
       </div>
     </a>
@@ -157,35 +157,35 @@ function FAQItem({ faq, isOpen, onClick, delay = 0 }) {
     <Reveal delay={delay}>
       <div
         style={{
-          marginBottom: 12,
-          borderRadius: 18,
+          marginBottom: 10,
+          borderRadius: 16,
           border: `1px solid ${isOpen ? S.coral : S.border}`,
           overflow: "hidden",
-          background: "#fff",
+          background: S.white,
           transition: "all 0.22s ease",
-          boxShadow: isOpen ? `0 14px 30px ${S.coral}15` : "0 8px 20px rgba(15,23,42,0.03)",
+          boxShadow: isOpen ? `0 12px 24px ${S.coral}12` : "0 8px 18px rgba(15,23,42,0.03)",
         }}
       >
         <button
           onClick={onClick}
           style={{
             width: "100%",
-            padding: "20px 22px",
-            background: isOpen ? S.coral : "#fff",
+            padding: "16px 18px",
+            background: isOpen ? S.coral : S.white,
             border: "none",
             cursor: "pointer",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            gap: 16,
+            gap: 14,
             textAlign: "left",
             transition: "all 0.2s",
           }}
         >
-          <span style={{ fontSize: 15, fontWeight: 700, color: isOpen ? S.white : S.navy, fontFamily: S.body, lineHeight: 1.5 }}>{faq.q}</span>
-          <span style={{ fontSize: 20, color: isOpen ? S.white : S.coral, fontWeight: 400, flexShrink: 0, transition: "transform 0.25s", transform: isOpen ? "rotate(45deg)" : "none" }}>+</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: isOpen ? S.white : S.navy, fontFamily: S.body, lineHeight: 1.5 }}>{faq.q}</span>
+          <span style={{ fontSize: 18, color: isOpen ? S.white : S.coral, fontWeight: 400, flexShrink: 0, transition: "transform 0.25s", transform: isOpen ? "rotate(45deg)" : "none" }}>+</span>
         </button>
-        {isOpen && <div style={{ padding: 22, background: S.white, fontSize: 14, color: S.gray, fontFamily: S.body, lineHeight: 1.8, borderTop: `1px solid ${S.coral}20` }}>{faq.a}</div>}
+        {isOpen && <div style={{ padding: 12, background: S.white, fontSize: 13, color: S.gray, fontFamily: S.body, lineHeight: 1.75, borderTop: `1px solid ${S.coral}20` }}>{faq.a}</div>}
       </div>
     </Reveal>
   );
@@ -193,13 +193,13 @@ function FAQItem({ faq, isOpen, onClick, delay = 0 }) {
 
 function SideSupportCard({ title, desc, img, accent = S.teal }) {
   return (
-    <div style={{ background: S.white, border: `1px solid ${S.border}`, borderRadius: 24, padding: 20, boxShadow: "0 14px 32px rgba(15,23,42,0.04)" }}>
-      <div style={{ width: "100%", height: 220, borderRadius: 18, overflow: "hidden", marginBottom: 16 }}>
+    <div style={{ background: S.white, border: `1px solid ${S.border}`, borderRadius: 18, padding: 12, boxShadow: "0 10px 22px rgba(15,23,42,0.04)" }}>
+      <div style={{ width: "100%", height: 120, borderRadius: 14, overflow: "hidden", marginBottom: 14 }}>
         <img src={img} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
       </div>
-      <div style={{ fontSize: 11, color: accent, letterSpacing: 1.8, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 10 }}>Support Guidance</div>
-      <div style={{ fontFamily: S.heading, fontSize: 28, color: S.navy, fontWeight: 800, marginBottom: 10, lineHeight: 1.1 }}>{title}</div>
-      <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, lineHeight: 1.8, margin: 0 }}>{desc}</p>
+      <div style={{ fontSize: 10, color: accent, letterSpacing: 1.6, textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 8 }}>Support Guidance</div>
+      <div style={{ fontFamily: S.heading, fontSize: 14, color: S.navy, fontWeight: 800, marginBottom: 8, lineHeight: 1.1 }}>{title}</div>
+      <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.75, margin: 0 }}>{desc}</p>
     </div>
   );
 }
@@ -217,11 +217,11 @@ export default function ContactPage({ setPage }) {
   const u = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const inp = {
     width: "100%",
-    padding: "14px 18px",
-    borderRadius: 12,
+    padding: "11px 12px",
+    borderRadius: 10,
     border: `1px solid ${S.border}`,
     background: S.white,
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: S.body,
     color: S.navy,
     outline: "none",
@@ -229,7 +229,7 @@ export default function ContactPage({ setPage }) {
     transition: "border-color 0.2s, box-shadow 0.2s",
   };
   const lbl = {
-    fontSize: 12,
+    fontSize: 11,
     color: S.navy,
     fontWeight: 700,
     fontFamily: S.body,
@@ -280,60 +280,59 @@ export default function ContactPage({ setPage }) {
   };
 
   const contactCards = [
-    ["📧", "General Enquiries", "admin@ctsetsjm.com", "mailto:admin@ctsetsjm.com", S.teal, false],
-    ["📞", "Call / WhatsApp", "876-381-9771", "tel:8763819771", S.coral, false],
-    ["📍", "Visit Us", "6 Newark Avenue, Kingston 2 (By Appointment)", "https://maps.google.com/?q=6+Newark+Avenue+Kingston+2+Jamaica", S.violet, true],
+    ["Email", "General Enquiries", "admin@ctsetsjm.com", "mailto:admin@ctsetsjm.com", S.teal, false],
+    ["Call", "Call / WhatsApp", "876-381-9771", "tel:8763819771", S.coral, false],
+    ["Visit", "Visit Us", "6 Newark Avenue, Kingston 2 (By Appointment)", "https://maps.google.com/?q=6+Newark+Avenue+Kingston+2+Jamaica", S.violet, true],
   ];
 
   const appointments = [
-    { icon: "🎓", title: "General Enquiry", desc: "Questions about getting started, eligibility, or choosing the right path.", dur: "15 min", color: S.teal, url: BOOKING_URLS.general },
-    { icon: "💳", title: "Payment Help", desc: "Guidance on fees, staged payment options, and planning your enrolment.", dur: "20 min", color: S.amber, url: BOOKING_URLS.payment },
-    { icon: "📚", title: "Academic Support", desc: "Support for learners who need clarity around coursework, assessments, or progress.", dur: "30 min", color: S.violet, url: BOOKING_URLS.academic },
-    { icon: "👥", title: "Employer Consultation", desc: "For group enrolment, team training, and organisational learning support.", dur: "30 min", color: S.coral, url: BOOKING_URLS.employer },
+    { icon: "Guide", title: "General Enquiry", desc: "Questions about getting started, eligibility, or choosing the right path.", dur: "15 min", color: S.teal, url: BOOKING_URLS.general },
+    { icon: "Fees", title: "Payment Help", desc: "Guidance on fees, staged payment options, and planning your enrolment.", dur: "20 min", color: S.amber, url: BOOKING_URLS.payment },
+    { icon: "Study", title: "Academic Support", desc: "Support for learners who need clarity around coursework, assessments, or progress.", dur: "30 min", color: S.violet, url: BOOKING_URLS.academic },
+    { icon: "Team", title: "Employer Consultation", desc: "For group enrolment, team training, and organisational learning support.", dur: "30 min", color: S.coral, url: BOOKING_URLS.employer },
   ];
 
   return (
     <PageWrapper bg={S.lightBg}>
-      <div style={{ background: "linear-gradient(135deg, #061428 0%, #011E40 54%, #0A6E8A 122%)", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 18% 22%, rgba(196,145,18,0.18), transparent 28%), radial-gradient(circle at 82% 18%, rgba(10,110,138,0.16), transparent 24%), radial-gradient(circle at 70% 80%, rgba(0,155,58,0.12), transparent 22%)" }} />
-        <WideWrap style={{ position: "relative", paddingTop: 64, paddingBottom: 60 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.08fr) minmax(380px, 0.92fr)", gap: 34, alignItems: "center" }} className="resp-grid-2">
+      <section style={{ paddingTop: 12, paddingBottom: 14, background: "linear-gradient(135deg, #102543 0%, #17325B 55%, #244D74 100%)" }}>
+        <WideWrap>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(300px, 0.92fr)", gap: 14, alignItems: "center" }} className="resp-grid-2">
             <Reveal>
               <div>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 14px", borderRadius: 999, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", fontFamily: S.body, fontSize: 11, fontWeight: 800, letterSpacing: 1.8, textTransform: "uppercase", color: S.goldLight, marginBottom: 18 }}>Contact CTS ETS</div>
-                <h1 style={{ fontFamily: S.heading, fontSize: "clamp(38px, 6vw, 70px)", lineHeight: 1.02, color: "#fff", fontWeight: 900, margin: "0 0 18px", maxWidth: 940 }}>Get help, ask questions, or book time with the team</h1>
-                <p style={{ fontFamily: S.body, fontSize: "clamp(15px, 2vw, 19px)", lineHeight: 1.8, color: "rgba(255,255,255,0.82)", maxWidth: 860, margin: "0 0 24px" }}>Reach out for programme guidance, payment clarification, academic support, employer discussions, or general enquiries through the contact path that suits you best.</p>
-                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                  <Btn primary onClick={() => setPage("Apply")} style={{ background: S.gold, color: S.navy, borderRadius: 14, padding: "15px 26px", boxShadow: "0 16px 38px rgba(217,119,6,0.24)" }}>Start Application</Btn>
-                  <Btn onClick={() => setPage("FAQ")} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.18)", color: "#fff", borderRadius: 14, padding: "15px 26px" }}>Browse FAQs</Btn>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "7px 12px", borderRadius: 999, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", fontFamily: S.body, fontSize: 11, fontWeight: 800, letterSpacing: 1.8, textTransform: "uppercase", color: S.goldLight, marginBottom: 14 }}>Contact CTS ETS</div>
+                <h1 style={{ fontFamily: S.heading, fontSize: "clamp(18px, 2vw, 24px)", lineHeight: 1.08, color: S.white, fontWeight: 900, margin: "0 0 12px", maxWidth: 640 }}>Get help, ask questions, or book time with the team.</h1>
+                <p style={{ fontFamily: S.body, fontSize: 12, lineHeight: 1.6, color: "rgba(255,255,255,0.82)", maxWidth: 640, margin: "0 0 18px" }}>Reach out for programme guidance, payment clarification, academic support, employer discussions, or general enquiries through the contact path that suits you best.</p>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  <Btn primary onClick={() => setPage("Apply")} style={{ background: S.gold, color: S.navy, borderRadius: 10, padding: "10px 16px", boxShadow: "0 10px 20px rgba(196,145,18,0.18)" }}>Start Application</Btn>
+                  <Btn onClick={() => setPage("Contact")} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.18)", color: S.white, borderRadius: 10, padding: "10px 16px" }}>Support Options</Btn>
                 </div>
               </div>
             </Reveal>
             <Reveal delay={0.12}>
-              <div style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 26, padding: 18, backdropFilter: "blur(10px)", boxShadow: "0 20px 42px rgba(2,6,23,0.16)" }}>
-                <div style={{ width: "100%", height: 440, borderRadius: 20, overflow: "hidden", marginBottom: 16 }}>
+              <div style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 14, padding: 8, boxShadow: "0 12px 26px rgba(2,6,23,0.12)" }}>
+                <div style={{ width: "100%", height: 150, borderRadius: 16, overflow: "hidden", marginBottom: 12 }}>
                   <img src={PEOPLE.hero} alt="Professional team supporting learners and enquiries" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                  <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, padding: 14, color: "#fff" }}>
-                    <div style={{ fontSize: 22, marginBottom: 8 }}>💬</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, fontFamily: S.body }}>Quick support paths</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 12, padding: 7, color: S.white }}>
+                    <div style={{ fontSize: 10, letterSpacing: 1.3, textTransform: "uppercase", fontFamily: S.body, color: S.goldLight, fontWeight: 800, marginBottom: 6 }}>Support</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, fontFamily: S.body }}>Quick support paths</div>
                   </div>
-                  <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, padding: 14, color: "#fff" }}>
-                    <div style={{ fontSize: 22, marginBottom: 8 }}>📅</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, fontFamily: S.body }}>Bookable consultations</div>
+                  <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 12, padding: 7, color: S.white }}>
+                    <div style={{ fontSize: 10, letterSpacing: 1.3, textTransform: "uppercase", fontFamily: S.body, color: S.goldLight, fontWeight: 800, marginBottom: 6 }}>Booking</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, fontFamily: S.body }}>Bookable consultations</div>
                   </div>
                 </div>
               </div>
             </Reveal>
           </div>
         </WideWrap>
-      </div>
+      </section>
 
-      <section style={{ paddingTop: 34 }}>
+      <section style={{ paddingTop: 12 }}>
         <WideWrap>
-          <SectionIntro tag="Contact Options" title="Reach us in the way that fits you best" desc="Some visitors want to call, some want to message, and some want a scheduled conversation. Each path is kept intact, but presented more clearly and professionally." accent={S.teal} />
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 22, marginBottom: 58 }} className="resp-grid-3">
+          <SectionIntro tag="Contact Options" title="Reach us in the way that fits you best" desc="" accent={S.teal} />
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 18, marginBottom: 22 }} className="resp-grid-3">
             {contactCards.map(([icon, label, value, href, color, external]) => (
               <Reveal key={label}><ContactMethodCard icon={icon} label={label} value={value} href={href} color={color} external={external} /></Reveal>
             ))}
@@ -341,14 +340,14 @@ export default function ContactPage({ setPage }) {
         </WideWrap>
       </section>
 
-      <section style={{ paddingTop: 2 }}>
+      <section style={{ paddingTop: 0 }}>
         <WideWrap>
           <SectionIntro tag="Consultations" title="Book a free conversation with the team" desc="Choose the appointment type that best matches your need, whether it is programme guidance, payment help, academic support, or employer consultation." accent={S.violet} />
-          <div style={{ display: "grid", gridTemplateColumns: "minmax(320px, 0.9fr) minmax(0, 1.1fr)", gap: 24, alignItems: "stretch", marginBottom: 64 }} className="resp-grid-2">
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(280px, 0.9fr) minmax(0, 1.1fr)", gap: 14, alignItems: "stretch", marginBottom: 24 }} className="resp-grid-2">
             <Reveal>
               <SideSupportCard title="Sometimes the fastest answer is a scheduled conversation" desc="A short consultation can quickly move someone from uncertainty into action, especially when they are deciding on a programme, payment plan, or next step." img={PEOPLE.consultation} accent={S.coral} />
             </Reveal>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 20 }} className="resp-grid-2">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }} className="resp-grid-2">
               {appointments.map((apt) => (
                 <Reveal key={apt.title}><AppointmentCard apt={apt} /></Reveal>
               ))}
@@ -359,22 +358,22 @@ export default function ContactPage({ setPage }) {
 
       <section style={{ paddingTop: 0 }}>
         <WideWrap>
-          <SectionIntro tag="Message Us" title="Send a direct enquiry" desc="The same contact form logic remains in place, including CAPTCHA, honeypot protection, analytics tracking, and Apps Script submission." accent={S.coral} />
-          <div style={{ display: "grid", gridTemplateColumns: "minmax(320px, 0.88fr) minmax(0, 1.12fr)", gap: 28, alignItems: "start", marginBottom: 76 }} className="resp-grid-2">
-            <div style={{ display: "grid", gap: 18 }}>
-              <SideSupportCard title="A clearer contact experience makes it easier for people to finish the step" desc="When support options are visible and the form feels calm and well-structured, more visitors complete their enquiries instead of dropping off." img={PEOPLE.support} accent={S.teal} />
-              <div style={{ background: "#fff", borderRadius: 22, padding: 24, border: `1px solid ${S.border}`, boxShadow: "0 12px 30px rgba(15,23,42,0.04)" }}>
-                <div style={{ display: "grid", gap: 16 }}>
+          <SectionIntro tag="Message Us" title="Send a direct enquiry" desc="Use the contact form when you want written support, clarification, or a response from the team by email." accent={S.coral} />
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(280px, 0.88fr) minmax(0, 1.12fr)", gap: 14, alignItems: "start", marginBottom: 36 }} className="resp-grid-2">
+            <div style={{ display: "grid", gap: 16 }}>
+              <SideSupportCard title="A clearer contact experience makes it easier to finish the step" desc="When support options are visible and the form feels calm and well structured, more visitors complete their enquiry instead of dropping off." img={PEOPLE.support} accent={S.teal} />
+              <div style={{ background: S.white, borderRadius: 18, padding: 12, border: `1px solid ${S.border}`, boxShadow: "0 10px 22px rgba(15,23,42,0.04)" }}>
+                <div style={{ display: "grid", gap: 10 }}>
                   {[
-                    ["Response Time", "Usually within 48–72 hours", S.teal],
+                    ["Response Time", "Usually within 48-72 hours", S.teal],
                     ["Best for", "General questions, clarification, or written support", S.violet],
-                    ["Tip", "Include the programme name or issue in your message for faster support", S.coral],
+                    ["Tip", "Include the programme name or issue for faster support", S.coral],
                   ].map(([label, text, color]) => (
-                    <div key={label} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                      <div style={{ width: 12, height: 12, borderRadius: 999, background: color, marginTop: 5, flexShrink: 0 }} />
+                    <div key={label} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                      <div style={{ width: 10, height: 10, borderRadius: 999, background: color, marginTop: 5, flexShrink: 0 }} />
                       <div>
-                        <div style={{ fontSize: 12, color: S.navy, fontWeight: 800, fontFamily: S.body, letterSpacing: 1.1, textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
-                        <div style={{ fontSize: 14, color: S.gray, fontFamily: S.body, lineHeight: 1.7 }}>{text}</div>
+                        <div style={{ fontSize: 11, color: S.navy, fontWeight: 800, fontFamily: S.body, letterSpacing: 1.0, textTransform: "uppercase", marginBottom: 4 }}>{label}</div>
+                        <div style={{ fontSize: 11, color: S.gray, fontFamily: S.body, lineHeight: 1.5 }}>{text}</div>
                       </div>
                     </div>
                   ))}
@@ -384,15 +383,15 @@ export default function ContactPage({ setPage }) {
 
             <Reveal>
               {sent ? (
-                <div style={{ background: S.white, borderRadius: 24, padding: "52px 36px", border: `2px solid ${S.emerald}30`, textAlign: "center", boxShadow: `0 18px 40px ${S.emerald}15` }}>
-                  <div style={{ width: 80, height: 80, borderRadius: "50%", background: S.emeraldLight, color: S.emerald, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40, margin: "0 auto 22px" }}>✓</div>
-                  <h3 style={{ fontFamily: S.heading, fontSize: 30, color: S.navy, margin: "0 0 12px", fontWeight: 800 }}>Message Sent!</h3>
-                  <p style={{ fontFamily: S.body, fontSize: 15, color: S.gray, lineHeight: 1.75, maxWidth: 460, margin: "0 auto 28px" }}>Thank you, <strong>{form.name}</strong>. Your message has been received and the CTS ETS team will respond within 48–72 hours.</p>
-                  <Btn primary onClick={() => { setSent(false); setForm({ name: "", email: "", phone: "", subject: "", message: "" }); setCaptcha(false); }} style={{ color: S.white, background: S.emerald, padding: "16px 30px", borderRadius: 12 }}>Send Another Message</Btn>
+                <div style={{ background: S.white, borderRadius: 20, padding: "40px 28px", border: `2px solid ${S.emerald}30`, textAlign: "center", boxShadow: `0 16px 34px ${S.emerald}15` }}>
+                  <div style={{ width: 64, height: 64, borderRadius: "50%", background: S.emeraldLight, color: S.emerald, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, margin: "0 auto 18px" }}>OK</div>
+                  <h3 style={{ fontFamily: S.heading, fontSize: 24, color: S.navy, margin: "0 0 10px", fontWeight: 800 }}>Message Sent</h3>
+                  <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, lineHeight: 1.75, maxWidth: 420, margin: "0 auto 22px" }}>Thank you, <strong>{form.name}</strong>. Your message has been received and the CTS ETS team will respond within 48-72 hours.</p>
+                  <Btn primary onClick={() => { setSent(false); setForm({ name: "", email: "", phone: "", subject: "", message: "" }); setCaptcha(false); }} style={{ color: S.white, background: S.emerald, padding: "14px 24px", borderRadius: 10 }}>Send Another Message</Btn>
                 </div>
               ) : (
-                <div style={{ background: S.white, borderRadius: 24, padding: "clamp(28px, 4vw, 40px)", border: `1px solid ${S.border}`, boxShadow: "0 12px 30px rgba(15,23,42,0.04)" }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 20, marginBottom: 22 }}>
+                <div style={{ background: S.white, borderRadius: 14, padding: "clamp(16px, 2.4vw, 20px)", border: `1px solid ${S.border}`, boxShadow: "0 10px 22px rgba(15,23,42,0.04)" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12, marginBottom: 14 }}>
                     <div>
                       <label style={lbl}>Full Name *</label>
                       <input style={inp} value={form.name} onChange={(e) => u("name", e.target.value)} placeholder="Your full name" />
@@ -413,13 +412,13 @@ export default function ContactPage({ setPage }) {
                       </select>
                     </div>
                   </div>
-                  <div style={{ marginBottom: 24 }}>
+                  <div style={{ marginBottom: 20 }}>
                     <label style={lbl}>Your Message *</label>
-                    <textarea style={{ ...inp, minHeight: 160, resize: "vertical", paddingTop: 16 }} value={form.message} onChange={(e) => u("message", e.target.value)} placeholder="How can we help you today?" />
+                    <textarea style={{ ...inp, minHeight: 100, resize: "vertical", paddingTop: 14 }} value={form.message} onChange={(e) => u("message", e.target.value)} placeholder="How can we help you today?" />
                   </div>
                   <HoneypotField value={hp} onChange={(e) => setHp(e.target.value)} />
-                  <div style={{ marginBottom: 22 }}><CaptchaChallenge onVerified={setCaptcha} verified={captcha} /></div>
-                  <button onClick={send} disabled={sending || !captcha} style={{ width: "100%", padding: 18, borderRadius: 12, background: sending || !captcha ? S.border : S.coral, color: sending || !captcha ? S.grayLight : S.white, border: "none", fontSize: 16, fontWeight: 800, cursor: sending || !captcha ? "not-allowed" : "pointer", fontFamily: S.body, transition: "0.2s", boxShadow: sending || !captcha ? "none" : `0 8px 20px ${S.coral}40` }}>{sending ? "Sending Message..." : !captcha ? "Complete Verification to Send" : "Send Message →"}</button>
+                  <div style={{ marginBottom: 20 }}><CaptchaChallenge onVerified={setCaptcha} verified={captcha} /></div>
+                  <button onClick={send} disabled={sending || !captcha} style={{ width: "100%", padding: 12, borderRadius: 10, background: sending || !captcha ? S.border : S.coral, color: sending || !captcha ? S.grayLight : S.white, border: "none", fontSize: 13, fontWeight: 800, cursor: sending || !captcha ? "not-allowed" : "pointer", fontFamily: S.body, transition: "0.2s", boxShadow: sending || !captcha ? "none" : `0 8px 20px ${S.coral}30` }}>{sending ? "Sending Message..." : !captcha ? "Complete Verification to Send" : "Send Message"}</button>
                 </div>
               )}
             </Reveal>
@@ -429,25 +428,25 @@ export default function ContactPage({ setPage }) {
 
       <section style={{ paddingTop: 0 }}>
         <WideWrap>
-          <SectionIntro tag="Knowledge Base" title="Search frequently asked questions" desc="Search the same FAQ content more easily and expand the answer you need without leaving the page." accent={S.teal} />
-          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.08fr) minmax(320px, 0.92fr)", gap: 24, alignItems: "start", marginBottom: 72 }} className="resp-grid-2">
+          <SectionIntro tag="Knowledge Base" title="Search frequently asked questions" desc="Search the FAQ content more easily and expand the answer you need without leaving the page." accent={S.teal} />
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.08fr) minmax(280px, 0.92fr)", gap: 18, alignItems: "start", marginBottom: 36 }} className="resp-grid-2">
             <div>
-              <div style={{ marginBottom: 18 }}>
-                <input type="text" value={search} onChange={(e) => { setSearch(e.target.value); setOpenFaq(null); }} placeholder="Search questions... e.g. payment, self-paced, application" style={{ width: "100%", padding: "16px 22px", borderRadius: 18, border: `1px solid ${S.border}`, fontSize: 15, fontFamily: S.body, color: S.navy, outline: "none", boxSizing: "border-box", background: S.white, boxShadow: "0 8px 20px rgba(15,23,42,0.03)" }} />
-                {search && <div style={{ fontSize: 13, color: S.gray, fontFamily: S.body, marginTop: 10, fontWeight: 600 }}>{filteredFaqs.length} {filteredFaqs.length === 1 ? "result" : "results"} found</div>}
+              <div style={{ marginBottom: 16 }}>
+                <input type="text" value={search} onChange={(e) => { setSearch(e.target.value); setOpenFaq(null); }} placeholder="Search questions... e.g. payment, self-paced, application" style={{ width: "100%", padding: "14px 18px", borderRadius: 14, border: `1px solid ${S.border}`, fontSize: 14, fontFamily: S.body, color: S.navy, outline: "none", boxSizing: "border-box", background: S.white, boxShadow: "0 8px 18px rgba(15,23,42,0.03)" }} />
+                {search && <div style={{ fontSize: 12, color: S.gray, fontFamily: S.body, marginTop: 8, fontWeight: 600 }}>{filteredFaqs.length} {filteredFaqs.length === 1 ? "result" : "results"} found</div>}
               </div>
               <div>
                 {filteredFaqs.length > 0
                   ? filteredFaqs.map((faq, i) => <FAQItem key={i} faq={faq} isOpen={openFaq === i} onClick={() => setOpenFaq(openFaq === i ? null : i)} delay={i * 0.02} />)
-                  : <div style={{ textAlign: "center", padding: "42px 24px", background: S.white, borderRadius: 18, border: `1px dashed ${S.border}` }}><div style={{ fontSize: 34, marginBottom: 10 }}>🔍</div><p style={{ fontFamily: S.body, fontSize: 15, color: S.gray, lineHeight: 1.7, margin: 0 }}>No questions match your search. Try different keywords or send a direct message above.</p></div>}
+                  : <div style={{ textAlign: "center", padding: "34px 22px", background: S.white, borderRadius: 16, border: `1px dashed ${S.border}` }}><div style={{ fontSize: 14, fontFamily: S.body, fontWeight: 700, color: S.navy, marginBottom: 8 }}>No matching questions found.</div><p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.7, margin: 0 }}>Try different keywords or send a direct message above.</p></div>}
               </div>
             </div>
-            <div style={{ display: "grid", gap: 18 }}>
-              <SideSupportCard title="Many questions can be resolved faster through the right answer path" desc="Visitors often need quick clarity on fees, applications, self-paced study, or support. A well-structured FAQ section helps reduce friction and builds trust." img={PEOPLE.consultation} accent={S.violet} />
-              <div style={{ background: S.white, border: `1px solid ${S.border}`, borderRadius: 22, padding: 22, boxShadow: "0 12px 30px rgba(15,23,42,0.04)" }}>
-                <div style={{ fontFamily: S.heading, fontSize: 24, color: S.navy, fontWeight: 800, marginBottom: 10 }}>Still need help?</div>
-                <p style={{ fontFamily: S.body, fontSize: 14, color: S.gray, lineHeight: 1.8, marginBottom: 14 }}>If you cannot find the answer here, send a message or book a conversation with the team.</p>
-                <Btn onClick={() => setPage("Apply")} style={{ borderRadius: 12, border: `2px solid ${S.teal}`, color: S.teal }}>Go to Application</Btn>
+            <div style={{ display: "grid", gap: 16 }}>
+              <SideSupportCard title="Many questions can be resolved faster through the right answer path" desc="Visitors often need quick clarity on fees, applications, self-paced study, or support. A well-structured FAQ section helps reduce friction and build trust." img={PEOPLE.consultation} accent={S.violet} />
+              <div style={{ background: S.white, border: `1px solid ${S.border}`, borderRadius: 18, padding: 12, boxShadow: "0 10px 22px rgba(15,23,42,0.04)" }}>
+                <div style={{ fontFamily: S.heading, fontSize: 14, color: S.navy, fontWeight: 800, marginBottom: 8 }}>Still need help?</div>
+                <p style={{ fontFamily: S.body, fontSize: 13, color: S.gray, lineHeight: 1.75, marginBottom: 12 }}>If you cannot find the answer here, send a message or book a conversation with the team.</p>
+                <Btn onClick={() => setPage("Apply")} style={{ borderRadius: 10, border: `1px solid ${S.teal}`, color: S.teal }}>Go to Application</Btn>
               </div>
             </div>
           </div>
@@ -459,3 +458,8 @@ export default function ContactPage({ setPage }) {
     </PageWrapper>
   );
 }
+
+
+
+
+

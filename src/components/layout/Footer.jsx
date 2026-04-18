@@ -114,9 +114,7 @@ export default function Footer({ setPage }) {
           <div>
             <div style={{ fontSize: 10, color: S.teal, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, fontWeight: 700, marginBottom: 12 }}>
               Support
-            </div>
-            {link("FAQ", "FAQ")}
-            {link("Contact Us", "Contact")}
+            </div>            {link("Contact Us", "Contact")}
             {link("Verify a Certificate", "Verify Certificate")}
             {link("Feedback", "Feedback")}
             <a
@@ -166,3 +164,4 @@ export default function Footer({ setPage }) {
     </footer>
   );
 }
+

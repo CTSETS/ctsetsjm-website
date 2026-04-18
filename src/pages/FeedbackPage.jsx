@@ -8,7 +8,6 @@ import {
   SectionHeader,
   Reveal,
   PageScripture,
-  SocialProofBar,
 } from "../components/shared/CoreComponents";
 import { HoneypotField } from "../components/shared/DisplayComponents";
 import { validateEmail } from "../utils/validation";
@@ -309,32 +308,15 @@ export default function FeedbackPage({ setPage }) {
             >
               Help us improve the CTS ETS learner experience
             </h1>
-            <p
-              style={{
-                fontFamily: S.body,
-                fontSize: "clamp(15px, 2vw, 19px)",
-                lineHeight: 1.8,
-                color: "rgba(255,255,255,0.82)",
-                maxWidth: 780,
-                margin: 0,
-              }}
-            >
-              This upgrade keeps the same feedback form, ratings, honeypot protection, validation, and Apps Script submit flow — but presents it in a calmer, more premium way that encourages thoughtful responses.
-            </p>
+            
           </Reveal>
         </Container>
       </div>
 
-      <Container style={{ marginTop: -24, position: "relative", zIndex: 2 }}>
-        <Reveal>
-          <SocialProofBar />
-        </Reveal>
-      </Container>
-
       <SectionHeader
         tag="Your Voice Matters"
         title="Tell us what worked well and what we can improve"
-        desc="The goal here is not just to collect ratings. It is to make learners feel that their experience is being heard and used to strengthen the institution."
+        desc=""
         accentColor={S.violet}
       />
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import S from "../../constants/styles";
-import { USD_RATE, NCTVET_LOGO, HEART_LOGO, SECURITY_BADGES } from "../../constants/config";
+import { USD_RATE, NCTVET_LOGO, HEART_LOGO, CTS_CREST_LOGO, JAMAICA_MAP, SECURITY_BADGES } from "../../constants/config";
 
 export function DualPrice({ amount, size = 13, style = {} }) {
   const num = typeof amount === "string" ? parseInt(amount.replace(/[$,]/g, "")) : amount;
@@ -22,7 +22,79 @@ export function CountdownTimer({ targetDate }) {
   return <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>{[["days", time.days], ["hrs", time.hours], ["min", time.minutes], ["sec", time.seconds]].map(([l, v]) => <div key={l} style={{ background: "rgba(255,255,255,0.06)", borderRadius: 8, padding: "8px 12px", textAlign: "center", border: "1px solid rgba(255,255,255,0.08)", minWidth: 52 }}><div style={{ fontFamily: S.heading, fontSize: 20, fontWeight: 800, color: S.gold }}>{String(v || 0).padStart(2, "0")}</div><div style={{ fontSize: 9, color: "rgba(255,255,255,0.5)", fontFamily: S.body, textTransform: "uppercase", letterSpacing: 1, marginTop: 2 }}>{l}</div></div>)}</div>;
 }
 export function PartnerLogos() {
-  return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 32, flexWrap: "wrap", padding: "24px 0" }}><div style={{ textAlign: "center" }}><div style={{ fontSize: 10, color: S.gray, letterSpacing: 2, textTransform: "uppercase", fontFamily: S.body, marginBottom: 8 }}>Aligned To</div><div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap", justifyContent: "center" }}><img src={NCTVET_LOGO} alt="NCTVET" style={{ height: 64, objectFit: "contain" }} loading="lazy" /><img src={HEART_LOGO} alt="HEART NSTA" style={{ height: 64, objectFit: "contain" }} loading="lazy" /></div></div></div>;
+  return (
+    <div
+      style={{
+        background: "#fff",
+        border: "1px solid rgba(1,30,64,0.10)",
+        borderRadius: 12,
+        padding: "18px 20px",
+        boxShadow: "0 10px 24px rgba(1,30,64,0.05)",
+      }}
+    >
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "minmax(90px, 150px) minmax(260px, 1fr) minmax(90px, 110px)",
+          alignItems: "center",
+          gap: 18,
+        }}
+        className="resp-grid-3"
+      >
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <img
+            src={JAMAICA_MAP}
+            alt="Jamaica map in national colors"
+            style={{ height: 74, maxWidth: 150, objectFit: "contain" }}
+            loading="lazy"
+          />
+        </div>
+
+        <div style={{ textAlign: "center" }}>
+          <div
+            style={{
+              fontSize: 11,
+              color: "#111111",
+              letterSpacing: 2,
+              textTransform: "uppercase",
+              fontFamily: S.body,
+              fontWeight: 800,
+              marginBottom: 8,
+            }}
+          >
+            Stakeholder Partnership
+          </div>
+          <p
+            style={{
+              margin: "0 0 12px",
+              fontFamily: S.body,
+              fontSize: 13,
+              lineHeight: 1.6,
+              color: "#111111",
+              maxWidth: 560,
+              marginInline: "auto",
+            }}
+          >
+            From Jamaica&apos;s workforce development priorities to CTS ETS delivery and recognised HEART/NCTVET
+            certification alignment, this partnership supports clearer vocational progression for learners.
+          </p>
+          <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap", justifyContent: "center" }}>
+            <img src={NCTVET_LOGO} alt="NCTVET" style={{ height: 60, objectFit: "contain" }} loading="lazy" />
+            <img src={HEART_LOGO} alt="HEART NSTA" style={{ height: 60, objectFit: "contain" }} loading="lazy" />
+          </div>
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <img
+            src={CTS_CREST_LOGO}
+            alt="CTS ETS crest"
+            style={{ height: 84, maxWidth: 100, objectFit: "contain" }}
+            loading="lazy"
+          />
+        </div>
+      </div>
+    </div>
+  );
 }
 export function WhatsAppShare({ text, label = "Share via WhatsApp" }) {
   return <a href={"https://wa.me/?text=" + encodeURIComponent(text)} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 16px", borderRadius: 6, background: "#25D366", color: "#fff", fontSize: 12, fontWeight: 700, fontFamily: S.body, textDecoration: "none" }}>{label}</a>;

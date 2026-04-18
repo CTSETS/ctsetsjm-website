@@ -4,9 +4,12 @@ const env = (key, fallback) => {
 
 export const NAV_LOGO = "/logo.jpg";
 export const HERO_LOGO = "/logo.jpg";
+export const CTS_CREST_LOGO = "/logo.jpg";
 export const HEART_LOGO = "/HEART%20Logo.jpg";
 export const NCTVET_LOGO = "/NCTVET%20Logo.jpg";
 export const FOUNDER_PHOTO = "/Lead%20Facilitator.jpg";
+export const JAMAICA_MAP =
+  "https://commons.wikimedia.org/wiki/Special:FilePath/Flag-map%20of%20Jamaica.svg";
 
 // 👇 Paste your Google Apps Script URL here! (Must end in /exec)
 export const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzC3HXsZj4LJS3FgaASU8UFliHc_aIqA_qYMr4dqasdSoYzwSplVAF9zJeu9AE_-gseIA/exec";
@@ -69,7 +72,7 @@ export const BANK_DETAILS = {
 };
 
 // 👇 Removed Apply, Pay, Student Portal — they now live on ets.ctsgroup.app
-export const PAGES = ["Home","About","Why Choose","Programmes","Fees & Calculator","For Employers","International","Student Journey","Contact","Verify Certificate","Feedback","FAQ","Privacy","Terms"];
+export const PAGES = ["Home","About","Why Choose","Programmes","Fees & Calculator","For Employers","International","Student Journey","Contact","Verify Certificate","Feedback","Privacy","Terms"];
 
 export const SECURITY_BADGES = ["🔒 256-bit SSL","🛡️ PCI DSS Level 1","✅ 3D Secure","💳 Visa / Mastercard","🏦 USD & JMD"];
 
@@ -84,3 +87,4 @@ export const WHATSAPP_MESSAGES = {
   "For Employers": "Hi, I'm interested in the employer group discount.",
   default: "Hello CTS ETS, I have a question."
 };
+
