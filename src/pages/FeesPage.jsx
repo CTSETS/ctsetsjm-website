@@ -291,6 +291,26 @@ export default function FeesPage({ setPage }) {
 
   const PATHWAY_FEE = 2500;
 
+  const getDurationMonths = (duration, fallback = 6) => {
+    const match = String(duration || "").match(/(\d+(?:\.\d+)?)/);
+    if (match) return Math.max(1, Math.round(Number(match[1])));
+    return Math.max(1, fallback);
+  };
+
+  const buildMonthlySchedule = (total, count, labelPrefix = "Month") => {
+    const safeCount = Math.max(1, count);
+    const base = Math.floor(total / safeCount);
+    const remainder = total - base * safeCount;
+    return Array.from({ length: safeCount }, (_, index) => {
+      const amount = base + (index < remainder ? 1 : 0);
+      return {
+        label: `${labelPrefix} ${index + 1}`,
+        amount: fmt(amount),
+        detail: "Estimated monthly instalment",
+      };
+    });
+  };
+
   const calcSingle = () => {
     if (!prog) return null;
     const t = prog.tuition;
@@ -311,33 +331,38 @@ export default function FeesPage({ setPage }) {
       const ep = Math.round(st * 0.6);
       const mp = st - ep;
       const ae = ep + REG_FEE;
+      const durationMonths = getDurationMonths(prog.duration, prog.bronzeMonths || 6);
+      const instalmentCount = Math.max(1, durationMonths - 1);
+      const monthlyPreview = Math.ceil(mp / instalmentCount);
       return {
         plan: "Silver",
         grandTotal: fmt(ae + mp),
         rawGrandTotal: ae + mp,
         steps: [
           { label: "At enrolment", amount: fmt(ae), detail: `${fmt(ep)} (60% training) + ${regLabel}` },
-          { label: "Later payment", amount: fmt(mp), detail: "Remaining 40% of training fee" },
+          { label: `Remaining ${instalmentCount} monthly payments`, amount: `${fmt(monthlyPreview)}/mth`, detail: `${fmt(mp)} spread across ${instalmentCount} months` },
         ],
+        schedule: buildMonthlySchedule(mp, instalmentCount, "Month"),
         note: "+15% surcharge on training only",
       };
     }
-    const m = prog.bronzeMonths || 6;
+    const durationMonths = getDurationMonths(prog.duration, prog.bronzeMonths || 6);
+    const instalmentCount = Math.max(1, durationMonths - 1);
     const bronzeT = Math.round(t * 1.2);
     const bronzeDeposit = Math.round(bronzeT * 0.2);
     const remaining = bronzeT - bronzeDeposit;
-    const roundedMonthly = Math.round(remaining / m);
+    const monthlyPreview = Math.ceil(remaining / instalmentCount);
     const ae = bronzeDeposit + REG_FEE;
-    const monthlyTotal = roundedMonthly * m;
-    const gt = ae + monthlyTotal;
+    const gt = ae + remaining;
     return {
       plan: "Bronze",
       grandTotal: fmt(gt),
       rawGrandTotal: gt,
       steps: [
         { label: "At enrolment", amount: fmt(ae), detail: `${fmt(bronzeDeposit)} deposit + ${regLabel}` },
-        { label: `${m} monthly payments`, amount: `${fmt(roundedMonthly)}/mth`, detail: `${fmt(monthlyTotal)} over ${m} months` },
+        { label: `Remaining ${instalmentCount} monthly payments`, amount: `${fmt(monthlyPreview)}/mth`, detail: `${fmt(remaining)} spread across ${instalmentCount} months` },
       ],
+      schedule: buildMonthlySchedule(remaining, instalmentCount, "Month"),
       note: "+20% surcharge on training only",
     };
   };
@@ -907,6 +932,19 @@ export default function FeesPage({ setPage }) {
                         <SummaryRow label="Total (USD estimate)" value={`US$${Math.round(result.rawGrandTotal / USD_RATE).toLocaleString()}`} strong />
                         <SummaryRow label="Total (JMD)" value={result.grandTotal} accent={C.gold} />
                         {result.note && <div style={{ fontSize: 10, color: "rgba(255,255,255,0.54)", fontFamily: S.body, marginTop: 8, textAlign: "right", fontStyle: "italic" }}>{result.note}</div>}
+                        {result.schedule?.length > 0 && (
+                          <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.12)" }}>
+                            <div style={{ fontSize: 8, color: C.gold, letterSpacing: "1.4px", textTransform: "uppercase", fontFamily: S.body, fontWeight: 800, marginBottom: 8 }}>
+                              Forward payment path
+                            </div>
+                            {result.schedule.map((item, index) => (
+                              <div key={index} style={{ display: "flex", justifyContent: "space-between", gap: 10, padding: "6px 0", borderBottom: index < result.schedule.length - 1 ? "1px solid rgba(255,255,255,0.08)" : "none" }}>
+                                <span style={{ fontSize: 10, color: "rgba(255,255,255,0.72)", fontFamily: S.body }}>{item.label}</span>
+                                <span style={{ fontSize: 11, color: C.white, fontFamily: S.body, fontWeight: 700 }}>{item.amount}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <div style={{ marginTop: 14, display: "flex", gap: 8, flexDirection: "column" }}>
                         <Btn primary onClick={() => setPage("Apply")} style={{ color: C.white, background: `linear-gradient(180deg, ${C.gold} 0%, #9f7411 100%)`, width: "100%", padding: "12px", fontSize: "11px", border: "none", borderRadius: 8 }}>
@@ -1062,3 +1100,4 @@ export default function FeesPage({ setPage }) {
     </PageWrapper>
   );
 }
+

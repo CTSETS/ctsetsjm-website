@@ -46,6 +46,14 @@ export const CAREER_OUTCOMES = {
   "Level 4 (Associate Equiv.)": { salaryRange: "J$1.8M - J$3.5M/yr", outlook: "Excellent - qualified HR managers, operations managers, business analysts in high demand." },
   "Level 5 (Bachelor's Equiv.)": { salaryRange: "J$2.5M - J$5M+/yr", outlook: "Senior management and executive roles. Eligible for director-level positions." },
 };
+const CALC_DURATION_LOOKUP = {
+  ...Object.values(PROGRAMMES).flat().reduce((acc, item) => ({ ...acc, [item.name]: item.duration }), {}),
+  "Business Admin (Secretarial)": "6 months",
+  "Bus Admin - Management": "7 months",
+  "Industrial Security Ops": "7 months",
+  "Bus Admin Management": "9 months",
+};
+
 export const CALC_DATA = [
   { level: "Job Certificate", name: "Basic Digital Literacy Skills Proficiency", tuition: 10000 },
   { level: "Job Certificate", name: "Customer Service Rep - Admin Asst.", tuition: 10000 },
@@ -114,4 +122,5 @@ export const PROGRAMME_DETAILS = {
   // ─ Level 5 - Bachelor's Equivalent ─
   "Business Administration Management": { level: "C/NVQ Level 5 - Bachelor's Degree", duration: "9 months", prerequisites: "Level 4 diploma in a related area.", modules: ["Strategic Business Management", "Corporate Governance & Ethics", "Advanced Financial Analysis", "Operations & Supply Chain Management", "Strategic Marketing Management", "Organisational Behaviour & Leadership", "Research Methods & Business Intelligence", "Change Management & Innovation", "Capstone: Strategic Business Plan"], careers: ["General Manager", "Operations Director", "Business Consultant", "Chief Operating Officer"] },
 };
+
 
